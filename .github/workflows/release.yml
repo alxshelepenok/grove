@@ -424,7 +424,7 @@ jobs:
           git commit -m "release: transparency artifacts ($MODE $VERSION)"
           if ! git push origin HEAD:main; then
             branch="release/dist-$(date -u +%Y%m%d%H%M%S)"
-            git push origin "HEAD:$branch"
+            git push origin "HEAD:refs/heads/$branch"
             gh pr create --base main --head "$branch" \
               --title "release: transparency artifacts ($MODE $VERSION)" \
               --body "Opened by the release workflow because direct push to main is protected. Merge to sync dist/ and docs/security/artifacts."
