@@ -8,11 +8,11 @@
 ***G**raph-driven **R**easoning **O**ver **V**erified **E**vidence. A formal workflow protocol for AI coding agents: deterministic Definition of Ready, falsifiable assumption gates, atomic done-transitions; state lives in a single line-oriented lock file; the agent reads only what the current step demands. Designed to keep deep, long-running projects coherent across sessions, agents, and months.*
 
 <p>
-  <a href="https://notebook.google.com/notebook/434f3efc-c199-4b7e-ac61-92fbd85d655e"><img src="https://img.shields.io/badge/NotebookLM-q/a-4285F4?style=for-the-badge" alt="NotebookLM" /></a>
-  <a href="docs/install.md#verify-before-you-run"><img src="https://img.shields.io/badge/signed_releases-RSA--PSS-blue?style=for-the-badge" alt="Signed releases" /></a>
+  <a href="https://notebook.google.com/notebook/434f3efc-c199-4b7e-ac61-92fbd85d655e"><img src="https://img.shields.io/badge/NotebookLM-q/a-8A2BE2?style=for-the-badge" alt="NotebookLM" /></a>
+  <a href="docs/install.md#verify-before-you-run"><img src="https://img.shields.io/badge/signed_releases-RSA--PSS-8A2BE2?style=for-the-badge" alt="Signed releases" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/open%20source-AGPL_3.0-8A2BE2?style=for-the-badge" alt="AGPL 3.0 license" /></a>
   <a href="https://github.com/alxshelepenok/grove/actions/workflows/rust-tests.yml"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Falxshelepenok%2Fgrove%2Fbadges%2F.github%2Fbadges%2Ftests.json&style=for-the-badge" alt="Tests" /></a>
   <a href="packages/grove/conformance"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Falxshelepenok%2Fgrove%2Fbadges%2F.github%2Fbadges%2Fconformance.json&style=for-the-badge" alt="Conformance" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/alxshelepenok/grove.svg?style=for-the-badge" alt="License" /></a>
 </p>
 
 **Build products with AI agents without losing control.**
@@ -280,12 +280,4 @@ Writing works by compression, not by transcription. The agent deliberates in its
 
 ## License
 
-MIT License
-
-Copyright (c) 2026 Alex Shelepenok
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+GNU Affero General Public License v3.0 (AGPL-3.0). Copyright (c) 2026 Alex Shelepenok. Free to use, study, modify, and redistribute under the license terms, including network use: offering Grove as a network service requires offering its source. See [LICENSE](LICENSE) for the full text.
