@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:c0491cc443dfbb7da7193e09f4c67dcf4a6ba218bfdcebfba04bb2fa39fae9a1
+# checksum: sha256:3d803d6db3cac0274683a06e25ad65b2ee30de37295ab6aa44e10d0d73466650
 g G-02 status=unverified fitness_kind=count t_created=2026-07-19T01:14:01Z t_updated=2026-07-19T01:14:01Z "Programmatic API with CLI parity and perf budget"
   area: A-02
   fitness_target: 2
@@ -397,7 +397,7 @@ d D-07 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:56
   validation:
     | installers install all components on the CI matrix (bash 20/20, ps1 16/16); corpus byte-parity between implementations
 
-d D-08 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:56:37Z "Compliance scoped to non-commercial FOSS; CRA machinery dropped with documented revisit triggers"
+d D-08 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T13:50:42Z "Compliance scoped to non-commercial FOSS; CRA machinery dropped with documented revisit triggers"
   context:
     | the reference's compliance weight (ENISA 24h/72h/14d reporting, EU authorised representative, Declaration of Conformity, CE marking, Annex VII technical documentation with 10-year retention, on-request SBOM/VEX) stems from placing a commercial product on the EU market under the CRA (Regulation (EU) 2024/2847); Grove is MIT-licensed, free, and non-commercial
   options:
@@ -420,6 +420,18 @@ d D-09 status=accepted t_created=2026-08-07T00:53:42Z t_updated=2026-08-07T00:56
     | code-signing-grade assurance without buying certificates; the release key is the only secret; host compromise alone cannot install malicious bytes
   validation:
     | tests/install adversarial suite (tampered, expired, rollback, wrong host, hash mismatch, break-glass) on all CI legs; release-security-checks runbook per release
+
+d D-10 status=accepted t_created=2026-08-07T13:50:41Z t_updated=2026-08-07T13:50:42Z "License changed from MIT to AGPL-3.0-only before the first release"
+  context:
+    | D-08 was written while Grove was MIT-licensed; before any release (and before external forks), the maintainer chose stronger copyleft so hosted/network use of Grove requires source disclosure
+  options:
+    | OC1: keep MIT; OC2: AGPL-3.0-only; OC3: GPL-3.0-only
+  decision:
+    | OC2: AGPL-3.0-only. Single author, so relicensing needs no consent process; the change lands before the first release, when it is cheapest. OC3 rejected: it does not cover network use, which matters for an MCP server component
+  consequences:
+    | Cargo.toml license fields and README updated; the CRA non-commercial FOSS analysis in D-08 is unaffected (AGPL remains non-commercial FOSS); old public commits remain under MIT by their terms, but no release or fork exists to make that relevant
+  validation:
+    | LICENSE file carries the AGPL-3.0 text; crates declare AGPL-3.0-only; the shields license badge re-detects on the next GitHub metadata refresh
 
 q Q-01 status=answered cynefin=complicated t_created=2026-07-19T01:19:10Z t_updated=2026-08-04T18:34:40Z "Is the Julia server still needed if the Rust track lands?"
   exit:
@@ -533,6 +545,7 @@ a A-05 status=present t_created=2026-07-19T01:13:44Z t_updated=2026-07-19T01:13:
 
 a A-06 status=present t_created=2026-08-04T19:44:12Z t_updated=2026-08-04T19:44:12Z "Release"
 
+e D-10 supersedes D-08 t_created=2026-08-07T13:50:42Z
 e Q-01 asks W-06 t_created=2026-07-19T01:19:10Z
 e Q-02 asks W-09 t_created=2026-07-19T01:19:17Z
 e T-02 causes W-17 t_created=2026-07-28T02:40:29Z

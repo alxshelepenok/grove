@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 13 | validated B 0 · answered Q 1 · accepted D 6 · active Discovery 6 |
+| C (content) | 14 | validated B 0 · answered Q 1 · accepted D 7 · active Discovery 6 |
 | V (uncertainty) | 11 | open Q 2 · pending B 4 · W below DoR 3 · uncovered surface 2 |
 
 ## Areas
@@ -70,6 +70,7 @@
 | D-07 | Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install | accepted |  |
 | D-08 | Compliance scoped to non-commercial FOSS; CRA machinery dropped with documented revisit triggers | accepted |  |
 | D-09 | Distribution only via GitHub Releases with a signed manifest as the trust anchor | accepted |  |
+| D-10 | License changed from MIT to AGPL-3.0-only before the first release | accepted | D-08 |
 
 ## Open questions
 
@@ -144,6 +145,7 @@ graph TD
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
   D_08["D-08: Compliance scoped to non-commercial FOSS; CRA machinery dropped with documented revisit triggers"]:::decision
   D_09["D-09: Distribution only via GitHub Releases with a signed manifest as the trust anchor"]:::decision
+  D_10["D-10: License changed from MIT to AGPL-3.0-only before the first release"]:::decision
   Q_01["Q-01: Is the Julia server still needed if the Rust track lands?"]:::question
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
@@ -165,6 +167,7 @@ graph TD
   A_04["A-04: MCP server"]:::area
   A_05["A-05: Desktop"]:::area
   A_06["A-06: Release"]:::area
+  D_10 -->|supersedes| D_08
   Q_01 -->|asks| W_06
   Q_02 -->|asks| W_09
   T_02 -->|causes| W_17

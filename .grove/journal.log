@@ -1720,3 +1720,11 @@
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-08-07T01:00:47Z","inv":{"id":"Y-04","field":"surface","op":"field_pop_last"}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-08-07T01:00:48Z","inv":{"id":"Y-04","field":"surface","op":"field_pop_last"}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-08-07T01:19:14Z","inv":{"id":"W-87","field":"evidence","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-08-07T13:50:41Z","inv":{"id":"D-10","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-08-07T13:50:41Z","inv":{"id":"D-10","field":"context","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-08-07T13:50:41Z","inv":{"id":"D-10","field":"options","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-08-07T13:50:41Z","inv":{"id":"D-10","field":"decision","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-08-07T13:50:41Z","inv":{"id":"D-10","field":"consequences","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-08-07T13:50:42Z","inv":{"id":"D-10","field":"validation","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"link","ts":"2026-08-07T13:50:42Z","inv":{"label":"supersedes","to":"D-08","op":"unlink_edge","from":"D-10"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-08-07T13:50:42Z","inv":{"old_status":"proposed","id":"D-10","op":"set_status_plain"}}
