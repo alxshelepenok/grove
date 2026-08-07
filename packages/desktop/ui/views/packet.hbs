@@ -1,0 +1,70 @@
+<section class="view view-packet">
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Packet</h1>
+      <p class="page-description">Inspect the full execution packet of a work item.</p>
+    </div>
+    <div class="page-actions">
+      {{> searchable-select id="packet-select" placeholder="Select a work item..." emptyText="No work items" initialItems=works selectedText=selectedText}}
+    </div>
+  </div>
+  {{#if error}}
+    {{#> alert variant="danger" title="Packet failed"}}{{error}}{{/alert}}
+  {{/if}}
+  {{#if packet}}
+    <div class="card packet-card">
+      <div class="card-title"><span class="text-mono">{{packet.id}}</span> {{packet.title}}</div>
+      <pre class="packet-pre"><code>{{packet.markdown}}</code></pre>
+    </div>
+    <div class="card packet-forms" data-packet-id="{{packet.id}}">
+      <div class="card-title">Mutate <span class="text-mono">{{packet.id}}</span></div>
+      <div class="packet-form-block">
+        <label class="input-field-label" for="packet-evidence-text">Add evidence</label>
+        <textarea id="packet-evidence-text" rows="3" placeholder="Evidence line appended to this work item"></textarea>
+        <div class="packet-form-actions">
+          {{#> button id="packet-evidence-submit" variant="primary"}}Add evidence{{/button}}
+        </div>
+        <pre class="modal-error packet-form-error" id="packet-evidence-error" hidden></pre>
+      </div>
+      <div class="packet-form-block">
+        <label class="input-field-label" for="packet-status-select">Set status</label>
+        <div class="packet-form-row">
+          <select id="packet-status-select">
+            <option value="proposed"{{#if (eq packet.status "proposed")}} selected{{/if}}>proposed</option>
+            <option value="ready"{{#if (eq packet.status "ready")}} selected{{/if}}>ready</option>
+            <option value="progress"{{#if (eq packet.status "progress")}} selected{{/if}}>progress</option>
+            <option value="done"{{#if (eq packet.status "done")}} selected{{/if}}>done</option>
+            <option value="rejected"{{#if (eq packet.status "rejected")}} selected{{/if}}>rejected</option>
+          </select>
+          {{#> button id="packet-status-submit" variant="primary"}}Set status{{/button}}
+        </div>
+        <pre class="modal-error packet-form-error" id="packet-status-error" hidden></pre>
+      </div>
+      <div class="packet-form-block">
+        <label class="input-field-label" for="packet-link-target">Link</label>
+        <div class="packet-form-row">
+          <select id="packet-link-label">
+            <option value="blocks" selected>blocks</option>
+            <option value="implements">implements</option>
+            <option value="asks">asks</option>
+            <option value="tests">tests</option>
+            <option value="targets">targets</option>
+            <option value="produces">produces</option>
+            <option value="causes">causes</option>
+            <option value="supersedes">supersedes</option>
+            <option value="distills">distills</option>
+          </select>
+          <input type="text" id="packet-link-target" placeholder="Target id (e.g. G-01)" autocomplete="off" />
+          {{#> button id="packet-link-add"}}Add link{{/button}}
+          {{#> button id="packet-link-remove"}}Remove link{{/button}}
+        </div>
+        <pre class="modal-error packet-form-error" id="packet-link-error" hidden></pre>
+      </div>
+    </div>
+  {{else}}
+    {{#unless error}}
+      {{> empty-state icon="ghost" description="Pick a work item to render its execution packet."}}
+    {{/unless}}
+  {{/if}}
+  {{> add-modal}}
+</section>

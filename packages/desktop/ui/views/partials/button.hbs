@@ -1,0 +1,13 @@
+<button
+  type="{{#if type}}{{type}}{{else}}button{{/if}}"
+  class="{{#if (eq variant "primary")}}default{{else if (eq variant "icon")}}icon-btn{{else if (eq variant "icon-ghost")}}icon-btn icon-ghost{{else}}{{variant}}{{/if}}{{#if class}}{{#if variant}} {{/if}}{{class}}{{/if}}"
+  {{~#if id}} id="{{id}}"{{/if}}
+  {{~#if title}} title="{{title}}"{{/if}}
+  {{~#if ariaLabel}} aria-label="{{ariaLabel}}"{{/if}}
+  {{~#if dataAction}} data-action="{{dataAction}}"{{/if}}
+  {{~#if dataMode}} data-mode="{{dataMode}}"{{/if}}
+  {{~#if dataLevel}} data-level="{{dataLevel}}"{{/if}}
+  {{~#if onclick}} onclick="{{onclick}}"{{/if}}
+  {{~#if disabled}} disabled{{/if}}
+  {{~#if hidden}} hidden{{/if~}}
+>{{#if (eq variant "gradient")}}<span class="gradient-inner">{{/if}}{{#if icon}}{{#if iconSize}}{{icon icon size=iconSize}}{{else}}{{icon icon size=16}}{{/if}}{{/if}}{{#if text}}{{text}}{{else}}{{> @partial-block (emptyCtx)}}{{/if}}{{#if (eq variant "gradient")}}</span>{{/if}}</button>

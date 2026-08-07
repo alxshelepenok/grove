@@ -1,0 +1,11 @@
+.terminal {
+  padding: var(--wv-space-3);
+  height: 180px;
+  overflow-y: auto;
+  background: var(--wv-gray-950);
+  color: var(--wv-green-300);
+  font-family: var(--wv-font-mono);
+  font-size: var(--wv-font-size-sm);
+  border: 1px solid var(--wv-color-border-subtle);
+  border-radius: var(--wv-radius-sm);
+}

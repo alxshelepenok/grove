@@ -1,0 +1,57 @@
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+}
+
+[class^="field-row"] + [class^="field-row"] {
+  margin-top: var(--wv-space-2);
+}
+
+.field-row > * + * {
+  margin-left: 0;
+}
+
+.field-row > button,
+.field-row > input[type="submit"],
+.field-row > input[type="reset"] {
+  flex: 0 0 auto;
+}
+
+.field-row > input,
+.field-row > select,
+.field-row > textarea {
+  min-width: 0;
+}
+
+.field-row-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-2);
+}
+
+.field-row-stacked * + * {
+  margin-top: 0;
+}
+
+.form-field-check {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--wv-space-2) var(--wv-space-2);
+}
+
+.form-field-check + .form-field-check {
+  margin-top: var(--wv-space-2);
+}
+
+.form-field-check > label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+  min-width: 0;
+}
+
+.form-field-check > label > .text-ellipsis {
+  min-width: 0;
+}

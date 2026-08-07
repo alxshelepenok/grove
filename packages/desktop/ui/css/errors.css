@@ -1,0 +1,23 @@
+.error-page {
+  flex: 1 1 auto;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.error-page-code {
+  margin: 0;
+  font-size: calc(var(--wv-font-size-3xl) * 2);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--wv-color-text-primary);
+}
+
+.error-page-message {
+  margin: var(--wv-space-2) 0 var(--wv-space-5);
+  font-size: var(--wv-font-size-md);
+  color: var(--wv-color-text-tertiary);
+}

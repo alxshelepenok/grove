@@ -1,0 +1,104 @@
+<section class="view view-themes">
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Themes</h1>
+      <p class="page-description">Track work by theme and the critical path.</p>
+    </div>
+  </div>
+  <div class="themes-grid">
+    <div class="themes-main">
+      {{#each themes}}
+      <div class="card theme-card">
+        <div class="card-title flex-between">
+          <span>{{title}}{{#if id}} <span class="text-mono text-muted">{{id}}</span>{{/if}}</span>
+          {{#if status}}{{> badge text=status class="capitalize" variant=status_variant}}{{/if}}
+        </div>
+        <div class="theme-counts">
+          {{#each counts}}<span class="badge badge-{{variant}} capitalize">{{status}} {{count}}</span>{{/each}}
+        </div>
+        <div class="table-scroll">
+          <table class="theme-works-table interactive">
+            <thead>
+              <tr>
+                <th class="col-id">ID</th>
+                <th>Title</th>
+                <th class="col-status">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each works}}
+              <tr data-id="{{id}}">
+                <td><span class="text-mono">{{id}}</span></td>
+                <td class="cell-title">{{title}}</td>
+                <td>{{> badge text=status class="capitalize" variant=status_variant}}</td>
+              </tr>
+              {{else}}
+              <tr><td colspan="3">{{> empty-state compact=true icon="ghost" description="No work items under this theme."}}</td></tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+    <div class="themes-side">
+      <div class="card">
+        <div class="card-title">Critical path</div>
+        {{#if critical_len}}
+          <p class="critical-chain">
+            {{#each critical_path}}<span class="text-mono" title="{{title}}">{{id}}</span>{{#unless @last}}<span class="chain-arrow">→</span>{{/unless}}{{/each}}
+          </p>
+          <p class="text-muted text-xs">Longest chain of blocks edges among open work items: {{critical_len}} nodes.</p>
+        {{else}}
+          {{> empty-state compact=true icon="ghost" description="No open blocks edges."}}
+        {{/if}}
+      </div>
+      <div class="card">
+        <div class="card-title">Open questions and assumptions</div>
+        {{#if cloud_empty}}
+          {{> empty-state icon="ghost" compact=true description="No open questions or proposed/testing assumptions."}}
+        {{else}}
+          {{#if questions}}
+          <div class="area-section">
+            <div class="area-section-head">
+              <span class="area-section-label">Questions</span>
+              {{> badge text=questions_count variant="neutral"}}
+            </div>
+            <ul class="overview-rows">
+              {{#each questions}}
+              <li class="overview-row">
+                <span class="overview-row-id text-mono">{{id}}</span>
+                <span class="overview-row-content">
+                  <span class="overview-row-title">{{title}}</span>
+                </span>
+                {{#if cynefin}}<span class="badge badge-neutral overview-row-note text-sans">{{cynefin}}</span>{{/if}}
+              </li>
+              {{/each}}
+            </ul>
+          </div>
+          {{/if}}
+          {{#if assumptions}}
+          <div class="area-section">
+            <div class="area-section-head">
+              <span class="area-section-label">Assumptions</span>
+              {{> badge text=assumptions_count variant="neutral"}}
+            </div>
+            <ul class="overview-rows">
+              {{#each assumptions}}
+              <li class="overview-row">
+                <span class="overview-row-id text-mono">{{id}}</span>
+                <span class="overview-row-content">
+                  <span class="overview-row-title">{{title}}</span>
+                </span>
+                {{#if cynefin}}<span class="badge badge-neutral overview-row-note text-sans">{{cynefin}}</span>{{/if}}
+              </li>
+              {{/each}}
+            </ul>
+          </div>
+          {{/if}}
+        {{/if}}
+      </div>
+    </div>
+  </div>
+  {{> add-modal}}
+</section>

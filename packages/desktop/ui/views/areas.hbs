@@ -1,0 +1,97 @@
+<section class="view view-areas">
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Areas</h1>
+      <p class="page-description">Goals, work, and content health grouped by area.</p>
+    </div>
+  </div>
+  {{#if empty}}
+    {{> empty-state icon="ghost" title="No areas" description="The lock has no area nodes yet."}}
+  {{else}}
+    <div class="areas-grid">
+      {{#each areas}}
+      <div class="card area-card" id="area-{{id}}">
+        <div class="card-title flex-between">
+          <span>{{title}} <span class="text-mono text-muted ml-8 font-light">[{{id}}]</span></span>
+          {{> badge text=status class="capitalize" variant=status_variant}}
+        </div>
+
+        <div class="area-section">
+          <div class="area-section-head">
+            <span class="area-section-label">Goals</span>
+            {{#> button class="area-goto" variant="gradient" dataAction="goto" dataLevel="goals"}}Goals{{/button}}
+          </div>
+          {{#if goals_empty}}
+            {{> empty-state compact=true icon="ghost" description="No goals in this area."}}
+          {{else}}
+            <ul class="overview-rows">
+              {{#each goals}}
+              <li class="overview-row">
+                <span class="text-mono text-muted overview-row-id">{{id}}</span>
+                <span class="overview-row-content">
+                  <span class="overview-row-title">{{title}}</span>
+                  <span class="text-muted overview-row-note word-spacing-tight">({{fitness_label}})</span>
+                </span>
+              </li>
+              {{/each}}
+            </ul>
+          {{/if}}
+        </div>
+
+        <div class="area-section">
+          <div class="area-section-head">
+            <span class="area-section-label">Work</span>
+            {{#> button class="area-goto" variant="gradient" dataAction="goto" dataLevel="themes"}}Themes{{/button}}
+          </div>
+          {{#if work_empty}}
+            {{> empty-state compact=true icon="ghost" description="No work linked to this area's goals."}}
+          {{else}}
+            <div class="area-chips">
+              {{#each counts}}<span class="badge badge-{{variant}} capitalize">{{status}} {{count}}</span>{{/each}}
+            </div>
+          {{/if}}
+        </div>
+
+        <div class="area-section">
+          <div class="area-section-head">
+            <span class="area-section-label">Health</span>
+          </div>
+          <div class="area-health">
+            <div class="area-health-row">
+              <span class="area-health-key">Content (C): <span class="area-health-total">{{c_total}}</span></span>
+              <span class="area-health-parts">Validated assumptions ({{c.b}}), answered questions ({{c.q}}), accepted decisions ({{c.d}}){{#if has_y}}, active discoveries ({{c.y}}){{/if}}.</span>
+            </div>
+            <div class="area-health-row">
+              <span class="area-health-key">Uncertainty (V): <span class="area-health-total">{{v_total}}</span></span>
+              <span class="area-health-parts">Open questions ({{v.q}}), pending assumptions ({{v.b}}), work below DoR ({{v.w}}){{#if has_surf}}, uncovered surfaces ({{v.surf}}){{/if}}.</span>
+            </div>
+          </div>
+        </div>
+
+        {{#if has_surface}}
+        <div class="area-section">
+          <div class="area-section-head">
+            <span class="area-section-label">Surface</span>
+          </div>
+          <div class="area-chips">
+            {{#each surface}}<span class="badge badge-neutral area-chip-mono">{{this}}</span>{{/each}}
+          </div>
+        </div>
+        {{/if}}
+
+        {{#if has_tags}}
+        <div class="area-section">
+          <div class="area-section-head">
+            <span class="area-section-label">Tags</span>
+          </div>
+          <div class="area-chips">
+            {{#each tags}}<span class="badge badge-neutral">{{this}}</span>{{/each}}
+          </div>
+        </div>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+  {{/if}}
+  {{> add-modal}}
+</section>

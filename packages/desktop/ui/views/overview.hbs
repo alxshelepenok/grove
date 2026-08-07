@@ -1,0 +1,98 @@
+<section class="view view-overview">
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Overview</h1>
+      <p class="page-description">Track progress and health of the entire project.</p>
+    </div>
+  </div>
+  <div class="overview-grid">
+    <div class="card overview-card" id="overview-content">
+      <div class="card-title flex-between">
+        <span>Content health</span>
+        {{#> button class="overview-goto" variant="gradient" dataAction="goto" dataLevel="discovery"}}Discovery{{/button}}
+      </div>
+      <div class="overview-hero">
+        <span class="overview-figure">{{content.c}}</span>
+        <span class="overview-figure-label"><span class="overview-swatch overview-swatch-c" aria-hidden="true"></span>Content (C)</span>
+        <svg class="overview-spark" width="{{content.spark_w}}" height="{{content.spark_h}}" viewBox="0 0 {{content.spark_w}} {{content.spark_h}}" role="img" aria-label="C and V trend, last {{content.trend_points}} points">
+          <polyline class="overview-spark-v" points="{{content.spark_v}}" />
+          <polyline class="overview-spark-c" points="{{content.spark_c}}" />
+        </svg>
+      </div>
+      <div class="overview-kv">
+        <div class="overview-kv-row"><span class="overview-k"><span class="overview-swatch overview-swatch-v" aria-hidden="true"></span>Uncertainty (V)</span><span class="overview-v">{{content.v}}</span></div>
+        <div class="overview-kv-row"><span class="overview-k">Content (C) / Uncertainty (V) ratio</span><span class="overview-v">{{content.ratio}}</span></div>
+        <div class="overview-kv-row"><span class="overview-k">Content (C) trend</span><span class="overview-v">{{content.trend_label}}</span></div>
+      </div>
+    </div>
+
+    <div class="card overview-card" id="overview-work">
+      <div class="card-title flex-between">
+        <span>Work</span>
+        {{#> button class="overview-goto" variant="gradient" dataAction="goto" dataLevel="themes"}}Themes{{/button}}
+      </div>
+      <div class="overview-hero">
+        <span class="overview-figure">{{work.open}}</span>
+        <span class="overview-figure-label">Open</span>
+      </div>
+      {{> segmented-bar segments=work.segments}}
+    </div>
+
+    <div class="card overview-card" id="overview-goals">
+      <div class="card-title flex-between">
+        <span>Goals <span class="badge badge-neutral">{{goals_count}}</span></span>
+        {{#> button class="overview-goto" variant="gradient" dataAction="goto" dataLevel="goals"}}Goals{{/button}}
+      </div>
+      {{#if goals_empty}}
+        {{> empty-state compact=true icon="ghost" description="No goals in the lock."}}
+      {{else}}
+        <ul class="overview-rows">
+          {{#each goals}}
+            <li class="overview-row">
+              <span class="text-mono text-muted overview-row-id">{{id}}</span>
+              <span class="overview-row-content">
+                <span class="overview-row-title">{{title}}</span>
+                <span class="text-muted overview-row-note word-spacing-tight">({{fitness_label}})</span>
+              </span>
+            </li>
+          {{/each}}
+        </ul>
+      {{/if}}
+    </div>
+
+    <div class="card overview-card" id="overview-discovery">
+      <div class="card-title flex-between">
+        <span>Discovery</span>
+        <span class="overview-goto-group">
+          {{#> button class="overview-goto" variant="gradient" dataAction="goto" dataLevel="discovery"}}Discovery{{/button}}
+          {{#> button class="overview-goto" variant="gradient" dataAction="goto" dataLevel="themes"}}Themes{{/button}}
+        </span>
+      </div>
+      {{#if discovery_empty}}
+        {{> empty-state compact=true icon="ghost" description="No discoveries yet."}}
+      {{else}}
+        <ul class="overview-rows">
+          {{#each discovery_items}}
+            <li class="overview-row">
+              <span class="overview-row-id text-mono">{{id}}</span>
+              <span class="overview-row-content">
+                <span class="overview-row-title">{{title}}</span>
+                <span class="text-muted overview-row-note">({{#each tags}}{{this}}{{#unless @last}}, {{/unless}}{{/each}})</span>
+              </span>
+            </li>
+          {{/each}}
+        </ul>
+      {{/if}}
+    </div>
+  </div>
+  <div class="nav-cards">
+    {{#each nav_cards}}
+      {{#> button class="nav-card" dataAction="goto" dataLevel=route ariaLabel=title}}
+        <span class="nav-card-icon">{{icon icon_name size=24}}</span>
+        <span class="nav-card-title">{{title}}</span>
+        <span class="nav-card-desc">{{description}}</span>
+      {{/button}}
+    {{/each}}
+  </div>
+  {{> add-modal}}
+</section>

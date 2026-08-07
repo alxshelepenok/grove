@@ -1,0 +1,30 @@
+<section class="view view-graph" data-kind="{{kind}}" data-focus="{{focus}}">
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Graph</h1>
+      <p class="page-description">Explore nodes and edges as an interactive graph.</p>
+    </div>
+    <div class="page-actions graph-toolbar">
+      <label class="graph-toggle" for="graph-archived"><input type="checkbox" id="graph-archived"{{#if include_archived}} checked{{/if}} /> Include archived</label>
+      <div class="graph-focus">
+        {{> searchable-select id="graph-focus" placeholder="Focus a node..." emptyText="No nodes" initialItems=focus_items selectedText=focus_label}}
+        {{#if focus}}<button type="button" id="graph-focus-clear">Clear</button>{{/if}}
+      </div>
+      <button type="button" id="graph-reheat">Reheat</button>
+    </div>
+  </div>
+  <div class="filter-bar">
+    {{> filter-tabs tabs=filters label="Graph kind"}}
+  </div>
+  <div class="graph-stage" id="graph-stage">
+    <canvas id="graph-canvas"></canvas>
+    <div class="graph-labels" id="graph-labels" aria-hidden="true"></div>
+    <div class="tooltip-bubble graph-tooltip" id="graph-tooltip" role="tooltip" hidden></div>
+    <div class="card graph-info" id="graph-info" hidden>
+      <div class="card-title"><span class="text-mono" id="graph-info-id"></span> <span id="graph-info-title"></span></div>
+      <div class="graph-info-meta" id="graph-info-meta"></div>
+    </div>
+  </div>
+  <script type="application/json" id="graph-data">{{{json graph}}}</script>
+  {{> add-modal}}
+</section>

@@ -1,0 +1,228 @@
+{
+  "name": "w-lifecycle",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "a",
+        "--title=Area",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "A-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Migrate",
+        "--fitness=10/10 cases",
+        "--area=A-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "G-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--goals=G-01",
+        "--title=Login",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "field",
+        "W-01",
+        "ac",
+        "add",
+        "login works",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  ac:\n    | login works\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n"
+    },
+    {
+      "args": [
+        "field",
+        "W-01",
+        "hypothesis",
+        "add",
+        "fewer resets",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  ac:\n    | login works\n  hypothesis:\n    | fewer resets\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n"
+    },
+    {
+      "args": [
+        "field",
+        "W-01",
+        "evidence_strategy",
+        "add",
+        "run suite",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  ac:\n    | login works\n  hypothesis:\n    | fewer resets\n  evidence_strategy:\n    | run suite\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n"
+    },
+    {
+      "args": [
+        "fitness",
+        "W-01",
+        "G-01",
+        "+5",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  fitness: G-01=+5\n  ac:\n    | login works\n  hypothesis:\n    | fewer resets\n  evidence_strategy:\n    | run suite\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n"
+    },
+    {
+      "args": [
+        "evidence",
+        "W-01",
+        "login tests green",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  fitness: G-01=+5\n  ac:\n    | login works\n  hypothesis:\n    | fewer resets\n  evidence_strategy:\n    | run suite\n  evidence:\n    | login tests green\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "W-01",
+        "status=ready",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=ready cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  fitness: G-01=+5\n  ac:\n    | login works\n  hypothesis:\n    | fewer resets\n  evidence_strategy:\n    | run suite\n  evidence:\n    | login tests green\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    },
+    {
+      "args": [
+        "dor",
+        "W-01"
+      ],
+      "exit": 0,
+      "stdout": "W-01 DoR:\n  ⊤  goals(w) ≠ ∅  → G-01\n  ⊤  AC(w) ≠ ∅  → 1 entries\n  ⊤  ∀ q ∈ asks(w), q terminal\n  ⊤  BChain validated\n  ⊤  fitness deltas set ∀ g  → G-01=+5\n  ⊤  evidence_strategy ≠ ∅  → 1 entries\n  ⊤  hypothesis ≠ ⊥\n  ⊤  repro(w) ≠ ∅  → (non-bug)\n  ⊤  exit(w) ≠ ∅  → (non-spike)\n  ⊤  (A, causes, w) via materialised A  → (non-refactor)\n  ⊤  cynefin ≠ chaotic  → clear\n  ⊤  coverage(w) ≥ θ  → (coverage not required)\nresult: ⊤\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=ready cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  fitness: G-01=+5\n  ac:\n    | login works\n  hypothesis:\n    | fewer resets\n  evidence_strategy:\n    | run suite\n  evidence:\n    | login tests green\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "W-01",
+        "status=progress",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=progress cynefin=clear session=<session> session_at=<ts> t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  fitness: G-01=+5\n  ac:\n    | login works\n  hypothesis:\n    | fewer resets\n  evidence_strategy:\n    | run suite\n  evidence:\n    | login tests green\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"ready\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "W-01",
+        "status=done",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=partial fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=done cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  fitness: G-01=+5\n  ac:\n    | login works\n  hypothesis:\n    | fewer resets\n  evidence_strategy:\n    | run suite\n  evidence:\n    | login tests green\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"ready\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":true,\"old_w_status\":\"progress\",\"had_session_before\":true,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"<ts>\",\"old_session\":\"<session>\"}}\n"
+    },
+    {
+      "args": [
+        "show",
+        "G-01"
+      ],
+      "exit": 0,
+      "stdout": "g G-01 status=partial fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=partial fitness=\"10/10 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=done cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  fitness: G-01=+5\n  ac:\n    | login works\n  hypothesis:\n    | fewer resets\n  evidence_strategy:\n    | run suite\n  evidence:\n    | login tests green\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"ready\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":true,\"old_w_status\":\"progress\",\"had_session_before\":true,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"<ts>\",\"old_session\":\"<session>\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "G-01",
+        "fitness=5/5 cases",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=verified fitness=\"5/5 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=done cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  fitness: G-01=+5\n  ac:\n    | login works\n  hypothesis:\n    | fewer resets\n  evidence_strategy:\n    | run suite\n  evidence:\n    | login tests green\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"ready\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":true,\"old_w_status\":\"progress\",\"had_session_before\":true,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"<ts>\",\"old_session\":\"<session>\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"old\":\"10/10 cases\",\"op\":\"set_g_attr_fitness\"}}\n"
+    },
+    {
+      "args": [
+        "show",
+        "G-01"
+      ],
+      "exit": 0,
+      "stdout": "g G-01 status=verified fitness=\"5/5 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=verified fitness=\"5/5 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=done cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  fitness: G-01=+5\n  ac:\n    | login works\n  hypothesis:\n    | fewer resets\n  evidence_strategy:\n    | run suite\n  evidence:\n    | login tests green\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"ready\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":true,\"old_w_status\":\"progress\",\"had_session_before\":true,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"<ts>\",\"old_session\":\"<session>\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"old\":\"10/10 cases\",\"op\":\"set_g_attr_fitness\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=verified fitness=\"5/5 cases\" t_created=<ts> t_updated=<ts> \"Migrate\"\n  area: A-01\n\nw W-01 type=feature status=done cynefin=clear t_created=<ts> t_updated=<ts> \"Login\"\n  goals: G-01\n  fitness: G-01=+5\n  ac:\n    | login works\n  hypothesis:\n    | fewer resets\n  evidence_strategy:\n    | run suite\n  evidence:\n    | login tests green\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"ready\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":true,\"old_w_status\":\"progress\",\"had_session_before\":true,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-01\":\"unverified\"},\"old_session_at\":\"<ts>\",\"old_session\":\"<session>\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"old\":\"10/10 cases\",\"op\":\"set_g_attr_fitness\"}}\n"
+    }
+  ]
+}

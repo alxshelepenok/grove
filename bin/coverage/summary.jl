@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 
-const ROOT = length(ARGS) >= 1 ? abspath(ARGS[1]) : abspath(joinpath(@__DIR__, "..", ".."))
+const ROOT = length(ARGS) >= 1 ? abspath(ARGS[1]) : abspath(joinpath(@__DIR__, "..", "..", "packages", "grove"))
 const SCRATCH = mktempdir()
 const WORKER = joinpath(@__DIR__, "worker.jl")
 

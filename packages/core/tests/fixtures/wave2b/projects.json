@@ -1,0 +1,192 @@
+{
+  "name": "projects",
+  "steps": [
+    {
+      "args": [
+        "projects"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": null,
+      "journal": null
+    },
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "projects"
+      ],
+      "exit": 0,
+      "stdout": "main\t<root>\t<ts>\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "@2",
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "projects"
+      ],
+      "exit": 0,
+      "stdout": "main\t<root>\t<ts>\nother\t<root2>\t<ts>\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "projects",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "{\"command\":\"projects\",\"projects\":[{\"name\":\"main\",\"created\":\"<ts>\",\"last_opened\":\"<ts>\",\"path\":\"<root>\"},{\"name\":\"other\",\"created\":\"<ts>\",\"last_opened\":\"<ts>\",\"path\":\"<root2>\"}]}\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "d",
+        "--title=Ctx",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "D-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "y",
+        "--title=Note",
+        "--tags=auth",
+        "--from=D-01",
+        "--quiet"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "add y: --surface absent requires --why prose\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "promote",
+        "Y-01"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "promote: --to=<project> is required\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "promote",
+        "Y-01",
+        "--to=nowhere"
+      ],
+      "exit": 5,
+      "stdout": "",
+      "stderr": "not found: Y-01\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "promote",
+        "Y-01",
+        "--to={root}"
+      ],
+      "exit": 5,
+      "stdout": "",
+      "stderr": "not found: Y-01\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "@2",
+        "show",
+        "Y-01"
+      ],
+      "exit": 5,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "promote",
+        "Y-01",
+        "--to={root2}",
+        "--quiet"
+      ],
+      "exit": 5,
+      "stdout": "",
+      "stderr": "not found: Y-01\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "promote",
+        "Y-01",
+        "--to={root2}",
+        "--quiet"
+      ],
+      "exit": 5,
+      "stdout": "",
+      "stderr": "not found: Y-01\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "@2",
+        "show",
+        "Y-01"
+      ],
+      "exit": 5,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "projects"
+      ],
+      "exit": 0,
+      "stdout": "main\t<root>\t<ts>\nother\t<root2>\t<ts>\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n"
+    }
+  ]
+}

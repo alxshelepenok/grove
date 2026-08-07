@@ -1,0 +1,193 @@
+{
+  "name": "link-cycle",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "a",
+        "--title=Area",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "A-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Goal",
+        "--area=A-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "G-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--title=One",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--title=Two",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-02\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Two\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--title=Three",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-03\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Two\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Three\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "link",
+        "W-01",
+        "blocks",
+        "W-02",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Two\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Three\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n"
+    },
+    {
+      "args": [
+        "link",
+        "W-02",
+        "blocks",
+        "W-03",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Two\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Three\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-02 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n"
+    },
+    {
+      "args": [
+        "link",
+        "W-03",
+        "blocks",
+        "W-01",
+        "--quiet"
+      ],
+      "exit": 4,
+      "stdout": "",
+      "stderr": "I7: blocks introduces a cycle\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Two\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Three\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-02 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n"
+    },
+    {
+      "args": [
+        "link",
+        "G-01",
+        "implements",
+        "W-01",
+        "--quiet"
+      ],
+      "exit": 4,
+      "stdout": "",
+      "stderr": "edge type mismatch: G-01 -implements-> W-01\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Two\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Three\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-02 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n"
+    },
+    {
+      "args": [
+        "unlink",
+        "W-02",
+        "blocks",
+        "W-03",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Two\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Three\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"unlink\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"t_created\":\"<ts>\",\"to\":\"W-03\",\"op\":\"restore_edge\",\"from\":\"W-02\"}}\n"
+    },
+    {
+      "args": [
+        "link",
+        "W-03",
+        "blocks",
+        "W-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Two\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Three\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-02 t_created=<ts>\ne W-03 blocks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"unlink\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"t_created\":\"<ts>\",\"to\":\"W-03\",\"op\":\"restore_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-01\",\"op\":\"unlink_edge\",\"from\":\"W-03\"}}\n"
+    },
+    {
+      "args": [
+        "deps",
+        "W-01"
+      ],
+      "exit": 0,
+      "stdout": "W-03\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Two\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Three\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-02 t_created=<ts>\ne W-03 blocks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"unlink\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"t_created\":\"<ts>\",\"to\":\"W-03\",\"op\":\"restore_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-01\",\"op\":\"unlink_edge\",\"from\":\"W-03\"}}\n"
+    },
+    {
+      "args": [
+        "graph"
+      ],
+      "exit": 0,
+      "stdout": "## Dependency graph\n\n```mermaid\ngraph TD\n  G_01[\"G-01: Goal\"]:::goal\n  W_01[\"W-01: One\"]:::feature,critical\n  W_02[\"W-02: Two\"]:::feature,critical\n  W_03[\"W-03: Three\"]:::feature,critical\n  A_01[\"A-01: Area\"]:::area\n  W_01 ==>|blocks| W_02\n  W_03 ==>|blocks| W_01\n  class W_01,W_02,W_03 critical\nclassDef area fill:#5a1e4a,color:#fff\nclassDef goal fill:#1e3a5f,color:#fff\nclassDef theme fill:#2a4a3a,color:#fff\nclassDef decision fill:#5a4a1e,color:#fff\nclassDef question fill:#5a3a1e,color:#fff\nclassDef assumption fill:#4a2d5a,color:#fff\nclassDef spike fill:#3a3a5a,color:#fff\nclassDef feature fill:#1e4a4a,color:#fff\nclassDef ready fill:#2d5a27,color:#fff\nclassDef progress fill:#3a4a6a,color:#fff,stroke:#fff,stroke-width:2px\nclassDef done fill:#2d5a27,color:#fff,stroke:#fff,stroke-width:2px\nclassDef rejected fill:#5a5a5a,color:#fff\nclassDef discovery fill:#1f4e5f,color:#fff\nclassDef critical stroke:#ff0,stroke-width:3px\n```\n\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Two\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Three\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-02 t_created=<ts>\ne W-03 blocks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"unlink\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"t_created\":\"<ts>\",\"to\":\"W-03\",\"op\":\"restore_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-01\",\"op\":\"unlink_edge\",\"from\":\"W-03\"}}\n"
+    }
+  ]
+}

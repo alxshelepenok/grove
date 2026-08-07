@@ -1,0 +1,9 @@
+<fieldset{{#if id}} id="{{id}}"{{/if}}{{#if class}} class="{{class}}"{{/if}}>
+  {{#if legend}}
+  <legend>{{legend}}</legend>
+  {{/if}}
+  {{#if description}}
+  <p class="card-description">{{description}}</p>
+  {{/if}}
+  {{> @partial-block (emptyCtx)}}
+</fieldset>

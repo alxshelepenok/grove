@@ -5,28 +5,31 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
-      - uses: julia-actions/setup-julia@v2
+      - uses: julia-actions/setup-julia@fa02766e078afaaf09b14210362cee14137e6a32
         with:
-          version: "1.10"
+          version: "1.12"
 
-      - uses: julia-actions/cache@v2
+      - uses: julia-actions/cache@b7788abd52452d5bc033d69796e110d9906af4ab
 
       - name: Unit tests with coverage
-        run: julia --project=. -e "using Pkg; Pkg.test(; coverage=true)"
+        run: julia --project=packages/grove -e "using Pkg; Pkg.test(; coverage=true)"
 
       - name: Summarize coverage
         env:
           COVERAGE_MIN_PCT: "70"
-        run: julia --project=. bin/coverage/summary.jl
+        run: julia --project=packages/grove bin/coverage/summary.jl
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: success()
         with:
           name: coverage-lcov
-          path: coverage/lcov.info
+          path: packages/grove/coverage/lcov.info

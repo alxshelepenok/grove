@@ -1,0 +1,8 @@
+.without-label[type="radio"]:focus + label,
+.without-label[type="checkbox"]:focus + label {
+  outline: none;
+}
+
+.virtualizer-spacer {
+  pointer-events: none;
+}

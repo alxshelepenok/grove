@@ -1,0 +1,137 @@
+{{#> modal id="add-node-modal" titleId="add-node-modal-title" title="Add node" role="dialog" close=true closeId="add-node-close" closeGlyph=true windowClass="w-500"}}
+  <div class="modal-body">
+    {{#> input id="add-node-kind" label="Kind"}}
+      <select id="add-node-kind">
+        <option value="w" selected>w - work item</option>
+        <option value="q">q - question</option>
+        <option value="b">b - assumption</option>
+        <option value="d">d - decision</option>
+        <option value="y">y - discovery</option>
+        <option value="g">g - goal</option>
+        <option value="t">t - theme</option>
+        <option value="a">a - area</option>
+      </select>
+    {{/input}}
+    {{#> input id="add-node-title" label="Title"}}
+      <input type="text" id="add-node-title" autocomplete="off" />
+    {{/input}}
+    <section class="add-kind-fields" data-add-kind="w">
+      {{#> input id="add-w-type" label="Type"}}
+        <select id="add-w-type">
+          <option value="feature" selected>feature</option>
+          <option value="bug">bug</option>
+          <option value="refactor">refactor</option>
+          <option value="spike">spike</option>
+        </select>
+      {{/input}}
+      {{#> input id="add-w-cynefin" label="Cynefin"}}
+        <select id="add-w-cynefin">
+          <option value="clear">clear</option>
+          <option value="complicated" selected>complicated</option>
+          <option value="complex">complex</option>
+          <option value="chaotic">chaotic</option>
+        </select>
+      {{/input}}
+      {{#> input id="add-w-goals" label="Goals" hint="Comma-separated G-NN list"}}
+        <input type="text" id="add-w-goals" placeholder="G-01, G-02" autocomplete="off" />
+      {{/input}}
+      <div class="add-goal-deltas" id="add-w-goal-deltas"></div>
+      {{#> input id="add-w-tags" label="Tags" hint="Comma-separated glossary terms"}}
+        <input type="text" id="add-w-tags" autocomplete="off" />
+      {{/input}}
+    </section>
+    <section class="add-kind-fields" data-add-kind="q" hidden>
+      {{#> input id="add-q-cynefin" label="Cynefin"}}
+        <select id="add-q-cynefin">
+          <option value="clear">clear</option>
+          <option value="complicated" selected>complicated</option>
+          <option value="complex">complex</option>
+          <option value="chaotic">chaotic</option>
+        </select>
+      {{/input}}
+      {{#> input id="add-q-targets" label="Targets" hint="Comma-separated ids; creates asks edges"}}
+        <input type="text" id="add-q-targets" placeholder="G-01, W-02" autocomplete="off" />
+      {{/input}}
+      {{#> input id="add-q-tags" label="Tags" hint="Comma-separated glossary terms"}}
+        <input type="text" id="add-q-tags" autocomplete="off" />
+      {{/input}}
+    </section>
+    <section class="add-kind-fields" data-add-kind="b" hidden>
+      {{#> input id="add-b-cynefin" label="Cynefin"}}
+        <select id="add-b-cynefin">
+          <option value="clear">clear</option>
+          <option value="complicated" selected>complicated</option>
+          <option value="complex">complex</option>
+          <option value="chaotic">chaotic</option>
+        </select>
+      {{/input}}
+      {{#> input id="add-b-tests" label="Tests" hint="Comma-separated Q-NN list; creates tests edges"}}
+        <input type="text" id="add-b-tests" placeholder="Q-01" autocomplete="off" />
+      {{/input}}
+      {{#> input id="add-b-targets" label="Targets" hint="Comma-separated W-NN list; creates targets edges"}}
+        <input type="text" id="add-b-targets" placeholder="W-01" autocomplete="off" />
+      {{/input}}
+      {{#> input id="add-b-tags" label="Tags" hint="Comma-separated glossary terms"}}
+        <input type="text" id="add-b-tags" autocomplete="off" />
+      {{/input}}
+    </section>
+    <section class="add-kind-fields" data-add-kind="d" hidden>
+      {{#> input id="add-d-supersedes" label="Supersedes" hint="Comma-separated D-NN list"}}
+        <input type="text" id="add-d-supersedes" placeholder="D-01" autocomplete="off" />
+      {{/input}}
+      {{#> input id="add-d-tags" label="Tags" hint="Comma-separated glossary terms"}}
+        <input type="text" id="add-d-tags" autocomplete="off" />
+      {{/input}}
+    </section>
+    <section class="add-kind-fields" data-add-kind="y" hidden>
+      {{#> input id="add-y-tags" label="Tags" hint="Required; comma-separated glossary terms"}}
+        <input type="text" id="add-y-tags" autocomplete="off" />
+      {{/input}}
+      {{#> input id="add-y-surface" label="Surface" hint="Comma-separated paths; xor why"}}
+        <input type="text" id="add-y-surface" placeholder="packages/core/src/lib.rs" autocomplete="off" />
+      {{/input}}
+      {{#> input id="add-y-why" label="Why" hint="Prose; required when surface is empty"}}
+        <input type="text" id="add-y-why" autocomplete="off" />
+      {{/input}}
+      {{#> input id="add-y-from" label="From" hint="Required; comma-separated W/D/Q/B ids"}}
+        <input type="text" id="add-y-from" placeholder="W-01, D-02" autocomplete="off" />
+      {{/input}}
+    </section>
+    <section class="add-kind-fields" data-add-kind="g" hidden>
+      {{#> input id="add-g-area" label="Area" hint="Required; an existing A-NN"}}
+        <input type="text" id="add-g-area" placeholder="A-01" autocomplete="off" />
+      {{/input}}
+      {{#> input id="add-g-fitness-kind" label="Fitness kind"}}
+        <select id="add-g-fitness-kind">
+          <option value="" selected>none</option>
+          <option value="count">count</option>
+          <option value="ratio">ratio</option>
+          <option value="boolean">boolean</option>
+          <option value="metric">metric</option>
+          <option value="manual">manual</option>
+        </select>
+      {{/input}}
+      {{#> input id="add-g-fitness-target" label="Fitness target"}}
+        <input type="text" id="add-g-fitness-target" autocomplete="off" />
+      {{/input}}
+      {{#> input id="add-g-tags" label="Tags" hint="Comma-separated glossary terms"}}
+        <input type="text" id="add-g-tags" autocomplete="off" />
+      {{/input}}
+    </section>
+    <section class="add-kind-fields" data-add-kind="t" hidden>
+      {{#> input id="add-t-tags" label="Tags" hint="Comma-separated glossary terms"}}
+        <input type="text" id="add-t-tags" autocomplete="off" />
+      {{/input}}
+    </section>
+    <section class="add-kind-fields" data-add-kind="a" hidden>
+      {{#> input id="add-a-surface" label="Surface" hint="Comma-separated paths"}}
+        <input type="text" id="add-a-surface" placeholder="packages/core" autocomplete="off" />
+      {{/input}}
+    </section>
+    <pre class="modal-error" id="add-node-error" hidden></pre>
+  </div>
+  <div class="modal-footer">
+    {{#> button id="add-node-cancel"}}Cancel{{/button}}
+    {{#> button id="add-node-submit" variant="primary"}}Add{{/button}}
+  </div>
+{{/modal}}

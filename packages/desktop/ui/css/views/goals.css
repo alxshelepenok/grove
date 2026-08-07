@@ -1,0 +1,24 @@
+.goals-table .col-fitness {
+  min-width: 220px;
+}
+
+.fitness-bar {
+  display: inline-block;
+  width: 140px;
+  height: 8px;
+  vertical-align: middle;
+  border-radius: var(--wv-radius-md);
+  overflow: hidden;
+  background: var(--wv-color-bg-elevated);
+}
+
+.fitness-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--wv-color-accent);
+  transition: width var(--wv-transition-fast);
+}
+
+.fitness-label {
+  margin-left: var(--wv-space-2);
+}

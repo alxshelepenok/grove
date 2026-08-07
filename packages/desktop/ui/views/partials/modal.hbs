@@ -1,0 +1,13 @@
+<div id="{{id}}" class="modal-overlay"{{#if role}} role="{{role}}" aria-modal="true"{{#if titleId}} aria-labelledby="{{titleId}}"{{/if}}{{/if}}>
+  <div class="modal-window{{#if windowClass}} {{windowClass}}{{/if}}">
+    <div class="modal-title-bar">
+      <div class="modal-title-bar-text"{{#if titleId}} id="{{titleId}}"{{/if}}>{{title}}</div>
+      {{#if close}}
+        <div class="modal-title-bar-controls">
+          <button type="button" aria-label="Close"{{#if closeClass}} class="{{closeClass}}"{{/if}}{{#if closeId}} id="{{closeId}}"{{/if}}>{{#if closeGlyph}}✕{{/if}}</button>
+        </div>
+      {{/if}}
+    </div>
+    {{> @partial-block}}
+  </div>
+</div>

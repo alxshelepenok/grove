@@ -1,0 +1,162 @@
+{
+  "name": "glossary-undo",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!write",
+        "src/a.jl"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!append",
+        ".grove/glossary.md",
+        "| auth | a term | test |"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!append",
+        ".grove/glossary.md",
+        "| seam | another term | test |"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=spike",
+        "--cynefin=clear",
+        "--title=Spike",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "y",
+        "--title=Note",
+        "--tags=auth,seam",
+        "--surface=src/a.jl",
+        "--from=W-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "Y-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth, seam\n  surface: src/a.jl\n\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "glossary",
+        "rename",
+        "auth",
+        "identity",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Note\"\n  tags: identity, seam\n  surface: src/a.jl\n\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"glossary\",\"ts\":\"<ts>\",\"inv\":{\"new\":\"identity\",\"glossary_changed\":true,\"old\":\"auth\",\"tags\":{\"Y-01\":[\"auth\",\"seam\"]},\"op\":\"glossary_rename_restore\"}}\n"
+    },
+    {
+      "args": [
+        "!cat",
+        ".grove/glossary.md"
+      ],
+      "exit": 0,
+      "stdout": "# Glossary\n\n| Term | Definition | Source |\n| --- | --- | --- |\n| identity | a term | test |\n| seam | another term | test |\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Note\"\n  tags: identity, seam\n  surface: src/a.jl\n\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"glossary\",\"ts\":\"<ts>\",\"inv\":{\"new\":\"identity\",\"glossary_changed\":true,\"old\":\"auth\",\"tags\":{\"Y-01\":[\"auth\",\"seam\"]},\"op\":\"glossary_rename_restore\"}}\n"
+    },
+    {
+      "args": [
+        "show",
+        "Y-01"
+      ],
+      "exit": 0,
+      "stdout": "y Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Note\"\n  tags: identity, seam\n  surface: src/a.jl\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Note\"\n  tags: identity, seam\n  surface: src/a.jl\n\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"glossary\",\"ts\":\"<ts>\",\"inv\":{\"new\":\"identity\",\"glossary_changed\":true,\"old\":\"auth\",\"tags\":{\"Y-01\":[\"auth\",\"seam\"]},\"op\":\"glossary_rename_restore\"}}\n"
+    },
+    {
+      "args": [
+        "undo",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth, seam\n  surface: src/a.jl\n\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n"
+    },
+    {
+      "args": [
+        "!cat",
+        ".grove/glossary.md"
+      ],
+      "exit": 0,
+      "stdout": "# Glossary\n\n| Term | Definition | Source |\n| --- | --- | --- |\n| auth | a term | test |\n| seam | another term | test |\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth, seam\n  surface: src/a.jl\n\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n"
+    },
+    {
+      "args": [
+        "show",
+        "Y-01"
+      ],
+      "exit": 0,
+      "stdout": "y Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth, seam\n  surface: src/a.jl\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth, seam\n  surface: src/a.jl\n\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth, seam\n  surface: src/a.jl\n\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n"
+    }
+  ]
+}

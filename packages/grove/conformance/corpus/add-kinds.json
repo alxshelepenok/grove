@@ -1,0 +1,228 @@
+{
+  "name": "add-kinds",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Goal",
+        "--quiet"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "add g: --area=A-NN is required (create one with grove add a --title=...)\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "y",
+        "--title=Disc",
+        "--tags=auth",
+        "--surface=src/a.jl",
+        "--quiet"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "add y: --from=<W-NN|D-NN|Q-NN|B-NN> is required (≥1 provenance record)\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "r",
+        "--title=Retro",
+        "--quiet"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "unknown kind: r\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "a",
+        "--title=Area",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "A-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Goal",
+        "--area=A-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "G-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--goals=G-01",
+        "--title=Work",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "d",
+        "--title=Decision",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "D-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n  goals: G-01\n\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Decision\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "q",
+        "--cynefin=clear",
+        "--targets=W-01",
+        "--title=Question",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "Q-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n  goals: G-01\n\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Decision\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Question\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "b",
+        "--cynefin=clear",
+        "--targets=W-01",
+        "--title=Bet",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "B-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n  goals: G-01\n\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Decision\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Question\"\n\nb B-01 status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Bet\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne B-01 targets W-01 t_created=<ts>\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"B-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "t",
+        "--title=Theme",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "T-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n  goals: G-01\n\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Decision\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Question\"\n\nb B-01 status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Bet\"\n\nt T-01 status=open t_created=<ts> t_updated=<ts> \"Theme\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne B-01 targets W-01 t_created=<ts>\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"B-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"T-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "!write",
+        "src/a.jl"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n  goals: G-01\n\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Decision\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Question\"\n\nb B-01 status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Bet\"\n\nt T-01 status=open t_created=<ts> t_updated=<ts> \"Theme\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne B-01 targets W-01 t_created=<ts>\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"B-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"T-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "!append",
+        ".grove/glossary.md",
+        "| auth | a term | test |"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n  goals: G-01\n\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Decision\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Question\"\n\nb B-01 status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Bet\"\n\nt T-01 status=open t_created=<ts> t_updated=<ts> \"Theme\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne B-01 targets W-01 t_created=<ts>\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"B-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"T-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "y",
+        "--title=Discovery",
+        "--tags=auth",
+        "--surface=src/a.jl",
+        "--from=W-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "Y-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n  goals: G-01\n\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Decision\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Question\"\n\nb B-01 status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Bet\"\n\nt T-01 status=open t_created=<ts> t_updated=<ts> \"Theme\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Discovery\"\n  tags: auth\n  surface: src/a.jl\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne B-01 targets W-01 t_created=<ts>\ne Q-01 asks W-01 t_created=<ts>\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"B-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"T-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "list",
+        "w"
+      ],
+      "exit": 0,
+      "stdout": "W-01\tproposed\tWork\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n  goals: G-01\n\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Decision\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Question\"\n\nb B-01 status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Bet\"\n\nt T-01 status=open t_created=<ts> t_updated=<ts> \"Theme\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Discovery\"\n  tags: auth\n  surface: src/a.jl\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne B-01 targets W-01 t_created=<ts>\ne Q-01 asks W-01 t_created=<ts>\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"B-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"T-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "list",
+        "y"
+      ],
+      "exit": 0,
+      "stdout": "Y-01\tproposed\tDiscovery\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n  goals: G-01\n\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Decision\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Question\"\n\nb B-01 status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Bet\"\n\nt T-01 status=open t_created=<ts> t_updated=<ts> \"Theme\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Discovery\"\n  tags: auth\n  surface: src/a.jl\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne B-01 targets W-01 t_created=<ts>\ne Q-01 asks W-01 t_created=<ts>\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"B-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"T-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n  goals: G-01\n\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Decision\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Question\"\n\nb B-01 status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Bet\"\n\nt T-01 status=open t_created=<ts> t_updated=<ts> \"Theme\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Discovery\"\n  tags: auth\n  surface: src/a.jl\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne B-01 targets W-01 t_created=<ts>\ne Q-01 asks W-01 t_created=<ts>\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"B-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"T-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    }
+  ]
+}

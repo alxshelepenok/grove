@@ -1,0 +1,9 @@
+<div class="empty-state{{#if compact}} empty-state-compact{{/if}}">
+  {{#if compact}}
+  {{icon icon size=32 class="empty-state-icon"}}
+  {{else}}
+  {{icon icon size=48 class="empty-state-icon"}}
+  {{/if}}
+  {{#unless compact}}{{#if title}}<p class="empty-state-title">{{title}}</p>{{/if}}{{/unless}}
+  <p class="empty-state-description">{{description}}</p>
+</div>

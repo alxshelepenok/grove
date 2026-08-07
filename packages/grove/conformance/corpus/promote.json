@@ -1,0 +1,202 @@
+{
+  "name": "promote",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "@2",
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!write",
+        "src/auth.jl"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!append",
+        ".grove/glossary.md",
+        "| auth | source term | test |"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!append",
+        ".grove/glossary.md",
+        "| seams | source term | test |"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "d",
+        "--title=Ctx",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "D-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "y",
+        "--title=AuthNote",
+        "--tags=auth,seams",
+        "--surface=src/auth.jl",
+        "--from=D-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "Y-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth, seams\n  surface: src/auth.jl\n\ne Y-01 distills D-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "promote",
+        "Y-01",
+        "--to={root2}",
+        "--json",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "{\"origin_project\":\"main\",\"command\":\"promote\",\"id\":\"Y-01\",\"origin_id\":\"Y-01\"}\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth, seams\n  surface: src/auth.jl\n\ne Y-01 distills D-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "promote",
+        "Y-01",
+        "--to={root2}",
+        "--quiet"
+      ],
+      "exit": 4,
+      "stdout": "",
+      "stderr": "promote: already promoted as Y-01\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth, seams\n  surface: src/auth.jl\n\ne Y-01 distills D-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "@2",
+        "!write",
+        "src/auth.jl"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ny Y-01 status=proposed origin_id=Y-01 origin_project=main origin_version=<ts> t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth, seams\n  surface: src/auth.jl\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"promote\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "@2",
+        "check",
+        "--quiet"
+      ],
+      "exit": 3,
+      "stdout": "",
+      "stderr": "I12: Y-01 has no provenance edge (needs `produces` from a W or `distills` to a D/Q/B)\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ny Y-01 status=proposed origin_id=Y-01 origin_project=main origin_version=<ts> t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth, seams\n  surface: src/auth.jl\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"promote\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "@2",
+        "!cat",
+        ".grove/glossary.md"
+      ],
+      "exit": 0,
+      "stdout": "# Glossary\n\n| Term | Definition | Source |\n| --- | --- | --- |\n| auth | copied from main |\n| seams | copied from main |\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ny Y-01 status=proposed origin_id=Y-01 origin_project=main origin_version=<ts> t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth, seams\n  surface: src/auth.jl\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"promote\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "@2",
+        "show",
+        "Y-01"
+      ],
+      "exit": 0,
+      "stdout": "y Y-01 status=proposed origin_id=Y-01 origin_project=main origin_version=<ts> t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth, seams\n  surface: src/auth.jl\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ny Y-01 status=proposed origin_id=Y-01 origin_project=main origin_version=<ts> t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth, seams\n  surface: src/auth.jl\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"promote\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "@2",
+        "undo",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n"
+    },
+    {
+      "args": [
+        "@2",
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth, seams\n  surface: src/auth.jl\n\ne Y-01 distills D-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    }
+  ]
+}

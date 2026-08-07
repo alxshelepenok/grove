@@ -1,0 +1,21 @@
+{{#> modal id=(concat prefix "-status-modal") titleId=(concat prefix "-modal-title") title=title windowClass="w-500"}}
+  <div class="modal-body">
+    <div class="mb-10">
+      <strong>Progress:</strong>
+      <span id="{{prefix}}-modal-summary">0 / 0</span>
+    </div>
+    <div class="progress-indicator mb-15">
+      <div class="progress-indicator-bar" id="{{prefix}}-modal-bar" style="width: 0%"></div>
+    </div>
+    <div>
+      <strong>Log:</strong>
+      <div class="sunken-panel mt-5 max-h-300 overflow-auto">
+        <div class="terminal" id="{{prefix}}-modal-log"></div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    {{#> button id=(concat prefix "-modal-cancel") variant="gradient"}}Cancel{{/button}}
+    {{#> button id=(concat prefix "-modal-close") variant="gradient" class="hidden"}}Close{{/button}}
+  </div>
+{{/modal}}

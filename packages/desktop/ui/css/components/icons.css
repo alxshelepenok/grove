@@ -1,0 +1,19 @@
+.icon {
+  flex: none;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.icon.icon-sm {
+  width: 14px;
+  height: 14px;
+}
+
+.icon.icon-lg {
+  width: 24px;
+  height: 24px;
+}
+
+button .icon {
+  vertical-align: -3px;
+}

@@ -1,0 +1,6 @@
+.field-border {
+  background: var(--wv-color-bg-recessed);
+  border: 1px solid var(--wv-color-border);
+  border-radius: var(--wv-radius-sm);
+  padding: var(--wv-space-2);
+}

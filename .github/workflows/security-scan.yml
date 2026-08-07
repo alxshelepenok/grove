@@ -1,0 +1,42 @@
+name: Security scan
+
+on:
+  pull_request:
+  schedule:
+    - cron: "41 3 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Install trivy 0.73.0
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/trivy.tar.gz https://github.com/aquasecurity/trivy/releases/download/v0.73.0/trivy_0.73.0_Linux-64bit.tar.gz
+          curl -fsSL -o /tmp/trivy-checksums.txt https://github.com/aquasecurity/trivy/releases/download/v0.73.0/trivy_0.73.0_checksums.txt
+          expected=$(grep "Linux-64bit.tar.gz$" /tmp/trivy-checksums.txt | cut -d' ' -f1)
+          actual=$(sha256sum /tmp/trivy.tar.gz | cut -d' ' -f1)
+          [ "$actual" = "$expected" ] || { echo "trivy checksum mismatch"; exit 1; }
+          sudo tar -xzf /tmp/trivy.tar.gz -C /usr/local/bin trivy
+
+      - uses: julia-actions/setup-julia@fa02766e078afaaf09b14210362cee14137e6a32
+        with:
+          version: "1.12"
+
+      - name: Instantiate Julia project
+        run: julia --project=packages/grove -e 'using Pkg; Pkg.instantiate()'
+
+      - name: Validate VEX document
+        run: julia --project=packages/grove bin/validate-vex.jl docs/security/artifacts/vex.json
+
+      - name: Audit test suite (fixtures, VEX suppression, fail-open/fail-closed)
+        run: TRIVY_BIN=trivy bash tests/audit/test-audit.sh
+
+      - name: Dependency audit gate
+        run: bin/audit.sh --trivy-bin trivy ${{ github.event_name != 'pull_request' && '--fail-closed' || '' }}

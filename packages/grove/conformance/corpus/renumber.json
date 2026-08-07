@@ -1,0 +1,263 @@
+{
+  "name": "renumber",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "a",
+        "--title=Area",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "A-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Goal",
+        "--area=A-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "G-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--goals=G-01",
+        "--title=Alpha",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--title=Beta",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-02\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--goals=G-01",
+        "--title=Gamma",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-03\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "fitness",
+        "W-01",
+        "G-01",
+        "+2",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-01\n  fitness: G-01=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n"
+    },
+    {
+      "args": [
+        "renumber",
+        "G-01",
+        "--to=G-90",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-90 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-90\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"renumber\",\"ts\":\"<ts>\",\"inv\":{\"to\":\"G-01\",\"op\":\"renumber_swap\",\"from\":\"G-90\"}}\n"
+    },
+    {
+      "args": [
+        "show",
+        "W-01"
+      ],
+      "exit": 0,
+      "stdout": "w W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-90 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-90\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"renumber\",\"ts\":\"<ts>\",\"inv\":{\"to\":\"G-01\",\"op\":\"renumber_swap\",\"from\":\"G-90\"}}\n"
+    },
+    {
+      "args": [
+        "field",
+        "W-03",
+        "ac",
+        "add",
+        "x",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-90 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-90\n  ac:\n    | x\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"renumber\",\"ts\":\"<ts>\",\"inv\":{\"to\":\"G-01\",\"op\":\"renumber_swap\",\"from\":\"G-90\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n"
+    },
+    {
+      "args": [
+        "field",
+        "W-03",
+        "hypothesis",
+        "add",
+        "x",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-90 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-90\n  ac:\n    | x\n  hypothesis:\n    | x\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"renumber\",\"ts\":\"<ts>\",\"inv\":{\"to\":\"G-01\",\"op\":\"renumber_swap\",\"from\":\"G-90\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n"
+    },
+    {
+      "args": [
+        "field",
+        "W-03",
+        "evidence_strategy",
+        "add",
+        "x",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-90 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-90\n  ac:\n    | x\n  hypothesis:\n    | x\n  evidence_strategy:\n    | x\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"renumber\",\"ts\":\"<ts>\",\"inv\":{\"to\":\"G-01\",\"op\":\"renumber_swap\",\"from\":\"G-90\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n"
+    },
+    {
+      "args": [
+        "fitness",
+        "W-03",
+        "G-90",
+        "+1",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-90 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-90\n  fitness: G-90=+1\n  ac:\n    | x\n  hypothesis:\n    | x\n  evidence_strategy:\n    | x\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"renumber\",\"ts\":\"<ts>\",\"inv\":{\"to\":\"G-01\",\"op\":\"renumber_swap\",\"from\":\"G-90\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-03\",\"gid\":\"G-90\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n"
+    },
+    {
+      "args": [
+        "evidence",
+        "W-03",
+        "shipped with W-02",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-90 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-90\n  fitness: G-90=+1\n  ac:\n    | x\n  hypothesis:\n    | x\n  evidence_strategy:\n    | x\n  evidence:\n    | shipped with W-02\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"renumber\",\"ts\":\"<ts>\",\"inv\":{\"to\":\"G-01\",\"op\":\"renumber_swap\",\"from\":\"G-90\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-03\",\"gid\":\"G-90\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "W-03",
+        "status=ready",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-90 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=ready cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-90\n  fitness: G-90=+1\n  ac:\n    | x\n  hypothesis:\n    | x\n  evidence_strategy:\n    | x\n  evidence:\n    | shipped with W-02\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"renumber\",\"ts\":\"<ts>\",\"inv\":{\"to\":\"G-01\",\"op\":\"renumber_swap\",\"from\":\"G-90\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-03\",\"gid\":\"G-90\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-03\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-90\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "W-03",
+        "status=progress",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-90 status=unverified t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=progress cynefin=clear session=<session> session_at=<ts> t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-90\n  fitness: G-90=+1\n  ac:\n    | x\n  hypothesis:\n    | x\n  evidence_strategy:\n    | x\n  evidence:\n    | shipped with W-02\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"renumber\",\"ts\":\"<ts>\",\"inv\":{\"to\":\"G-01\",\"op\":\"renumber_swap\",\"from\":\"G-90\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-03\",\"gid\":\"G-90\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-03\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-90\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"ready\",\"had_session_before\":false,\"id\":\"W-03\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-90\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "W-03",
+        "status=done",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-90 status=partial t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=done cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-90\n  fitness: G-90=+1\n  ac:\n    | x\n  hypothesis:\n    | x\n  evidence_strategy:\n    | x\n  evidence:\n    | shipped with W-02\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"renumber\",\"ts\":\"<ts>\",\"inv\":{\"to\":\"G-01\",\"op\":\"renumber_swap\",\"from\":\"G-90\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-03\",\"gid\":\"G-90\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-03\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-90\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"ready\",\"had_session_before\":false,\"id\":\"W-03\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-90\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":true,\"old_w_status\":\"progress\",\"had_session_before\":true,\"id\":\"W-03\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-90\":\"unverified\"},\"old_session_at\":\"<ts>\",\"old_session\":\"<session>\"}}\n"
+    },
+    {
+      "args": [
+        "renumber",
+        "W-02",
+        "--to=W-77",
+        "--quiet"
+      ],
+      "exit": 4,
+      "stdout": "",
+      "stderr": "grove renumber: refusing; id occurs in evidence on a done W\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-90 status=partial t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=done cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-90\n  fitness: G-90=+1\n  ac:\n    | x\n  hypothesis:\n    | x\n  evidence_strategy:\n    | x\n  evidence:\n    | shipped with W-02\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"renumber\",\"ts\":\"<ts>\",\"inv\":{\"to\":\"G-01\",\"op\":\"renumber_swap\",\"from\":\"G-90\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-03\",\"gid\":\"G-90\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-03\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-90\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"ready\",\"had_session_before\":false,\"id\":\"W-03\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-90\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":true,\"old_w_status\":\"progress\",\"had_session_before\":true,\"id\":\"W-03\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-90\":\"unverified\"},\"old_session_at\":\"<ts>\",\"old_session\":\"<session>\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-90 status=partial t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Alpha\"\n  goals: G-90\n  fitness: G-90=+2\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Beta\"\n\nw W-03 type=feature status=done cynefin=clear t_created=<ts> t_updated=<ts> \"Gamma\"\n  goals: G-90\n  fitness: G-90=+1\n  ac:\n    | x\n  hypothesis:\n    | x\n  evidence_strategy:\n    | x\n  evidence:\n    | shipped with W-02\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-01\",\"gid\":\"G-01\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"renumber\",\"ts\":\"<ts>\",\"inv\":{\"to\":\"G-01\",\"op\":\"renumber_swap\",\"from\":\"G-90\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"hypothesis\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence_strategy\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"fitness\",\"ts\":\"<ts>\",\"inv\":{\"had_key\":false,\"wid\":\"W-03\",\"gid\":\"G-90\",\"previous\":null,\"op\":\"restore_fitness_key\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"field\":\"evidence\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-03\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-90\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"ready\",\"had_session_before\":false,\"id\":\"W-03\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-90\":\"unverified\"},\"old_session_at\":\"\",\"old_session\":\"\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":true,\"old_w_status\":\"progress\",\"had_session_before\":true,\"id\":\"W-03\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{\"G-90\":\"unverified\"},\"old_session_at\":\"<ts>\",\"old_session\":\"<session>\"}}\n"
+    }
+  ]
+}

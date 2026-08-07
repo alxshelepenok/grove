@@ -1,0 +1,90 @@
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-1);
+  min-width: 0;
+}
+
+.input-field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wv-space-2);
+  min-height: 18px;
+}
+
+.input-field-label-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+  min-width: 0;
+}
+
+.input-field-label {
+  font-size: var(--wv-font-size-sm);
+  font-weight: 400;
+  color: var(--wv-color-text-secondary);
+}
+
+.input-field-info {
+  display: inline-flex;
+  align-items: center;
+  color: var(--wv-color-text-disabled);
+  cursor: help;
+}
+
+.input-field-info:hover {
+  color: var(--wv-color-text-tertiary);
+}
+
+.input-field-error {
+  margin: 0;
+  font-size: var(--wv-font-size-xs);
+  color: var(--wv-color-danger);
+}
+
+.input-field.has-error input,
+.input-field.has-error select,
+.input-field.has-error textarea {
+  border-color: var(--wv-color-danger);
+}
+
+.input-field > input,
+.input-field > select,
+.input-field > textarea,
+.input-field > .searchable-select-wrap {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input-group {
+  display: flex;
+  align-items: stretch;
+  gap: var(--wv-space-2);
+}
+
+.input-group > input,
+.input-group > select,
+.input-group > .searchable-select-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+}
+
+.input-group > button {
+  flex: 0 0 auto;
+  align-self: stretch;
+  min-height: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--wv-space-3) var(--wv-space-4);
+}
+
+.form-grid > .input-field-wide {
+  grid-column: 1 / -1;
+}

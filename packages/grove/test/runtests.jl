@@ -1,0 +1,41 @@
+using Test
+using JSON
+using grove
+
+const M = grove
+
+ENV["GROVE_HOME"] = mktempdir()
+delete!(ENV, "GROVE_PROJECT")
+
+include("test_ids.jl")
+include("test_lock.jl")
+include("test_goal_fitness.jl")
+include("test_algebra.jl")
+include("test_invariants_edges.jl")
+include("test_invariants_guards.jl")
+include("test_dor.jl")
+include("test_coverage_dor.jl")
+include("test_render_dashboard.jl")
+include("test_render_areas.jl")
+include("test_cli_workspace.jl")
+include("test_cli_integrity.jl")
+include("test_repo_attributes.jl")
+include("test_archive_exclusive.jl")
+include("test_cli_distill_prompt.jl")
+include("test_distill.jl")
+include("test_cli_cone.jl")
+include("test_cli_core.jl")
+include("test_cli_duplicates.jl")
+include("test_lockdiff.jl")
+include("test_cli_diff.jl")
+include("test_log_timeline.jl")
+include("test_cli_undo_log_session.jl")
+include("test_gate.jl")
+include("test_coverage_trace_storage.jl")
+include("test_discovery.jl")
+include("test_discovery_behavior.jl")
+include("test_triage.jl")
+include("test_areas.jl")
+include("test_stats.jl")
+include("test_projects.jl")
+include("test_conformance.jl")

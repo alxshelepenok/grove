@@ -1,0 +1,20 @@
+@grove 1
+# AUTO-GENERATED. Do not edit. Use `grove` CLI.
+# checksum: sha256:7b322511d1e61dd5771e2c6cd4d4a32ab33c28a1ff3d59cc2f421a924c384a92
+w W-01 type=spike status=proposed cynefin=clear t_created=2026-07-19T12:05:01Z t_updated=2026-07-19T12:05:02Z "Spike"
+
+y Y-01 status=active t_created=2026-07-19T12:05:02Z t_updated=2026-07-19T12:05:08Z "AuthNote"
+  tags: auth, identity
+  surface: src/a.jl
+  invariant:
+    | Passwords are hashed with bcrypt.
+  why:
+    | Surfaced during the W-01 spike.
+  skill_updates:
+    | Prefer property tests for parsers.
+  glossary_updates:
+    | auth: identity verification flow.
+  revalidation:
+    | 2026-07-19T12:05:08Z surface=src/a.jl
+
+e W-01 produces Y-01 t_created=2026-07-19T12:05:02Z

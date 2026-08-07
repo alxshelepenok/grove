@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>grove</title>
+    <link rel="stylesheet" href="/css/design-system.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/utilities.css" />
+    <link rel="stylesheet" href="/css/errors.css" />
+    <link rel="stylesheet" href="/css/global.css" />
+    <link rel="stylesheet" href="/css/components/accordion.css" />
+    <link rel="stylesheet" href="/css/components/alert-modal.css" />
+    <link rel="stylesheet" href="/css/components/alert.css" />
+    <link rel="stylesheet" href="/css/components/badge.css" />
+    <link rel="stylesheet" href="/css/components/buttons.css" />
+    <link rel="stylesheet" href="/css/components/command-menu.css" />
+    <link rel="stylesheet" href="/css/components/disabled.css" />
+    <link rel="stylesheet" href="/css/components/empty-state.css" />
+    <link rel="stylesheet" href="/css/components/field-borders.css" />
+    <link rel="stylesheet" href="/css/components/field-rows.css" />
+    <link rel="stylesheet" href="/css/components/fieldset.css" />
+    <link rel="stylesheet" href="/css/components/filter-tabs.css" />
+    <link rel="stylesheet" href="/css/components/icons.css" />
+    <link rel="stylesheet" href="/css/components/input.css" />
+    <link rel="stylesheet" href="/css/components/inputs.css" />
+    <link rel="stylesheet" href="/css/components/labels.css" />
+    <link rel="stylesheet" href="/css/components/misc.css" />
+    <link rel="stylesheet" href="/css/components/modal.css" />
+    <link rel="stylesheet" href="/css/components/panel.css" />
+    <link rel="stylesheet" href="/css/components/progress.css" />
+    <link rel="stylesheet" href="/css/components/radio-checkbox.css" />
+    <link rel="stylesheet" href="/css/components/range.css" />
+    <link rel="stylesheet" href="/css/components/scroll-area.css" />
+    <link rel="stylesheet" href="/css/components/search-input.css" />
+    <link rel="stylesheet" href="/css/components/searchable-select.css" />
+    <link rel="stylesheet" href="/css/components/segmented-bar.css" />
+    <link rel="stylesheet" href="/css/components/select.css" />
+    <link rel="stylesheet" href="/css/components/side-rail.css" />
+    <link rel="stylesheet" href="/css/components/status-bar.css" />
+    <link rel="stylesheet" href="/css/components/tables.css" />
+    <link rel="stylesheet" href="/css/components/tabs.css" />
+    <link rel="stylesheet" href="/css/components/terminal.css" />
+    <link rel="stylesheet" href="/css/components/tooltip.css" />
+    <link rel="stylesheet" href="/css/components/tree-view.css" />
+    <link rel="stylesheet" href="/css/components/window.css" />
+    <link rel="stylesheet" href="/css/views/common.css" />
+    <link rel="stylesheet" href="/css/views/overview.css" />
+    <link rel="stylesheet" href="/css/views/areas.css" />
+    <link rel="stylesheet" href="/css/views/goals.css" />
+    <link rel="stylesheet" href="/css/views/themes.css" />
+    <link rel="stylesheet" href="/css/views/packet.css" />
+    <link rel="stylesheet" href="/css/views/add-node.css" />
+    <link rel="stylesheet" href="/css/views/discovery.css" />
+    <link rel="stylesheet" href="/css/views/graph.css" />
+    <link rel="stylesheet" href="/css/views/project.css" />
+    <script src="/js/workspace.js"></script>
+    <script src="/js/vendor/d3.js"></script>
+    <script type="module" src="/js/main.js"></script>
+  </head>
+  <body class="window">
+    <div class="layout">
+      <nav class="side-rail">
+        <div class="side-rail-logo">
+          <img src="/logo.svg" alt="Grove" class="side-rail-logo-img">
+        </div>
+        <ul class="side-rail-list">
+          <li class="side-rail-item" data-level="overview">
+            <button class="side-rail-btn tooltip tooltip-right" aria-label="Overview">
+              <span class="nav-icon nav-icon-grid"></span>
+              <span class="tooltip-bubble" role="tooltip">Overview</span>
+            </button>
+          </li>
+          <li class="side-rail-item" data-level="areas">
+            <button class="side-rail-btn tooltip tooltip-right" aria-label="Areas">
+              <span class="nav-icon nav-icon-layout"></span>
+              <span class="tooltip-bubble" role="tooltip">Areas</span>
+            </button>
+          </li>
+          <li class="side-rail-item" data-level="discovery">
+            <button class="side-rail-btn tooltip tooltip-right" aria-label="Discovery">
+              <span class="nav-icon nav-icon-home"></span>
+              <span class="tooltip-bubble" role="tooltip">Discovery</span>
+            </button>
+          </li>
+          <li class="side-rail-item" data-level="goals">
+            <button class="side-rail-btn tooltip tooltip-right" aria-label="Goals">
+              <span class="nav-icon nav-icon-target"></span>
+              <span class="badge badge-count goals-badge" id="goals-badge" hidden></span>
+              <span class="tooltip-bubble" role="tooltip">Goals</span>
+            </button>
+          </li>
+          <li class="side-rail-item" data-level="work">
+            <button class="side-rail-btn tooltip tooltip-right" aria-label="Work">
+              <span class="nav-icon nav-icon-list"></span>
+              <span class="tooltip-bubble" role="tooltip">Work</span>
+            </button>
+          </li>
+          <li class="side-rail-item" data-level="themes">
+            <button class="side-rail-btn tooltip tooltip-right" aria-label="Themes">
+              <span class="nav-icon nav-icon-layers"></span>
+              <span class="tooltip-bubble" role="tooltip">Themes</span>
+            </button>
+          </li>
+          <li class="side-rail-item" data-level="graph">
+            <button class="side-rail-btn tooltip tooltip-right" aria-label="Graph">
+              <span class="nav-icon nav-icon-share"></span>
+              <span class="tooltip-bubble" role="tooltip">Graph</span>
+            </button>
+          </li>
+          <li class="side-rail-item" data-level="packet">
+            <button class="side-rail-btn tooltip tooltip-right" aria-label="Packet">
+              <span class="nav-icon nav-icon-file"></span>
+              <span class="tooltip-bubble" role="tooltip">Packet</span>
+            </button>
+          </li>
+          <li class="side-rail-item side-rail-action">
+            <button class="side-rail-btn tooltip tooltip-right" id="add-node-open" aria-label="Add node">
+              <span class="nav-icon nav-icon-add"></span>
+              <span class="tooltip-bubble" role="tooltip">Add node</span>
+            </button>
+          </li>
+          <li class="side-rail-item side-rail-action side-rail-project">
+            <button class="side-rail-btn tooltip tooltip-right" id="project-open" aria-label="Project" data-action="project-picker">
+              <span class="project-avatar" id="project-avatar"><span class="nav-icon nav-icon-tree"></span></span>
+              <span class="tooltip-bubble" role="tooltip">Project</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+      <div class="app-main">
+        <header class="title-bar">
+          <div class="title-bar-controls">
+            <button aria-label="Minimize"></button>
+            <button aria-label="Maximize"></button>
+            <button aria-label="Close"></button>
+          </div>
+        </header>
+        <div id="app-scrollable-area" class="window-scrollable-area">
+          <div class="window-body">
+            <div id="view-root"></div>
+          </div>
+        </div>
+        <footer class="status-bar">
+          <div class="status-bar-field sb-field">
+            <span class="sb-label">Content (C)</span>
+            <span class="sb-value" id="status-c"></span>
+          </div>
+          <div class="status-bar-field sb-field">
+            <span class="sb-label">Uncertainty (V)</span>
+            <span class="sb-value" id="status-v"></span>
+          </div>
+          <div class="status-bar-field sb-field">
+            <span class="sb-label">Goals (G)</span>
+            <span class="sb-value" id="status-g"></span>
+          </div>
+          <div class="status-bar-field sb-field">
+            <span class="sb-label">Work ready (W)</span>
+            <span class="sb-value" id="status-ready"></span>
+          </div>
+          <div class="status-bar-field sb-field">
+            <span class="sb-label">Work done (W)</span>
+            <span class="sb-value" id="status-done"></span>
+          </div>
+          <div class="status-bar-field sb-field">
+            <span class="sb-label">Lock size</span>
+            <span class="sb-value" id="status-lock"></span>
+          </div>
+          <div class="status-bar-field sb-field">
+            <span class="sb-label">Updated</span>
+            <span class="sb-value" id="status-updated"></span>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

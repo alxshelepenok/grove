@@ -1,0 +1,52 @@
+{
+  "name": "check-foreign-status",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "a",
+        "--title=Area",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "A-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "!append",
+        ".grove/state.lock",
+        "a A-02 status=archived \"Corrupt\""
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\na A-02 status=archived \"Corrupt\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "lock parse error at line 5: a record status must be present (got 'archived')\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\na A-02 status=archived \"Corrupt\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    }
+  ]
+}

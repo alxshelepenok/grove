@@ -1,0 +1,88 @@
+name: Rust tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cargo-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Install Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libappindicator3-dev librsvg2-dev xvfb
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: cargo-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-
+
+      - name: Workspace tests
+        run: xvfb-run -a cargo test --workspace --locked 2>&1 | tee rust.log
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: github.event_name != 'pull_request'
+        with:
+          name: rust-test-log
+          path: rust.log
+          retention-days: 1
+
+  badge:
+    if: github.event_name != 'pull_request'
+    needs: cargo-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: rust-test-log
+
+      - uses: julia-actions/setup-julia@fa02766e078afaaf09b14210362cee14137e6a32
+        with:
+          version: "1.12"
+
+      - name: Count tests
+        id: count
+        run: |
+          rust_n=$(grep -oP 'test result: ok\. \K\d+(?= passed)' rust.log | awk '{s+=$1} END {print s+0}')
+          julia --project=packages/grove -e 'using Pkg; Pkg.test()' 2>&1 | tee julia.log
+          julia_n=$(grep -oP '\|\s+\K\d+(?=\s+\d+)' julia.log | awk '{s+=$1} END {print s+0}')
+          corpus_n=$(grep -oP 'conformance: \K\d+(?= scenarios green)' julia.log | tail -1)
+          echo "rust=$rust_n julia=$julia_n" >> "$GITHUB_OUTPUT"
+          echo "total=$((rust_n + julia_n))" >> "$GITHUB_OUTPUT"
+          echo "corpus=$corpus_n" >> "$GITHUB_OUTPUT"
+
+      - name: Publish tests.json to the badges branch
+        env:
+          TOTAL: ${{ steps.count.outputs.total }}
+          CORPUS: ${{ steps.count.outputs.corpus }}
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git fetch origin badges 2>/dev/null || true
+          if git rev-parse --verify origin/badges >/dev/null 2>&1; then
+            git checkout -B badges origin/badges
+          else
+            git checkout -B badges
+          fi
+          mkdir -p .github/badges
+          printf '{"schemaVersion":1,"label":"tests","message":"%s","color":"brightgreen"}\n' "$TOTAL" > .github/badges/tests.json
+          printf '{"schemaVersion":1,"label":"conformance","message":"%s/%s","color":"brightgreen"}\n' "$CORPUS" "$CORPUS" > .github/badges/conformance.json
+          git add .github/badges/tests.json .github/badges/conformance.json
+          git diff --cached --quiet || git commit -m "chore: update badges (tests $TOTAL, conformance $CORPUS/$CORPUS)"
+          git push origin badges

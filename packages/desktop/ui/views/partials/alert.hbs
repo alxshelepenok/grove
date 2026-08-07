@@ -1,0 +1,16 @@
+<div class="alert alert-{{#if variant}}{{variant}}{{else}}info{{/if}}{{#if class}} {{class}}{{/if}}"{{#if id}} id="{{id}}"{{/if}} role="alert">
+  {{#if icon}}
+    {{icon icon size=16 class="alert-icon"}}
+  {{else}}
+    {{icon "information-circle" size=16 class="alert-icon"}}
+  {{/if}}
+  <div class="alert-content">
+    {{#if title}}
+    <p class="alert-title">{{title}}</p>
+    {{/if}}
+    {{#if description}}
+    <p class="alert-description">{{description}}</p>
+    {{/if}}
+    {{> @partial-block}}
+  </div>
+</div>

@@ -1,0 +1,10 @@
+<details class="accordion{{#if class}} {{class}}{{/if}}"{{#if id}} id="{{id}}"{{/if}}{{#if open}} open{{/if}}>
+  <summary class="accordion-summary">
+    {{icon "arrow-right" size=14 class="accordion-chevron"}}
+    <span class="accordion-title">{{title}}</span>
+    {{#if badge}}{{> badge (emptyCtx) text=badge variant=badgeVariant}}{{/if}}
+  </summary>
+  <div class="accordion-body">
+    {{> @partial-block (emptyCtx)}}
+  </div>
+</details>
