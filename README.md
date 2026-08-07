@@ -7,7 +7,7 @@
 
 ***G**raph-driven **R**easoning **O**ver **V**erified **E**vidence. A formal workflow protocol for AI coding agents: deterministic Definition of Ready, falsifiable assumption gates, atomic done-transitions; state lives in a single line-oriented lock file; the agent reads only what the current step demands. Designed to keep deep, long-running projects coherent across sessions, agents, and months.*
 
-<p>
+<p align="center">
   <a href="https://notebook.google.com/notebook/434f3efc-c199-4b7e-ac61-92fbd85d655e"><img src="https://img.shields.io/badge/Notebook-q/a-8A2BE2?style=for-the-badge" alt="Notebook" /></a>
   <a href="docs/install.md#verify-before-you-run"><img src="https://img.shields.io/badge/signing-RSA--PSS-8A2BE2?style=for-the-badge" alt="Release signing" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/open%20source-AGPL_3.0-8A2BE2?style=for-the-badge" alt="AGPL 3.0 license" /></a>
