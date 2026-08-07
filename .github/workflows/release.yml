@@ -64,7 +64,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tag_commit=$(git ls-remote origin "refs/tags/v$VERSION^{}" | cut -f1)
+          tag_commit=$(git ls-remote origin "refs/tags/v$VERSION" "refs/tags/v$VERSION^{}" | tail -1 | cut -f1)
           [ -n "$tag_commit" ] || { echo "tag v$VERSION not found on origin"; exit 1; }
           [ "$(git rev-parse HEAD)" = "$tag_commit" ] || { echo "checkout does not match tag v$VERSION"; exit 1; }
 
@@ -112,6 +112,15 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.mode == 'release' && format('refs/tags/v{0}', inputs.version) || '' }}
+
+      - name: Assert checkout matches the tag
+        if: inputs.mode == 'release'
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag_commit=$(git ls-remote origin "refs/tags/v$VERSION" "refs/tags/v$VERSION^{}" | tail -1 | cut -f1)
+          [ -n "$tag_commit" ] || { echo "tag v$VERSION not found on origin"; exit 1; }
+          [ "$(git rev-parse HEAD)" = "$tag_commit" ] || { echo "checkout does not match tag v$VERSION"; exit 1; }
 
       - name: Install Tauri system dependencies
         if: runner.os == 'Linux'
