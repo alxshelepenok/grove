@@ -1,4 +1,5 @@
 .grove/state.lock text eol=lf
+*.lock text eol=lf
 *.sh text eol=lf
 *.jl text eol=lf
 *.ps1 text eol=lf
