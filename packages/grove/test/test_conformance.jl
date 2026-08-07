@@ -10,6 +10,6 @@ end
     raw = string("2026-07-19T02:40:01Z sha256:", repeat("a", 64), " ", repeat("b", 64),
                  " session=host:0123456789abcdef C:\\tmp\\root9\\.grove C:/tmp/root9/x\r\nkeep  \n")
     got = Conformance.normalize_text(raw, paths, tokens)
-    @test got == "<ts> sha256:<sha> <sha> session=<session> <root>\\.grove <root>/x\nkeep\n"
+    @test got == "<ts> sha256:<sha> <sha> session=<session> <root>/.grove <root>/x\nkeep\n"
     @test Conformance.normalize_text(got, paths, tokens) == got
 end
