@@ -47,8 +47,9 @@ function normalize_text(s::AbstractString, paths, tokens)::String
         fwd == p || (s = replace(s, fwd => ph))
     end
     for (p, ph) in paths
-        s = replace(s, ph * "\\\\" => ph * "/")
-        s = replace(s, ph * "\\" => ph * "/")
+        esc = replace(ph, r"([.^$*+?()\[\]{}|])" => s"\\\1")
+        pat = Regex(esc * raw"[A-Za-z0-9_.:/\\-]+")
+        s = replace(s, pat => m -> replace(m, "\\\\" => "/", "\\" => "/"))
     end
     s = replace(s, r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z" => "<ts>")
     s = replace(s, r"sha256:[0-9a-f]{64}" => "sha256:<sha>")

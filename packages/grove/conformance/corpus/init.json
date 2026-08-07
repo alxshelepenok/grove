@@ -19,7 +19,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "lock already exists at <root>/.grove\\state.lock\n",
+      "stderr": "lock already exists at <root>/.grove/state.lock\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
       "journal": null
     },
