@@ -91,15 +91,16 @@ fn assert_step(sc: &serde_json::Value, i: usize, dir: &PathBuf) {
     let args = step_args(sc, i);
     let r = run_step(dir, &args);
     let root = dir.to_string_lossy().into_owned();
+    let norm = |s: String| common::normalize_path_suffixes(&s, &root);
     assert_eq!(r.code as i64, step_exit(sc, i), "{name} step {i} {args:?} exit");
     assert_eq!(
-        r.out,
-        step_field(sc, i, "stdout").replace("<root>", &root),
+        norm(r.out),
+        norm(step_field(sc, i, "stdout").replace("<root>", &root)),
         "{name} step {i} {args:?} stdout"
     );
     assert_eq!(
-        r.err,
-        step_field(sc, i, "stderr").replace("<root>", &root),
+        norm(r.err),
+        norm(step_field(sc, i, "stderr").replace("<root>", &root)),
         "{name} step {i} {args:?} stderr"
     );
     let want_lock = step_field(sc, i, "lock");
