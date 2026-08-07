@@ -32,6 +32,23 @@ pub fn scenario_len(sc: &serde_json::Value) -> usize {
     sc["steps"].as_array().unwrap().len()
 }
 
+pub fn normalize_path_suffixes(s: &str, ph: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let mut rest = s;
+    while let Some(idx) = rest.find(ph) {
+        let start = idx + ph.len();
+        let end = rest[start..]
+            .find(|c: char| !(c.is_ascii_alphanumeric() || "_.:/\\-".contains(c)))
+            .map(|d| start + d)
+            .unwrap_or(rest.len());
+        out.push_str(&rest[..start]);
+        out.push_str(&rest[start..end].replace("\\\\", "/").replace('\\', "/"));
+        rest = &rest[end..];
+    }
+    out.push_str(rest);
+    out
+}
+
 pub fn node(kind: Kind, id: &str) -> Node {
     Node::new(kind, id.to_string())
 }

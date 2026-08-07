@@ -190,23 +190,6 @@ fn strip_trailing_ws(s: &str) -> String {
         .join("\n")
 }
 
-fn normalize_path_suffixes(s: &str, ph: &str) -> String {
-    let mut out = String::with_capacity(s.len());
-    let mut rest = s;
-    while let Some(idx) = rest.find(ph) {
-        let start = idx + ph.len();
-        let end = rest[start..]
-            .find(|c: char| !(c.is_ascii_alphanumeric() || "_.:/\\-".contains(c)))
-            .map(|d| start + d)
-            .unwrap_or(rest.len());
-        out.push_str(&rest[..start]);
-        out.push_str(&rest[start..end].replace("\\\\", "/").replace('\\', "/"));
-        rest = &rest[end..];
-    }
-    out.push_str(rest);
-    out
-}
-
 fn normalize(s: &str, paths: &[(String, String)], tokens: &[String]) -> String {
     let mut s = s.replace("\r\n", "\n").replace('\r', "\n");
     for (p, ph) in paths {
@@ -219,7 +202,7 @@ fn normalize(s: &str, paths: &[(String, String)], tokens: &[String]) -> String {
         }
     }
     for (_, ph) in paths {
-        s = normalize_path_suffixes(&s, ph);
+        s = common::normalize_path_suffixes(&s, ph);
     }
     s = replace_ts(&s);
     s = replace_sha256_prefixed(&s);
@@ -406,7 +389,7 @@ fn replay(name: &str) {
         let norm_want = |s: String| -> String {
             let mut s = s;
             for (_, ph) in &paths {
-                s = normalize_path_suffixes(&s, ph);
+                s = common::normalize_path_suffixes(&s, ph);
             }
             s
         };
