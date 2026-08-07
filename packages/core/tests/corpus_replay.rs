@@ -190,6 +190,23 @@ fn strip_trailing_ws(s: &str) -> String {
         .join("\n")
 }
 
+fn normalize_path_suffixes(s: &str, ph: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let mut rest = s;
+    while let Some(idx) = rest.find(ph) {
+        let start = idx + ph.len();
+        let end = rest[start..]
+            .find(|c: char| !(c.is_ascii_alphanumeric() || "_.:/\\-".contains(c)))
+            .map(|d| start + d)
+            .unwrap_or(rest.len());
+        out.push_str(&rest[..start]);
+        out.push_str(&rest[start..end].replace("\\\\", "/").replace('\\', "/"));
+        rest = &rest[end..];
+    }
+    out.push_str(rest);
+    out
+}
+
 fn normalize(s: &str, paths: &[(String, String)], tokens: &[String]) -> String {
     let mut s = s.replace("\r\n", "\n").replace('\r', "\n");
     for (p, ph) in paths {
@@ -200,6 +217,9 @@ fn normalize(s: &str, paths: &[(String, String)], tokens: &[String]) -> String {
         if fwd != *p {
             s = s.replace(&fwd, ph);
         }
+    }
+    for (_, ph) in paths {
+        s = normalize_path_suffixes(&s, ph);
     }
     s = replace_ts(&s);
     s = replace_sha256_prefixed(&s);
@@ -383,31 +403,38 @@ fn replay(name: &str) {
             let r = run_cli(&args);
             (r.code, r.out, r.err)
         };
+        let norm_want = |s: String| -> String {
+            let mut s = s;
+            for (_, ph) in &paths {
+                s = normalize_path_suffixes(&s, ph);
+            }
+            s
+        };
         let want_exit = common::step_exit(&sc, i);
         assert_eq!(
             code as i64, want_exit,
             "scenario {name} step {i} exit: expected {want_exit} got {code} args={}",
             raw.join(" ")
         );
-        let want_out = common::step_field(&sc, i, "stdout");
+        let want_out = norm_want(common::step_field(&sc, i, "stdout"));
         let got_out = normalize(&out, &paths, &tokens);
         if got_out != want_out {
             print_drift(name, i, &raw, "stdout", &want_out, &got_out);
             panic!("drift in scenario {name} step {i} stdout");
         }
-        let want_err = common::step_field(&sc, i, "stderr");
+        let want_err = norm_want(common::step_field(&sc, i, "stderr"));
         let got_err = normalize(&err, &paths, &tokens);
         if got_err != want_err {
             print_drift(name, i, &raw, "stderr", &want_err, &got_err);
             panic!("drift in scenario {name} step {i} stderr");
         }
-        let want_lock = common::step_field(&sc, i, "lock");
+        let want_lock = norm_want(common::step_field(&sc, i, "lock"));
         let got_lock = read_norm(&target.join(".grove").join("state.lock"), &paths, &tokens);
         if got_lock != want_lock {
             print_drift(name, i, &raw, "lock", &want_lock, &got_lock);
             panic!("drift in scenario {name} step {i} lock");
         }
-        let want_journal = common::step_field(&sc, i, "journal");
+        let want_journal = norm_want(common::step_field(&sc, i, "journal"));
         let got_journal = read_norm(&target.join(".grove").join("journal.log"), &paths, &tokens);
         if got_journal != want_journal {
             print_drift(name, i, &raw, "journal", &want_journal, &got_journal);
