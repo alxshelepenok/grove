@@ -9,7 +9,7 @@
 
 <p>
   <a href="https://notebook.google.com/notebook/434f3efc-c199-4b7e-ac61-92fbd85d655e"><img src="https://img.shields.io/badge/Notebook-q/a-8A2BE2?style=for-the-badge" alt="Notebook" /></a>
-  <a href="docs/install.md#verify-before-you-run"><img src="https://img.shields.io/badge/signed_releases-RSA--PSS-8A2BE2?style=for-the-badge" alt="Signed releases" /></a>
+  <a href="docs/install.md#verify-before-you-run"><img src="https://img.shields.io/badge/signing-RSA--PSS-8A2BE2?style=for-the-badge" alt="Release signing" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/open%20source-AGPL_3.0-8A2BE2?style=for-the-badge" alt="AGPL 3.0 license" /></a>
   <a href="https://github.com/alxshelepenok/grove/actions/workflows/rust-tests.yml"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Falxshelepenok%2Fgrove%2Fbadges%2F.github%2Fbadges%2Ftests.json&style=for-the-badge" alt="Tests" /></a>
   <a href="packages/grove/conformance"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Falxshelepenok%2Fgrove%2Fbadges%2F.github%2Fbadges%2Fconformance.json&style=for-the-badge" alt="Conformance" /></a>
@@ -19,7 +19,7 @@
 
 Grove turns your product into a hierarchy (areas, goals, tasks) kept in a living project memory the agent must follow: decisions with their reasoning, and a map of what depends on what before anything changes. No re-explaining the project, no unprepared starts, and every "done" comes with proof attached.
 
-Curious before scrolling? The [NotebookLM notebook](https://notebook.google.com/notebook/434f3efc-c199-4b7e-ac61-92fbd85d655e) holds the full documentation - start with a simple question, like *"How does Grove stop an agent from marking work done without evidence?"* or *"When is Grove the wrong tool for my project?"*
+Curious before scrolling? The [Gemini Notebook](https://notebook.google.com/notebook/434f3efc-c199-4b7e-ac61-92fbd85d655e) holds the full documentation - start with a simple question, like *"How does Grove stop an agent from marking work done without evidence?"* or *"When is Grove the wrong tool for my project?"*
 
 <p align="center">
   <picture>
