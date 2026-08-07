@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/alxshelepenok/grove/blob/main/docs/security/artifacts/schemas/vex.schema.json",
+  "title": "Grove VEX document (CycloneDX 1.6 VEX subset)",
+  "type": "object",
+  "required": ["bomFormat", "specVersion", "version", "vulnerabilities"],
+  "additionalProperties": false,
+  "properties": {
+    "bomFormat": { "const": "CycloneDX" },
+    "specVersion": { "const": "1.6" },
+    "version": { "type": "integer", "minimum": 1 },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "vulnerabilities": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/statement" }
+    }
+  },
+  "definitions": {
+    "statement": {
+      "type": "object",
+      "required": ["id", "affects", "analysis"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "CVE, GHSA, JLSEC, or RUSTSEC identifier",
+          "pattern": "^(CVE-\\d{4}-\\d{4,}|GHSA-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}|JLSEC-\\d{4}-\\d+|RUSTSEC-\\d{4}-\\d{4,})$"
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string" },
+            "url": { "type": "string", "format": "uri" }
+          }
+        },
+        "affects": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["ref"],
+            "additionalProperties": false,
+            "properties": {
+              "ref": {
+                "type": "string",
+                "description": "BOM ref of the affected component, e.g. pkg:cargo/sha2@0.10.8 or pkg:julia/JSON@0.21.4"
+              }
+            }
+          }
+        },
+        "analysis": {
+          "type": "object",
+          "required": ["state"],
+          "additionalProperties": false,
+          "properties": {
+            "state": {
+              "enum": ["affected", "not_affected", "fixed", "under_investigation"]
+            },
+            "justification": {
+              "enum": [
+                "code_not_present",
+                "code_not_reachable",
+                "requires_configuration",
+                "requires_dependency",
+                "requires_environment",
+                "protected_by_compiler",
+                "protected_at_runtime",
+                "protected_at_perimeter",
+                "protected_by_mitigating_control"
+              ]
+            },
+            "detail": { "type": "string", "minLength": 1 },
+            "firstIssued": { "type": "string", "format": "date-time" },
+            "lastUpdated": { "type": "string", "format": "date-time" }
+          },
+          "if": {
+            "properties": { "state": { "const": "not_affected" } }
+          },
+          "then": {
+            "anyOf": [
+              { "required": ["justification"] },
+              { "required": ["detail"] }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

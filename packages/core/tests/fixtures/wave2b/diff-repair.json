@@ -1,0 +1,232 @@
+{
+  "name": "diff-repair",
+  "steps": [
+    {
+      "args": [
+        "!git",
+        "init",
+        "-q"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": null,
+      "journal": null
+    },
+    {
+      "args": [
+        "!write",
+        "a.txt",
+        "a"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": null,
+      "journal": null
+    },
+    {
+      "args": [
+        "!git",
+        "add",
+        "a.txt"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": null,
+      "journal": null
+    },
+    {
+      "args": [
+        "!git",
+        "-c",
+        "user.email=t@example.com",
+        "-c",
+        "user.name=t",
+        "commit",
+        "-q",
+        "-m",
+        "scaffold"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": null,
+      "journal": null
+    },
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "a",
+        "--title=Area",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "A-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--title=Work",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "!git",
+        "add",
+        ".grove"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "!git",
+        "-c",
+        "user.email=t@example.com",
+        "-c",
+        "user.name=t",
+        "commit",
+        "-q",
+        "-m",
+        "grove state"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "q",
+        "--cynefin=clear",
+        "--targets=W-01",
+        "--title=Quest",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "Q-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Quest\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "W-01",
+        "status=ready",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=ready cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Quest\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    },
+    {
+      "args": [
+        "diff"
+      ],
+      "exit": 0,
+      "stdout": "# grove diff (ref -> worktree)\n\nbaseline: `HEAD`\n\n## W\n### changed (~)\n~ W-01\n  header: w W-01 proposed feature -> w W-01 ready feature\n  attrs: changed\n\n## Q\n### added (+)\n+ q Q-01 open clear  Quest\n\n## EDGES\n+ e Q-01 asks W-01\n\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=ready cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Quest\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    },
+    {
+      "args": [
+        "diff",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "{\"nodes\":{\"w\":{\"removed\":[],\"changed\":[{\"id\":\"W-01\",\"detail_lines\":[\"  header: w W-01 proposed feature -> w W-01 ready feature\",\"  attrs: changed\"]}],\"added\":[]},\"q\":{\"removed\":[],\"changed\":[],\"added\":[{\"header\":\"q Q-01 open clear\",\"id\":\"Q-01\",\"title\":\"Quest\"}]}},\"command\":\"diff\",\"semantic_change\":true,\"since\":\"HEAD\",\"edges\":{\"removed\":[],\"added\":[{\"label\":\"asks\",\"to\":\"W-01\",\"from\":\"Q-01\"}]}}\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=ready cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Quest\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    },
+    {
+      "args": [
+        "!append",
+        ".grove/state.lock",
+        "q Q-99 status=open cynefin=clear \"Corrupt\""
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=ready cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Quest\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne Q-01 asks W-01 t_created=<ts>\nq Q-99 status=open cynefin=clear \"Corrupt\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    },
+    {
+      "args": [
+        "repair"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "refusing without --confirm\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=ready cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Quest\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne Q-01 asks W-01 t_created=<ts>\nq Q-99 status=open cynefin=clear \"Corrupt\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    },
+    {
+      "args": [
+        "repair",
+        "--confirm"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "repaired: <root>\\.grove\\state.lock\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=ready cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Quest\"\n\nq Q-99 status=open cynefin=clear \"Corrupt\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=ready cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Quest\"\n\nq Q-99 status=open cynefin=clear \"Corrupt\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    },
+    {
+      "args": [
+        "show",
+        "Q-99"
+      ],
+      "exit": 0,
+      "stdout": "q Q-99 status=open cynefin=clear \"Corrupt\"\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=ready cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Quest\"\n\nq Q-99 status=open cynefin=clear \"Corrupt\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"had_session_at_before\":false,\"old_w_status\":\"proposed\",\"had_session_before\":false,\"id\":\"W-01\",\"op\":\"set_w_status_with_goals\",\"goal_statuses\":{},\"old_session_at\":\"\",\"old_session\":\"\"}}\n"
+    }
+  ]
+}

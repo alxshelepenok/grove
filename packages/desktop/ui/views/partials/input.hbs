@@ -1,0 +1,17 @@
+<div class="input-field{{#if class}} {{class}}{{/if}}{{#if error}} has-error{{/if}}">
+  {{#if label}}
+  <div class="input-field-label-row">
+    <span class="input-field-label-group">
+      <label class="input-field-label text-ellipsis" for="{{id}}"{{#if labelId}} id="{{labelId}}"{{/if}}>{{label}}</label>
+      {{#if hint}}
+      <span class="tooltip input-field-info">{{icon "information-circle" size=13 class="input-field-info-icon"}}<span class="tooltip-bubble" role="tooltip">{{hint}}</span></span>
+      {{/if}}
+    </span>
+    {{#if badge}}{{> badge text=badge variant=badgeVariant}}{{/if}}
+  </div>
+  {{/if}}
+  {{> @partial-block}}
+  {{#if error}}
+  <p class="input-field-error">{{error}}</p>
+  {{/if}}
+</div>

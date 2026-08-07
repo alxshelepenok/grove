@@ -1,0 +1,73 @@
+{
+  "name": "init",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "lock already exists at <root>\\.grove\\state.lock\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "@2",
+        "init",
+        "--quiet",
+        "--id-stride=4",
+        "--id-offset=1"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n# @grove-id stride=4 offset=1 pad=3\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "@2",
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--title=First",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-001\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n# @grove-id stride=4 offset=1 pad=3\n\nw W-001 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"First\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-001\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "@2",
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--title=Second",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-005\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n# @grove-id stride=4 offset=1 pad=3\n\nw W-001 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"First\"\n\nw W-005 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Second\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-001\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-005\",\"op\":\"rm_node\"}}\n"
+    }
+  ]
+}

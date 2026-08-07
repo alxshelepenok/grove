@@ -1,0 +1,9 @@
+:disabled,
+:disabled + label,
+input[readonly],
+input[readonly] + label,
+.disabled,
+.disabled + label {
+  color: var(--wv-color-text-disabled);
+  cursor: not-allowed;
+}

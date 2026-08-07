@@ -1,0 +1,44 @@
+<section class="view view-goals">
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Goals</h1>
+      <p class="page-description">Track fitness progress across all goals.</p>
+    </div>
+  </div>
+  {{#if empty}}
+    {{> empty-state icon="ghost" title="No goals" description="The lock has no goal nodes yet."}}
+  {{else}}
+    <div class="sunken-panel">
+      <table class="goals-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Status</th>
+            <th class="col-fitness">Fitness</th>
+            <th>Work</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each goals}}
+          <tr>
+            <td><span class="text-mono">{{id}}</span></td>
+            <td class="cell-title">{{title}}</td>
+            <td>{{> badge text=status class="capitalize" variant=status_variant}}</td>
+            <td class="cell-fitness">
+              {{#if has_bar}}
+                <span class="fitness-bar"><span class="fitness-bar-fill" style="width: {{percent}}%;"></span></span>
+                <span class="text-muted text-xs fitness-label text-mono word-spacing-tight">{{fitness_label}}</span>
+              {{else}}
+                <span class="text-muted text-xs text-mono word-spacing-tight">{{fitness_label}}</span>
+              {{/if}}
+            </td>
+            <td class="cell-works">{{works}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  {{/if}}
+  {{> add-modal}}
+</section>

@@ -1,0 +1,17 @@
+<div id="{{prefix}}-resume-banner" {{#unless activeSession.active}}hidden{{/unless}}>
+  {{#> alert variant="accent" icon="repeat" class="mb-12"}}
+    <div class="alert-row">
+      <span id="{{prefix}}-resume-text" class="alert-title">
+        {{#if activeSession.active}}
+          {{#if (eq activeSession.operation "collect")}}Collecting{{else}}{{activeText}}{{/if}}: {{activeSession.snapshot.current}}/{{activeSession.snapshot.total}}
+        {{else}}
+          {{inactiveText}}
+        {{/if}}
+      </span>
+      <span class="alert-actions">
+        {{#> button id=(concat prefix "-resume-view") variant="gradient"}}View progress{{/button}}
+        {{#> button id=(concat prefix "-resume-cancel") variant="gradient"}}Cancel{{/button}}
+      </span>
+    </div>
+  {{/alert}}
+</div>

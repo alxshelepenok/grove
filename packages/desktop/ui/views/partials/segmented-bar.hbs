@@ -1,0 +1,23 @@
+<div class="segmented-bar{{#if class}} {{class}}{{/if}}"{{#if id}} id="{{id}}"{{/if}}{{#if max}} data-segmented-bar-max="{{max}}"{{/if}}>
+  <div class="segmented-bar-legend">
+    {{#each segments}}
+      <span class="segmented-bar-legend-item">
+        <span class="segmented-bar-legend-swatch segmented-bar-c-{{variant}}"></span>
+        <span class="segmented-bar-legend-label">{{label}}</span>
+        <span class="segmented-bar-legend-value">{{valueText}}</span>
+      </span>
+    {{/each}}
+    {{#if free}}
+      <span class="segmented-bar-legend-item">
+        <span class="segmented-bar-legend-swatch segmented-bar-c-track"></span>
+        <span class="segmented-bar-legend-label">{{free.label}}</span>
+        <span class="segmented-bar-legend-value">{{free.valueText}}</span>
+      </span>
+    {{/if}}
+  </div>
+  <div class="segmented-bar-track" aria-hidden="true">
+    {{#each segments}}
+      {{#if widthPct}}<div class="segmented-bar-segment segmented-bar-c-{{variant}}" style="width: {{widthPct}}%" title="{{title}}"></div>{{/if}}
+    {{/each}}
+  </div>
+</div>

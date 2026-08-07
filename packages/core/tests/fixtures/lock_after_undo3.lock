@@ -1,0 +1,65 @@
+@grove 1
+# AUTO-GENERATED. Do not edit. Use `grove` CLI.
+# checksum: sha256:7f935a32e5457efd3dbb704e5054b781b949314462f822f2ec9d12170ff8272f
+g G-01 status=verified fitness_kind=count t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Goal one"
+  area: A-01
+  fitness_target: 1
+  fitness_current: 3
+
+g G-02 status=declined fitness=1/2 fitness_kind=ratio requires_coverage=true t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Goal two"
+  area: A-01
+  fitness_current: 0
+
+w W-01 type=feature status=done cynefin=complicated t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Work One Renamed"
+  goals: G-01, G-02
+  theme: T-01
+  fitness: G-01=+3, G-02=+0
+  ac:
+    | ac again
+  hypothesis:
+    | it works
+  evidence_strategy:
+    | run tests
+  evidence:
+    | did the thing
+    | verified W-01 behavior
+
+w W-05 type=feature status=proposed cynefin=complicated t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Work two"
+
+w W-06 type=feature status=progress cynefin=complicated session=testsession session_at=2031-01-01T00:00:00Z t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Work three"
+  goals: G-01
+  fitness: G-01=+1
+  ac:
+    | ac3
+  hypothesis:
+    | h3
+  evidence_strategy:
+    | es3
+
+d D-01 status=proposed t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Decision one"
+
+d D-02 status=proposed t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Decision two"
+
+q Q-01 status=answered cynefin=complicated t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Question one"
+
+b B-01 status=validated cynefin=complicated t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Bet one"
+
+t T-01 status=done t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Theme one"
+
+y Y-01 status=proposed t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Discovery one"
+  tags: term-two
+  surface: src/x.jl
+
+y Y-02 status=proposed t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Discovery two"
+  tags: term-five, term-four
+  why:
+    | because reasons
+
+a A-01 status=present t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Area One"
+
+e B-01 targets W-01 t_created=2031-01-01T00:00:00Z
+e B-01 tests Q-01 t_created=2031-01-01T00:00:00Z
+e D-02 supersedes D-01 t_created=2031-01-01T00:00:00Z
+e Q-01 asks W-01 t_created=2031-01-01T00:00:00Z
+e W-01 produces Y-01 t_created=2031-01-01T00:00:00Z
+e Y-02 distills D-01 t_created=2031-01-01T00:00:00Z

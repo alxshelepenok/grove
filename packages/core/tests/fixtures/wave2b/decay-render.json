@@ -1,0 +1,135 @@
+{
+  "name": "decay-render",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!write",
+        "src/live.jl"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!write",
+        "src/dead.jl"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!append",
+        ".grove/glossary.md",
+        "| auth | a term | test |"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "d",
+        "--title=Dec",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "D-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Dec\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "y",
+        "--title=Note",
+        "--tags=auth,lost",
+        "--surface=src/dead.jl,src/live.jl",
+        "--from=D-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "Y-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Dec\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth, lost\n  surface: src/dead.jl, src/live.jl\n\ne Y-01 distills D-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "Y-01",
+        "status=active",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Dec\"\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth, lost\n  surface: src/dead.jl, src/live.jl\n\ne Y-01 distills D-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "!rm",
+        "src/dead.jl"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Dec\"\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth, lost\n  surface: src/dead.jl, src/live.jl\n\ne Y-01 distills D-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "check"
+      ],
+      "exit": 3,
+      "stdout": "",
+      "stderr": "decay: Y-01 dead surface: src/dead.jl\ndecay: Y-01 lost glossary term: lost\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Dec\"\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth, lost\n  surface: src/dead.jl, src/live.jl\n\ne Y-01 distills D-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "render",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Dec\"\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth, lost\n  surface: src/dead.jl, src/live.jl\n\ne Y-01 distills D-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "!cat",
+        ".grove/index.md"
+      ],
+      "exit": 0,
+      "stdout": "<!-- AUTO-GENERATED by grove. Do not edit. Run `grove render` to refresh. -->\n\n# Development dashboard\n\n## Content health\n\n| Measure | Count | Composition |\n| --- | --- | --- |\n| C (content) | 1 | validated B 0 · answered Q 0 · accepted D 0 · active Discovery 1 |\n| V (uncertainty) | 0 | open Q 0 · pending B 0 · W below DoR 0 |\n| Decay | 1 | Discovery with decay signals |\n\n## Decisions\n\n| ID | Title | Status | Supersedes |\n| --- | --- | --- | --- |\n| D-01 | Dec | proposed |  |\n\n## Discoveries\n\n| ID | Title | Tags | Status |\n| --- | --- | --- | --- |\n| Y-01 | Note | auth, lost | active |\n\n## Dependency graph\n\n```mermaid\ngraph TD\n  D_01[\"D-01: Dec\"]:::decision\n  Y_01[\"Y-01: Note\"]:::discovery\n  Y_01 -->|distills| D_01\nclassDef area fill:#5a1e4a,color:#fff\nclassDef goal fill:#1e3a5f,color:#fff\nclassDef theme fill:#2a4a3a,color:#fff\nclassDef decision fill:#5a4a1e,color:#fff\nclassDef question fill:#5a3a1e,color:#fff\nclassDef assumption fill:#4a2d5a,color:#fff\nclassDef spike fill:#3a3a5a,color:#fff\nclassDef feature fill:#1e4a4a,color:#fff\nclassDef ready fill:#2d5a27,color:#fff\nclassDef progress fill:#3a4a6a,color:#fff,stroke:#fff,stroke-width:2px\nclassDef done fill:#2d5a27,color:#fff,stroke:#fff,stroke-width:2px\nclassDef rejected fill:#5a5a5a,color:#fff\nclassDef discovery fill:#1f4e5f,color:#fff\nclassDef critical stroke:#ff0,stroke-width:3px\n```\n\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Dec\"\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth, lost\n  surface: src/dead.jl, src/live.jl\n\ne Y-01 distills D-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    }
+  ]
+}

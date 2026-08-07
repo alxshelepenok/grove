@@ -1,0 +1,154 @@
+button,
+input[type="submit"],
+input[type="reset"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--wv-space-1\.5);
+  box-sizing: border-box;
+  background: transparent;
+  color: var(--wv-color-text-primary);
+  border: 1px solid var(--wv-color-border);
+  border-radius: var(--wv-radius-md);
+  min-width: 0;
+  min-height: 28px;
+  padding: 5px 12px;
+  white-space: nowrap;
+  font-family: var(--wv-font-sans);
+  font-size: var(--wv-font-size-sm);
+  cursor: pointer;
+  transition: background var(--wv-transition-fast), border-color var(--wv-transition-fast), color var(--wv-transition-fast);
+  text-shadow: none;
+  box-shadow: none;
+  line-height: 1.4;
+}
+
+button.default,
+input[type="submit"].default,
+input[type="reset"].default,
+button.pinned {
+  background: var(--wv-color-primary);
+  color: var(--wv-color-on-accent);
+  border-color: var(--wv-color-primary);
+  box-shadow: none;
+}
+
+button:not(:disabled):hover,
+input[type="submit"]:not(:disabled):hover,
+input[type="reset"]:not(:disabled):hover {
+  background: var(--wv-color-bg-elevated);
+  border-color: var(--wv-color-border-strong);
+  box-shadow: none;
+}
+
+button.default:not(:disabled):hover,
+input[type="submit"].default:not(:disabled):hover,
+input[type="reset"].default:not(:disabled):hover,
+button.pinned:not(:disabled):hover {
+  background: var(--wv-color-primary-strong);
+  color: var(--wv-color-on-accent);
+  border-color: var(--wv-color-primary-strong);
+}
+
+button:not(:disabled):active,
+input[type="submit"]:not(:disabled):active,
+input[type="reset"]:not(:disabled):active {
+  background: var(--wv-color-bg-recessed);
+  box-shadow: none;
+  text-shadow: none;
+}
+
+button.default:not(:disabled):active,
+input[type="submit"].default:not(:disabled):active,
+input[type="reset"].default:not(:disabled):active,
+button.pinned:not(:disabled):active {
+  background: var(--wv-color-primary-deep);
+  color: var(--wv-color-on-accent);
+  border-color: var(--wv-color-primary-deep);
+  box-shadow: none;
+}
+
+button:disabled,
+input[type="submit"]:disabled,
+input[type="reset"]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-shadow: none;
+  color: var(--wv-color-text-disabled);
+  background: var(--wv-color-bg-recessed);
+  border-color: var(--wv-color-border-subtle);
+}
+
+button.gradient {
+  --gradient-border: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--wv-color-text-primary) 10%, transparent),
+    color-mix(in srgb, var(--wv-color-text-primary) 20%, transparent)
+  );
+
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 1px;
+  border: none;
+  border-radius: var(--wv-radius-lg);
+  outline: none;
+  box-shadow: var(--wv-shadow-sm);
+  background-color: transparent;
+  background-image: var(--gradient-border);
+}
+
+button.gradient > .gradient-inner {
+  flex: 1 1 auto;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--wv-space-1\.5);
+  min-width: 0;
+  padding: 4px 11px;
+  border-radius: calc(var(--wv-radius-lg) - 1px);
+  background: var(--wv-color-bg-elevated);
+  color: var(--wv-color-text-primary);
+  font-weight: 400;
+}
+
+button.gradient > .gradient-inner > .icon {
+  color: var(--wv-color-text-tertiary);
+}
+
+button.gradient:not(:disabled):hover,
+button.gradient:not(:disabled):focus-visible {
+  background-color: color-mix(in srgb, var(--wv-color-text-primary) 15%, transparent);
+  background-image: var(--gradient-border);
+}
+
+button.gradient:not(:disabled):active {
+  background-color: color-mix(in srgb, var(--wv-color-text-primary) 20%, transparent);
+  background-image: var(--gradient-border);
+}
+
+button.icon-btn {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  justify-content: center;
+  flex: none;
+}
+
+button.icon-ghost {
+  border-color: transparent;
+  color: var(--wv-color-text-tertiary);
+}
+
+button.icon-ghost:not(:disabled):hover {
+  background: var(--wv-color-bg-elevated);
+  border-color: transparent;
+  color: var(--wv-color-text-primary);
+}
+
+button.icon-ghost:not(:disabled):active {
+  background: var(--wv-color-bg-recessed);
+  border-color: transparent;
+}

@@ -1,0 +1,11 @@
+<section class="view view-project">
+  <div class="empty-state">
+    {{icon "ghost" size=48 class="empty-state-icon"}}
+    <p class="empty-state-title">No project selected</p>
+    <p class="empty-state-description">Open an existing project or create a new one to get started.</p>
+    <div class="empty-state-actions">
+      {{#> button variant="primary" dataAction="project-picker" dataMode="open"}}Open project{{/button}}
+      {{#> button dataAction="project-picker" dataMode="create"}}Create project{{/button}}
+    </div>
+  </div>
+</section>

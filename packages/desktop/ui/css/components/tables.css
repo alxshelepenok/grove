@@ -1,0 +1,109 @@
+.sunken-panel {
+  box-sizing: border-box;
+  width: 100%;
+  max-height: 100vh;
+  border: 1px solid var(--wv-color-border-subtle);
+  border-radius: var(--wv-radius-md);
+  overflow: auto;
+}
+
+table {
+  border-collapse: collapse;
+  position: relative;
+  width: 100%;
+  text-align: left;
+  white-space: nowrap;
+  background: transparent;
+}
+
+table > thead > tr > * {
+  position: sticky;
+  top: 0;
+  z-index: var(--wv-z-sticky);
+  background: var(--wv-color-bg-surface);
+  box-sizing: border-box;
+  font-weight: 400;
+  padding: 8px 12px;
+  font-size: var(--wv-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--wv-color-text-tertiary);
+  border-bottom: 1px solid var(--wv-color-border);
+  height: auto;
+  box-shadow: none;
+}
+
+table > thead > tr > th:last-child {
+  text-align: right;
+}
+
+table.interactive > tbody > tr {
+  cursor: pointer;
+}
+
+table.interactive > tbody > tr:hover {
+  background: var(--wv-color-neutral-tag-bg);
+}
+
+table > tbody > tr.highlighted {
+  color: var(--wv-color-text-primary);
+  background: var(--wv-color-accent-bg);
+}
+
+table > tbody > tr > * {
+  padding: 8px 12px;
+  height: auto;
+  border-bottom: 1px solid var(--wv-color-border-subtle);
+  color: var(--wv-color-text-primary);
+  font-size: var(--wv-font-size-base);
+}
+
+table > tbody > tr:last-child > * {
+  border-bottom: none;
+}
+
+table > tbody > tr > td:last-child:not(:first-child) {
+  text-align: right;
+}
+
+.info-table {
+  white-space: normal;
+}
+
+.info-table code {
+  word-break: break-all;
+}
+
+table > thead > tr > th.cell-select,
+table > tbody > tr > td.cell-select {
+  width: 90px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+td.cell-select > label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+
+td.cell-select input[type="checkbox"] {
+  vertical-align: 0;
+}
+
+#wallets-table td:last-child {
+  white-space: nowrap;
+}
+
+#wallets-table td:last-child button + button {
+  margin-left: var(--wv-space-1);
+}
+
+.work-table .cell-title,
+.goals-table .cell-title {
+  white-space: normal;
+  min-width: 280px;
+}

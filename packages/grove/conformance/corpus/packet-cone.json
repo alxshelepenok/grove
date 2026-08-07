@@ -1,0 +1,268 @@
+{
+  "name": "packet-cone",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!write",
+        "src/x.jl"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!append",
+        ".grove/glossary.md",
+        "| auth | a term | test |"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "a",
+        "--title=Area",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "A-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Reliable auth",
+        "--fitness=5/5 flows",
+        "--area=A-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "G-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--goals=G-01",
+        "--title=Auth schema",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--goals=G-01",
+        "--title=Token store",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-02\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--goals=G-01",
+        "--title=Login flow",
+        "--surface=src/x.jl",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-03\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login flow\"\n  goals: G-01\n  surface: src/x.jl\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=feature",
+        "--cynefin=clear",
+        "--goals=G-01",
+        "--title=SSO login",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-04\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login flow\"\n  goals: G-01\n  surface: src/x.jl\n\nw W-04 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"SSO login\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-04\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "link",
+        "W-01",
+        "blocks",
+        "W-03",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login flow\"\n  goals: G-01\n  surface: src/x.jl\n\nw W-04 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"SSO login\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-03 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-04\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n"
+    },
+    {
+      "args": [
+        "link",
+        "W-02",
+        "blocks",
+        "W-03",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login flow\"\n  goals: G-01\n  surface: src/x.jl\n\nw W-04 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"SSO login\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-03 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-04\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n"
+    },
+    {
+      "args": [
+        "link",
+        "W-03",
+        "blocks",
+        "W-04",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login flow\"\n  goals: G-01\n  surface: src/x.jl\n\nw W-04 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"SSO login\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-03 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\ne W-03 blocks W-04 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-04\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-04\",\"op\":\"unlink_edge\",\"from\":\"W-03\"}}\n"
+    },
+    {
+      "args": [
+        "link",
+        "G-01",
+        "blocks",
+        "W-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login flow\"\n  goals: G-01\n  surface: src/x.jl\n\nw W-04 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"SSO login\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne G-01 blocks W-01 t_created=<ts>\ne W-01 blocks W-03 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\ne W-03 blocks W-04 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-04\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-04\",\"op\":\"unlink_edge\",\"from\":\"W-03\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-01\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n"
+    },
+    {
+      "args": [
+        "link",
+        "G-01",
+        "blocks",
+        "W-02",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login flow\"\n  goals: G-01\n  surface: src/x.jl\n\nw W-04 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"SSO login\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne G-01 blocks W-01 t_created=<ts>\ne G-01 blocks W-02 t_created=<ts>\ne W-01 blocks W-03 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\ne W-03 blocks W-04 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-04\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-04\",\"op\":\"unlink_edge\",\"from\":\"W-03\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-01\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "y",
+        "--title=Note",
+        "--tags=auth",
+        "--surface=src/x.jl",
+        "--from=W-03",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "Y-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login flow\"\n  goals: G-01\n  surface: src/x.jl\n\nw W-04 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"SSO login\"\n  goals: G-01\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth\n  surface: src/x.jl\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne G-01 blocks W-01 t_created=<ts>\ne G-01 blocks W-02 t_created=<ts>\ne W-01 blocks W-03 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\ne W-03 blocks W-04 t_created=<ts>\ne W-03 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-04\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-04\",\"op\":\"unlink_edge\",\"from\":\"W-03\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-01\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "Y-01",
+        "status=active",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login flow\"\n  goals: G-01\n  surface: src/x.jl\n\nw W-04 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"SSO login\"\n  goals: G-01\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth\n  surface: src/x.jl\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne G-01 blocks W-01 t_created=<ts>\ne G-01 blocks W-02 t_created=<ts>\ne W-01 blocks W-03 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\ne W-03 blocks W-04 t_created=<ts>\ne W-03 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-04\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-04\",\"op\":\"unlink_edge\",\"from\":\"W-03\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-01\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "packet",
+        "W-03",
+        "--cone"
+      ],
+      "exit": 0,
+      "stdout": "# Execution packet: W-03 (Login flow)\n\ntype=feature  status=proposed  cynefin=clear\n\n**Goals:** G-01\n\n## Definition of Ready\n\n- ⊤  goals(w) ≠ ∅ (G-01).\n- ⊥  AC(w) ≠ ∅ (0 entries).\n- ⊤  ∀ q ∈ asks(w), q terminal.\n- ⊤  BChain validated.\n- ⊥  fitness deltas set ∀ g.\n- ⊥  evidence_strategy ≠ ∅ (0 entries).\n- ⊥  hypothesis ≠ ⊥.\n- ⊤  repro(w) ≠ ∅ ((non-bug)).\n- ⊤  exit(w) ≠ ∅ ((non-spike)).\n- ⊤  (A, causes, w) via materialised A ((non-refactor)).\n- ⊤  cynefin ≠ chaotic (clear).\n- ⊤  coverage(w) ≥ θ ((coverage not required)).\n\n**result: ⊥**\n\n## Contraction order\n\n1. G-01  unverified  Reliable auth\n2. W-01  proposed  Auth schema\n3. W-02  proposed  Token store\n\n## Forward cone (impact)\n\n- W-04  proposed  SSO login\n\n## Fragility\n\n- G-01: 2 disjoint blocks-paths\n\n## Relevant discoveries\n\n- Y-01  Note\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login flow\"\n  goals: G-01\n  surface: src/x.jl\n\nw W-04 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"SSO login\"\n  goals: G-01\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth\n  surface: src/x.jl\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne G-01 blocks W-01 t_created=<ts>\ne G-01 blocks W-02 t_created=<ts>\ne W-01 blocks W-03 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\ne W-03 blocks W-04 t_created=<ts>\ne W-03 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-04\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-04\",\"op\":\"unlink_edge\",\"from\":\"W-03\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-01\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "packet",
+        "W-04",
+        "--cone"
+      ],
+      "exit": 0,
+      "stdout": "# Execution packet: W-04 (SSO login)\n\ntype=feature  status=proposed  cynefin=clear\n\n**Goals:** G-01\n\n## Definition of Ready\n\n- ⊤  goals(w) ≠ ∅ (G-01).\n- ⊥  AC(w) ≠ ∅ (0 entries).\n- ⊤  ∀ q ∈ asks(w), q terminal.\n- ⊤  BChain validated.\n- ⊥  fitness deltas set ∀ g.\n- ⊥  evidence_strategy ≠ ∅ (0 entries).\n- ⊥  hypothesis ≠ ⊥.\n- ⊤  repro(w) ≠ ∅ ((non-bug)).\n- ⊤  exit(w) ≠ ∅ ((non-spike)).\n- ⊤  (A, causes, w) via materialised A ((non-refactor)).\n- ⊤  cynefin ≠ chaotic (clear).\n- ⊤  coverage(w) ≥ θ ((coverage not required)).\n\n**result: ⊥**\n\n## Contraction order\n\n1. G-01  unverified  Reliable auth\n2. W-01  proposed  Auth schema\n3. W-02  proposed  Token store\n4. W-03  proposed  Login flow\n\n## Forward cone (impact)\n\n\n## Fragility\n\n- G-01: 1 (brittle)\n\n## Relevant discoveries\n\n- Y-01  Note\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login flow\"\n  goals: G-01\n  surface: src/x.jl\n\nw W-04 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"SSO login\"\n  goals: G-01\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth\n  surface: src/x.jl\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne G-01 blocks W-01 t_created=<ts>\ne G-01 blocks W-02 t_created=<ts>\ne W-01 blocks W-03 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\ne W-03 blocks W-04 t_created=<ts>\ne W-03 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-04\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-04\",\"op\":\"unlink_edge\",\"from\":\"W-03\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-01\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "packet",
+        "W-04",
+        "--cone",
+        "--cone-depth=1"
+      ],
+      "exit": 0,
+      "stdout": "# Execution packet: W-04 (SSO login)\n\ntype=feature  status=proposed  cynefin=clear\n\n**Goals:** G-01\n\n## Definition of Ready\n\n- ⊤  goals(w) ≠ ∅ (G-01).\n- ⊥  AC(w) ≠ ∅ (0 entries).\n- ⊤  ∀ q ∈ asks(w), q terminal.\n- ⊤  BChain validated.\n- ⊥  fitness deltas set ∀ g.\n- ⊥  evidence_strategy ≠ ∅ (0 entries).\n- ⊥  hypothesis ≠ ⊥.\n- ⊤  repro(w) ≠ ∅ ((non-bug)).\n- ⊤  exit(w) ≠ ∅ ((non-spike)).\n- ⊤  (A, causes, w) via materialised A ((non-refactor)).\n- ⊤  cynefin ≠ chaotic (clear).\n- ⊤  coverage(w) ≥ θ ((coverage not required)).\n\n**result: ⊥**\n\n## Contraction order\n\n1. W-03  proposed  Login flow\n\n## Forward cone (impact)\n\n\n## Fragility\n\n- G-01: 1 (brittle)\n\n## Relevant discoveries\n\n- Y-01  Note\n\n> cone truncated (depth=1, max=50)\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness=\"5/5 flows\" t_created=<ts> t_updated=<ts> \"Reliable auth\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Auth schema\"\n  goals: G-01\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Token store\"\n  goals: G-01\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Login flow\"\n  goals: G-01\n  surface: src/x.jl\n\nw W-04 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"SSO login\"\n  goals: G-01\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"Note\"\n  tags: auth\n  surface: src/x.jl\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne G-01 blocks W-01 t_created=<ts>\ne G-01 blocks W-02 t_created=<ts>\ne W-01 blocks W-03 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\ne W-03 blocks W-04 t_created=<ts>\ne W-03 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-04\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-04\",\"op\":\"unlink_edge\",\"from\":\"W-03\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-01\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"G-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    }
+  ]
+}

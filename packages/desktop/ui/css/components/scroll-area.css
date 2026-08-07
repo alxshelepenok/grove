@@ -1,0 +1,21 @@
+.scroll-area {
+  box-sizing: border-box;
+  width: 100%;
+  max-height: var(--wv-table-max-height, 100vh);
+  min-height: 0;
+  border: 1px solid var(--wv-color-border-subtle);
+  border-radius: var(--wv-radius-md);
+  overflow: auto;
+  overflow-anchor: none;
+}
+
+.scroll-area > table {
+  table-layout: fixed;
+  min-width: var(--wv-table-min-width, 0px);
+}
+
+.scroll-area > table th,
+.scroll-area > table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

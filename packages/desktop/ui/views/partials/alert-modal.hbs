@@ -1,0 +1,15 @@
+{{#> modal id="alert-modal" role="alertdialog" titleId="alert-modal-title" title="Something went wrong" windowClass="alert-modal-window" close=true closeId="alert-modal-close-x"}}
+  <div class="modal-body alert-modal-body">
+    <span id="alert-modal-icon" class="alert-modal-icon" aria-hidden="true"></span>
+    <template id="alert-modal-icon-error">{{icon "unavailable" size=48}}</template>
+    <template id="alert-modal-icon-warning">{{icon "alert" size=48}}</template>
+    <div class="alert-modal-content">
+      <p id="alert-modal-message" class="alert-modal-message"></p>
+      <input type="text" id="alert-modal-input" class="alert-modal-input" hidden>
+    </div>
+  </div>
+  <div class="modal-footer">
+    {{#> button id="alert-modal-cancel" variant="gradient" hidden=true}}Cancel{{/button}}
+    {{#> button id="alert-modal-ok" variant="primary"}}OK{{/button}}
+  </div>
+{{/modal}}

@@ -1,0 +1,72 @@
+<section class="view view-discovery">
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Discovery</h1>
+      <p class="page-description">Review the glossary and active discoveries.</p>
+    </div>
+  </div>
+  {{#if terms_empty}}
+  {{else}}
+    <div class="sunken-panel">
+      <table class="terms-table">
+        <thead>
+          <tr>
+            <th>Term</th>
+            <th>Definition</th>
+            <th>Source</th>
+            <th>C</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each terms}}
+          <tr>
+            <td class="cell-term">{{term}}</td>
+            <td class="cell-definition">{{definition}}</td>
+            <td class="text-mono text-muted">{{source}}</td>
+            <td class="cell-c" title="{{c_ids}}">{{c}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+    <p class="text-muted text-xs">{{c_rule}}. Unattributed qualifying records: {{unattributed}}{{#if unattributed}} ({{unattributed_ids}}){{/if}}.</p>
+  {{/if}}
+  {{#if discoveries_empty}}
+    {{> empty-state icon="ghost" title="No active discoveries" description="No discovery is active in the lock."}}
+  {{else}}
+    <div class="discovery-list">
+      {{#each discoveries}}
+      <div class="card discovery-card">
+        <div class="card-title flex-between">
+          <span>{{title}} <span class="text-mono text-muted">{{id}}</span></span>
+          {{> badge text=status variant=status_variant}}
+        </div>
+        <div class="discovery-tags">
+          {{#each tags}}<span class="badge badge-neutral">{{this}}</span>{{/each}}
+        </div>
+        {{#if invariant}}<p class="discovery-invariant">{{invariant}}</p>{{/if}}
+        {{#if has_surface}}
+          <ul class="surface-list">
+            {{#each surface}}<li class="text-mono">{{this}}</li>{{/each}}
+          </ul>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+  {{/if}}
+  {{#if has_inactive}}
+    <div class="card">
+      <div class="card-title">Proposed and stale Discoveries</div>
+      <ul class="cloud-list">
+        {{#each inactive_discoveries}}
+        <li class="cloud-item">
+          {{> badge text=status variant=status_variant}}
+          <span class="text-mono">{{id}}</span>
+          <span class="cloud-title">{{title}}</span>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+  {{/if}}
+  {{> add-modal}}
+</section>

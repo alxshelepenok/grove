@@ -1,0 +1,270 @@
+{
+  "name": "discovery-lifecycle",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!write",
+        "src/a.jl"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!write",
+        "src/b.jl"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!append",
+        ".grove/glossary.md",
+        "| auth | a term | test |"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=spike",
+        "--cynefin=clear",
+        "--title=Spike",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "y",
+        "--title=AuthNote",
+        "--tags=auth",
+        "--surface=src/a.jl",
+        "--from=W-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "Y-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/a.jl\n\ne W-01 produces Y-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "y",
+        "--title=Second",
+        "--tags=auth",
+        "--surface=src/b.jl",
+        "--from=W-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "Y-02\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/a.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "field",
+        "Y-02",
+        "tags",
+        "clear",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/a.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "Y-02",
+        "status=active",
+        "--quiet"
+      ],
+      "exit": 4,
+      "stdout": "",
+      "stderr": "y Y-02 anchors not satisfied (proposed → active refused):\n  I12: Y-02 has empty `tags` (≥1 glossary term required)\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/a.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n"
+    },
+    {
+      "args": [
+        "field",
+        "Y-02",
+        "tags",
+        "add",
+        "auth",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/a.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"op\":\"field_pop_last\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "Y-01",
+        "status=active",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/a.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/a.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "!rm",
+        "src/a.jl"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/a.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 3,
+      "stdout": "",
+      "stderr": "decay: Y-01 dead surface: src/a.jl\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/a.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "Y-01",
+        "status=stale",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=stale t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/a.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"active\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=stale t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/a.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"active\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "revalidate",
+        "Y-01",
+        "--surface=src/b.jl",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/b.jl\n  revalidation:\n    | <ts> surface=src/b.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"active\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"revalidate\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"stale\",\"old_surface\":[\"src/a.jl\"],\"id\":\"Y-01\",\"added_edges\":[],\"had_surface\":true,\"op\":\"revalidate_restore\"}}\n"
+    },
+    {
+      "args": [
+        "show",
+        "Y-01"
+      ],
+      "exit": 0,
+      "stdout": "y Y-01 status=active t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/b.jl\n  revalidation:\n    | <ts> surface=src/b.jl\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=active t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/b.jl\n  revalidation:\n    | <ts> surface=src/b.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"active\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"revalidate\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"stale\",\"old_surface\":[\"src/a.jl\"],\"id\":\"Y-01\",\"added_edges\":[],\"had_surface\":true,\"op\":\"revalidate_restore\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "Y-01",
+        "status=superseded",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=superseded t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/b.jl\n  revalidation:\n    | <ts> surface=src/b.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"active\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"revalidate\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"stale\",\"old_surface\":[\"src/a.jl\"],\"id\":\"Y-01\",\"added_edges\":[],\"had_surface\":true,\"op\":\"revalidate_restore\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"active\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "Y-01",
+        "status=active",
+        "--quiet"
+      ],
+      "exit": 4,
+      "stdout": "",
+      "stderr": "illegal y transition superseded → active (allowed: proposed→active, active→stale, non-terminal→superseded; stale→active only via `grove revalidate`)\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=superseded t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/b.jl\n  revalidation:\n    | <ts> surface=src/b.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"active\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"revalidate\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"stale\",\"old_surface\":[\"src/a.jl\"],\"id\":\"Y-01\",\"added_edges\":[],\"had_surface\":true,\"op\":\"revalidate_restore\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"active\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=spike status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Spike\"\n\ny Y-01 status=superseded t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth\n  surface: src/b.jl\n  revalidation:\n    | <ts> surface=src/b.jl\n\ny Y-02 status=proposed t_created=<ts> t_updated=<ts> \"Second\"\n  tags: auth\n  surface: src/b.jl\n\ne W-01 produces Y-01 t_created=<ts>\ne W-01 produces Y-02 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"lines\":[\"auth\"],\"op\":\"field_restore_lines\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-02\",\"field\":\"tags\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"active\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"revalidate\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"stale\",\"old_surface\":[\"src/a.jl\"],\"id\":\"Y-01\",\"added_edges\":[],\"had_surface\":true,\"op\":\"revalidate_restore\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"active\",\"id\":\"Y-01\",\"op\":\"set_status_plain\"}}\n"
+    }
+  ]
+}

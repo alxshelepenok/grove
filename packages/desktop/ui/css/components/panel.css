@@ -1,0 +1,23 @@
+.panel {
+  display: flex;
+  gap: var(--wv-space-8);
+  flex-direction: column;
+  padding: var(--wv-space-3);
+  background: var(--wv-color-bg-elevated);
+  border: 1px solid var(--wv-color-border-subtle);
+  border-radius: var(--wv-radius-lg);
+  font-size: var(--wv-font-size-sm);
+}
+
+.panel-footer {
+  margin-top: var(--wv-space-3);
+  padding-top: var(--wv-space-2);
+  border-top: 1px solid var(--wv-color-border);
+  font-size: var(--wv-font-size-xs);
+  color: var(--wv-color-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wv-space-3);
+  flex-wrap: wrap;
+}

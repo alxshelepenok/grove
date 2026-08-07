@@ -1,9 +1,10 @@
 context.txt
 .grove/locks/
-/coverage/
+/packages/grove/coverage/
 *.jl.*.cov
 *.jl.mem
 Manifest*.toml
 LocalPreferences.toml
 JuliaLocalPreferences.toml
 spikes/W-25/sysimage/
+/target/

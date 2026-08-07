@@ -1,0 +1,46 @@
+.accordion {
+  background: var(--wv-color-bg-surface);
+  border: 1px solid var(--wv-color-border-subtle);
+  border-radius: var(--wv-radius-lg);
+}
+
+.accordion-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+  padding: var(--wv-space-3) var(--wv-space-4);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  font-size: var(--wv-font-size-sm);
+  font-weight: 500;
+  color: var(--wv-color-text-primary);
+  border-radius: var(--wv-radius-lg);
+}
+
+.accordion-summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion-summary:hover,
+.accordion-summary:hover .accordion-chevron {
+  color: var(--wv-color-accent-strong);
+}
+
+.accordion-chevron {
+  flex: 0 0 auto;
+  color: var(--wv-color-text-tertiary);
+  transition: transform var(--wv-transition-fast);
+}
+
+.accordion[open] > .accordion-summary .accordion-chevron {
+  transform: rotate(90deg);
+}
+
+.accordion[open] > .accordion-body {
+  border-top: 1px solid var(--wv-color-border-subtle);
+}
+
+.accordion-body {
+  padding: var(--wv-space-4);
+}

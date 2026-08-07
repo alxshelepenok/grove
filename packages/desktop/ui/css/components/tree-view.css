@@ -1,0 +1,111 @@
+ul.tree-view {
+  display: block;
+  background: var(--wv-color-bg-recessed);
+  border: 1px solid var(--wv-color-border-subtle);
+  border-radius: var(--wv-radius-md);
+  padding: var(--wv-space-2);
+  margin: 0;
+}
+
+ul.tree-view li {
+  list-style-type: none;
+}
+
+ul.tree-view a {
+  text-decoration: none;
+  color: var(--wv-color-text-primary);
+  padding: var(--wv-space-1) var(--wv-space-2);
+  border-radius: var(--wv-radius-sm);
+  display: inline-block;
+  transition: background var(--wv-transition-fast);
+}
+
+ul.tree-view a:hover {
+  background: var(--wv-color-accent-bg);
+}
+
+ul.tree-view a:focus {
+  background: var(--wv-color-accent-bg);
+  color: var(--wv-color-accent-strong);
+}
+
+ul.tree-view ul,
+ul.tree-view li {
+  margin-top: 2px;
+}
+
+ul.tree-view ul {
+  margin-left: 16px;
+  padding-left: 12px;
+  border-left: 1px solid var(--wv-color-border-subtle);
+}
+
+ul.tree-view ul > li {
+  position: relative;
+}
+
+ul.tree-view ul > li::before {
+  content: "";
+  display: block;
+  position: absolute;
+  left: -12px;
+  top: 8px;
+  width: 8px;
+  border-bottom: 1px solid var(--wv-color-border-subtle);
+}
+
+ul.tree-view ul > li:last-child::after {
+  content: "";
+  display: block;
+  position: absolute;
+  left: -13px;
+  top: 9px;
+  bottom: 0;
+  width: 9px;
+  background: var(--wv-color-bg-recessed);
+}
+
+ul.tree-view details {
+  margin-top: 0;
+}
+
+ul.tree-view details[open] summary {
+  margin-bottom: 0;
+}
+
+ul.tree-view ul details > summary:before {
+  margin-left: -18px;
+  position: relative;
+  z-index: 1;
+}
+
+ul.tree-view details > summary:before {
+  text-align: center;
+  display: block;
+  float: left;
+  content: "+";
+  border: 1px solid var(--wv-color-border);
+  border-radius: var(--wv-radius-sm);
+  width: 14px;
+  height: 14px;
+  line-height: 12px;
+  margin-right: var(--wv-space-1);
+  background: var(--wv-color-bg-elevated);
+  color: var(--wv-color-text-secondary);
+  font-size: 10px;
+}
+
+ul.tree-view details[open] > summary:before {
+  content: "−";
+}
+
+ul.tree-view details > summary::marker,
+ul.tree-view details > summary::-webkit-details-marker {
+  content: "";
+}
+
+summary:focus {
+  outline: 2px solid var(--wv-color-border-focus);
+  outline-offset: 1px;
+  border-radius: var(--wv-radius-sm);
+}

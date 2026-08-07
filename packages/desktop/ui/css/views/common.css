@@ -1,0 +1,38 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-4);
+}
+
+.overview-goto,
+.area-goto {
+  min-height: 24px;
+  padding: 1px var(--wv-space-2);
+  font-size: var(--wv-font-size-xs);
+  color: var(--wv-color-text-tertiary);
+}
+
+.gradient.overview-goto,
+.gradient.area-goto {
+  padding: 1px;
+  min-height: 22px;
+}
+
+.gradient.overview-goto span,
+.gradient.area-goto span {
+  min-height: 22px;
+  padding: 1px var(--wv-space-2);
+  font-size: var(--wv-font-size-xs);
+  color: var(--wv-color-text-tertiary);
+}
+
+.overview-goto:not(:disabled):hover,
+.area-goto:not(:disabled):hover {
+  color: var(--wv-color-text-primary);
+  border-color: var(--wv-color-border);
+}
+
+.gradient.overview-goto:not(:disabled):hover span,
+.gradient.area-goto:not(:disabled):hover span {
+  color: var(--wv-color-text-primary);
+}

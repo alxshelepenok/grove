@@ -1,0 +1,6 @@
+label {
+  user-select: none;
+  font-family: var(--wv-font-sans);
+  font-size: var(--wv-font-size-sm);
+  color: var(--wv-color-text-primary);
+}

@@ -1,0 +1,51 @@
+{
+  "name": "check-y-archive",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!append",
+        ".grove/state.lock",
+        ":archive"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n:archive\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "!append",
+        ".grove/state.lock",
+        "y Y-99 status=active \"Corrupt\""
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n:archive\ny Y-99 status=active \"Corrupt\"\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "lock parse error at line 6: y record in :archive section\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n:archive\ny Y-99 status=active \"Corrupt\"\n",
+      "journal": null
+    }
+  ]
+}

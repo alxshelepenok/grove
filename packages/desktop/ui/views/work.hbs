@@ -1,0 +1,47 @@
+<section class="view view-work" data-filter="{{filter}}">
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Work</h1>
+      <p class="page-description">Track work items from proposal to completion.</p>
+    </div>
+  </div>
+  <div class="filter-bar">
+    {{> filter-tabs tabs=filters label="Work status"}}
+    <label class="graph-toggle" for="work-archived"><input type="checkbox" id="work-archived"{{#if include_archived}} checked{{/if}} /> Include archived</label>
+  </div>
+  {{#if empty}}
+    {{> empty-state icon="ghost" title="No work items" description="No work items match this filter."}}
+  {{else}}
+    <div class="sunken-panel">
+      <table class="work-table interactive">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Title</th>
+            <th>Goals</th>
+            <th>Cynefin</th>
+            <th>DoR</th>
+            <th>Status</th>
+            <th>Critical</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each rows}}
+          <tr data-id="{{id}}">
+            <td><span class="text-mono">{{id}}</span></td>
+            <td>{{wtype}}</td>
+            <td class="cell-title">{{title}}</td>
+            <td class="text-mono">{{goals}}</td>
+            <td>{{cynefin}}</td>
+            <td class="cell-dor">{{dor}}</td>
+            <td>{{> badge text=status class="capitalize" variant=status_variant}}</td>
+            <td class="cell-critical">{{critical}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  {{/if}}
+  {{> add-modal}}
+</section>

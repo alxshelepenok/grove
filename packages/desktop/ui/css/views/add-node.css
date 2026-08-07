@@ -1,0 +1,35 @@
+#add-node-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-2);
+}
+
+.add-kind-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-2);
+}
+
+.add-kind-fields[hidden] {
+  display: none;
+}
+
+.add-goal-deltas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-1);
+}
+
+.add-goal-delta-row {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+}
+
+.add-goal-delta-row .text-mono {
+  min-width: 48px;
+}
+
+.add-goal-delta-row input[type="text"] {
+  width: 72px;
+}

@@ -1,0 +1,68 @@
+@grove 1
+# AUTO-GENERATED. Do not edit. Use `grove` CLI.
+# checksum: sha256:e65067beac2d5ecd25a38f56aa5466db21c37314b0d3e3bd1e39f814972c304c
+g G-01 status=unverified fitness="5/5 modules" t_created=2026-07-19T12:04:39Z t_updated=2026-07-19T12:04:39Z "Migrate auth"
+  area: A-01
+
+w W-01 type=feature status=proposed cynefin=clear t_created=2026-07-19T12:04:40Z t_updated=2026-07-19T12:04:57Z "Add login flow"
+  goals: G-01
+  fitness: G-01=+1
+  surface: src/auth/login.ts, tests/auth/login_test.ts
+  ac:
+    | User signs in with email/password.
+    | Sessions expire after 24h.
+  hypothesis:
+    | Email/password is enough for MVP.
+  evidence_strategy:
+    | Integration test on /login.
+  plan:
+    | Start with the credential model.
+  why:
+    | Onboarding needs auth.
+
+w W-02 type=bug status=proposed cynefin=clear t_created=2026-07-19T12:04:46Z t_updated=2026-07-19T12:04:47Z "Fix reset loop"
+
+d D-01 status=proposed t_created=2026-07-19T12:04:48Z t_updated=2026-07-19T12:04:52Z "Use bcrypt"
+  context:
+    | bcrypt has wide ecosystem support.
+  options:
+    | OC1: bcrypt
+    | OC2: argon2id
+  decision:
+    | bcrypt for ecosystem maturity.
+  consequences:
+    | Hashing cost is tunable.
+  validation:
+    | Compared against known vectors.
+
+q Q-01 status=open cynefin=complicated t_created=2026-07-19T12:04:52Z t_updated=2026-07-19T12:04:59Z "Which hash algo?"
+  why:
+    | Need to pick one.
+  hypothesis:
+    | bcrypt likely wins.
+  exit:
+    | Decision recorded.
+  log:
+    | Surveyed OWASP cheat sheets.
+  outcome:
+    | bcrypt; see D-01.
+
+b B-01 status=proposed cynefin=complicated t_created=2026-07-19T12:04:57Z t_updated=2026-07-19T12:04:59Z "users prefer email"
+  vm:
+    | survey n=50, 5-point likert.
+  threshold:
+    | >= 70% prefer email.
+  result:
+    | 82% preferred email.
+
+t T-01 status=open t_created=2026-07-19T12:05:00Z t_updated=2026-07-19T12:05:00Z "Auth theme"
+  notes:
+    | Everything auth-related.
+
+a A-01 status=present t_created=2026-07-19T12:04:39Z t_updated=2026-07-19T12:04:39Z "Area"
+
+e B-01 targets W-01 t_created=2026-07-19T12:04:57Z
+e B-01 tests Q-01 t_created=2026-07-19T12:04:59Z
+e Q-01 asks W-01 t_created=2026-07-19T12:04:52Z
+e W-01 blocks W-02 t_created=2026-07-19T12:04:47Z
+e W-01 implements D-01 t_created=2026-07-19T12:04:52Z

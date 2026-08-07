@@ -1,0 +1,82 @@
+.tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 3px;
+  list-style: none;
+  text-indent: 0;
+  background: var(--wv-color-bg-surface);
+  border: 1px solid var(--wv-color-border-subtle);
+  border-radius: var(--wv-radius-lg);
+}
+
+.tab,
+.tab:not(:disabled):hover,
+.tab:not(:disabled):active {
+  border: none;
+  box-shadow: none;
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+  min-height: 0;
+  text-transform: capitalize;
+  padding: var(--wv-space-1) var(--wv-space-3);
+  border-radius: var(--wv-radius-lg);
+  background: transparent;
+  color: var(--wv-color-text-tertiary);
+  font-size: var(--wv-font-size-sm);
+}
+
+.tab-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.tab-dot[hidden] {
+  display: none;
+}
+
+.tab-dot-success {
+  background: var(--wv-color-success);
+}
+
+.tab-dot-danger {
+  background: var(--wv-color-danger);
+}
+
+.tab-dot-accent {
+  background: var(--wv-color-accent);
+}
+
+.tab:not(:disabled):hover {
+  background: transparent;
+  color: var(--wv-color-text-primary);
+}
+
+.tab[aria-selected="true"],
+.tab[aria-selected="true"]:not(:disabled):hover {
+  background: var(--wv-color-bg-elevated);
+  color: var(--wv-color-text-primary);
+  box-shadow: var(--wv-shadow-sm);
+}
+
+.tab-panel {
+  margin-top: var(--wv-space-3);
+  padding: var(--wv-space-4);
+  background: var(--wv-color-bg-surface);
+  border: 1px solid var(--wv-color-border-subtle);
+  border-radius: var(--wv-radius-lg);
+}
+
+.tab-panel[hidden] {
+  display: none;
+}

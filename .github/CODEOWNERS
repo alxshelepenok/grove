@@ -1,0 +1,10 @@
+/.github/CODEOWNERS @alxshelepenok
+/.github/workflows/ @alxshelepenok
+/.github/dependabot.yml @alxshelepenok
+/install.sh @alxshelepenok
+/install.sh.sig @alxshelepenok
+/install.ps1 @alxshelepenok
+/install.ps1.sig @alxshelepenok
+/bin/ @alxshelepenok
+/dist/ @alxshelepenok
+/docs/security/ @alxshelepenok

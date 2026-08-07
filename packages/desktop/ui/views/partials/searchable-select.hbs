@@ -1,0 +1,18 @@
+<div id="{{id}}" class="searchable-select-wrap">
+  <div class="searchable-select-trigger">{{#if selectedText}}{{selectedText}}{{else}}{{placeholder}}{{/if}}</div>
+  <div class="searchable-select-dropdown" hidden>
+    <input
+      type="text"
+      class="searchable-select-search"
+      name="{{#if name}}{{name}}{{else}}search{{/if}}"
+      placeholder="Search..."
+      autocomplete="off"
+    />
+    <div class="searchable-select-list">
+      <div class="searchable-select-empty">{{#if emptyText}}{{emptyText}}{{else}}No results{{/if}}</div>
+    </div>
+  </div>
+  {{#if initialItems}}
+    <script type="application/json">{{{json initialItems}}}</script>
+  {{/if}}
+</div>
