@@ -310,8 +310,8 @@ jobs:
           (cd out && ls | grep -v '^SHA256SUMS' | xargs sha256sum > SHA256SUMS)
           bin/sign.sh key.pem out/SHA256SUMS
           bin/manifest.sh --version "$VERSION" --sums out/SHA256SUMS --artifacts-dir out \
-            --previous dist/manifest.json --output dist/manifest.json
-          bin/sign.sh key.pem dist/manifest.json
+            --previous manifest.json --output manifest.json
+          bin/sign.sh key.pem manifest.json
           cp sbom/sbom.cdx.json docs/security/artifacts/sbom.cdx.json
           bin/sign.sh key.pem docs/security/artifacts/sbom.cdx.json
           bin/sign.sh key.pem docs/security/artifacts/vex.json
@@ -323,7 +323,7 @@ jobs:
           if ! bin/verify.sh trusted.pem install.ps1 install.ps1.sig 2>/dev/null; then
             bin/sign.sh key.pem install.ps1
           fi
-          bin/verify.sh trusted.pem dist/manifest.json dist/manifest.json.sig
+          bin/verify.sh trusted.pem manifest.json manifest.json.sig
           cat > out/notes.md <<EOF
           ## grove v$VERSION
 
@@ -356,7 +356,7 @@ jobs:
           - Desktop OS bundles: msi + nsis (windows), dmg (macOS arm64 + x64), deb + AppImage (linux)
           - Signed manifest, SHA256SUMS, CycloneDX SBOM, VEX, signed installers
           EOF
-          cat dist/manifest.json
+          cat manifest.json
 
       - name: Dry-run summary
         if: inputs.mode == 'dry-run'
@@ -364,18 +364,18 @@ jobs:
           set -euo pipefail
           echo "dry-run complete; nothing was published"
           echo "would attach to release v$VERSION:"
-          ls out/*.tar.gz out/SHA256SUMS* dist/manifest.json* docs/security/artifacts/sbom.cdx.json* docs/security/artifacts/vex.json.sig
+          ls out/*.tar.gz out/SHA256SUMS* manifest.json* docs/security/artifacts/sbom.cdx.json* docs/security/artifacts/vex.json.sig
 
       - name: Refresh manifest only
         if: inputs.mode == 'manifest-only'
         run: |
           set -euo pipefail
-          bin/manifest.sh --refresh --previous dist/manifest.json --output dist/manifest.json
-          bin/sign.sh key.pem dist/manifest.json
-          bin/verify.sh trusted.pem dist/manifest.json dist/manifest.json.sig
+          bin/manifest.sh --refresh --previous manifest.json --output manifest.json
+          bin/sign.sh key.pem manifest.json
+          bin/verify.sh trusted.pem manifest.json manifest.json.sig
           tag=$(gh release list --limit 1 --json tagName --jq '.[0].tagName')
           [ -n "$tag" ] || { echo "no release to attach the refreshed manifest to"; exit 1; }
-          gh release upload "$tag" dist/manifest.json dist/manifest.json.sig --clobber
+          gh release upload "$tag" manifest.json manifest.json.sig --clobber
 
       - name: Re-sign transparency artifacts only
         if: inputs.mode == 'transparency-only'
@@ -405,7 +405,7 @@ jobs:
             out/*.tar.gz out/*.deb out/*.AppImage out/*.dmg out/*.msi out/*-setup.exe \
             out/SHA256SUMS out/SHA256SUMS.sig \
             out/grove-skill.md out/grove-skill.md.sig \
-            dist/manifest.json dist/manifest.json.sig \
+            manifest.json manifest.json.sig \
             docs/security/artifacts/sbom.cdx.json docs/security/artifacts/sbom.cdx.json.sig \
             docs/security/artifacts/vex.json docs/security/artifacts/vex.json.sig \
             install.sh install.sh.sig install.ps1 install.ps1.sig
@@ -416,18 +416,22 @@ jobs:
           set -euo pipefail
           git config user.name "grove-release[bot]"
           git config user.email "grove-release[bot]@users.noreply.github.com"
-          git add dist/ docs/security/artifacts/ install.sh.sig install.ps1.sig
+          git add manifest.json manifest.json.sig docs/security/artifacts/ install.sh.sig install.ps1.sig
           if git diff --cached --quiet; then
             echo "nothing to commit"
             exit 0
           fi
           git commit -m "release: transparency artifacts ($MODE $VERSION)"
           if ! git push origin HEAD:main; then
-            branch="release/dist-$(date -u +%Y%m%d%H%M%S)"
-            git push origin "HEAD:$branch"
+            if [ -n "$VERSION" ]; then
+              branch="release/v$VERSION"
+            else
+              branch="release/$MODE-$(date -u +%Y%m%d%H%M%S)"
+            fi
+            git push origin "HEAD:refs/heads/$branch"
             gh pr create --base main --head "$branch" \
               --title "release: transparency artifacts ($MODE $VERSION)" \
-              --body "Opened by the release workflow because direct push to main is protected. Merge to sync dist/ and docs/security/artifacts."
+              --body "Opened by the release workflow because direct push to main is protected. Merge to sync the root manifest and docs/security/artifacts."
           fi
 
       - name: Attest build provenance
@@ -441,7 +445,7 @@ jobs:
             out/*.dmg
             out/*.msi
             out/*-setup.exe
-            dist/manifest.json
+            manifest.json
 
       - name: Post-release smoke test
         if: inputs.mode == 'release'

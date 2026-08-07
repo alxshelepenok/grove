@@ -286,7 +286,7 @@ main_install() {
   if [ -n "$version" ]; then
     manifest_url="$GROVE_RELEASE_BASE/v$version/manifest.json"
   else
-    manifest_url="$GROVE_RAW_BASE/dist/manifest.json"
+    manifest_url="$GROVE_RAW_BASE/manifest.json"
   fi
 
   fetch "$manifest_url" "$work/manifest.json"

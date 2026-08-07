@@ -4,7 +4,7 @@ set -euo pipefail
 die() { echo "error: $*" >&2; exit 1; }
 
 usage() {
-  echo "usage: manifest.sh --version X.Y.Z --sums SHA256SUMS [--artifacts-dir DIR] [--channel stable] [--ttl-days 180] [--repo alxshelepenok/grove] [--previous dist/manifest.json] [--output manifest.json] [--now EPOCH]" >&2
+  echo "usage: manifest.sh --version X.Y.Z --sums SHA256SUMS [--artifacts-dir DIR] [--channel stable] [--ttl-days 180] [--repo alxshelepenok/grove] [--previous manifest.json] [--output manifest.json] [--now EPOCH]" >&2
   exit 2
 }
 
@@ -14,7 +14,7 @@ dir="."
 channel="stable"
 ttl_days=180
 repo="alxshelepenok/grove"
-previous="dist/manifest.json"
+previous="manifest.json"
 output="manifest.json"
 now=""
 

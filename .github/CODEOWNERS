@@ -6,5 +6,6 @@
 /install.ps1 @alxshelepenok
 /install.ps1.sig @alxshelepenok
 /bin/ @alxshelepenok
-/dist/ @alxshelepenok
+/manifest.json @alxshelepenok
+/manifest.json.sig @alxshelepenok
 /docs/security/ @alxshelepenok
