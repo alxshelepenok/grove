@@ -1,4 +1,4 @@
-# 5. Rules
+# 6. Rules
 
 **Lock immutability.** `.grove/state.lock` is edited ONLY through the `grove` CLI. The file carries a SHA-256 checksum line. Any manual edit is detected on the next CLI invocation and the CLI refuses to proceed until the user runs `grove repair --confirm`. Do not bypass this; the `repair` command is an escape hatch for migrations, not a workflow.
 

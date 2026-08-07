@@ -14,7 +14,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-sections="model.md protocol.md cli.md evidence.md rules.md lockfile.md typography.md checklist.md"
+sections="model.md protocol.md planning.md cli.md evidence.md rules.md lockfile.md typography.md checklist.md"
 diagrams="dual-track.md graph-template.md workflow.md"
 
 [ -f "$src/index.md" ] || die "index not found: $src/index.md"
@@ -46,7 +46,7 @@ for f in $sections; do
   cat "$src/$f" >> "$work"
 done
 
-printf '\n\n---\n\n# 9. Diagrams\n' >> "$work"
+printf '\n\n---\n\n# 10. Diagrams\n' >> "$work"
 for f in $diagrams; do
   printf '\n\n' >> "$work"
   sed 's/^\(#\{1,5\}\) /\1# /' "$src/diagrams/$f" >> "$work"
@@ -60,7 +60,7 @@ for f in $diagrams; do
   anchor=$(heading_slug "$src/diagrams/$f")
   sed -i -e "s|](diagrams/${f})|](#${anchor})|g" -e "s|](diagrams/${f}#|](#|g" "$work"
 done
-sed -i "s|](diagrams/)|](#9-diagrams)|g" "$work"
+sed -i "s|](diagrams/)|](#10-diagrams)|g" "$work"
 
 mv "$work" "$output"
 echo "bundle written to $output"

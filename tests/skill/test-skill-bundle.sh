@@ -22,7 +22,7 @@ report $? "skill frontmatter stays at the top"
 
 prev_line=0
 order_ok=1
-for heading in "# 1. Formal model" "# 2. Workflow protocol" "# 3. CLI reference" "# 4. Evidence (Definition of Done)" "# 5. Rules" "# 6. Lockfile specification" "# 7. Typography" "# 8. Quality checklist" "# 9. Diagrams"; do
+for heading in "# 1. Formal model" "# 2. Workflow protocol" "# 3. Planning" "# 4. CLI reference" "# 5. Evidence (Definition of Done)" "# 6. Rules" "# 7. Lockfile specification" "# 8. Typography" "# 9. Quality checklist" "# 10. Diagrams"; do
   count=$(grep -cF "$heading" "$work/bundle-a.md")
   line=$(grep -nF "$heading" "$work/bundle-a.md" | head -1 | cut -d: -f1)
   if [ "$count" -ne 1 ] || [ -z "$line" ] || [ "$line" -le "$prev_line" ]; then

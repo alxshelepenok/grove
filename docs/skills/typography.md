@@ -1,4 +1,4 @@
-# 7. Typography
+# 8. Typography
 
 Applies to this skill and to anything the agent writes into `.grove/glossary.md` or evidence/prose fields of `state.lock`.
 

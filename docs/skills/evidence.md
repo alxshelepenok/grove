@@ -1,4 +1,4 @@
-# 4. Evidence (Definition of Done)
+# 5. Evidence (Definition of Done)
 
 A W transitions to `done` only when its evidence record satisfies all AC. The
 CLI rejects `grove set W-NN status=done` when the `evidence` field is empty

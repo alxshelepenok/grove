@@ -1,4 +1,4 @@
-# 3. CLI reference
+# 4. CLI reference
 
 Invocation: `grove <command> [args...]`.
 

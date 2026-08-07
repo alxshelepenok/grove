@@ -20,7 +20,9 @@ jobs:
           set -euo pipefail
           curl -fsSL -o /tmp/trivy.tar.gz https://github.com/aquasecurity/trivy/releases/download/v0.73.0/trivy_0.73.0_Linux-64bit.tar.gz
           curl -fsSL -o /tmp/trivy-checksums.txt https://github.com/aquasecurity/trivy/releases/download/v0.73.0/trivy_0.73.0_checksums.txt
-          grep "Linux-64bit.tar.gz$" /tmp/trivy-checksums.txt | sha256sum -c -
+          expected=$(grep "Linux-64bit.tar.gz$" /tmp/trivy-checksums.txt | cut -d' ' -f1)
+          actual=$(sha256sum /tmp/trivy.tar.gz | cut -d' ' -f1)
+          [ "$actual" = "$expected" ] || { echo "trivy checksum mismatch"; exit 1; }
           sudo tar -xzf /tmp/trivy.tar.gz -C /usr/local/bin trivy
 
       - uses: julia-actions/setup-julia@fa02766e078afaaf09b14210362cee14137e6a32

@@ -1,4 +1,4 @@
-# Planning
+# 3. Planning
 
 How to turn an intention into grove state. Applies whenever you create or reshape goals and work items, before any `status=progress` happens.
 

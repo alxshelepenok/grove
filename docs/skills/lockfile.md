@@ -1,4 +1,4 @@
-# 6. Lockfile specification
+# 7. Lockfile specification
 
 `.grove/state.lock` is the single source of truth for GROVE state. It is written and read only by the `grove` cli ([cli reference](cli.md)). Manual edits are detected and rejected.
 
