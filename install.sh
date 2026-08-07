@@ -53,7 +53,8 @@ done
 echo "$channel" | grep -qE '^[a-z0-9_-]+$' || die "invalid channel name: $channel"
 
 for hook in GROVE_TRUSTED_KEY_FILE GROVE_FETCH_ROOT GROVE_HOME; do
-  if [ -n "${!hook:-}" ]; then
+  eval "val=\${$hook:-}"
+  if [ -n "$val" ]; then
     echo "WARNING: $hook is set - trust/store override active (test hook, not for production use)" >&2
   fi
 done
