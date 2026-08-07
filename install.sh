@@ -102,7 +102,7 @@ extract_sequence() { sed -n 's/^      "sequence": \([0-9][0-9]*\),$/\1/p' "$1"; 
 extract_artifact() {
   block=$(sed -n "/^        \"$2\": {\$/,/^        }/p" "$1")
   [ -n "$block" ] || die "manifest has no artifact for $2"
-  printf '%s\n' "$block" | sed -n "s/^          \"$3\": \"\\?\\([^\",]*\\)\"\\?,\\?\$/\\1/p"
+  printf '%s\n' "$block" | sed -n "s/^          \"$3\": \\(.*\\)\$/\1/p" | sed -e 's/,$//' -e 's/^"//' -e 's/"$//'
 }
 
 read_sequence() {

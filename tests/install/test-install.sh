@@ -130,5 +130,13 @@ report $? "break-glass does not touch anti-rollback state"
 bash install.sh --self-test > "$work/out9" 2>&1
 report $? "install.sh --self-test passes"
 
+if [ "$fail" -gt 0 ]; then
+  echo "=== captured installer outputs ==="
+  for f in "$work"/out*; do
+    echo "--- $f"
+    cat "$f"
+  done
+fi
+
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
