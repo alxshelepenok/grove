@@ -423,7 +423,11 @@ jobs:
           fi
           git commit -m "release: transparency artifacts ($MODE $VERSION)"
           if ! git push origin HEAD:main; then
-            branch="release/dist-$(date -u +%Y%m%d%H%M%S)"
+            if [ -n "$VERSION" ]; then
+              branch="release/v$VERSION"
+            else
+              branch="release/$MODE-$(date -u +%Y%m%d%H%M%S)"
+            fi
             git push origin "HEAD:refs/heads/$branch"
             gh pr create --base main --head "$branch" \
               --title "release: transparency artifacts ($MODE $VERSION)" \
