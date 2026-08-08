@@ -1,36 +1,27 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:ffd1b58897f39a304bce048356fccf6852c476e42244cec892d96903ba648b82
-g G-02 status=unverified fitness_kind=count t_created=2026-07-19T01:14:01Z t_updated=2026-07-19T01:14:01Z "Programmatic API with CLI parity and perf budget"
+# checksum: sha256:d3a3134ceb679c0d835c789dca3e531a4adddf02f43eed177c1a2cf1862fef9a
+g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
 
-g G-04 status=verified fitness_kind=boolean t_created=2026-07-19T01:14:16Z t_updated=2026-07-20T04:40:23Z "Agent discovery-to-delivery loop via MCP only"
+g G-18 status=unverified fitness_kind=count t_created=2026-08-08T23:19:46Z t_updated=2026-08-08T23:19:46Z "MCP client surface hardening"
   area: A-04
-  fitness_current: true
+  fitness_target: 1
 
-w W-03 type=refactor status=proposed cynefin=complex t_created=2026-07-19T01:14:57Z t_updated=2026-08-07T00:47:51Z "Extract Grove.API structured layer; CLI as thin renderer"
-  goals: G-02
-  fitness: G-02=+1
-  surface: packages/grove/src/grove.jl, packages/grove/src/cli.jl
-  ac:
-    | core entry points are refactored into a Grove.API structured layer returning JSON-serializable values (seed: grove show JSON); the CLI becomes a thin renderer over the same calls
-    | property test: every CLI command is reachable via API with identical results (CLI output ≡ API payload rendered)
-    | Julia startup latency constraint respected: programmatic consumers never parse CLI output (D13)
-
-w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-07T00:47:52Z "Benchmark suite: 10k-node lock, cone, render budgets"
-  goals: G-02
+w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
+  goals: G-17
   theme: T-01
-  fitness: G-02=+1
+  fitness: G-02=+0, G-17=+1
   ac:
     | benchmark suite over a 10k-node lock enforcing the Phase 3 budget: lock parse < 2 s, packet --cone < 200 ms, render < 1 s
     | aggregation queries (per-goal chi, per-term C) are served pre-computed so the desktop never pulls 10k raw nodes
     | suite lands before the scaling-debt fix (W-05) so the budget is enforced on measured numbers, not guesses
 
-w W-05 type=refactor status=proposed cynefin=complicated t_created=2026-07-19T01:15:17Z t_updated=2026-08-07T00:47:53Z "Adjacency-list max-flow and lazy min-fill for treewidth"
-  goals: G-02
+w W-05 type=refactor status=proposed cynefin=complicated t_created=2026-07-19T01:15:17Z t_updated=2026-08-08T23:05:11Z "Adjacency-list max-flow and lazy min-fill for treewidth"
+  goals: G-17
   theme: T-01
-  fitness: G-02=+0
+  fitness: G-02=+0, G-17=+1
   surface: packages/grove/src/algebra.jl
   ac:
     | node_connectivity no longer materializes a 2N x 2N capacity matrix (~3 GB at 10k nodes, fine only up to ~1k): replaced with adjacency-list max-flow
@@ -38,68 +29,6 @@ w W-05 type=refactor status=proposed cynefin=complicated t_created=2026-07-19T01
     | lands after the benchmark suite (W-04) and before the 10k-node budget is enforced
   why:
     | Enabling work: clears the known scaling debt before the 10k-node budget applies
-
-w W-06 type=feature status=rejected cynefin=complicated t_created=2026-07-19T01:15:27Z t_updated=2026-07-27T18:22:48Z "grove serve: JSON-lines over stdio and localhost TCP"
-  goals: G-02
-  fitness: G-02=+0
-  why:
-    | Contingent on Q-01: the Julia server is optional if the Rust track lands
-
-w W-10 type=feature status=done cynefin=complicated t_created=2026-07-19T01:16:08Z t_updated=2026-07-20T04:40:23Z "MCP server over grove-core: stdio JSON-RPC, tools 1:1 to CLI"
-  goals: G-04
-  fitness: G-04=+1
-  ac:
-    | grove-mcp binary speaks MCP over stdio (newline-delimited JSON-RPC 2.0): initialize handshake, notifications, tools/list, tools/call, resources/list, resources/read
-    | tools map 1:1 to the CLI commands and execute through the same grove-core run_cli; guard refusals return the CLI exit code and stderr as tool content (isError), never protocol errors
-    | one session token per MCP connection flows into every mutating call (I11 intact): progress/done from the connection hold and release that token
-    | packet and show are exposed as resources grove://packet/<id> and grove://show/<id>
-    | a scripted MCP session drives a full add-to-done loop in a temp root with zero direct CLI calls; cargo test green
-  hypothesis:
-    | A 1:1 command mapping over the same grove-core run_cli keeps invariants unbypassable while making the full protocol reachable from MCP clients
-  evidence_strategy:
-    | cargo test: JSON-RPC framing, handshake, tool mapping, resource reads, scripted full-loop session; smoke run of the binary against a temp project
-  evidence:
-    | grove-mcp implemented in grove-core (src/mcp.rs + src/bin/grove_mcp.rs): NDJSON JSON-RPC 2.0 over stdio, initialize/notifications/tools/resources, versions 2024-11-05..2025-06-18 negotiated; 38 tools map 1:1 to the dispatch table through run_cli, guard refusals return as isError content with the CLI exit code
-    | session token per connection (mcp-<pid>-<hash>) flows into the 20 mutate commands; scripted MCP session drove the full add-to-done loop with zero direct CLI calls; resources grove://packet/<id> and grove://show/<id> byte-equal the CLI output; cargo test 291/291, my own binary smoke: handshake + init + add + check all ok
-    | found and fixed: Julia help lacked a check usage line (skill documents check) - added in both HELP constants, corpus help fixture re-recorded, Julia suite 1780 green after one Windows ENOTEMPTY flake rerun; MCP check description now sourced from HELP like every other tool
-  why:
-    | Phase 5: MCP is the agent-facing surface decided at the 4C gate; the desktop backend reuses the same core
-
-w W-11 type=feature status=progress cynefin=clear session=desktop-5a9h5ko:b9ace3ea3b856f36 session_at=2026-07-20T12:14:49Z t_created=2026-07-19T01:16:19Z t_updated=2026-07-20T12:27:24Z "Validate MCP against real clients"
-  goals: G-04
-  fitness: G-04=+0
-  ac:
-    | an agent session in Kimi Code CLI drives a full loop (add a/g/w, fields, ready, progress, evidence, fitness, done, check) using only mcp__grove__* tools
-    | an invariant guard refusal is observed through MCP (set status=progress with DoR incomplete returns isError with exit code 4)
-    | I11 verified live: a W in progress via the MCP session token refuses progress from a different session token
-    | config snippets for Kimi Code CLI and Claude Desktop added to README
-  hypothesis:
-    | A mainstream MCP client can operate grove end-to-end through the 1:1 tool surface without protocol workarounds
-  evidence_strategy:
-    | validation transcript summary (loop, guard refusal, I11) plus the README diff; Claude Desktop is best-effort if a client is available
-  evidence:
-    | README +42: MCP server section with verified Kimi Code CLI snippet (~/.kimi-code/mcp.json, transport stdio, command grove-mcp.exe --root) and Claude Desktop snippet (Windows/macOS paths); Claude Desktop not installed on this host, live check N/A per best-effort clause
-    | user-level config present: ~/.kimi-code/mcp.json registers server 'grove' -> grove-core/target/release/grove-mcp.exe --root=Y:/Projects/grove; binary usage line verified: grove-mcp [--root=<dir>] [--session=<token>]
-    | stdio transcript on scratch copy of the real lock (38 tools listed, names = bare CLI commands): full loop add a(A-06)/g(G-06)/w(W-15) -> field x4 -> set ready -> fitness +1 -> set progress -> evidence -> set done -> check = ok; W-15 closed done, G-06 atomically re-derived to partial, only legitimate evidence lines persisted
-    | guard refusal via MCP: set W-15 status=progress with DoR incomplete returned isError=true with 'grove exit code: 4' (DoR =/= top, missing: fitness deltas); decay exit 3 also surfaces correctly (scratch missing Y-01 surface files flagged dead surface)
-    | I11 live via MCP: W-15 in progress owned by --session=mcp-transcript; a second server process with --session=other-token got refused on both evidence append and status=done (I11/session: owned by another session, claim fresh <24h)
-    | remaining for client sign-off: repeat loop + refusals through mcp__grove__* tools in a Kimi session (server config confirmed at ~/.kimi-code/mcp.json); checklist prepared, zero-side-effect refusal demos possible on proposed W-12..W-14 and on W-11 itself
-  why:
-    | Enabling work: client validation de-risks the MCP surface but adds no fitness delta
-
-d D-04 status=accepted t_created=2026-07-20T03:29:25Z t_updated=2026-07-28T01:36:10Z "grove-mcp: NDJSON stdio, tools 1:1 to commands, CLI exit codes as tool content"
-  context:
-    | Phase 5 needs an MCP server over grove-core; the roadmap risk register names tool-surface drift from the CLI as a top risk
-  options:
-    | OC1: one tool per CLI command executed through run_cli, guard refusals returned as tool content with the CLI exit code
-    | OC2: a curated high-level tool set (next, packet, set only)
-    | OC3: semantic tools with re-implemented logic
-  decision:
-    | OC1: 1:1 mapping over the same command table; invariants cannot be bypassed and the surface cannot drift from the CLI
-  consequences:
-    | tool schemas mirror CLI flags; agents see guard refusals as content (isError) with exit codes, never JSON-RPC protocol errors; the server binds to one project root at startup; one session token per connection (I11); packet and show exposed as resources
-  validation:
-    | scripted MCP session drives add-to-done with zero direct CLI calls; cargo test green
 
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
@@ -172,12 +101,6 @@ d D-10 status=accepted t_created=2026-08-07T13:50:41Z t_updated=2026-08-07T13:50
     | Cargo.toml license fields and README updated; the CRA non-commercial FOSS analysis in D-08 is unaffected (AGPL remains non-commercial FOSS); old public commits remain under MIT by their terms, but no release or fork exists to make that relevant
   validation:
     | LICENSE file carries the AGPL-3.0 text; crates declare AGPL-3.0-only; the shields license badge re-detects on the next GitHub metadata refresh
-
-q Q-01 status=answered cynefin=complicated t_created=2026-07-19T01:19:10Z t_updated=2026-08-04T18:34:40Z "Is the Julia server still needed if the Rust track lands?"
-  exit:
-    | Resolved at the Phase 3 gate from Phase 4 corpus results
-  outcome:
-    | No: with the 4C decision (Rust is the MCP and desktop backend) a long-running Julia server serves no consumer; MCP and desktop embed grove-core in-process
 
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
@@ -269,6 +192,10 @@ y Y-06 status=superseded t_created=2026-08-05T19:13:24Z t_updated=2026-08-08T17:
   skill_updates:
     | substring matching is not version matching: audit-filter.jl suppresses a CVE on any version whose string is a prefix of the VEX ref; desktop binary in install.sh misses chmod +x (tests pass on Git Bash only because MSYS fakes the x-bit)
 
+y Y-07 status=active t_created=2026-08-08T23:08:01Z t_updated=2026-08-08T23:19:46Z "MCP tool failures must surface CLI stderr; a bare exit code leaves clients blind"
+  tags: thin adapter
+  surface: packages/core/src/mcp.rs, packages/core/src/cli.rs
+
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"
   surface: packages/grove/src/stats.jl, packages/grove/test/test_stats.jl
 
@@ -291,6 +218,7 @@ e T-02 causes W-85 t_created=2026-08-05T18:45:04Z
 e T-03 causes W-85 t_created=2026-08-05T18:45:33Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
+e W-03 produces D-11 t_created=2026-08-08T23:06:24Z
 e W-07 blocks W-09 t_created=2026-07-19T01:21:18Z
 e W-07 implements D-01 t_created=2026-07-19T02:33:33Z
 e W-08 blocks W-09 t_created=2026-07-19T01:21:26Z
@@ -322,16 +250,25 @@ e W-87 blocks W-79 t_created=2026-08-05T19:22:39Z
 e Y-01 distills D-01 t_created=2026-07-20T03:15:28Z
 e Y-03 distills D-04 t_created=2026-07-28T01:36:10Z
 e Y-04 distills Q-01 t_created=2026-08-04T18:34:40Z
+e Y-07 distills D-04 t_created=2026-08-08T23:08:01Z
 
 :archive
 g G-01 status=verified fitness_kind=boolean t_created=2026-07-19T01:13:53Z t_updated=2026-07-27T18:21:48Z "Effectiveness report v1 on dogfood telemetry"
   area: A-01
   fitness_current: true
 
+g G-02 status=verified fitness_kind=manual t_created=2026-07-19T01:14:01Z t_updated=2026-08-08T23:06:46Z "Programmatic API with CLI parity and perf budget"
+  area: A-02
+  fitness_target: 2
+
 g G-03 status=verified fitness_kind=count t_created=2026-07-19T01:14:08Z t_updated=2026-07-20T03:20:22Z "Conformance corpus green; 4C gate decided"
   area: A-03
   fitness_target: 3
   fitness_current: 3
+
+g G-04 status=verified fitness_kind=boolean t_created=2026-07-19T01:14:16Z t_updated=2026-08-08T23:08:08Z "Agent discovery-to-delivery loop via MCP only"
+  area: A-04
+  fitness_current: true
 
 g G-05 status=verified fitness_kind=count t_created=2026-07-19T01:14:23Z t_updated=2026-07-28T01:40:15Z "Desktop browse, mutations, checkpoint UI"
   area: A-05
@@ -432,6 +369,21 @@ w W-02 type=feature status=done cynefin=complicated t_created=2026-07-19T01:14:4
     | B-01..B-04 set to testing with current readings: B-01 6/20 done W zero-surprise series, B-02 0/10 covered W, B-03 1/1 real distill n=1, B-04 1/5 occurrences; thresholds unmet, all verdicts explicit in the report
     | roadmap Phase 2.5 status note added; grove stats snapshot cited by the report taken on this lock 2026-07-27 (records 246, first-pass 0.86, split 6/1/0, distill yield 1/0/0, C/V 2/15)
 
+w W-03 type=refactor status=rejected cynefin=complex t_created=2026-07-19T01:14:57Z t_updated=2026-08-08T23:06:46Z "Extract Grove.API structured layer; CLI as thin renderer"
+  goals: G-02
+  fitness: G-02=+1
+  surface: packages/grove/src/grove.jl, packages/grove/src/cli.jl
+  ac:
+    | core entry points are refactored into a Grove.API structured layer returning JSON-serializable values (seed: grove show JSON); the CLI becomes a thin renderer over the same calls
+    | property test: every CLI command is reachable via API with identical results (CLI output ≡ API payload rendered)
+    | Julia startup latency constraint respected: programmatic consumers never parse CLI output (D13)
+
+w W-06 type=feature status=rejected cynefin=complicated t_created=2026-07-19T01:15:27Z t_updated=2026-08-08T23:06:46Z "grove serve: JSON-lines over stdio and localhost TCP"
+  goals: G-02
+  fitness: G-02=+0
+  why:
+    | Contingent on Q-01: the Julia server is optional if the Rust track lands
+
 w W-07 type=feature status=done cynefin=complex t_created=2026-07-19T01:15:37Z t_updated=2026-07-20T03:20:22Z "Conformance corpus harness driving the Julia CLI"
   goals: G-03
   fitness: G-03=+1
@@ -489,6 +441,50 @@ w W-09 type=feature status=done cynefin=complex t_created=2026-07-19T01:15:58Z t
     | found and fixed along the way: cli.md claimed a +0-why fitness rule that cmd_fitness never had (docs-sync); spec bugs from W-08 already fixed; cargo test 278/278 green, release build zero warnings
   why:
     | Phase 4B completion slice; gates 4C and unblocks the MCP and desktop backends
+
+w W-10 type=feature status=done cynefin=complicated t_created=2026-07-19T01:16:08Z t_updated=2026-08-08T23:08:08Z "MCP server over grove-core: stdio JSON-RPC, tools 1:1 to CLI"
+  goals: G-04
+  fitness: G-04=+1
+  ac:
+    | grove-mcp binary speaks MCP over stdio (newline-delimited JSON-RPC 2.0): initialize handshake, notifications, tools/list, tools/call, resources/list, resources/read
+    | tools map 1:1 to the CLI commands and execute through the same grove-core run_cli; guard refusals return the CLI exit code and stderr as tool content (isError), never protocol errors
+    | one session token per MCP connection flows into every mutating call (I11 intact): progress/done from the connection hold and release that token
+    | packet and show are exposed as resources grove://packet/<id> and grove://show/<id>
+    | a scripted MCP session drives a full add-to-done loop in a temp root with zero direct CLI calls; cargo test green
+  hypothesis:
+    | A 1:1 command mapping over the same grove-core run_cli keeps invariants unbypassable while making the full protocol reachable from MCP clients
+  evidence_strategy:
+    | cargo test: JSON-RPC framing, handshake, tool mapping, resource reads, scripted full-loop session; smoke run of the binary against a temp project
+  evidence:
+    | grove-mcp implemented in grove-core (src/mcp.rs + src/bin/grove_mcp.rs): NDJSON JSON-RPC 2.0 over stdio, initialize/notifications/tools/resources, versions 2024-11-05..2025-06-18 negotiated; 38 tools map 1:1 to the dispatch table through run_cli, guard refusals return as isError content with the CLI exit code
+    | session token per connection (mcp-<pid>-<hash>) flows into the 20 mutate commands; scripted MCP session drove the full add-to-done loop with zero direct CLI calls; resources grove://packet/<id> and grove://show/<id> byte-equal the CLI output; cargo test 291/291, my own binary smoke: handshake + init + add + check all ok
+    | found and fixed: Julia help lacked a check usage line (skill documents check) - added in both HELP constants, corpus help fixture re-recorded, Julia suite 1780 green after one Windows ENOTEMPTY flake rerun; MCP check description now sourced from HELP like every other tool
+  why:
+    | Phase 5: MCP is the agent-facing surface decided at the 4C gate; the desktop backend reuses the same core
+
+w W-11 type=feature status=done cynefin=clear t_created=2026-07-19T01:16:19Z t_updated=2026-08-08T23:08:08Z "Validate MCP against real clients"
+  goals: G-04
+  fitness: G-04=+0
+  ac:
+    | an agent session in Kimi Code CLI drives a full loop (add a/g/w, fields, ready, progress, evidence, fitness, done, check) using only mcp__grove__* tools
+    | an invariant guard refusal is observed through MCP (set status=progress with DoR incomplete returns isError with exit code 4)
+    | I11 verified live: a W in progress via the MCP session token refuses progress from a different session token
+    | config snippets for Kimi Code CLI and Claude Desktop added to README
+  hypothesis:
+    | A mainstream MCP client can operate grove end-to-end through the 1:1 tool surface without protocol workarounds
+  evidence_strategy:
+    | validation transcript summary (loop, guard refusal, I11) plus the README diff; Claude Desktop is best-effort if a client is available
+  evidence:
+    | README +42: MCP server section with verified Kimi Code CLI snippet (~/.kimi-code/mcp.json, transport stdio, command grove-mcp.exe --root) and Claude Desktop snippet (Windows/macOS paths); Claude Desktop not installed on this host, live check N/A per best-effort clause
+    | user-level config present: ~/.kimi-code/mcp.json registers server 'grove' -> grove-core/target/release/grove-mcp.exe --root=Y:/Projects/grove; binary usage line verified: grove-mcp [--root=<dir>] [--session=<token>]
+    | stdio transcript on scratch copy of the real lock (38 tools listed, names = bare CLI commands): full loop add a(A-06)/g(G-06)/w(W-15) -> field x4 -> set ready -> fitness +1 -> set progress -> evidence -> set done -> check = ok; W-15 closed done, G-06 atomically re-derived to partial, only legitimate evidence lines persisted
+    | guard refusal via MCP: set W-15 status=progress with DoR incomplete returned isError=true with 'grove exit code: 4' (DoR =/= top, missing: fitness deltas); decay exit 3 also surfaces correctly (scratch missing Y-01 surface files flagged dead surface)
+    | I11 live via MCP: W-15 in progress owned by --session=mcp-transcript; a second server process with --session=other-token got refused on both evidence append and status=done (I11/session: owned by another session, claim fresh <24h)
+    | remaining for client sign-off: repeat loop + refusals through mcp__grove__* tools in a Kimi session (server config confirmed at ~/.kimi-code/mcp.json); checklist prepared, zero-side-effect refusal demos possible on proposed W-12..W-14 and on W-11 itself
+    | client sign-off: live Kimi Code CLI session (2026-08-08) drove a full goal-restructure loop using only mcp__grove__* tools against the real lock: show (orientation), resume W-11 (adopted stale claim from 2026-07-20), add g (G-17 Scaling and performance budget, area A-02, count/2), field goals rm/add x4 (W-04, W-05 moved G-02 -> G-17), fitness x4 (G-17=+1 staged, G-02 zeroed), set W-03 rejected, add d + set accepted (D-11), link (W-03 produces D-11), set G-02 fitness_kind=manual + status=verified, distill G-02 --null, archive G-02 (W-03/W-06 archived with it; W-04/W-05 stayed proposed), evidence, check = ok. No CLI, no manual lock edits, no protocol workarounds needed.
+    | client findings: (1) add g assigned G-17 where G-07 was expected - id allocator skips unused suffixes rather than allocating the lowest free one; cosmetic, but surprises scripted clients. (2) field goals rm with the entry text as value failed with exit code 1 and EMPTY stderr via MCP; only the 1-based index form works - the CLI should print the usage error so MCP clients can see it. (3) link D-11 -causes-> W-03, D-11 -supersedes-> W-03 and D-11 -causes-> G-17 all refused with exit 4 'edge type mismatch' - the schema has no d->w or d->g edge at all (w->d via implements/produces only); error message was clear and the refusal correct.
+  why:
+    | Enabling work: client validation de-risks the MCP surface but adds no fitness delta
 
 w W-12 type=feature status=done cynefin=complex t_created=2026-07-19T01:16:30Z t_updated=2026-07-28T01:40:15Z "Tauri shell with WebGL read-only browse, semantic zoom L0-L4"
   goals: G-05
@@ -2185,6 +2181,28 @@ d D-03 status=accepted t_created=2026-07-19T12:37:37Z t_updated=2026-07-20T03:20
     | no new dependencies; help and usage text lives in the crate as data; the corpus becomes the executable specification of the whole CLI surface; implementation lands in waves: core semantics, then mutations with journal and render, then CLI and differential runner
   validation:
     | differential runner replays all 24 corpus scenarios through the Rust implementation byte-identically (same D-01 normalization)
+
+d D-04 status=accepted t_created=2026-07-20T03:29:25Z t_updated=2026-08-08T23:08:08Z "grove-mcp: NDJSON stdio, tools 1:1 to commands, CLI exit codes as tool content"
+  context:
+    | Phase 5 needs an MCP server over grove-core; the roadmap risk register names tool-surface drift from the CLI as a top risk
+  options:
+    | OC1: one tool per CLI command executed through run_cli, guard refusals returned as tool content with the CLI exit code
+    | OC2: a curated high-level tool set (next, packet, set only)
+    | OC3: semantic tools with re-implemented logic
+  decision:
+    | OC1: 1:1 mapping over the same command table; invariants cannot be bypassed and the surface cannot drift from the CLI
+  consequences:
+    | tool schemas mirror CLI flags; agents see guard refusals as content (isError) with exit codes, never JSON-RPC protocol errors; the server binds to one project root at startup; one session token per connection (I11); packet and show exposed as resources
+  validation:
+    | scripted MCP session drives add-to-done with zero direct CLI calls; cargo test green
+
+d D-11 status=accepted t_created=2026-08-08T23:05:21Z t_updated=2026-08-08T23:06:46Z "Programmatic API surface abandoned in favor of MCP; scaling and perf work extracted to G-17"
+
+q Q-01 status=answered cynefin=complicated t_created=2026-07-19T01:19:10Z t_updated=2026-08-08T23:06:46Z "Is the Julia server still needed if the Rust track lands?"
+  exit:
+    | Resolved at the Phase 3 gate from Phase 4 corpus results
+  outcome:
+    | No: with the 4C decision (Rust is the MCP and desktop backend) a long-running Julia server serves no consumer; MCP and desktop embed grove-core in-process
 
 q Q-02 status=answered cynefin=complex t_created=2026-07-19T01:19:17Z t_updated=2026-07-20T03:20:22Z "Does Rust become the MCP and desktop backend at the 4C gate?"
   exit:

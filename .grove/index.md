@@ -6,17 +6,17 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 12 | validated B 0 · answered Q 1 · accepted D 7 · active Discovery 4 |
-| V (uncertainty) | 11 | open Q 2 · pending B 4 · W below DoR 3 · uncovered surface 2 |
+| C (content) | 11 | validated B 0 · answered Q 0 · accepted D 6 · active Discovery 5 |
+| V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
 
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
 | A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-02 | API | 2 | 5 | C: validated B 0 · answered Q 1 · accepted D 0 · active Discovery 1; V: open Q 0 · pending B 0 · W below DoR 3 · uncovered surface 2 |
+| A-02 | API | 0 | 3 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-04 | MCP server | 2 | 0 | C: validated B 0 · answered Q 0 · accepted D 1 · active Discovery 1; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 
@@ -26,25 +26,20 @@
 
 | ID | Outcome | Fitness function | Status |
 | --- | --- | --- | --- |
-| G-02 | Programmatic API with CLI parity and perf budget | count; current= target=2 | unverified |
-| G-04 | Agent discovery-to-delivery loop via MCP only | boolean; current=true | verified |
+| G-17 | Scaling and performance budget | count; current= target=2 | unverified |
+| G-18 | MCP client surface hardening | count; current= target=1 | unverified |
 
 ## Work items
 
 | ID | Type | Title | Goals | Cynefin | DoR | Status | Critical |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| W-03 | refactor | Extract Grove.API structured layer; CLI as thin renderer | G-02 | complex | ⊥ | proposed | ★ |
-| W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-02 | complicated | ⊥ | proposed |  |
-| W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-02 | complicated | ⊥ | proposed |  |
-| W-06 | feature | grove serve: JSON-lines over stdio and localhost TCP | G-02 | complicated | ⊥ | rejected |  |
-| W-10 | feature | MCP server over grove-core: stdio JSON-RPC, tools 1:1 to CLI | G-04 | complicated | ⊤ | done |  |
-| W-11 | feature | Validate MCP against real clients | G-04 | clear | ⊤ | progress |  |
+| W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed | ★ |
+| W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-17 | complicated | ⊥ | proposed |  |
 
 ## Decisions
 
 | ID | Title | Status | Supersedes |
 | --- | --- | --- | --- |
-| D-04 | grove-mcp: NDJSON stdio, tools 1:1 to commands, CLI exit codes as tool content | accepted |  |
 | D-05 | Release signing runs in approval-gated GitHub Actions, not on an offline host | accepted |  |
 | D-06 | trivy is the supply-chain scanner behind an in-repo policy wrapper | accepted |  |
 | D-07 | Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install | accepted |  |
@@ -56,7 +51,6 @@
 
 | ID | Question | Cynefin | Targets | Status |
 | --- | --- | --- | --- | --- |
-| Q-01 | Is the Julia server still needed if the Rust track lands? | complicated | W-06 | answered |
 | Q-03 | Add cosign keyless as an additional, no-stored-key verification path alongside attestations? | complicated |  | open |
 | Q-04 | What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)? | complicated |  | open |
 
@@ -85,27 +79,22 @@
 | Y-04 | Release-distribution plan audit: factual errors and design gaps | pinned origin, verify-then-parse | active |
 | Y-05 | G-16 implementation audit: pre-release fixes and desktop artifact gap | verify-then-parse | superseded |
 | Y-06 | G-16 follow-up audit: artifact name collision and installer parity bugs | verify-then-parse | superseded |
+| Y-07 | MCP tool failures must surface CLI stderr; a bare exit code leaves clients blind | thin adapter | active |
 
 ## Dependency graph
 
 ```mermaid
 graph TD
-  G_02["G-02: Programmatic API with CLI parity and perf budget"]:::goal
-  G_04["G-04: Agent discovery-to-delivery loop via MCP only"]:::goal
-  W_03["W-03: Extract Grove.API structured layer; CLI as thin renderer"]:::feature,critical
-  W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature
+  G_17["G-17: Scaling and performance budget"]:::goal
+  G_18["G-18: MCP client surface hardening"]:::goal
+  W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
-  W_06["W-06: grove serve: JSON-lines over stdio and localhost TCP"]:::rejected
-  W_10["W-10: MCP server over grove-core: stdio JSON-RPC, tools 1:1 to CLI"]:::done
-  W_11["W-11: Validate MCP against real clients"]:::progress
-  D_04["D-04: grove-mcp: NDJSON stdio, tools 1:1 to commands, CLI exit codes as tool content"]:::decision
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
   D_08["D-08: Compliance scoped to non-commercial FOSS; CRA machinery dropped with documented revisit triggers"]:::decision
   D_09["D-09: Distribution only via GitHub Releases with a signed manifest as the trust anchor"]:::decision
   D_10["D-10: License changed from MIT to AGPL-3.0-only before the first release"]:::decision
-  Q_01["Q-01: Is the Julia server still needed if the Rust track lands?"]:::question
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   B_01["B-01: Surprise rate declines as C grows"]:::assumption
@@ -119,6 +108,7 @@ graph TD
   Y_04["Y-04: Release-distribution plan audit: factual errors and design gaps"]:::discovery
   Y_05["Y-05: G-16 implementation audit: pre-release fixes and desktop artifact gap"]:::discovery
   Y_06["Y-06: G-16 follow-up audit: artifact name collision and installer parity bugs"]:::discovery
+  Y_07["Y-07: MCP tool failures must surface CLI stderr; a bare exit code leaves clients blind"]:::discovery
   A_01["A-01: Evals"]:::area
   A_02["A-02: API"]:::area
   A_03["A-03: Rust core"]:::area
@@ -133,6 +123,7 @@ graph TD
   T_03 -->|causes| W_85
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
+  W_03 -->|produces| D_11
   W_07 ==>|blocks| W_09
   W_07 -->|implements| D_01
   W_08 ==>|blocks| W_09
@@ -164,7 +155,8 @@ graph TD
   Y_01 -->|distills| D_01
   Y_03 -->|distills| D_04
   Y_04 -->|distills| Q_01
-  class W_03 critical
+  Y_07 -->|distills| D_04
+  class W_04 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff
 classDef theme fill:#2a4a3a,color:#fff
