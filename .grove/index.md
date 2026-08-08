@@ -28,7 +28,6 @@
 | --- | --- | --- | --- |
 | G-02 | Programmatic API with CLI parity and perf budget | count; current= target=2 | unverified |
 | G-04 | Agent discovery-to-delivery loop via MCP only | boolean; current=true | verified |
-| G-16 | Release distribution and signing: binary artifacts, signed manifest, installer, CI | count; current=20 target=19 | verified |
 
 ## Work items
 
@@ -40,27 +39,6 @@
 | W-06 | feature | grove serve: JSON-lines over stdio and localhost TCP | G-02 | complicated | ⊥ | rejected |  |
 | W-10 | feature | MCP server over grove-core: stdio JSON-RPC, tools 1:1 to CLI | G-04 | complicated | ⊤ | done |  |
 | W-11 | feature | Validate MCP against real clients | G-04 | clear | ⊤ | progress |  |
-| W-70 | feature | Phase 0: docs restructure (plans/architecture/security trees) + SECURITY.md | G-16 | complicated | ⊤ | done |  |
-| W-71 | feature | bin/sign.sh + bin/verify.sh with test vectors (LibreSSL interop resolved) | G-16 | complicated | ⊤ | done |  |
-| W-72 | feature | Key-generation runbook written, then executed; public key committed, secret in release env | G-16 | complicated | ⊤ | done |  |
-| W-73 | feature | bin/manifest.sh generating the stable flat manifest with golden tests | G-16 | complicated | ⊤ | done |  |
-| W-74 | feature | install.sh bootstrap + tests/install matrix suite + README install rewrite | G-16 | complicated | ⊤ | done |  |
-| W-75 | feature | GitHub hardening settings + coverage.yml SHA-pins + Rust/desktop PR CI | G-16 | complicated | ⊤ | done |  |
-| W-76 | feature | bin/audit.sh (trivy wrapper, VEX-aware) + security-scan.yml (PR, weekly, dispatch) | G-16 | complicated | ⊤ | done |  |
-| W-77 | feature | bin/sbom.sh + vex.json schema/validation + vendored JS provenance (drop unused rx/htmx) | G-16 | complicated | ⊤ | done |  |
-| W-78 | feature | release.yml: matrix build, audit gate, approval-gated sign-and-publish, dist/ commit-back, attestations, smoke | G-16 | complicated | ⊤ | done |  |
-| W-79 | feature | Dry-run release end-to-end, then v0.1.0 dress rehearsal; gaps recorded in runbooks | G-16 | complicated | ⊤ | done |  |
-| W-80 | feature | Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs | G-16 | complicated | ⊤ | done |  |
-| W-81 | feature | install.ps1: PowerShell installer for Windows with trust-chain parity to install.sh | G-16 | complicated | ⊤ | done |  |
-| W-82 | feature | Pre-release hardening: input validation, tag-pinned build, audit UNKNOWN tier, smoke test, workflow nits | G-16 | complicated | ⊤ | done |  |
-| W-83 | feature | Desktop release artifacts: tauri bundles in the matrix, installers install grove-desktop, desktop SBOM coverage | G-16 | complicated | ⊤ | done |  |
-| W-84 | feature | Plan text sync: PowerShell constraint, per-component keys, rx.js retention, desktop scope | G-16 | complicated | ⊤ | done |  |
-| W-85 | refactor | Unify desktop component naming to grove-desktop across installers, manifest keys, and build outputs | G-16 | clear | ⊤ | done |  |
-| W-86 | feature | Post-audit fixes: artifact name collision, desktop chmod, VEX exact match, pip pin, notes heredoc | G-16 | complicated | ⊤ | done |  |
-| W-87 | feature | Skill bundle: generated single-file grove-skill.md as a signed release artifact | G-16 | complicated | ⊤ | done |  |
-| W-88 | feature | grove://skill primer resource in grove-mcp (compact protocol text embedded in the server) | G-16 | complicated | ⊤ | done |  |
-| W-89 | feature | Desktop launcher integration in installers (Windows .lnk, macOS .app stub, Linux .desktop) | G-16 | clear | ⊤ | done |  |
-| W-90 | feature | Idempotent PATH integration in install.sh and install.ps1 | G-16 | clear | ⊤ | done |  |
 
 ## Decisions
 
@@ -96,7 +74,6 @@
 | ID | Title | Status | Causes work | Themed work |
 | --- | --- | --- | --- | --- |
 | T-01 | Scaling performance | open | – | W-04, W-05 |
-| T-03 | Release distribution pipeline | open | W-85 | – |
 
 ## Discoveries
 
@@ -115,34 +92,12 @@
 graph TD
   G_02["G-02: Programmatic API with CLI parity and perf budget"]:::goal
   G_04["G-04: Agent discovery-to-delivery loop via MCP only"]:::goal
-  G_16["G-16: Release distribution and signing: binary artifacts, signed manifest, installer, CI"]:::goal
   W_03["W-03: Extract Grove.API structured layer; CLI as thin renderer"]:::feature,critical
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_06["W-06: grove serve: JSON-lines over stdio and localhost TCP"]:::rejected
   W_10["W-10: MCP server over grove-core: stdio JSON-RPC, tools 1:1 to CLI"]:::done
   W_11["W-11: Validate MCP against real clients"]:::progress
-  W_70["W-70: Phase 0: docs restructure (plans/architecture/security trees) + SECURITY.md"]:::done
-  W_71["W-71: bin/sign.sh + bin/verify.sh with test vectors (LibreSSL interop resolved)"]:::done
-  W_72["W-72: Key-generation runbook written, then executed; public key committed, secret in release env"]:::done
-  W_73["W-73: bin/manifest.sh generating the stable flat manifest with golden tests"]:::done
-  W_74["W-74: install.sh bootstrap + tests/install matrix suite + README install rewrite"]:::done
-  W_75["W-75: GitHub hardening settings + coverage.yml SHA-pins + Rust/desktop PR CI"]:::done
-  W_76["W-76: bin/audit.sh (trivy wrapper, VEX-aware) + security-scan.yml (PR, weekly, dispatch)"]:::done
-  W_77["W-77: bin/sbom.sh + vex.json schema/validation + vendored JS provenance (drop unused rx/htmx)"]:::done
-  W_78["W-78: release.yml: matrix build, audit gate, approval-gated sign-and-publish, dist/ commit-back, attestations, smoke"]:::done
-  W_79["W-79: Dry-run release end-to-end, then v0.1.0 dress rehearsal; gaps recorded in runbooks"]:::done
-  W_80["W-80: Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs"]:::done
-  W_81["W-81: install.ps1: PowerShell installer for Windows with trust-chain parity to install.sh"]:::done
-  W_82["W-82: Pre-release hardening: input validation, tag-pinned build, audit UNKNOWN tier, smoke test, workflow nits"]:::done
-  W_83["W-83: Desktop release artifacts: tauri bundles in the matrix, installers install grove-desktop, desktop SBOM coverage"]:::done
-  W_84["W-84: Plan text sync: PowerShell constraint, per-component keys, rx.js retention, desktop scope"]:::done
-  W_85["W-85: Unify desktop component naming to grove-desktop across installers, manifest keys, and build outputs"]:::done
-  W_86["W-86: Post-audit fixes: artifact name collision, desktop chmod, VEX exact match, pip pin, notes heredoc"]:::done
-  W_87["W-87: Skill bundle: generated single-file grove-skill.md as a signed release artifact"]:::done
-  W_88["W-88: grove://skill primer resource in grove-mcp (compact protocol text embedded in the server)"]:::done
-  W_89["W-89: Desktop launcher integration in installers (Windows .lnk, macOS .app stub, Linux .desktop)"]:::done
-  W_90["W-90: Idempotent PATH integration in install.sh and install.ps1"]:::done
   D_04["D-04: grove-mcp: NDJSON stdio, tools 1:1 to commands, CLI exit codes as tool content"]:::decision
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -158,7 +113,6 @@ graph TD
   B_03["B-03: Distill yield stays above noise at archive gates"]:::assumption
   B_04["B-04: DoR refusals followed by discovery raise first-pass evidence acceptance"]:::assumption
   T_01["T-01: Scaling performance"]:::theme
-  T_03["T-03: Release distribution pipeline"]:::theme
   Y_01["Y-01: Normalize at capture, never inject test clocks"]:::discovery
   Y_02["Y-02: Never gate a validation task on the hypotheses it validates"]:::discovery
   Y_03["Y-03: Integration surfaces are thin adapters over the core CLI contract"]:::discovery

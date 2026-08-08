@@ -1769,3 +1769,4 @@
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-08-08T17:03:21Z","inv":{"old_status":"active","id":"Y-05","op":"set_status_plain"}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-08-08T17:04:14Z","inv":{"old_status":"active","id":"Y-06","op":"set_status_plain"}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-08-08T17:04:15Z","inv":{"goal":"G-16","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-08-08T18:33:05Z","inv":{"ids":["G-16","T-03","W-70","W-71","W-72","W-73","W-74","W-75","W-76","W-77","W-78","W-79","W-80","W-81","W-82","W-83","W-84","W-85","W-86","W-87","W-88","W-89","W-90"],"id":"G-16","op":"archive"}}

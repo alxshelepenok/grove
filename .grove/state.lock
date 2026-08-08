@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:0eb960c06bdc970cc831ed6ca2e3ef73a535741824e55b9a4793c3f44accefe3
+# checksum: sha256:ffd1b58897f39a304bce048356fccf6852c476e42244cec892d96903ba648b82
 g G-02 status=unverified fitness_kind=count t_created=2026-07-19T01:14:01Z t_updated=2026-07-19T01:14:01Z "Programmatic API with CLI parity and perf budget"
   area: A-02
   fitness_target: 2
@@ -8,11 +8,6 @@ g G-02 status=unverified fitness_kind=count t_created=2026-07-19T01:14:01Z t_upd
 g G-04 status=verified fitness_kind=boolean t_created=2026-07-19T01:14:16Z t_updated=2026-07-20T04:40:23Z "Agent discovery-to-delivery loop via MCP only"
   area: A-04
   fitness_current: true
-
-g G-16 status=verified fitness_kind=count t_created=2026-08-04T19:44:12Z t_updated=2026-08-08T15:02:56Z "Release distribution and signing: binary artifacts, signed manifest, installer, CI"
-  area: A-06
-  fitness_target: 19
-  fitness_current: 20
 
 w W-03 type=refactor status=proposed cynefin=complex t_created=2026-07-19T01:14:57Z t_updated=2026-08-07T00:47:51Z "Extract Grove.API structured layer; CLI as thin renderer"
   goals: G-02
@@ -91,305 +86,6 @@ w W-11 type=feature status=progress cynefin=clear session=desktop-5a9h5ko:b9ace3
     | remaining for client sign-off: repeat loop + refusals through mcp__grove__* tools in a Kimi session (server config confirmed at ~/.kimi-code/mcp.json); checklist prepared, zero-side-effect refusal demos possible on proposed W-12..W-14 and on W-11 itself
   why:
     | Enabling work: client validation de-risks the MCP surface but adds no fitness delta
-
-w W-70 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:08Z t_updated=2026-08-04T23:37:02Z "Phase 0: docs restructure (plans/architecture/security trees) + SECURITY.md"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | docs/plans, docs/architecture, docs/security/{runbooks,artifacts/{public-keys,schemas}} trees created; docs/design/* moved with type/status frontmatter; docs/skill renamed to docs/skills with all inbound references updated (roadmap.md, moved plans)
-    | SECURITY.md at repo root per plan §4.10 outline (reporting via GitHub private vulnerability reporting, response targets, supported versions, safe harbour, scope exclusions referencing vex.json); private vulnerability reporting enabled on the repo (manual GitHub step)
-  hypothesis:
-    | pure docs restructure; the only external dependency is the GitHub setting
-  evidence_strategy:
-    | tree listing vs §4.9; link grep; SECURITY.md content review
-  evidence:
-    | plan §4.9 layout matches the tree on disk; grep finds no docs/skill references; SECURITY.md renders in the repo Security tab
-    | docs/ restructured per plan section 4.9: docs/skill renamed to docs/skills (12 inbound refs updated: README.md x1, docs/roadmap.md x10, discovery-artifacts.md x1), docs/design/* moved to docs/plans/ with type/status frontmatter added, docs/architecture + docs/security/{runbooks,artifacts/{public-keys,schemas}} created. Discovery surfaces repaired after the move: Y-02 and Y-04 revalidated to docs/plans/* paths (decay cleared, grove check ok). grep: no stale docs/skill/ references except the plan's own historical instruction. SECURITY.md at repo root per section 4.10 (PVR primary, targets-not-SLA, rolling support table, safe harbour, process, verification pointers, out-of-scope incl. vex.json). Private vulnerability reporting enabled on the repo (user via UI; API confirms enabled:true).
-
-w W-71 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:08Z t_updated=2026-08-04T23:22:29Z "bin/sign.sh + bin/verify.sh with test vectors (LibreSSL interop resolved)"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | bin/sign.sh produces detached base64url RSA-PSS signatures with a local key; bin/verify.sh verifies against a committed public key; test vectors cover known-good, tampered, wrong-key, truncation
-    | LibreSSL (macOS) interop for openssl dgst PSS is tested and the result recorded in plan §7.1 (fallback PKCS#1 v1.5 if interop fails)
-  hypothesis:
-    | openssl is the single external dependency; PSS is supported across OpenSSL 3.x, LibreSSL, Git Bash
-  evidence_strategy:
-    | test vectors run on ubuntu/macos/windows(Git Bash) CI legs; interop result appended to plan §7
-  evidence:
-    | bin/sign.sh + bin/verify.sh: RSA-2048/PSS (saltlen=digest), base64url no-pad detached sigs. tests/crypto/test-sign.sh: 5/5 vectors pass (known-good, base64url alphabet, tampered, wrong-key, truncation) on OpenSSL 3.5.4 (Git Bash). LibreSSL 3.3.6 (macOS 15 flavor) built from source in Y:/tmp/w71-libressl: full suite 5/5 under LibreSSL; cross-interop OK both directions (openssl-sign->libressl-verify, libressl-sign->openssl-verify). Plan updated: final flags recorded in section 4.2, open question 7.1 marked resolved (no PKCS1 v1.5 fallback needed). cargo test --workspace --exclude grove-desktop green; grove check ok.
-
-w W-72 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:08Z t_updated=2026-08-05T16:26:59Z "Key-generation runbook written, then executed; public key committed, secret in release env"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | docs/security/runbooks/key-generation.md written in the reference runbook style (Prerequisites/Steps/Rollback), then executed: RSA-2048 keypair generated, public half committed to docs/security/artifacts/public-keys/, private half stored in the release environment secret and an offline backup
-  hypothesis:
-    | the manual steps (secret storage, offline backup) are executed by the maintainer following the runbook; the document is both procedure and record
-  evidence_strategy:
-    | runbook exists and matches what was executed; public key committed; secret presence confirmed without revealing it
-  evidence:
-    | docs/security/runbooks/key-generation.md written in the reference style (Prerequisites/Steps/Rollback + execution log). Executed by the maintainer with a self-regenerated pair: public half committed at docs/security/artifacts/public-keys/grove-manifest-2026-08.pem, fingerprint 72d7aabe9c2ffcb4 matches the execution log (steps 1-8 done) and the GROVE_TRUSTED_KEYS heredoc embedded in install.sh (synced and byte-verified). Secret GROVE_MANIFEST_SIGNING_KEY confirmed present in the release environment via API (name only). Offline backup recorded by the maintainer. Earlier staged copy in Y:/tmp/w72-keys (from the abandoned first pair) shredded.
-
-w W-73 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:08Z t_updated=2026-08-04T23:29:09Z "bin/manifest.sh generating the stable flat manifest with golden tests"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | bin/manifest.sh emits manifest.json in the stable flat one-field-per-line format (version, created_at, expires_at, channels.stable.sequence read from dist/manifest.json + 1, artifact url/sha256/size entries) from SHA256SUMS + version input
-    | golden-file unit tests prove the output stays byte-stable so install.sh's non-jq parsing remains reliable
-  hypothesis:
-    | a flat generated format makes sed/grep extraction dependable without jq
-  evidence_strategy:
-    | golden tests in CI; round-trip: manifest parsed by the install.sh extraction logic
-  evidence:
-    | bin/manifest.sh: deterministic flat manifest generator (version/created_at/expires_at+180d/channels.stable.sequence from dist/manifest.json+1/artifacts key=comp_target with url+sha256+size from SHA256SUMS and stat; BSD/GNU date+stat fallbacks; --now for reproducibility). tests/manifest/test-manifest.sh: 10/10 pass incl. byte-identical golden (tests/manifest/golden/manifest.json, 8 artifacts grove+grove-mcp x 4 targets), sed/grep round-trip extraction spec for install.sh, sequence bump 1->2, fail-closed on no-match. Fixed SHA256SUMS two-word parse bug found by first run. No Rust changes since last green cargo test; grove check ok.
-
-w W-74 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:08Z t_updated=2026-08-05T00:23:43Z "install.sh bootstrap + tests/install matrix suite + README install rewrite"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | install.sh in repo root per plan §4.3: verify-then-parse against the embedded public key, expires_at/sequence/MINIMUM_SEQUENCE checks, host allowlist, sha256+size verification, installs grove + grove-mcp into ~/.local/grove/bin, --channel/--version/--only/GROVE_ARTIFACT_URL handling, --self-test mode
-    | tests/install runs in CI on ubuntu/macos/windows(Git Bash): happy path fixture, tampered/expired/rolled-back manifest rejected, wrong host rejected, hash mismatch rejected, break-glass path works; README install section rewritten (one-liner + verify-then-run + platform notes); egress assertion recorded (grove/grove-mcp open no network connections)
-  hypothesis:
-    | pure bash + openssl + curl; the flat manifest format keeps non-jq parsing reliable
-  evidence_strategy:
-    | matrix CI suite green; README reviewed; egress check result recorded into compliance.md input
-  evidence:
-    | install.sh (repo root, pure bash + openssl + curl): verify-then-parse RSA-PSS against embedded release key grove-manifest-2026-08 (keypair generated, private half staged in Y:/tmp/w72-keys 0700 for the manual batch, public half committed to docs/security/artifacts/public-keys/), expires_at with 24h skew, sequence + MINIMUM_SEQUENCE, host allowlist pinned to the release origin, sha256+size checks, installs grove + grove-mcp into ~/.local/grove/bin, --channel/--version/--only/--prefix, GROVE_ARTIFACT_URL break-glass with loud warning, GROVE_FETCH_ROOT/GROVE_TRUSTED_KEY_FILE test hooks, --self-test 6/6. Design fix: all artifacts .tar.gz incl. windows (zip dropped - no unzip on Git Bash; plan 4.1 to be updated). tests/install/test-install.sh 16/16 (happy path, --only, tampered+message, expired+message, rollback, wrong host, hash/size mismatch, break-glass x3, self-test). shell-tests.yml matrix ubuntu/macos/windows with shell:bash, checkout pinned 11bd719. README Install rewritten (one-liner, verify-then-run, options, platform notes, manual path, source install keeps Julia). Egress assertion: cargo tree grove-core (20 deps) and grove-mcp (22 deps) contain zero network crates (no reqwest/hyper/tokio/ureq/curl/tls/websocket/tcp) - binaries have no egress capability, recorded for compliance.md. All suites green locally; CI legs run after push (manual batch). grove check ok.
-
-w W-75 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:59Z t_updated=2026-08-05T16:26:46Z "GitHub hardening settings + coverage.yml SHA-pins + Rust/desktop PR CI"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | GitHub settings per plan §4.5 (manual maintainer steps): release environment with required reviewer restricted to main, branch and tag protection, CODEOWNERS on workflows/install.sh/bin/dist/docs/security, Actions pinned-by-SHA policy, Dependabot with 7-day cooldown incl. Julia beta
-    | coverage.yml actions SHA-pinned; a PR workflow runs cargo test --workspace (incl. the desktop suite) alongside the Julia coverage job
-  hypothesis:
-    | settings are console clicks by the maintainer; CI changes are committed files
-  evidence_strategy:
-    | settings checklist executed and ticked; PR CI shows both ecosystems green on a test PR
-  evidence:
-    | GitHub settings verified via API (read-only): environment 'release' has required reviewer alxshelepenok + deployment restricted to main; secret GROVE_MANIFEST_SIGNING_KEY present in the environment (name only, not revealed); ruleset main-branch-ruleset active on refs/heads/main (deletion, non_fast_forward, required_status_checks, pull_request); ruleset main-tag-ruleset active on refs/tags/v* (creation, non_fast_forward); Actions policy sha_pinning_required=true. Committed configs: .github/CODEOWNERS (workflows, install.sh[.sig], bin/, dist/, docs/security/), .github/dependabot.yml (cargo + julia beta + github-actions, 7-day cooldown each), coverage.yml SHA-pinned (checkout 11bd719 v4.2.2, setup-julia fa02766 v3.0.2, julia-cache b7788ab v3.2.0, upload-artifact 043fb46 v7.0.1) with contents:read, new rust-tests.yml (cargo test --workspace --locked incl. desktop suite, tauri system deps + xvfb, actions/cache v6.1.0 pinned). PR-visible CI runs after the push (user pushes himself).
-
-w W-76 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:59Z t_updated=2026-08-05T00:07:09Z "bin/audit.sh (trivy wrapper, VEX-aware) + security-scan.yml (PR, weekly, dispatch)"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | bin/audit.sh wraps pinned trivy over Cargo.lock and packages/grove/Manifest.toml with the severity policy (CRITICAL/HIGH fatal), --fail-closed release mode, and VEX not_affected handling; trivy Julia scanning verified against a fixture with a known JLSEC advisory (bin/audit.jl fallback if it fails)
-    | .github/workflows/security-scan.yml: PR check (fail-open on scanner outage), weekly schedule, workflow_dispatch
-  hypothesis:
-    | trivy parses Manifest.toml natively (Julia Security WG work) and JLSEC data reaches its DB via osv.dev
-  evidence_strategy:
-    | fixture with HTTP.jl 1.10.15 (known JLSEC/CVE) is flagged; PR check and weekly run visible in Actions
-  evidence:
-    | bin/audit.sh: thin trivy wrapper (--severity CRITICAL,HIGH, --fail-closed release mode, per-target runs over Cargo.lock + packages/grove/Manifest.toml); VEX not_affected handled by bin/audit-filter.jl post-filter (id + package match) because trivy --vex only works with CycloneDX SBOM targets. Fixture verification: Manifest.toml with HTTP.jl 1.10.15 flagged CVE-2025-52479 + CVE-2025-61689 (HIGH) - trivy needs manifest_format/julia_version header to detect Julia; VEX statement suppresses by id+pkg. tests/audit/test-audit.sh 6/6 pass incl. real repo audit (lockfiles clean) and fail-open/fail-closed on scanner outage. security-scan.yml: PR (fail-open) + weekly cron 41 3 * * 2 + dispatch (fail-closed), actions/checkout pinned 11bd719 (v4.2.2), setup-julia pinned fa02766 (v3.0.2), trivy 0.73.0 binary with sha256 checksum verification, VEX validation step. bin/audit.jl OSV fallback dropped as unneeded; plan 7.5/7.6 marked resolved. Weekly visibility in Actions pending push (manual batch). grove check ok; cargo tests green (unchanged Rust).
-
-w W-77 type=feature status=done cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-04T23:57:40Z "bin/sbom.sh + vex.json schema/validation + vendored JS provenance (drop unused rx/htmx)"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | bin/sbom.sh generates CycloneDX 1.6 sbom.cdx.json covering Cargo.lock (cargo-cyclonedx) and Manifest.toml (trivy; fallback PkgToSoftwareBOM.jl or bin/sbom.jl); docs/security/artifacts/schemas/vex.schema.json + CI validation; initial empty vex.json committed
-    | ui/js/vendor/PROVENANCE.md records upstream URL, exact version and SHA-256 for every retained vendored file; unused rx.js, htmx.js and js/lib/rxjs-imports.js are removed (d3 stays, used by the graph view)
-  hypothesis:
-    | both SBOM halves come from committed lockfiles; vendored JS is covered by provenance hashes instead of a package manager
-  evidence_strategy:
-    | SBOM validates against the CycloneDX schema and lists both ecosystems; provenance hashes recompute; desktop smoke shows the graph view intact without rx/htmx
-  evidence:
-    | bin/sbom.sh + bin/merge-cdx.jl: merged CycloneDX 1.6 SBOM (cargo-cyclonedx 0.5.9 for grove-core/grove-mcp pkg:cargo, trivy 0.73.0 for packages/grove pkg:julia); generated doc validates against the official CycloneDX 1.6 JSON schema (jsonschema), 28 components (15 cargo + 12 julia + apps). VEX: docs/security/artifacts/schemas/vex.schema.json + bin/validate-vex.jl + initial empty vex.json; tests/vex/test-vex.sh 5/5 (committed vex valid, not_affected accepted, missing justification rejected, bad state rejected, bad id rejected); CI wiring lands with security-scan.yml in W-76. Vendored JS: rx.js/htmx.js/js/lib/rxjs-imports.js deleted (zero references in app code), script tags removed from index.html; d3.js restored to byte-exact upstream d3.min.js@7.9.0 (license banner intact, sha256 f2094bbf... matches npm/unpkg) and recorded in packages/desktop/ui/js/vendor/PROVENANCE.md. Desktop smoke (w77smoke identifier, CDP): graph view intact - canvas + 38 node labels, d3 present, rxjs/htmx undefined, zero console errors, screenshot verified. cargo test workspace + grove-desktop green; grove check ok.
-
-w W-78 type=feature status=done cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-05T17:36:18Z "release.yml: matrix build, audit gate, approval-gated sign-and-publish, dist/ commit-back, attestations, smoke"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | .github/workflows/release.yml per plan §4.4: workflow_dispatch with version input; matrix build (ubuntu-latest, macos-latest, macos-15-intel, windows-latest; grove + grove-mcp each, --locked) with tests; audit gate; approval-gated sign-and-publish (SHA-pinned official actions only, umask 077 key handling, SHA256SUMS, manifest via bin/manifest.sh, SBOM/VEX signing, gh release create, dist/ + docs/security/artifacts commit-back, attestations); dry-run/manifest-only/transparency-only inputs; post-release smoke step
-  hypothesis:
-    | one job signs everything; no caches and official artifact hand-off only, per the plan's injection-surface rules
-  evidence_strategy:
-    | dry-run input exercised end-to-end; workflow file reviewed against §4.4/§4.5 checklists
-  evidence:
-    | .github/workflows/release.yml per plan 4.4: workflow_dispatch with version + mode (dry-run default, release, manifest-only, transparency-only). build matrix 4 targets (ubuntu-latest/macos-latest/macos-15-intel/windows-latest, cargo build --release --locked -p grove-core -p grove-mcp + cargo test --workspace --exclude grove-desktop --locked, tar.gz packaging, upload-artifact pinned 043fb46 v7.0.1). audit gate: trivy 0.73.0 with sha256 checksum + bin/audit.sh --fail-closed. sbom job: setup-julia fa02766 + trivy + cargo-cyclonedx 0.5.9, bin/sbom.sh, VEX validation. sign-and-publish: environment release (release-dry for dry-run with ephemeral key, real secret untouched), official actions only, umask 077 key import + fingerprint cross-check against committed pubkey, SHA256SUMS, manifest via bin/manifest.sh, SBOM/VEX/install.sh.sig signing, preconditions (version format, tag must pre-exist, release must not), gh release create --verify-tag, commit-back with PR fallback for the protected main, attest-build-provenance pinned 0f67c3f v4.1.1, post-release smoke (manifest sig + artifact hash against committed pubkey). bin/manifest.sh --refresh added for manifest-only (2 new golden tests, 12/12 pass) + mkdir -p output dir fix. Checklist review against 4.4/4.5 done: no caches, no pull_request_target, scoped token permissions, approval gate on every key use. yaml parses; shell suites 12/12 + 16/16; grove check ok. Live dry-run execution is W-79 scope (needs the push).
-
-w W-79 type=feature status=done cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-08T14:30:14Z "Dry-run release end-to-end, then v0.1.0 dress rehearsal; gaps recorded in runbooks"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | a dry-run release on a throwaway version completes end-to-end; then the real v0.1.0 release is published as dress rehearsal; the release-security-checks runbook passes (manifest sig verifies against the committed public key, tampered/expired/rollback fixtures rejected, clean-machine one-liner install works, attestation verifies, SBOM/VEX attached); gaps recorded into the runbooks
-    | release-security-checks follow the plan §6 invariants as the checklist basis: verify-then-parse and hash-before-install hold, approval gate used, URL allowlist enforced, sequence strictly increasing, TTL honored, lockfile-frozen build, audit gate passed, dist/ byte-identical, SBOM attached and signed, VEX schema-valid and current
-    | out-of-band modes verified once before v0.1.0 or explicitly deferred: manifest-only (refresh) and transparency-only (VEX re-sign) inputs behave per the runbook contracts
-  hypothesis:
-    | the ceremony is executable from the runbook without improvisation
-  evidence_strategy:
-    | published v0.1.0 on GitHub Releases verifies on a clean machine via install.sh; runbook diff records every gap found
-  evidence:
-    | v0.1.1 published: 32 assets (4 CLI/MCP targets, desktop dmg/deb/AppImage/msi/nsis/tar.gz, sbom, vex, sigs); run 31258908586 builds+audit+sbom green
-    | smoke: manifest.json/install.sh/install.ps1 sigs verify against committed public key; grove-mcp win-x64 sha256 matches signed manifest; sequence=2, expires_at=2027-02-04
-    | clean installs ok: bash one-liner and install.ps1 (isolated HOME) installed all 3 components, .sequence written; user machine on 0.1.1 seq 2
-    | gaps found and fixed: commit-back PR creation denied (release.yml: step moved last, PR failure = warning); same-sequence reinstall refused (installers -le -> -lt, tests 21/21 sh + 17/17 ps1); PR #14 merged, raw main serves manifest 0.1.1 seq 2
-    | runbook gaps recorded: enable 'Actions can create PRs' repo setting; PR-create fallback now manual-link warning
-
-w W-80 type=feature status=done cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-08T17:02:39Z "Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | CONTRIBUTING.md gains the dependency policy section (necessity, permissive license, no install scripts, build.rs/JLL red flags); the seven runbooks exist in the reference style and each has been executed once; docs/architecture/{release-distribution,bootstrap-trust,supply-chain-trust,key-management}.md (type: system) and docs/security/{compliance,annex-vii}.md (type: policy) describe the as-built system
-    | runbook set in the reference style (purpose, Prerequisites, Steps with exact commands, Rollback; checklists with Purpose/Steps/Expected Result): publish-release; release-security-checks; rotate-signing-key (annual and incident: new keypair, pubkey embedded one release ahead, env secret swap, MINIMUM_SEQUENCE bump on suspected compromise); manifest-refresh (>180 days without a release: sequence bump, new created_at/expires_at, re-sign, re-attach, dist/ commit via the workflow refresh input); update-vex (triage finding, statement with justification, schema validation, commit, re-sign at next release or via transparency-only); incident-response (revoke and rotate, blast radius via dist/ log and attestation history, notify via SECURITY.md, post-incident review)
-    | docs/architecture (type: system, status: stable): release-distribution.md, bootstrap-trust.md, supply-chain-trust.md, key-management.md (key inventory, CI secret storage, rotation policy); docs/security (type: policy): compliance.md (CRA applicability analysis and revisit triggers per D-08, semver, support period, artifact signing table, egress allowlist, telemetry policy) and annex-vii.md (why full Annex VII N/A, transparency artifact inventory, in-git retention, what full Annex VII would require); each runbook executed once and reconciled with reality
-    | CONTRIBUTING.md dependency policy (necessity, permissive license, no install scripts, build.rs network access and heavy JLLs as red flags); compliance.md also records the deferred options: nightly channel, cargo deny, PGP key + security.txt if Grove gets a website, offline/hardware signing return per D-05
-    | operational cadence documented: every release executes publish-release + release-security-checks; annual or incident rotation; >180 days without a release triggers manifest-refresh; weekly scan findings triage per update-vex with nothing untriaged past one weekly cycle
-  hypothesis:
-    | written after implementation so the documents describe what exists, not what was planned
-  evidence_strategy:
-    | document set matches plan §4.9/§4.10 outlines; frontmatter conventions hold
-  evidence:
-    | Created 13 docs, all frontmatter type/status stable, ASCII-only verified byte-level: runbooks docs/security/runbooks/{publish-release 70, release-security-checks 119, rotate-signing-key 63, manifest-refresh 68, update-vex 65, incident-response 75}; architecture docs/architecture/{release-distribution 105, bootstrap-trust 79, supply-chain-trust 76, key-management 67} type=system; docs/security/{compliance 72, annex-vii 50} type=policy; CONTRIBUTING.md 50 with 4-rule dependency policy. Runbook reconciliation: publish-release executed end-to-end on v0.1.1 and v0.1.2; release-security-checks items run locally - bin/verify.sh OK x3 (manifest.json, vex.json, sbom.cdx.json vs grove-manifest-2026-08.pem); julia --project=packages/grove bin/validate-vex.jl OK (0 statements); install.sh --self-test 7/7; key-generation runbook executed 2026-08 (execution log in file). rotate-signing-key/manifest-refresh/incident-response not yet triggered for real - every command verified against release.yml (modes manifest-only/transparency-only, release/vX.Y.Z and release/<mode>-<timestamp> commit-back branches) and installer sources. Reality deviations recorded in docs: single trust anchor per installer (ps1 = modulus hex, no two-key overlap), expiry +24h grace, equal sequence accepted, bin/audit.jl osv.dev fallback never implemented (trivy parses Julia Manifest.toml natively), grove-skill.md and SLSA attestations in signing coverage. grove check ok.
-
-w W-81 type=feature status=done cynefin=complicated t_created=2026-08-05T16:50:36Z t_updated=2026-08-05T17:09:45Z "install.ps1: PowerShell installer for Windows with trust-chain parity to install.sh"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | install.ps1 mirrors install.sh in Windows PowerShell 5.1+: fetch manifest.json + .sig from the pinned origins, verify RSA-2048/PSS via RSACng against the embedded release key (verify-then-parse), expires_at with 24h skew, sequence + MINIMUM_SEQUENCE anti-rollback (~/.grove/.sequence), host allowlist, sha256+size checks, installs grove.exe + grove-mcp.exe into %USERPROFILE%\.local\grove\bin; --Channel/--Version/--Only params and GROVE_ARTIFACT_URL break-glass with a loud warning
-    | release workflow signs and attaches install.ps1 + install.ps1.sig (and smoke-verifies the detached sig); tests/install suite runs the PowerShell vectors on the windows-latest CI leg (happy, tampered, expired, rollback, wrong host, hash mismatch, break-glass); README Windows install section updated
-  hypothesis:
-    | PowerShell 5.1 ships RSACng and Invoke-WebRequest on every supported Windows, so RSA-PSS verification in-process needs no external dependency; parity with the bash installer is mechanical
-  evidence_strategy:
-    | pwsh suite green on the windows-latest CI leg; release.yml signs install.ps1.sig and the post-release smoke verifies it against the committed public key
-  evidence:
-    | install.ps1: full trust-chain parity with install.sh in Windows PowerShell 5.1 - RSA-2048/PSS verify in-process via RSACng with the release key embedded as modulus+exponent (SPKI PEM import does not exist in .NET Framework), verify-then-parse via ConvertFrom-Json, expires_at with 24h skew, sequence + MINIMUM_SEQUENCE anti-rollback, GROVE_HOME-aware .sequence (LF endings), host allowlist, sha256+size checks, tar.exe (System32 bsdtar) unpack, -Channel/-Version/-Only/-Prefix params, GROVE_ARTIFACT_URL break-glass with loud warning. tests/install/test-install.ps1: 13/13 on local PowerShell 5.1.26100 - happy, binaries, sequence, -Only, tampered, expired, rollback, wrong host, hash/size mismatch, break-glass x3, and the production pairing: openssl-signed (bin/sign.sh) manifest verifies under RSACng. Found and fixed during testing: wrapper exit-code propagation (), HOME/USERPROFILE not overridable in child (switched to GROVE_HOME + explicit -Prefix), MSYS tar vs Windows paths (System32 bsdtar), CRLF tolerance in read_sequence (both installers). Accidental writes of fake binaries to real ~/.local/grove + ~/.grove/.sequence during a broken test run were cleaned. CI: ps1 suite on the windows-latest leg of shell-tests.yml; release.yml signs+attaches install.ps1[.sig], smoke-verifies the sig, commit-back includes it; CODEOWNERS covers both installers; README Windows section has the iwr|iex one-liner. bash suites 16/16 + 12/12 + 5/5 still green; grove check ok.
-
-w W-82 type=feature status=done cynefin=complicated t_created=2026-08-05T17:46:47Z t_updated=2026-08-05T18:08:33Z "Pre-release hardening: input validation, tag-pinned build, audit UNKNOWN tier, smoke test, workflow nits"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | release.yml: inputs.version validated before any use and never interpolated unvalidated into shell (env: passing); the build checks out refs/tags/v<version> in release mode (or asserts HEAD equals the tag); dependency gate rejects cancelled (not only failure); concurrency group on the workflow
-    | bin/audit.sh: trivy severity selection includes UNKNOWN so JLSEC Julia advisories cannot vanish silently, with the wrapper mapping UNKNOWN per the documented policy; audit-filter.jl VEX suppression matches package AND version
-    | post-release smoke downloads the published install.sh/install.sh.sig and verifies them against the committed public key (not local files); install.sh.sig covered symmetrically with install.ps1.sig
-    | install.sh/install.ps1: trust-override env hooks (GROVE_TRUSTED_KEY_FILE, GROVE_FETCH_ROOT, GROVE_HOME, GROVE_TRUSTED_MODULUS_HEX) print a loud warning like GROVE_ARTIFACT_URL; vex JSON schema actually validates in CI (or is removed); upload-artifact pin comment verified against the real SHA; coverage.yml Julia version aligned to 1.12
-  hypothesis:
-    | all items are localized edits to the workflow, the audit wrapper, and the installers; no trust-model changes
-  evidence_strategy:
-    | shell test suites extended (injection-shaped version rejected, cancel-gate, UNKNOWN advisory fixture flagged, loud-override warnings); yaml review; cargo + shell CI green
-  evidence:
-    | release.yml hardened per Y-05: validate job gates build/audit/sbom (version regex via env-passed VERSION, never shell-interpolated unvalidated); build+sign checkout refs/tags/vVERSION in release mode with HEAD==tag assertion (ls-remote peel); sign job gate is always() + !failure() + !cancelled(); concurrency group grove-release-MODE without cancel-in-progress; all inputs reach bash via env (VERSION/MODE), zero unvalidated interpolation left; smoke downloads the PUBLISHED install.sh/.sig + install.ps1/.sig and verifies against the committed public key (symmetric), plus manifest sig + artifact hash. audit: trivy --severity CRITICAL,HIGH,UNKNOWN with UNKNOWN mapped to non-blocking warnings (JLSEC no longer vanishes); audit-filter.jl VEX suppression requires package AND version match (pkg@ver in ref). installers: loud WARNING when GROVE_TRUSTED_KEY_FILE/GROVE_FETCH_ROOT/GROVE_HOME (sh) or GROVE_TRUSTED_MODULUS_HEX/GROVE_FETCH_ROOT/GROVE_HOME (ps1) are set. vex.json validated against vex.schema.json with python jsonschema in security-scan.yml + release sbom/transparency steps. All 7 action pins re-verified against the API (checkout v4.2.2, upload v7.0.1, download v8.0.1, attest v4.1.1, cache v6.1.0, setup-julia v3.0.2, julia-cache v3.2.0). coverage.yml Julia aligned to 1.12. Tests: manifest 13/13 (incl. injection-shaped version rejected without evaluation), audit 8/8 (UNKNOWN warning tier, wrong-version VEX no-suppress), install bash 17/17 + ps1 14/14 (loud-warning assertions). yaml parses; grove check ok.
-
-w W-83 type=feature status=done cynefin=complicated t_created=2026-08-05T17:46:47Z t_updated=2026-08-05T19:13:24Z "Desktop release artifacts: tauri bundles in the matrix, installers install grove-desktop, desktop SBOM coverage"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | release.yml gains desktop build legs (tauri-cli pinned with checksum): windows nsis+msi, macos dmg (arm64 + x64 via macos-15-intel), linux deb/AppImage (webkit2gtk deps as in rust-tests.yml); a portable archive of grove-desktop per platform is produced alongside the OS bundles
-    | manifest artifact keys desktop_* per platform; install.sh and install.ps1 install grove, grove-mcp AND the desktop app by default (portable archive unpacked under the install root; --only extended with a desktop value; existing trust chain applies: sig, sequence, allowlist, sha256+size before unpack)
-    | sbom.cdx.json covers the desktop: grove-desktop crate tree added to the cargo-cyclonedx run and the retained vendored JS files appear as components keyed to PROVENANCE.md entries
-    | README and release notes template document the unsigned-bundle UX (macOS Gatekeeper and Windows SmartScreen apply to browser downloads) and the one-liner verification path; SECURITY.md scope extends to the desktop app
-  hypothesis:
-    | tauri build needs no npm (vanilla UI); portable archives keep the script install path uniform with the CLI artifacts while msi/dmg/deb serve browser downloads
-  evidence_strategy:
-    | dry-run release produces all desktop artifacts with hashes in the manifest; install.sh/ps1 install all three components on the CI matrix (linux leg validates the portable path); SBOM contains grove-desktop and d3.js components; desktop smoke on the produced bundle
-  evidence:
-    | audit 2026-08-05 (Y-05): desktop was absent by plan deferral; the manifest schema reserves desktop_* keys, so this is a matrix extension, not a redesign
-    | Desktop in the release pipeline. release.yml: build-desktop matrix job (tauri-cli 2.11.4 via cargo install --locked, registry checksums; windows nsis+msi, macos dmg arm64 + x64 via macos-15-intel, linux deb+AppImage with webkit2gtk deps as in rust-tests.yml) + portable tar.gz per target (binary + ui/views + ui/icons); sign job needs build-desktop; SHA256SUMS covers all files; release notes template documents the unsigned-bundle UX (SmartScreen/Gatekeeper on browser downloads) and the verification commands; attest subject-path covers bundles. Installers: install.sh + install.ps1 install grove + grove-mcp + desktop by default (desktop unpacks to <prefix>/desktop with ui/, --only desktop works, break-glass maps grove-desktop-*), key scheme desktop_<target> via manifest.sh (grove-desktop pattern added, golden regenerated with 12 fixtures, 13/13). Runtime fix: templates.rs ui_dir() now resolves GROVE_DESKTOP_UI_DIR -> exe-dir/ui -> compile-time path (was compile-time only, which made any distributed binary unable to find its .hbs templates); portable smoke proves it: staged grove-desktop.exe + ui/ ran with the repo ui/ temporarily renamed and still rendered overview + graph (canvas + 38 labels, zero console errors). SBOM: bin/sbom.sh adds the grove-desktop crate tree (278 cargo components incl. tauri) and vendored JS components parsed from PROVENANCE.md (d3 7.9.0 + rxjs 7.8.2 with sha256 + grove:vendored_file property); merged doc validates against the CycloneDX 1.6 schema (293 components total). Tests: bash install 20/20, ps1 16/16, manifest 13/13; desktop cargo tests green after the templates.rs change; yaml validated. Live dry-run producing the desktop artifacts is W-79 scope. grove check ok.
-
-w W-84 type=feature status=done cynefin=complicated t_created=2026-08-05T17:46:47Z t_updated=2026-08-05T18:34:20Z "Plan text sync: PowerShell constraint, per-component keys, rx.js retention, desktop scope"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | plan docs/plans/release-distribution-plan.md matches reality: §1.3 records install.ps1 as a first-class installer (bash-only constraint revised); §4.1 artifact table includes the desktop set; §4.2 normative key table uses per-component keys (grove_linux_x64, grove_mcp_*, desktop_*); vendored JS note says rx.js retained with PROVENANCE.md justification
-    | README states honestly which install flows work before the first release (sig files and dist/ appear at v0.1.0) and documents the desktop one-liner path once W-83 lands
-  hypothesis:
-    | text-only sync; no behavior changes
-  evidence_strategy:
-    | walk the plan top to bottom against the repo; grep for stale markers (No PowerShell, bare platform keys, osv-scanner leftovers)
-  evidence:
-    | Plan text synced top to bottom: intro + section 1.2 + constraints record install.ps1 as a first-class installer (bash-only constraint revised, W-81); section 4.1 artifact table now lists CLI archives, desktop portable archives, and OS bundles (msi/nsis/dmg/deb/AppImage) with producers; section 4.2 key table uses per-component keys (grove_/grove_mcp_/desktop_); section 4.3 notes the ps1 twin and shared sequence state; section 4.4 gained an as-built deltas paragraph (validate/build-desktop/sbom jobs, tag-pinned checkout, cancel gate, concurrency, published-file smoke, notes template); vendored JS note says rx.js retained with PROVENANCE.md justification and SBOM coverage, htmx/rxjs-imports removed; desktop row in 1.1 and the Later list no longer defer desktop; README gained the honest pre-release note (install.sh.sig/install.ps1.sig/dist/manifest.json appear with v0.1.0; source install until then). Grep: no 'No PowerShell', no bare platform keys, osv-scanner mentions are deliberate comparisons. grove check ok.
-
-w W-85 type=refactor status=done cynefin=clear t_created=2026-08-05T18:44:01Z t_updated=2026-08-05T18:52:51Z "Unify desktop component naming to grove-desktop across installers, manifest keys, and build outputs"
-  goals: G-16
-  fitness: G-16=+0
-  ac:
-    | component name grove-desktop everywhere: manifest keys grove_desktop_<target> (mechanical filename-to-key mapping, no special cases), --only grove-desktop, install dir <prefix>/grove-desktop, break-glass mapping; install.sh, install.ps1, bin/manifest.sh, release.yml, README, plan text consistent
-    | all suites updated and green: bash install, ps1 install, manifest golden (keys grove_desktop_*)
-  hypothesis:
-    | pure mechanical rename; no trust-model or behavior change beyond names
-  evidence_strategy:
-    | test suites green after the rename; grep finds no stale 'desktop_' keys or '--only desktop'
-  evidence:
-    | Component naming unified to grove-desktop (W-85, user proposal accepted: key derivation is now a pure mechanical filename transform with zero special cases). manifest.sh: grove-desktop-* maps to comp grove_desktop; keys grove_desktop_<target> (golden regenerated, 13/13). install.sh: --only grove grove-mcp grove-desktop, comp name == binary name (binary_name() helper deleted), install dir <prefix>/grove-desktop, break-glass mapping, self-test updated. install.ps1: same parity (-Only grove-desktop, dest grove-desktop\). Tests: bash 20/20, ps1 16/16, manifest 13/13, crypto 5/5, vex 5/5. README and plan 4.1/4.2 updated (install dir grove-desktop/, key examples grove_desktop_*). Grep: no stale desktop_ keys or --only desktop anywhere. grove check ok.
-
-w W-86 type=feature status=done cynefin=complicated t_created=2026-08-05T19:13:42Z t_updated=2026-08-07T00:34:49Z "Post-audit fixes: artifact name collision, desktop chmod, VEX exact match, pip pin, notes heredoc"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | release.yml: build-desktop uploads under dist-desktop-<target> (no name collision with build); sign job contains no unpinned pip installs (jsonschema pinned with --require-hashes or the Julia validator only); release notes heredoc dedented (<<- or unindented); smoke hash-checks one desktop artifact too; desktop suite runs in the release workflow (or a documented reason not to)
-    | install.sh desktop branch chmod +x the binary; tests/install fixtures created executable so -x assertions are honest on linux/macos runners; audit-filter.jl compares purl name and version exactly (no substring/prefix suppression); PROVENANCE.md parse in sbom.sh fails closed on zero rows; MEDIUM/LOW policy reconciled with plan §4.7 wording
-    | plan §4.3 steps 2/7 describe the three-component world (grove, grove-mcp, grove-desktop); README documents desktop runtime prerequisites (WebView2 on Windows, libwebkit2gtk-4.1 on Linux)
-  hypothesis:
-    | all items are localized fixes from the Y-06 audit; no design changes
-  evidence_strategy:
-    | shell suites green on ubuntu/macos legs of shell-tests.yml (not just Git Bash); yaml review; dry-run in W-79 confirms the collision is gone
-  evidence:
-    | Post-audit fixes (Y-06) done: (1) artifact name collision fixed - build-desktop uploads as dist-desktop-<target> (was dist-<target> like the CLI build job). (2) install.sh desktop branch chmod +x the binary; install fixtures are created executable so -x assertions are honest on linux/macos runners. (3) audit-filter.jl compares purl name and version exactly (purl_name_version parser, no substring/prefix suppression) with a direct unit fixture: same-version-different-package and same-package-different-version stay reported, exact match suppressed, UNKNOWN warns. (4) trivy invoked without --severity so MEDIUM/LOW/UNKNOWN are reported as non-blocking warnings, reconciled with plan 4.7 wording (fatal only CRITICAL/HIGH). (5) Unpinned pip installs removed from security-scan.yml and both release.yml spots; VEX validation is the Julia validator only (the schema file stays the documented contract; no third-party unpinned deps in the sign path). (6) Desktop cargo suite runs in build-desktop legs (tauri deps already present there). (7) Smoke hash-checks the desktop portable archive too. (8) sbom.sh dies on zero parsed PROVENANCE.md rows (format drift fails closed). (9) Notes heredoc verified by executing the YAML-extracted run block (content dedents to column 0; heredoc terminates correctly). (10) Plan 4.3 steps 2/7 describe the three-component world; README documents desktop runtime prerequisites (WebView2, libwebkit2gtk-4.1). Suites: audit 13/13, install bash 20/20, self-test 7/7, sbom regenerates 293 components. yaml ok; grove check ok.
-
-w W-87 type=feature status=done cynefin=complicated t_created=2026-08-05T19:22:03Z t_updated=2026-08-07T01:19:14Z "Skill bundle: generated single-file grove-skill.md as a signed release artifact"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | bin/skill-bundle.sh generates a single grove-skill.md from docs/skills/ at release time; SECTION ORDER IS FIXED and recorded in the generator: it follows the numbered reading list of docs/skills/index.md (1 model, 2 protocol, 3 cli, 4 evidence, 5 rules, 6 lockfile, 7 typography, 8 checklist) after the index itself; diagrams are inlined at their reference points or appended as a numbered appendix; relative links like [Protocol](protocol.md) are rewritten to in-file anchors
-    | the bundle keeps the skill frontmatter (name: grove, description) at the top so the file is installable as-is; a golden or marker test proves the output is byte-stable for unchanged sources and that every numbered section appears exactly once in the recorded order
-    | the release workflow attaches grove-skill.md (+ .sig via the existing sign path) and the README documents the one-file install next to the MCP configuration
-  hypothesis:
-    | docs/skills/ stays the decomposed source of truth; the bundle is a deterministic build artifact, so drift between them is impossible by construction
-  evidence_strategy:
-    | golden/marker test in shell CI; bundle inspected for anchor rewriting and section order; release dry-run (W-79) attaches the signed file
-  evidence:
-    | user requirement 2026-08-05: bundle order must be fixed explicitly; docs/skills/index.md already numbers the sections, so the generator records and follows that numbering
-    | bin/skill-bundle.sh: deterministic single-file grove-skill.md from docs/skills/ - skill frontmatter (name: grove, description) stays at the top, then index content, then the fixed section order recorded in the generator (model, protocol, cli, evidence, rules, lockfile, typography, checklist, matching the numbered reading list in docs/skills/index.md), then the diagrams as appendix '# 9. Diagrams' with headings demoted one level (dual-track, graph-template, workflow). Relative links rewritten to in-file anchors: [x](model.md) -> [x](#1-formal-model) via GitHub-slugified first headings, [x](model.md#frag) -> [x](#frag), [Diagrams](diagrams/) -> #9-diagrams. tests/skill/test-skill-bundle.sh 8/8: byte-stable across runs, frontmatter on top, every numbered heading exactly once in increasing order, zero remaining relative .md links, anchor rewrites present, appendix demotion correct. release.yml sign step generates + signs out/grove-skill.md and the publish step attaches it with its .sig. README documents the one-file install next to the MCP configuration. Incidental: Y-02 decay fixed after the maintainer deleted docs/plans/effectiveness-v1.md - dead surface entry removed, revalidation from=W-02 recorded. yaml ok; grove check ok.
-    | skill scope updated 2026-08-07: docs/skills gained planning.md as reading item 3 (index.md renumbered, checklist.md got planning gates); the bundle generator must take the order from index.md's reading list, so the new section is included automatically
-
-w W-88 type=feature status=done cynefin=complicated t_created=2026-08-05T19:22:03Z t_updated=2026-08-07T00:51:10Z "grove://skill primer resource in grove-mcp (compact protocol text embedded in the server)"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | grove-mcp serves a grove://skill resource with a compact protocol primer (dual-track loop, DoR/evidence discipline, WIP limit, chaotic halts, distill/archive cadence) embedded via include_str! from a single source text, so an agent with only the MCP integration gets minimally correct behavior without installing the full skill
-    | the primer text lives in one place (packages/mcp or packages/core asset) and its relationship to docs/skills is stated in its header; resource listed by resources/list alongside packet/show; tool descriptions stay as-is
-  hypothesis:
-    | MCP gives mechanism but not methodology; a ~100-line embedded primer covers the behavioral minimum while grove-skill.md (W-87) remains the deep reference
-  evidence_strategy:
-    | mcp resources/list + resources/read test asserts the primer is served and covers the protocol keywords; cargo test green
-  evidence:
-    | grove://skill resource in grove-mcp: packages/core/assets/skill-primer.md (~100 lines: dual-track loop, DoR discipline, evidence/DoD, WIP limit + session tokens, statuses, chaotic halts, distill/archive cadence, operational rules, command map) with a header stating it is a condensed derivative of docs/skills and that grove-skill.md wins on disagreement; embedded via include_str! in packages/core/src/mcp.rs. resources/list prepends the static primer entry (text/markdown) alongside packet/show node resources; resources/read serves it before the uri split. Tests updated in packages/mcp/tests/mcp.rs: resource counts 6->7 and 2->3, primer listed and read, keyword coverage asserted (dual-track, Definition of Ready, WIP_LIMIT, chaotic, distill, evidence). cargo test --workspace --exclude grove-desktop all green; README lists the new resource. grove check ok.
-
-w W-89 type=feature status=done cynefin=clear t_created=2026-08-08T14:27:57Z t_updated=2026-08-08T14:52:21Z "Desktop launcher integration in installers (Windows .lnk, macOS .app stub, Linux .desktop)"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | install.ps1 creates Desktop and Start Menu shortcuts for grove-desktop.exe idempotently (WScript.Shell COM, no elevation)
-    | install.sh creates ~/Applications/grove.app stub on macOS and ~/.local/share/applications/grove.desktop on Linux, idempotently
-    | launcher entries point at the installed grove-desktop binary and survive same-sequence reinstall
-    | tests/install/test-install.sh and test-install.ps1 assert launcher artifacts
-  hypothesis:
-    | Self-created launcher entries keep the verified tar.gz install flow single-sourced; no MSI/NSIS/DMG second install tree is needed for launcher presence
-  evidence_strategy:
-    | test-install.sh/test-install.ps1 green on CI (ubuntu, macos, windows) asserting .desktop/.app/.lnk creation; files and test counts in evidence
-  evidence:
-    | install.sh: install_launcher linux (.desktop under ~/.local/share/applications) + macos (~/Applications/grove.app stub with Info.plist + exec launcher); install.ps1: Install-Launcher via WScript.Shell COM (Desktop via GetFolderPath, Start Menu Programs), GROVE_SHORTCUT_ROOT test hook
-    | tests: test-install.sh 22/22 (linux .desktop Exec assert, macos .app assert, --only creates no launcher); test-install.ps1 20/20 (lnk creation, TargetPath equals installed binary, no shortcut for -Only grove-mcp); ran locally on windows; linux/macos launcher asserts covered by CI shell-tests matrix
-    | test fix: work dir moved from short 8.3 TEMP to LOCALAPPDATA long path; COM Save resolves 8.3 to long form, string compare unstable
-    | docs/install.md: launcher behavior documented next to installer options
-
-w W-90 type=feature status=done cynefin=clear t_created=2026-08-08T14:27:57Z t_updated=2026-08-08T15:02:56Z "Idempotent PATH integration in install.sh and install.ps1"
-  goals: G-16
-  fitness: G-16=+1
-  ac:
-    | install.sh appends an idempotent marked PATH line to ~/.profile and detected shell rc files (~/.bashrc, ~/.zshrc when present)
-    | install.ps1 persists the bin dir to user PATH via [Environment]::SetEnvironmentVariable without duplicates and without setx
-    | re-running installers does not duplicate PATH entries
-    | tests/install/test-install.sh and test-install.ps1 assert PATH writes and double-run idempotency
-  hypothesis:
-    | Rustup-style rc-file line plus per-user registry PATH cover the target shells without elevation or setx 1024-char truncation risk
-  evidence_strategy:
-    | test-install.sh/test-install.ps1 green incl. idempotency assertions; CI matrix green; test counts in evidence
-  evidence:
-    | install.sh: update_path_rc - idempotent marked export line in ~/.profile plus ~/.bashrc/~/.zshrc when present, runs when grove or grove-mcp installed; install.ps1: Update-UserPath - per-user registry PATH via [Environment]::SetEnvironmentVariable (no setx), trailing-slash/case-insensitive dup check, GROVE_USER_PATH_FILE test hook
-    | tests: test-install.sh 25/25 (PATH line in .profile, idempotency on reinstall, --only grove-desktop leaves PATH alone); test-install.ps1 23/23 (PATH file write, idempotency via pre-seeded file, no PATH for -Only grove-desktop)
-    | bug found by tests: redirect to ~/.profile failed when HOME dir absent (custom --prefix outside HOME); fixed with mkdir -p HOME in update_path_rc
-    | docs/install.md: automatic PATH registration documented
 
 d D-04 status=accepted t_created=2026-07-20T03:29:25Z t_updated=2026-07-28T01:36:10Z "grove-mcp: NDJSON stdio, tools 1:1 to commands, CLI exit codes as tool content"
   context:
@@ -516,8 +212,6 @@ b B-04 status=testing cynefin=complicated t_created=2026-07-19T01:20:01Z t_updat
     | higher first-pass rate across >= 5 occurrences
 
 t T-01 status=open t_created=2026-07-19T01:14:31Z t_updated=2026-07-19T01:14:31Z "Scaling performance"
-
-t T-03 status=open t_created=2026-08-05T18:45:04Z t_updated=2026-08-05T18:45:33Z "Release distribution pipeline"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-07-27T14:44:48Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -691,6 +385,11 @@ g G-15 status=verified fitness_kind=count t_created=2026-08-04T14:44:39Z t_updat
   area: A-05
   fitness_target: 3
   fitness_current: 3
+
+g G-16 status=verified fitness_kind=count t_created=2026-08-04T19:44:12Z t_updated=2026-08-08T18:33:05Z "Release distribution and signing: binary artifacts, signed manifest, installer, CI"
+  area: A-06
+  fitness_target: 19
+  fitness_current: 20
 
 w W-01 type=feature status=done cynefin=complicated t_created=2026-07-19T01:14:39Z t_updated=2026-07-27T18:21:48Z "Extend grove stats with audit-cost metrics"
   goals: G-01
@@ -2147,6 +1846,305 @@ w W-69 type=feature status=done cynefin=complicated t_created=2026-08-04T14:44:4
     | wireFilterTabsFades moved to js/utils/filter-tabs.js; graph.js imports it (local copy and FADE_EPSILON removed); work.js wires it and returns the cleanup
     | CDP smoke at 560px width: work filter-tabs overflow 543>502 flips data-fade-right=true, after scrolling to the end fade-left=true/fade-right=false; graph wiring intact; 0 console errors
 
+w W-70 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:08Z t_updated=2026-08-08T18:33:05Z "Phase 0: docs restructure (plans/architecture/security trees) + SECURITY.md"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | docs/plans, docs/architecture, docs/security/{runbooks,artifacts/{public-keys,schemas}} trees created; docs/design/* moved with type/status frontmatter; docs/skill renamed to docs/skills with all inbound references updated (roadmap.md, moved plans)
+    | SECURITY.md at repo root per plan §4.10 outline (reporting via GitHub private vulnerability reporting, response targets, supported versions, safe harbour, scope exclusions referencing vex.json); private vulnerability reporting enabled on the repo (manual GitHub step)
+  hypothesis:
+    | pure docs restructure; the only external dependency is the GitHub setting
+  evidence_strategy:
+    | tree listing vs §4.9; link grep; SECURITY.md content review
+  evidence:
+    | plan §4.9 layout matches the tree on disk; grep finds no docs/skill references; SECURITY.md renders in the repo Security tab
+    | docs/ restructured per plan section 4.9: docs/skill renamed to docs/skills (12 inbound refs updated: README.md x1, docs/roadmap.md x10, discovery-artifacts.md x1), docs/design/* moved to docs/plans/ with type/status frontmatter added, docs/architecture + docs/security/{runbooks,artifacts/{public-keys,schemas}} created. Discovery surfaces repaired after the move: Y-02 and Y-04 revalidated to docs/plans/* paths (decay cleared, grove check ok). grep: no stale docs/skill/ references except the plan's own historical instruction. SECURITY.md at repo root per section 4.10 (PVR primary, targets-not-SLA, rolling support table, safe harbour, process, verification pointers, out-of-scope incl. vex.json). Private vulnerability reporting enabled on the repo (user via UI; API confirms enabled:true).
+
+w W-71 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:08Z t_updated=2026-08-08T18:33:05Z "bin/sign.sh + bin/verify.sh with test vectors (LibreSSL interop resolved)"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | bin/sign.sh produces detached base64url RSA-PSS signatures with a local key; bin/verify.sh verifies against a committed public key; test vectors cover known-good, tampered, wrong-key, truncation
+    | LibreSSL (macOS) interop for openssl dgst PSS is tested and the result recorded in plan §7.1 (fallback PKCS#1 v1.5 if interop fails)
+  hypothesis:
+    | openssl is the single external dependency; PSS is supported across OpenSSL 3.x, LibreSSL, Git Bash
+  evidence_strategy:
+    | test vectors run on ubuntu/macos/windows(Git Bash) CI legs; interop result appended to plan §7
+  evidence:
+    | bin/sign.sh + bin/verify.sh: RSA-2048/PSS (saltlen=digest), base64url no-pad detached sigs. tests/crypto/test-sign.sh: 5/5 vectors pass (known-good, base64url alphabet, tampered, wrong-key, truncation) on OpenSSL 3.5.4 (Git Bash). LibreSSL 3.3.6 (macOS 15 flavor) built from source in Y:/tmp/w71-libressl: full suite 5/5 under LibreSSL; cross-interop OK both directions (openssl-sign->libressl-verify, libressl-sign->openssl-verify). Plan updated: final flags recorded in section 4.2, open question 7.1 marked resolved (no PKCS1 v1.5 fallback needed). cargo test --workspace --exclude grove-desktop green; grove check ok.
+
+w W-72 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:08Z t_updated=2026-08-08T18:33:05Z "Key-generation runbook written, then executed; public key committed, secret in release env"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | docs/security/runbooks/key-generation.md written in the reference runbook style (Prerequisites/Steps/Rollback), then executed: RSA-2048 keypair generated, public half committed to docs/security/artifacts/public-keys/, private half stored in the release environment secret and an offline backup
+  hypothesis:
+    | the manual steps (secret storage, offline backup) are executed by the maintainer following the runbook; the document is both procedure and record
+  evidence_strategy:
+    | runbook exists and matches what was executed; public key committed; secret presence confirmed without revealing it
+  evidence:
+    | docs/security/runbooks/key-generation.md written in the reference style (Prerequisites/Steps/Rollback + execution log). Executed by the maintainer with a self-regenerated pair: public half committed at docs/security/artifacts/public-keys/grove-manifest-2026-08.pem, fingerprint 72d7aabe9c2ffcb4 matches the execution log (steps 1-8 done) and the GROVE_TRUSTED_KEYS heredoc embedded in install.sh (synced and byte-verified). Secret GROVE_MANIFEST_SIGNING_KEY confirmed present in the release environment via API (name only). Offline backup recorded by the maintainer. Earlier staged copy in Y:/tmp/w72-keys (from the abandoned first pair) shredded.
+
+w W-73 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:08Z t_updated=2026-08-08T18:33:05Z "bin/manifest.sh generating the stable flat manifest with golden tests"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | bin/manifest.sh emits manifest.json in the stable flat one-field-per-line format (version, created_at, expires_at, channels.stable.sequence read from dist/manifest.json + 1, artifact url/sha256/size entries) from SHA256SUMS + version input
+    | golden-file unit tests prove the output stays byte-stable so install.sh's non-jq parsing remains reliable
+  hypothesis:
+    | a flat generated format makes sed/grep extraction dependable without jq
+  evidence_strategy:
+    | golden tests in CI; round-trip: manifest parsed by the install.sh extraction logic
+  evidence:
+    | bin/manifest.sh: deterministic flat manifest generator (version/created_at/expires_at+180d/channels.stable.sequence from dist/manifest.json+1/artifacts key=comp_target with url+sha256+size from SHA256SUMS and stat; BSD/GNU date+stat fallbacks; --now for reproducibility). tests/manifest/test-manifest.sh: 10/10 pass incl. byte-identical golden (tests/manifest/golden/manifest.json, 8 artifacts grove+grove-mcp x 4 targets), sed/grep round-trip extraction spec for install.sh, sequence bump 1->2, fail-closed on no-match. Fixed SHA256SUMS two-word parse bug found by first run. No Rust changes since last green cargo test; grove check ok.
+
+w W-74 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:08Z t_updated=2026-08-08T18:33:05Z "install.sh bootstrap + tests/install matrix suite + README install rewrite"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | install.sh in repo root per plan §4.3: verify-then-parse against the embedded public key, expires_at/sequence/MINIMUM_SEQUENCE checks, host allowlist, sha256+size verification, installs grove + grove-mcp into ~/.local/grove/bin, --channel/--version/--only/GROVE_ARTIFACT_URL handling, --self-test mode
+    | tests/install runs in CI on ubuntu/macos/windows(Git Bash): happy path fixture, tampered/expired/rolled-back manifest rejected, wrong host rejected, hash mismatch rejected, break-glass path works; README install section rewritten (one-liner + verify-then-run + platform notes); egress assertion recorded (grove/grove-mcp open no network connections)
+  hypothesis:
+    | pure bash + openssl + curl; the flat manifest format keeps non-jq parsing reliable
+  evidence_strategy:
+    | matrix CI suite green; README reviewed; egress check result recorded into compliance.md input
+  evidence:
+    | install.sh (repo root, pure bash + openssl + curl): verify-then-parse RSA-PSS against embedded release key grove-manifest-2026-08 (keypair generated, private half staged in Y:/tmp/w72-keys 0700 for the manual batch, public half committed to docs/security/artifacts/public-keys/), expires_at with 24h skew, sequence + MINIMUM_SEQUENCE, host allowlist pinned to the release origin, sha256+size checks, installs grove + grove-mcp into ~/.local/grove/bin, --channel/--version/--only/--prefix, GROVE_ARTIFACT_URL break-glass with loud warning, GROVE_FETCH_ROOT/GROVE_TRUSTED_KEY_FILE test hooks, --self-test 6/6. Design fix: all artifacts .tar.gz incl. windows (zip dropped - no unzip on Git Bash; plan 4.1 to be updated). tests/install/test-install.sh 16/16 (happy path, --only, tampered+message, expired+message, rollback, wrong host, hash/size mismatch, break-glass x3, self-test). shell-tests.yml matrix ubuntu/macos/windows with shell:bash, checkout pinned 11bd719. README Install rewritten (one-liner, verify-then-run, options, platform notes, manual path, source install keeps Julia). Egress assertion: cargo tree grove-core (20 deps) and grove-mcp (22 deps) contain zero network crates (no reqwest/hyper/tokio/ureq/curl/tls/websocket/tcp) - binaries have no egress capability, recorded for compliance.md. All suites green locally; CI legs run after push (manual batch). grove check ok.
+
+w W-75 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:59Z t_updated=2026-08-08T18:33:05Z "GitHub hardening settings + coverage.yml SHA-pins + Rust/desktop PR CI"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | GitHub settings per plan §4.5 (manual maintainer steps): release environment with required reviewer restricted to main, branch and tag protection, CODEOWNERS on workflows/install.sh/bin/dist/docs/security, Actions pinned-by-SHA policy, Dependabot with 7-day cooldown incl. Julia beta
+    | coverage.yml actions SHA-pinned; a PR workflow runs cargo test --workspace (incl. the desktop suite) alongside the Julia coverage job
+  hypothesis:
+    | settings are console clicks by the maintainer; CI changes are committed files
+  evidence_strategy:
+    | settings checklist executed and ticked; PR CI shows both ecosystems green on a test PR
+  evidence:
+    | GitHub settings verified via API (read-only): environment 'release' has required reviewer alxshelepenok + deployment restricted to main; secret GROVE_MANIFEST_SIGNING_KEY present in the environment (name only, not revealed); ruleset main-branch-ruleset active on refs/heads/main (deletion, non_fast_forward, required_status_checks, pull_request); ruleset main-tag-ruleset active on refs/tags/v* (creation, non_fast_forward); Actions policy sha_pinning_required=true. Committed configs: .github/CODEOWNERS (workflows, install.sh[.sig], bin/, dist/, docs/security/), .github/dependabot.yml (cargo + julia beta + github-actions, 7-day cooldown each), coverage.yml SHA-pinned (checkout 11bd719 v4.2.2, setup-julia fa02766 v3.0.2, julia-cache b7788ab v3.2.0, upload-artifact 043fb46 v7.0.1) with contents:read, new rust-tests.yml (cargo test --workspace --locked incl. desktop suite, tauri system deps + xvfb, actions/cache v6.1.0 pinned). PR-visible CI runs after the push (user pushes himself).
+
+w W-76 type=feature status=done cynefin=complicated t_created=2026-08-04T19:45:59Z t_updated=2026-08-08T18:33:05Z "bin/audit.sh (trivy wrapper, VEX-aware) + security-scan.yml (PR, weekly, dispatch)"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | bin/audit.sh wraps pinned trivy over Cargo.lock and packages/grove/Manifest.toml with the severity policy (CRITICAL/HIGH fatal), --fail-closed release mode, and VEX not_affected handling; trivy Julia scanning verified against a fixture with a known JLSEC advisory (bin/audit.jl fallback if it fails)
+    | .github/workflows/security-scan.yml: PR check (fail-open on scanner outage), weekly schedule, workflow_dispatch
+  hypothesis:
+    | trivy parses Manifest.toml natively (Julia Security WG work) and JLSEC data reaches its DB via osv.dev
+  evidence_strategy:
+    | fixture with HTTP.jl 1.10.15 (known JLSEC/CVE) is flagged; PR check and weekly run visible in Actions
+  evidence:
+    | bin/audit.sh: thin trivy wrapper (--severity CRITICAL,HIGH, --fail-closed release mode, per-target runs over Cargo.lock + packages/grove/Manifest.toml); VEX not_affected handled by bin/audit-filter.jl post-filter (id + package match) because trivy --vex only works with CycloneDX SBOM targets. Fixture verification: Manifest.toml with HTTP.jl 1.10.15 flagged CVE-2025-52479 + CVE-2025-61689 (HIGH) - trivy needs manifest_format/julia_version header to detect Julia; VEX statement suppresses by id+pkg. tests/audit/test-audit.sh 6/6 pass incl. real repo audit (lockfiles clean) and fail-open/fail-closed on scanner outage. security-scan.yml: PR (fail-open) + weekly cron 41 3 * * 2 + dispatch (fail-closed), actions/checkout pinned 11bd719 (v4.2.2), setup-julia pinned fa02766 (v3.0.2), trivy 0.73.0 binary with sha256 checksum verification, VEX validation step. bin/audit.jl OSV fallback dropped as unneeded; plan 7.5/7.6 marked resolved. Weekly visibility in Actions pending push (manual batch). grove check ok; cargo tests green (unchanged Rust).
+
+w W-77 type=feature status=done cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-08T18:33:05Z "bin/sbom.sh + vex.json schema/validation + vendored JS provenance (drop unused rx/htmx)"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | bin/sbom.sh generates CycloneDX 1.6 sbom.cdx.json covering Cargo.lock (cargo-cyclonedx) and Manifest.toml (trivy; fallback PkgToSoftwareBOM.jl or bin/sbom.jl); docs/security/artifacts/schemas/vex.schema.json + CI validation; initial empty vex.json committed
+    | ui/js/vendor/PROVENANCE.md records upstream URL, exact version and SHA-256 for every retained vendored file; unused rx.js, htmx.js and js/lib/rxjs-imports.js are removed (d3 stays, used by the graph view)
+  hypothesis:
+    | both SBOM halves come from committed lockfiles; vendored JS is covered by provenance hashes instead of a package manager
+  evidence_strategy:
+    | SBOM validates against the CycloneDX schema and lists both ecosystems; provenance hashes recompute; desktop smoke shows the graph view intact without rx/htmx
+  evidence:
+    | bin/sbom.sh + bin/merge-cdx.jl: merged CycloneDX 1.6 SBOM (cargo-cyclonedx 0.5.9 for grove-core/grove-mcp pkg:cargo, trivy 0.73.0 for packages/grove pkg:julia); generated doc validates against the official CycloneDX 1.6 JSON schema (jsonschema), 28 components (15 cargo + 12 julia + apps). VEX: docs/security/artifacts/schemas/vex.schema.json + bin/validate-vex.jl + initial empty vex.json; tests/vex/test-vex.sh 5/5 (committed vex valid, not_affected accepted, missing justification rejected, bad state rejected, bad id rejected); CI wiring lands with security-scan.yml in W-76. Vendored JS: rx.js/htmx.js/js/lib/rxjs-imports.js deleted (zero references in app code), script tags removed from index.html; d3.js restored to byte-exact upstream d3.min.js@7.9.0 (license banner intact, sha256 f2094bbf... matches npm/unpkg) and recorded in packages/desktop/ui/js/vendor/PROVENANCE.md. Desktop smoke (w77smoke identifier, CDP): graph view intact - canvas + 38 node labels, d3 present, rxjs/htmx undefined, zero console errors, screenshot verified. cargo test workspace + grove-desktop green; grove check ok.
+
+w W-78 type=feature status=done cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-08T18:33:05Z "release.yml: matrix build, audit gate, approval-gated sign-and-publish, dist/ commit-back, attestations, smoke"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | .github/workflows/release.yml per plan §4.4: workflow_dispatch with version input; matrix build (ubuntu-latest, macos-latest, macos-15-intel, windows-latest; grove + grove-mcp each, --locked) with tests; audit gate; approval-gated sign-and-publish (SHA-pinned official actions only, umask 077 key handling, SHA256SUMS, manifest via bin/manifest.sh, SBOM/VEX signing, gh release create, dist/ + docs/security/artifacts commit-back, attestations); dry-run/manifest-only/transparency-only inputs; post-release smoke step
+  hypothesis:
+    | one job signs everything; no caches and official artifact hand-off only, per the plan's injection-surface rules
+  evidence_strategy:
+    | dry-run input exercised end-to-end; workflow file reviewed against §4.4/§4.5 checklists
+  evidence:
+    | .github/workflows/release.yml per plan 4.4: workflow_dispatch with version + mode (dry-run default, release, manifest-only, transparency-only). build matrix 4 targets (ubuntu-latest/macos-latest/macos-15-intel/windows-latest, cargo build --release --locked -p grove-core -p grove-mcp + cargo test --workspace --exclude grove-desktop --locked, tar.gz packaging, upload-artifact pinned 043fb46 v7.0.1). audit gate: trivy 0.73.0 with sha256 checksum + bin/audit.sh --fail-closed. sbom job: setup-julia fa02766 + trivy + cargo-cyclonedx 0.5.9, bin/sbom.sh, VEX validation. sign-and-publish: environment release (release-dry for dry-run with ephemeral key, real secret untouched), official actions only, umask 077 key import + fingerprint cross-check against committed pubkey, SHA256SUMS, manifest via bin/manifest.sh, SBOM/VEX/install.sh.sig signing, preconditions (version format, tag must pre-exist, release must not), gh release create --verify-tag, commit-back with PR fallback for the protected main, attest-build-provenance pinned 0f67c3f v4.1.1, post-release smoke (manifest sig + artifact hash against committed pubkey). bin/manifest.sh --refresh added for manifest-only (2 new golden tests, 12/12 pass) + mkdir -p output dir fix. Checklist review against 4.4/4.5 done: no caches, no pull_request_target, scoped token permissions, approval gate on every key use. yaml parses; shell suites 12/12 + 16/16; grove check ok. Live dry-run execution is W-79 scope (needs the push).
+
+w W-79 type=feature status=done cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-08T18:33:05Z "Dry-run release end-to-end, then v0.1.0 dress rehearsal; gaps recorded in runbooks"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | a dry-run release on a throwaway version completes end-to-end; then the real v0.1.0 release is published as dress rehearsal; the release-security-checks runbook passes (manifest sig verifies against the committed public key, tampered/expired/rollback fixtures rejected, clean-machine one-liner install works, attestation verifies, SBOM/VEX attached); gaps recorded into the runbooks
+    | release-security-checks follow the plan §6 invariants as the checklist basis: verify-then-parse and hash-before-install hold, approval gate used, URL allowlist enforced, sequence strictly increasing, TTL honored, lockfile-frozen build, audit gate passed, dist/ byte-identical, SBOM attached and signed, VEX schema-valid and current
+    | out-of-band modes verified once before v0.1.0 or explicitly deferred: manifest-only (refresh) and transparency-only (VEX re-sign) inputs behave per the runbook contracts
+  hypothesis:
+    | the ceremony is executable from the runbook without improvisation
+  evidence_strategy:
+    | published v0.1.0 on GitHub Releases verifies on a clean machine via install.sh; runbook diff records every gap found
+  evidence:
+    | v0.1.1 published: 32 assets (4 CLI/MCP targets, desktop dmg/deb/AppImage/msi/nsis/tar.gz, sbom, vex, sigs); run 31258908586 builds+audit+sbom green
+    | smoke: manifest.json/install.sh/install.ps1 sigs verify against committed public key; grove-mcp win-x64 sha256 matches signed manifest; sequence=2, expires_at=2027-02-04
+    | clean installs ok: bash one-liner and install.ps1 (isolated HOME) installed all 3 components, .sequence written; user machine on 0.1.1 seq 2
+    | gaps found and fixed: commit-back PR creation denied (release.yml: step moved last, PR failure = warning); same-sequence reinstall refused (installers -le -> -lt, tests 21/21 sh + 17/17 ps1); PR #14 merged, raw main serves manifest 0.1.1 seq 2
+    | runbook gaps recorded: enable 'Actions can create PRs' repo setting; PR-create fallback now manual-link warning
+
+w W-80 type=feature status=done cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-08T18:33:05Z "Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | CONTRIBUTING.md gains the dependency policy section (necessity, permissive license, no install scripts, build.rs/JLL red flags); the seven runbooks exist in the reference style and each has been executed once; docs/architecture/{release-distribution,bootstrap-trust,supply-chain-trust,key-management}.md (type: system) and docs/security/{compliance,annex-vii}.md (type: policy) describe the as-built system
+    | runbook set in the reference style (purpose, Prerequisites, Steps with exact commands, Rollback; checklists with Purpose/Steps/Expected Result): publish-release; release-security-checks; rotate-signing-key (annual and incident: new keypair, pubkey embedded one release ahead, env secret swap, MINIMUM_SEQUENCE bump on suspected compromise); manifest-refresh (>180 days without a release: sequence bump, new created_at/expires_at, re-sign, re-attach, dist/ commit via the workflow refresh input); update-vex (triage finding, statement with justification, schema validation, commit, re-sign at next release or via transparency-only); incident-response (revoke and rotate, blast radius via dist/ log and attestation history, notify via SECURITY.md, post-incident review)
+    | docs/architecture (type: system, status: stable): release-distribution.md, bootstrap-trust.md, supply-chain-trust.md, key-management.md (key inventory, CI secret storage, rotation policy); docs/security (type: policy): compliance.md (CRA applicability analysis and revisit triggers per D-08, semver, support period, artifact signing table, egress allowlist, telemetry policy) and annex-vii.md (why full Annex VII N/A, transparency artifact inventory, in-git retention, what full Annex VII would require); each runbook executed once and reconciled with reality
+    | CONTRIBUTING.md dependency policy (necessity, permissive license, no install scripts, build.rs network access and heavy JLLs as red flags); compliance.md also records the deferred options: nightly channel, cargo deny, PGP key + security.txt if Grove gets a website, offline/hardware signing return per D-05
+    | operational cadence documented: every release executes publish-release + release-security-checks; annual or incident rotation; >180 days without a release triggers manifest-refresh; weekly scan findings triage per update-vex with nothing untriaged past one weekly cycle
+  hypothesis:
+    | written after implementation so the documents describe what exists, not what was planned
+  evidence_strategy:
+    | document set matches plan §4.9/§4.10 outlines; frontmatter conventions hold
+  evidence:
+    | Created 13 docs, all frontmatter type/status stable, ASCII-only verified byte-level: runbooks docs/security/runbooks/{publish-release 70, release-security-checks 119, rotate-signing-key 63, manifest-refresh 68, update-vex 65, incident-response 75}; architecture docs/architecture/{release-distribution 105, bootstrap-trust 79, supply-chain-trust 76, key-management 67} type=system; docs/security/{compliance 72, annex-vii 50} type=policy; CONTRIBUTING.md 50 with 4-rule dependency policy. Runbook reconciliation: publish-release executed end-to-end on v0.1.1 and v0.1.2; release-security-checks items run locally - bin/verify.sh OK x3 (manifest.json, vex.json, sbom.cdx.json vs grove-manifest-2026-08.pem); julia --project=packages/grove bin/validate-vex.jl OK (0 statements); install.sh --self-test 7/7; key-generation runbook executed 2026-08 (execution log in file). rotate-signing-key/manifest-refresh/incident-response not yet triggered for real - every command verified against release.yml (modes manifest-only/transparency-only, release/vX.Y.Z and release/<mode>-<timestamp> commit-back branches) and installer sources. Reality deviations recorded in docs: single trust anchor per installer (ps1 = modulus hex, no two-key overlap), expiry +24h grace, equal sequence accepted, bin/audit.jl osv.dev fallback never implemented (trivy parses Julia Manifest.toml natively), grove-skill.md and SLSA attestations in signing coverage. grove check ok.
+
+w W-81 type=feature status=done cynefin=complicated t_created=2026-08-05T16:50:36Z t_updated=2026-08-08T18:33:05Z "install.ps1: PowerShell installer for Windows with trust-chain parity to install.sh"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | install.ps1 mirrors install.sh in Windows PowerShell 5.1+: fetch manifest.json + .sig from the pinned origins, verify RSA-2048/PSS via RSACng against the embedded release key (verify-then-parse), expires_at with 24h skew, sequence + MINIMUM_SEQUENCE anti-rollback (~/.grove/.sequence), host allowlist, sha256+size checks, installs grove.exe + grove-mcp.exe into %USERPROFILE%\.local\grove\bin; --Channel/--Version/--Only params and GROVE_ARTIFACT_URL break-glass with a loud warning
+    | release workflow signs and attaches install.ps1 + install.ps1.sig (and smoke-verifies the detached sig); tests/install suite runs the PowerShell vectors on the windows-latest CI leg (happy, tampered, expired, rollback, wrong host, hash mismatch, break-glass); README Windows install section updated
+  hypothesis:
+    | PowerShell 5.1 ships RSACng and Invoke-WebRequest on every supported Windows, so RSA-PSS verification in-process needs no external dependency; parity with the bash installer is mechanical
+  evidence_strategy:
+    | pwsh suite green on the windows-latest CI leg; release.yml signs install.ps1.sig and the post-release smoke verifies it against the committed public key
+  evidence:
+    | install.ps1: full trust-chain parity with install.sh in Windows PowerShell 5.1 - RSA-2048/PSS verify in-process via RSACng with the release key embedded as modulus+exponent (SPKI PEM import does not exist in .NET Framework), verify-then-parse via ConvertFrom-Json, expires_at with 24h skew, sequence + MINIMUM_SEQUENCE anti-rollback, GROVE_HOME-aware .sequence (LF endings), host allowlist, sha256+size checks, tar.exe (System32 bsdtar) unpack, -Channel/-Version/-Only/-Prefix params, GROVE_ARTIFACT_URL break-glass with loud warning. tests/install/test-install.ps1: 13/13 on local PowerShell 5.1.26100 - happy, binaries, sequence, -Only, tampered, expired, rollback, wrong host, hash/size mismatch, break-glass x3, and the production pairing: openssl-signed (bin/sign.sh) manifest verifies under RSACng. Found and fixed during testing: wrapper exit-code propagation (), HOME/USERPROFILE not overridable in child (switched to GROVE_HOME + explicit -Prefix), MSYS tar vs Windows paths (System32 bsdtar), CRLF tolerance in read_sequence (both installers). Accidental writes of fake binaries to real ~/.local/grove + ~/.grove/.sequence during a broken test run were cleaned. CI: ps1 suite on the windows-latest leg of shell-tests.yml; release.yml signs+attaches install.ps1[.sig], smoke-verifies the sig, commit-back includes it; CODEOWNERS covers both installers; README Windows section has the iwr|iex one-liner. bash suites 16/16 + 12/12 + 5/5 still green; grove check ok.
+
+w W-82 type=feature status=done cynefin=complicated t_created=2026-08-05T17:46:47Z t_updated=2026-08-08T18:33:05Z "Pre-release hardening: input validation, tag-pinned build, audit UNKNOWN tier, smoke test, workflow nits"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | release.yml: inputs.version validated before any use and never interpolated unvalidated into shell (env: passing); the build checks out refs/tags/v<version> in release mode (or asserts HEAD equals the tag); dependency gate rejects cancelled (not only failure); concurrency group on the workflow
+    | bin/audit.sh: trivy severity selection includes UNKNOWN so JLSEC Julia advisories cannot vanish silently, with the wrapper mapping UNKNOWN per the documented policy; audit-filter.jl VEX suppression matches package AND version
+    | post-release smoke downloads the published install.sh/install.sh.sig and verifies them against the committed public key (not local files); install.sh.sig covered symmetrically with install.ps1.sig
+    | install.sh/install.ps1: trust-override env hooks (GROVE_TRUSTED_KEY_FILE, GROVE_FETCH_ROOT, GROVE_HOME, GROVE_TRUSTED_MODULUS_HEX) print a loud warning like GROVE_ARTIFACT_URL; vex JSON schema actually validates in CI (or is removed); upload-artifact pin comment verified against the real SHA; coverage.yml Julia version aligned to 1.12
+  hypothesis:
+    | all items are localized edits to the workflow, the audit wrapper, and the installers; no trust-model changes
+  evidence_strategy:
+    | shell test suites extended (injection-shaped version rejected, cancel-gate, UNKNOWN advisory fixture flagged, loud-override warnings); yaml review; cargo + shell CI green
+  evidence:
+    | release.yml hardened per Y-05: validate job gates build/audit/sbom (version regex via env-passed VERSION, never shell-interpolated unvalidated); build+sign checkout refs/tags/vVERSION in release mode with HEAD==tag assertion (ls-remote peel); sign job gate is always() + !failure() + !cancelled(); concurrency group grove-release-MODE without cancel-in-progress; all inputs reach bash via env (VERSION/MODE), zero unvalidated interpolation left; smoke downloads the PUBLISHED install.sh/.sig + install.ps1/.sig and verifies against the committed public key (symmetric), plus manifest sig + artifact hash. audit: trivy --severity CRITICAL,HIGH,UNKNOWN with UNKNOWN mapped to non-blocking warnings (JLSEC no longer vanishes); audit-filter.jl VEX suppression requires package AND version match (pkg@ver in ref). installers: loud WARNING when GROVE_TRUSTED_KEY_FILE/GROVE_FETCH_ROOT/GROVE_HOME (sh) or GROVE_TRUSTED_MODULUS_HEX/GROVE_FETCH_ROOT/GROVE_HOME (ps1) are set. vex.json validated against vex.schema.json with python jsonschema in security-scan.yml + release sbom/transparency steps. All 7 action pins re-verified against the API (checkout v4.2.2, upload v7.0.1, download v8.0.1, attest v4.1.1, cache v6.1.0, setup-julia v3.0.2, julia-cache v3.2.0). coverage.yml Julia aligned to 1.12. Tests: manifest 13/13 (incl. injection-shaped version rejected without evaluation), audit 8/8 (UNKNOWN warning tier, wrong-version VEX no-suppress), install bash 17/17 + ps1 14/14 (loud-warning assertions). yaml parses; grove check ok.
+
+w W-83 type=feature status=done cynefin=complicated t_created=2026-08-05T17:46:47Z t_updated=2026-08-08T18:33:05Z "Desktop release artifacts: tauri bundles in the matrix, installers install grove-desktop, desktop SBOM coverage"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | release.yml gains desktop build legs (tauri-cli pinned with checksum): windows nsis+msi, macos dmg (arm64 + x64 via macos-15-intel), linux deb/AppImage (webkit2gtk deps as in rust-tests.yml); a portable archive of grove-desktop per platform is produced alongside the OS bundles
+    | manifest artifact keys desktop_* per platform; install.sh and install.ps1 install grove, grove-mcp AND the desktop app by default (portable archive unpacked under the install root; --only extended with a desktop value; existing trust chain applies: sig, sequence, allowlist, sha256+size before unpack)
+    | sbom.cdx.json covers the desktop: grove-desktop crate tree added to the cargo-cyclonedx run and the retained vendored JS files appear as components keyed to PROVENANCE.md entries
+    | README and release notes template document the unsigned-bundle UX (macOS Gatekeeper and Windows SmartScreen apply to browser downloads) and the one-liner verification path; SECURITY.md scope extends to the desktop app
+  hypothesis:
+    | tauri build needs no npm (vanilla UI); portable archives keep the script install path uniform with the CLI artifacts while msi/dmg/deb serve browser downloads
+  evidence_strategy:
+    | dry-run release produces all desktop artifacts with hashes in the manifest; install.sh/ps1 install all three components on the CI matrix (linux leg validates the portable path); SBOM contains grove-desktop and d3.js components; desktop smoke on the produced bundle
+  evidence:
+    | audit 2026-08-05 (Y-05): desktop was absent by plan deferral; the manifest schema reserves desktop_* keys, so this is a matrix extension, not a redesign
+    | Desktop in the release pipeline. release.yml: build-desktop matrix job (tauri-cli 2.11.4 via cargo install --locked, registry checksums; windows nsis+msi, macos dmg arm64 + x64 via macos-15-intel, linux deb+AppImage with webkit2gtk deps as in rust-tests.yml) + portable tar.gz per target (binary + ui/views + ui/icons); sign job needs build-desktop; SHA256SUMS covers all files; release notes template documents the unsigned-bundle UX (SmartScreen/Gatekeeper on browser downloads) and the verification commands; attest subject-path covers bundles. Installers: install.sh + install.ps1 install grove + grove-mcp + desktop by default (desktop unpacks to <prefix>/desktop with ui/, --only desktop works, break-glass maps grove-desktop-*), key scheme desktop_<target> via manifest.sh (grove-desktop pattern added, golden regenerated with 12 fixtures, 13/13). Runtime fix: templates.rs ui_dir() now resolves GROVE_DESKTOP_UI_DIR -> exe-dir/ui -> compile-time path (was compile-time only, which made any distributed binary unable to find its .hbs templates); portable smoke proves it: staged grove-desktop.exe + ui/ ran with the repo ui/ temporarily renamed and still rendered overview + graph (canvas + 38 labels, zero console errors). SBOM: bin/sbom.sh adds the grove-desktop crate tree (278 cargo components incl. tauri) and vendored JS components parsed from PROVENANCE.md (d3 7.9.0 + rxjs 7.8.2 with sha256 + grove:vendored_file property); merged doc validates against the CycloneDX 1.6 schema (293 components total). Tests: bash install 20/20, ps1 16/16, manifest 13/13; desktop cargo tests green after the templates.rs change; yaml validated. Live dry-run producing the desktop artifacts is W-79 scope. grove check ok.
+
+w W-84 type=feature status=done cynefin=complicated t_created=2026-08-05T17:46:47Z t_updated=2026-08-08T18:33:05Z "Plan text sync: PowerShell constraint, per-component keys, rx.js retention, desktop scope"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | plan docs/plans/release-distribution-plan.md matches reality: §1.3 records install.ps1 as a first-class installer (bash-only constraint revised); §4.1 artifact table includes the desktop set; §4.2 normative key table uses per-component keys (grove_linux_x64, grove_mcp_*, desktop_*); vendored JS note says rx.js retained with PROVENANCE.md justification
+    | README states honestly which install flows work before the first release (sig files and dist/ appear at v0.1.0) and documents the desktop one-liner path once W-83 lands
+  hypothesis:
+    | text-only sync; no behavior changes
+  evidence_strategy:
+    | walk the plan top to bottom against the repo; grep for stale markers (No PowerShell, bare platform keys, osv-scanner leftovers)
+  evidence:
+    | Plan text synced top to bottom: intro + section 1.2 + constraints record install.ps1 as a first-class installer (bash-only constraint revised, W-81); section 4.1 artifact table now lists CLI archives, desktop portable archives, and OS bundles (msi/nsis/dmg/deb/AppImage) with producers; section 4.2 key table uses per-component keys (grove_/grove_mcp_/desktop_); section 4.3 notes the ps1 twin and shared sequence state; section 4.4 gained an as-built deltas paragraph (validate/build-desktop/sbom jobs, tag-pinned checkout, cancel gate, concurrency, published-file smoke, notes template); vendored JS note says rx.js retained with PROVENANCE.md justification and SBOM coverage, htmx/rxjs-imports removed; desktop row in 1.1 and the Later list no longer defer desktop; README gained the honest pre-release note (install.sh.sig/install.ps1.sig/dist/manifest.json appear with v0.1.0; source install until then). Grep: no 'No PowerShell', no bare platform keys, osv-scanner mentions are deliberate comparisons. grove check ok.
+
+w W-85 type=refactor status=done cynefin=clear t_created=2026-08-05T18:44:01Z t_updated=2026-08-08T18:33:05Z "Unify desktop component naming to grove-desktop across installers, manifest keys, and build outputs"
+  goals: G-16
+  fitness: G-16=+0
+  ac:
+    | component name grove-desktop everywhere: manifest keys grove_desktop_<target> (mechanical filename-to-key mapping, no special cases), --only grove-desktop, install dir <prefix>/grove-desktop, break-glass mapping; install.sh, install.ps1, bin/manifest.sh, release.yml, README, plan text consistent
+    | all suites updated and green: bash install, ps1 install, manifest golden (keys grove_desktop_*)
+  hypothesis:
+    | pure mechanical rename; no trust-model or behavior change beyond names
+  evidence_strategy:
+    | test suites green after the rename; grep finds no stale 'desktop_' keys or '--only desktop'
+  evidence:
+    | Component naming unified to grove-desktop (W-85, user proposal accepted: key derivation is now a pure mechanical filename transform with zero special cases). manifest.sh: grove-desktop-* maps to comp grove_desktop; keys grove_desktop_<target> (golden regenerated, 13/13). install.sh: --only grove grove-mcp grove-desktop, comp name == binary name (binary_name() helper deleted), install dir <prefix>/grove-desktop, break-glass mapping, self-test updated. install.ps1: same parity (-Only grove-desktop, dest grove-desktop\). Tests: bash 20/20, ps1 16/16, manifest 13/13, crypto 5/5, vex 5/5. README and plan 4.1/4.2 updated (install dir grove-desktop/, key examples grove_desktop_*). Grep: no stale desktop_ keys or --only desktop anywhere. grove check ok.
+
+w W-86 type=feature status=done cynefin=complicated t_created=2026-08-05T19:13:42Z t_updated=2026-08-08T18:33:05Z "Post-audit fixes: artifact name collision, desktop chmod, VEX exact match, pip pin, notes heredoc"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | release.yml: build-desktop uploads under dist-desktop-<target> (no name collision with build); sign job contains no unpinned pip installs (jsonschema pinned with --require-hashes or the Julia validator only); release notes heredoc dedented (<<- or unindented); smoke hash-checks one desktop artifact too; desktop suite runs in the release workflow (or a documented reason not to)
+    | install.sh desktop branch chmod +x the binary; tests/install fixtures created executable so -x assertions are honest on linux/macos runners; audit-filter.jl compares purl name and version exactly (no substring/prefix suppression); PROVENANCE.md parse in sbom.sh fails closed on zero rows; MEDIUM/LOW policy reconciled with plan §4.7 wording
+    | plan §4.3 steps 2/7 describe the three-component world (grove, grove-mcp, grove-desktop); README documents desktop runtime prerequisites (WebView2 on Windows, libwebkit2gtk-4.1 on Linux)
+  hypothesis:
+    | all items are localized fixes from the Y-06 audit; no design changes
+  evidence_strategy:
+    | shell suites green on ubuntu/macos legs of shell-tests.yml (not just Git Bash); yaml review; dry-run in W-79 confirms the collision is gone
+  evidence:
+    | Post-audit fixes (Y-06) done: (1) artifact name collision fixed - build-desktop uploads as dist-desktop-<target> (was dist-<target> like the CLI build job). (2) install.sh desktop branch chmod +x the binary; install fixtures are created executable so -x assertions are honest on linux/macos runners. (3) audit-filter.jl compares purl name and version exactly (purl_name_version parser, no substring/prefix suppression) with a direct unit fixture: same-version-different-package and same-package-different-version stay reported, exact match suppressed, UNKNOWN warns. (4) trivy invoked without --severity so MEDIUM/LOW/UNKNOWN are reported as non-blocking warnings, reconciled with plan 4.7 wording (fatal only CRITICAL/HIGH). (5) Unpinned pip installs removed from security-scan.yml and both release.yml spots; VEX validation is the Julia validator only (the schema file stays the documented contract; no third-party unpinned deps in the sign path). (6) Desktop cargo suite runs in build-desktop legs (tauri deps already present there). (7) Smoke hash-checks the desktop portable archive too. (8) sbom.sh dies on zero parsed PROVENANCE.md rows (format drift fails closed). (9) Notes heredoc verified by executing the YAML-extracted run block (content dedents to column 0; heredoc terminates correctly). (10) Plan 4.3 steps 2/7 describe the three-component world; README documents desktop runtime prerequisites (WebView2, libwebkit2gtk-4.1). Suites: audit 13/13, install bash 20/20, self-test 7/7, sbom regenerates 293 components. yaml ok; grove check ok.
+
+w W-87 type=feature status=done cynefin=complicated t_created=2026-08-05T19:22:03Z t_updated=2026-08-08T18:33:05Z "Skill bundle: generated single-file grove-skill.md as a signed release artifact"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | bin/skill-bundle.sh generates a single grove-skill.md from docs/skills/ at release time; SECTION ORDER IS FIXED and recorded in the generator: it follows the numbered reading list of docs/skills/index.md (1 model, 2 protocol, 3 cli, 4 evidence, 5 rules, 6 lockfile, 7 typography, 8 checklist) after the index itself; diagrams are inlined at their reference points or appended as a numbered appendix; relative links like [Protocol](protocol.md) are rewritten to in-file anchors
+    | the bundle keeps the skill frontmatter (name: grove, description) at the top so the file is installable as-is; a golden or marker test proves the output is byte-stable for unchanged sources and that every numbered section appears exactly once in the recorded order
+    | the release workflow attaches grove-skill.md (+ .sig via the existing sign path) and the README documents the one-file install next to the MCP configuration
+  hypothesis:
+    | docs/skills/ stays the decomposed source of truth; the bundle is a deterministic build artifact, so drift between them is impossible by construction
+  evidence_strategy:
+    | golden/marker test in shell CI; bundle inspected for anchor rewriting and section order; release dry-run (W-79) attaches the signed file
+  evidence:
+    | user requirement 2026-08-05: bundle order must be fixed explicitly; docs/skills/index.md already numbers the sections, so the generator records and follows that numbering
+    | bin/skill-bundle.sh: deterministic single-file grove-skill.md from docs/skills/ - skill frontmatter (name: grove, description) stays at the top, then index content, then the fixed section order recorded in the generator (model, protocol, cli, evidence, rules, lockfile, typography, checklist, matching the numbered reading list in docs/skills/index.md), then the diagrams as appendix '# 9. Diagrams' with headings demoted one level (dual-track, graph-template, workflow). Relative links rewritten to in-file anchors: [x](model.md) -> [x](#1-formal-model) via GitHub-slugified first headings, [x](model.md#frag) -> [x](#frag), [Diagrams](diagrams/) -> #9-diagrams. tests/skill/test-skill-bundle.sh 8/8: byte-stable across runs, frontmatter on top, every numbered heading exactly once in increasing order, zero remaining relative .md links, anchor rewrites present, appendix demotion correct. release.yml sign step generates + signs out/grove-skill.md and the publish step attaches it with its .sig. README documents the one-file install next to the MCP configuration. Incidental: Y-02 decay fixed after the maintainer deleted docs/plans/effectiveness-v1.md - dead surface entry removed, revalidation from=W-02 recorded. yaml ok; grove check ok.
+    | skill scope updated 2026-08-07: docs/skills gained planning.md as reading item 3 (index.md renumbered, checklist.md got planning gates); the bundle generator must take the order from index.md's reading list, so the new section is included automatically
+
+w W-88 type=feature status=done cynefin=complicated t_created=2026-08-05T19:22:03Z t_updated=2026-08-08T18:33:05Z "grove://skill primer resource in grove-mcp (compact protocol text embedded in the server)"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | grove-mcp serves a grove://skill resource with a compact protocol primer (dual-track loop, DoR/evidence discipline, WIP limit, chaotic halts, distill/archive cadence) embedded via include_str! from a single source text, so an agent with only the MCP integration gets minimally correct behavior without installing the full skill
+    | the primer text lives in one place (packages/mcp or packages/core asset) and its relationship to docs/skills is stated in its header; resource listed by resources/list alongside packet/show; tool descriptions stay as-is
+  hypothesis:
+    | MCP gives mechanism but not methodology; a ~100-line embedded primer covers the behavioral minimum while grove-skill.md (W-87) remains the deep reference
+  evidence_strategy:
+    | mcp resources/list + resources/read test asserts the primer is served and covers the protocol keywords; cargo test green
+  evidence:
+    | grove://skill resource in grove-mcp: packages/core/assets/skill-primer.md (~100 lines: dual-track loop, DoR discipline, evidence/DoD, WIP limit + session tokens, statuses, chaotic halts, distill/archive cadence, operational rules, command map) with a header stating it is a condensed derivative of docs/skills and that grove-skill.md wins on disagreement; embedded via include_str! in packages/core/src/mcp.rs. resources/list prepends the static primer entry (text/markdown) alongside packet/show node resources; resources/read serves it before the uri split. Tests updated in packages/mcp/tests/mcp.rs: resource counts 6->7 and 2->3, primer listed and read, keyword coverage asserted (dual-track, Definition of Ready, WIP_LIMIT, chaotic, distill, evidence). cargo test --workspace --exclude grove-desktop all green; README lists the new resource. grove check ok.
+
+w W-89 type=feature status=done cynefin=clear t_created=2026-08-08T14:27:57Z t_updated=2026-08-08T18:33:05Z "Desktop launcher integration in installers (Windows .lnk, macOS .app stub, Linux .desktop)"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | install.ps1 creates Desktop and Start Menu shortcuts for grove-desktop.exe idempotently (WScript.Shell COM, no elevation)
+    | install.sh creates ~/Applications/grove.app stub on macOS and ~/.local/share/applications/grove.desktop on Linux, idempotently
+    | launcher entries point at the installed grove-desktop binary and survive same-sequence reinstall
+    | tests/install/test-install.sh and test-install.ps1 assert launcher artifacts
+  hypothesis:
+    | Self-created launcher entries keep the verified tar.gz install flow single-sourced; no MSI/NSIS/DMG second install tree is needed for launcher presence
+  evidence_strategy:
+    | test-install.sh/test-install.ps1 green on CI (ubuntu, macos, windows) asserting .desktop/.app/.lnk creation; files and test counts in evidence
+  evidence:
+    | install.sh: install_launcher linux (.desktop under ~/.local/share/applications) + macos (~/Applications/grove.app stub with Info.plist + exec launcher); install.ps1: Install-Launcher via WScript.Shell COM (Desktop via GetFolderPath, Start Menu Programs), GROVE_SHORTCUT_ROOT test hook
+    | tests: test-install.sh 22/22 (linux .desktop Exec assert, macos .app assert, --only creates no launcher); test-install.ps1 20/20 (lnk creation, TargetPath equals installed binary, no shortcut for -Only grove-mcp); ran locally on windows; linux/macos launcher asserts covered by CI shell-tests matrix
+    | test fix: work dir moved from short 8.3 TEMP to LOCALAPPDATA long path; COM Save resolves 8.3 to long form, string compare unstable
+    | docs/install.md: launcher behavior documented next to installer options
+
+w W-90 type=feature status=done cynefin=clear t_created=2026-08-08T14:27:57Z t_updated=2026-08-08T18:33:05Z "Idempotent PATH integration in install.sh and install.ps1"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | install.sh appends an idempotent marked PATH line to ~/.profile and detected shell rc files (~/.bashrc, ~/.zshrc when present)
+    | install.ps1 persists the bin dir to user PATH via [Environment]::SetEnvironmentVariable without duplicates and without setx
+    | re-running installers does not duplicate PATH entries
+    | tests/install/test-install.sh and test-install.ps1 assert PATH writes and double-run idempotency
+  hypothesis:
+    | Rustup-style rc-file line plus per-user registry PATH cover the target shells without elevation or setx 1024-char truncation risk
+  evidence_strategy:
+    | test-install.sh/test-install.ps1 green incl. idempotency assertions; CI matrix green; test counts in evidence
+  evidence:
+    | install.sh: update_path_rc - idempotent marked export line in ~/.profile plus ~/.bashrc/~/.zshrc when present, runs when grove or grove-mcp installed; install.ps1: Update-UserPath - per-user registry PATH via [Environment]::SetEnvironmentVariable (no setx), trailing-slash/case-insensitive dup check, GROVE_USER_PATH_FILE test hook
+    | tests: test-install.sh 25/25 (PATH line in .profile, idempotency on reinstall, --only grove-desktop leaves PATH alone); test-install.ps1 23/23 (PATH file write, idempotency via pre-seeded file, no PATH for -Only grove-desktop)
+    | bug found by tests: redirect to ~/.profile failed when HOME dir absent (custom --prefix outside HOME); fixed with mkdir -p HOME in update_path_rc
+    | docs/install.md: automatic PATH registration documented
+
 d D-01 status=accepted t_created=2026-07-19T02:32:25Z t_updated=2026-07-20T03:20:22Z "Conformance fixtures use output normalization, not clock injection"
   context:
     | 4A needs byte-stable fixtures; the CLI stamps t_created/t_updated, session tokens, checksums and machine-specific temp paths into outputs and state files
@@ -2197,3 +2195,5 @@ q Q-02 status=answered cynefin=complex t_created=2026-07-19T01:19:17Z t_updated=
     | Rust becomes the MCP and desktop backend: corpus 28/28 byte-identical, 19/19 read-only commands identical on the dogfood lock, 278 cargo tests green; maintenance burden accepted
 
 t T-02 status=open t_created=2026-07-28T02:40:22Z t_updated=2026-08-05T18:45:04Z "Desktop UI coherence"
+
+t T-03 status=open t_created=2026-08-05T18:45:04Z t_updated=2026-08-08T18:33:05Z "Release distribution pipeline"
