@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:4d219670cbea02fba5707804f23bc4fc1a240bdb64c3efdb870946482a8fabcd
+# checksum: sha256:0eb960c06bdc970cc831ed6ca2e3ef73a535741824e55b9a4793c3f44accefe3
 g G-02 status=unverified fitness_kind=count t_created=2026-07-19T01:14:01Z t_updated=2026-07-19T01:14:01Z "Programmatic API with CLI parity and perf budget"
   area: A-02
   fitness_target: 2
@@ -12,7 +12,7 @@ g G-04 status=verified fitness_kind=boolean t_created=2026-07-19T01:14:16Z t_upd
 g G-16 status=verified fitness_kind=count t_created=2026-08-04T19:44:12Z t_updated=2026-08-08T15:02:56Z "Release distribution and signing: binary artifacts, signed manifest, installer, CI"
   area: A-06
   fitness_target: 19
-  fitness_current: 19
+  fitness_current: 20
 
 w W-03 type=refactor status=proposed cynefin=complex t_created=2026-07-19T01:14:57Z t_updated=2026-08-07T00:47:51Z "Extract Grove.API structured layer; CLI as thin renderer"
   goals: G-02
@@ -226,7 +226,7 @@ w W-79 type=feature status=done cynefin=complicated t_created=2026-08-04T19:46:0
     | gaps found and fixed: commit-back PR creation denied (release.yml: step moved last, PR failure = warning); same-sequence reinstall refused (installers -le -> -lt, tests 21/21 sh + 17/17 ps1); PR #14 merged, raw main serves manifest 0.1.1 seq 2
     | runbook gaps recorded: enable 'Actions can create PRs' repo setting; PR-create fallback now manual-link warning
 
-w W-80 type=feature status=ready cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-07T00:58:08Z "Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs"
+w W-80 type=feature status=done cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-08T17:02:39Z "Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs"
   goals: G-16
   fitness: G-16=+1
   ac:
@@ -239,6 +239,8 @@ w W-80 type=feature status=ready cynefin=complicated t_created=2026-08-04T19:46:
     | written after implementation so the documents describe what exists, not what was planned
   evidence_strategy:
     | document set matches plan §4.9/§4.10 outlines; frontmatter conventions hold
+  evidence:
+    | Created 13 docs, all frontmatter type/status stable, ASCII-only verified byte-level: runbooks docs/security/runbooks/{publish-release 70, release-security-checks 119, rotate-signing-key 63, manifest-refresh 68, update-vex 65, incident-response 75}; architecture docs/architecture/{release-distribution 105, bootstrap-trust 79, supply-chain-trust 76, key-management 67} type=system; docs/security/{compliance 72, annex-vii 50} type=policy; CONTRIBUTING.md 50 with 4-rule dependency policy. Runbook reconciliation: publish-release executed end-to-end on v0.1.1 and v0.1.2; release-security-checks items run locally - bin/verify.sh OK x3 (manifest.json, vex.json, sbom.cdx.json vs grove-manifest-2026-08.pem); julia --project=packages/grove bin/validate-vex.jl OK (0 statements); install.sh --self-test 7/7; key-generation runbook executed 2026-08 (execution log in file). rotate-signing-key/manifest-refresh/incident-response not yet triggered for real - every command verified against release.yml (modes manifest-only/transparency-only, release/vX.Y.Z and release/<mode>-<timestamp> commit-back branches) and installer sources. Reality deviations recorded in docs: single trust anchor per installer (ps1 = modulus hex, no two-key overlap), expiry +24h grace, equal sequence accepted, bin/audit.jl osv.dev fallback never implemented (trivy parses Julia Manifest.toml natively), grove-skill.md and SLSA attestations in signing coverage. grove check ok.
 
 w W-81 type=feature status=done cynefin=complicated t_created=2026-08-05T16:50:36Z t_updated=2026-08-05T17:09:45Z "install.ps1: PowerShell installer for Windows with trust-chain parity to install.sh"
   goals: G-16
@@ -553,7 +555,7 @@ y Y-04 status=active t_created=2026-08-04T18:34:40Z t_updated=2026-08-07T01:00:4
   revalidation:
     | 2026-08-04T23:36:50Z surface=docs/plans/release-distribution-plan.md
 
-y Y-05 status=active t_created=2026-08-05T17:36:18Z t_updated=2026-08-05T17:36:32Z "G-16 implementation audit: pre-release fixes and desktop artifact gap"
+y Y-05 status=superseded t_created=2026-08-05T17:36:18Z t_updated=2026-08-08T17:03:21Z "G-16 implementation audit: pre-release fixes and desktop artifact gap"
   tags: verify-then-parse
   surface: .github/workflows/release.yml
   invariant:
@@ -563,7 +565,7 @@ y Y-05 status=active t_created=2026-08-05T17:36:18Z t_updated=2026-08-05T17:36:3
   skill_updates:
     | Desktop bundles are excluded by plan deferral, not by oversight: the manifest schema already reserves desktop_* keys, so adding them is an extension of the existing matrix (new tauri build legs + artifact keys), not a redesign; SECURITY.md scope must be extended to the desktop app when it ships
 
-y Y-06 status=active t_created=2026-08-05T19:13:24Z t_updated=2026-08-05T19:13:25Z "G-16 follow-up audit: artifact name collision and installer parity bugs"
+y Y-06 status=superseded t_created=2026-08-05T19:13:24Z t_updated=2026-08-08T17:04:14Z "G-16 follow-up audit: artifact name collision and installer parity bugs"
   tags: verify-then-parse
   surface: .github/workflows/release.yml
   invariant:

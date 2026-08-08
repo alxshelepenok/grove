@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 14 | validated B 0 · answered Q 1 · accepted D 7 · active Discovery 6 |
+| C (content) | 12 | validated B 0 · answered Q 1 · accepted D 7 · active Discovery 4 |
 | V (uncertainty) | 11 | open Q 2 · pending B 4 · W below DoR 3 · uncovered surface 2 |
 
 ## Areas
@@ -18,7 +18,7 @@
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 2 | 0 | C: validated B 0 · answered Q 0 · accepted D 1 · active Discovery 1; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-06 | Release | 2 | 0 | C: validated B 0 · answered Q 0 · accepted D 0 · active Discovery 2; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-06 | Release | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 
 > Relevance view, not a partition: a node touching two areas counts in both; a W without goals counts in none. The Content health totals above are primary.
 
@@ -28,7 +28,7 @@
 | --- | --- | --- | --- |
 | G-02 | Programmatic API with CLI parity and perf budget | count; current= target=2 | unverified |
 | G-04 | Agent discovery-to-delivery loop via MCP only | boolean; current=true | verified |
-| G-16 | Release distribution and signing: binary artifacts, signed manifest, installer, CI | count; current=19 target=19 | verified |
+| G-16 | Release distribution and signing: binary artifacts, signed manifest, installer, CI | count; current=20 target=19 | verified |
 
 ## Work items
 
@@ -50,7 +50,7 @@
 | W-77 | feature | bin/sbom.sh + vex.json schema/validation + vendored JS provenance (drop unused rx/htmx) | G-16 | complicated | ⊤ | done |  |
 | W-78 | feature | release.yml: matrix build, audit gate, approval-gated sign-and-publish, dist/ commit-back, attestations, smoke | G-16 | complicated | ⊤ | done |  |
 | W-79 | feature | Dry-run release end-to-end, then v0.1.0 dress rehearsal; gaps recorded in runbooks | G-16 | complicated | ⊤ | done |  |
-| W-80 | feature | Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs | G-16 | complicated | ⊤ | ready |  |
+| W-80 | feature | Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs | G-16 | complicated | ⊤ | done |  |
 | W-81 | feature | install.ps1: PowerShell installer for Windows with trust-chain parity to install.sh | G-16 | complicated | ⊤ | done |  |
 | W-82 | feature | Pre-release hardening: input validation, tag-pinned build, audit UNKNOWN tier, smoke test, workflow nits | G-16 | complicated | ⊤ | done |  |
 | W-83 | feature | Desktop release artifacts: tauri bundles in the matrix, installers install grove-desktop, desktop SBOM coverage | G-16 | complicated | ⊤ | done |  |
@@ -106,8 +106,8 @@
 | Y-02 | Never gate a validation task on the hypotheses it validates | causal inversion | active |
 | Y-03 | Integration surfaces are thin adapters over the core CLI contract | thin adapter | active |
 | Y-04 | Release-distribution plan audit: factual errors and design gaps | pinned origin, verify-then-parse | active |
-| Y-05 | G-16 implementation audit: pre-release fixes and desktop artifact gap | verify-then-parse | active |
-| Y-06 | G-16 follow-up audit: artifact name collision and installer parity bugs | verify-then-parse | active |
+| Y-05 | G-16 implementation audit: pre-release fixes and desktop artifact gap | verify-then-parse | superseded |
+| Y-06 | G-16 follow-up audit: artifact name collision and installer parity bugs | verify-then-parse | superseded |
 
 ## Dependency graph
 
@@ -132,7 +132,7 @@ graph TD
   W_77["W-77: bin/sbom.sh + vex.json schema/validation + vendored JS provenance (drop unused rx/htmx)"]:::done
   W_78["W-78: release.yml: matrix build, audit gate, approval-gated sign-and-publish, dist/ commit-back, attestations, smoke"]:::done
   W_79["W-79: Dry-run release end-to-end, then v0.1.0 dress rehearsal; gaps recorded in runbooks"]:::done
-  W_80["W-80: Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs"]:::ready
+  W_80["W-80: Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs"]:::done
   W_81["W-81: install.ps1: PowerShell installer for Windows with trust-chain parity to install.sh"]:::done
   W_82["W-82: Pre-release hardening: input validation, tag-pinned build, audit UNKNOWN tier, smoke test, workflow nits"]:::done
   W_83["W-83: Desktop release artifacts: tauri bundles in the matrix, installers install grove-desktop, desktop SBOM coverage"]:::done
