@@ -4,7 +4,7 @@ $ErrorActionPreference = "Stop"
 $Repo = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $Installer = Join-Path $Repo "install.ps1"
 
-$work = Join-Path $env:TEMP ("grove-ps1-test-" + [Guid]::NewGuid().ToString("N"))
+$work = Join-Path $env:LOCALAPPDATA ("Temp\grove-ps1-test-" + [Guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Force -Path $work | Out-Null
 
 $script:pass = 0
@@ -93,6 +93,8 @@ function Run-Install([string[]]$ExtraArgs, [hashtable]$ExtraEnv = @{}) {
     GROVE_FETCH_ROOT = $server
     GROVE_TRUSTED_MODULUS_HEX = $testModulusHex
     GROVE_HOME = (Join-Path $fakeHome ".grove")
+    GROVE_SHORTCUT_ROOT = (Join-Path $work "shortcuts$($script:counter)")
+    GROVE_USER_PATH_FILE = (Join-Path $work "userpath$($script:counter).txt")
   }
   foreach ($k in $ExtraEnv.Keys) { $envPairs[$k] = $ExtraEnv[$k] }
   $envFile = Join-Path $work "env$($script:counter).ps1"
@@ -103,7 +105,7 @@ function Run-Install([string[]]$ExtraArgs, [hashtable]$ExtraEnv = @{}) {
   $lines += "exit `$LASTEXITCODE"
   [System.IO.File]::WriteAllText($envFile, ($lines -join "`n"))
   $out = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $envFile 2>&1 | Out-String
-  return @{ Rc = $LASTEXITCODE; Out = $out; Home = $fakeHome; Prefix = $prefix }
+  return @{ Rc = $LASTEXITCODE; Out = $out; Home = $fakeHome; Prefix = $prefix; ShortcutRoot = $envPairs.GROVE_SHORTCUT_ROOT; PathFile = $envPairs.GROVE_USER_PATH_FILE }
 }
 
 $goodBase = "https://github.com/alxshelepenok/grove/releases/download"
@@ -116,12 +118,29 @@ Report ($r.Out -match "WARNING: GROVE_FETCH_ROOT is set") "trust-override hooks 
 Report ((Test-Path (Join-Path $r.Prefix "bin\grove.exe")) -and (Test-Path (Join-Path $r.Prefix "bin\grove-mcp.exe"))) "binaries installed"
 Report ((Test-Path (Join-Path $r.Prefix "grove-desktop\grove-desktop.exe")) -and (Test-Path (Join-Path $r.Prefix "grove-desktop\ui\views\placeholder.hbs"))) "desktop app installed with ui templates"
 Report ([System.IO.File]::ReadAllText((Join-Path $r.Home ".grove\.sequence")) -match "stable=7") "sequence file written"
+Report ([System.IO.File]::ReadAllText($r.PathFile) -match [regex]::Escape((Join-Path $r.Prefix "bin"))) "PATH file updated with bin dir"
+
+$desktopLnk = Join-Path $r.ShortcutRoot "Desktop\Grove.lnk"
+$menuLnk = Join-Path $r.ShortcutRoot "StartMenu\Programs\Grove.lnk"
+Report ((Test-Path $desktopLnk) -and (Test-Path $menuLnk)) "desktop and start menu shortcuts created"
+$ws = New-Object -ComObject WScript.Shell
+Report (($ws.CreateShortcut($desktopLnk).TargetPath) -eq (Join-Path $r.Prefix "grove-desktop\grove-desktop.exe")) "shortcut targets installed grove-desktop"
 
 $r = Run-Install @("-Only", "grove-mcp")
 Report (($r.Rc -eq 0) -and (Test-Path (Join-Path $r.Prefix "bin\grove-mcp.exe")) -and (-not (Test-Path (Join-Path $r.Prefix "bin\grove.exe"))) -and (-not (Test-Path (Join-Path $r.Prefix "grove-desktop")))) "-Only grove-mcp installs just one component"
+Report (-not (Test-Path (Join-Path $r.ShortcutRoot "Desktop\Grove.lnk"))) "-Only grove-mcp creates no shortcut"
 
 $r = Run-Install @("-Only", "grove-desktop")
 Report (($r.Rc -eq 0) -and (Test-Path (Join-Path $r.Prefix "grove-desktop\grove-desktop.exe")) -and (-not (Test-Path (Join-Path $r.Prefix "bin")))) "-Only grove-desktop installs just the desktop app"
+Report (-not (Test-Path $r.PathFile)) "-Only grove-desktop does not touch PATH"
+
+$seedPrefix = Join-Path $work "inst$($script:counter + 1)"
+$seedBin = Join-Path $seedPrefix "bin"
+$seedFile = Join-Path $work "userpath-seed.txt"
+[System.IO.File]::WriteAllText($seedFile, $seedBin)
+$r = Run-Install @() @{ GROVE_USER_PATH_FILE = $seedFile }
+$pathContent = [System.IO.File]::ReadAllText($seedFile)
+Report ((@($pathContent -split ';' | Where-Object { $_ -eq $seedBin })).Count -eq 1) "PATH entry idempotent on reinstall"
 
 New-Manifest 7 ($now + 86400) $goodBase
 Add-Content (Join-Path $server "manifest.json") "tampered"
@@ -138,6 +157,13 @@ New-Item -ItemType Directory -Force -Path (Join-Path $seqHome ".grove") | Out-Nu
 [System.IO.File]::WriteAllText((Join-Path $seqHome ".grove\.sequence"), "format 1`nstable=9`n")
 $r = Run-Install @()
 Report (($r.Rc -ne 0) -and ($r.Out -match "rollback")) "rolled-back sequence rejected"
+
+New-Manifest 9 ($now + 86400) $goodBase
+$sameSeqHome = Join-Path $work "home$($script:counter + 1)"
+New-Item -ItemType Directory -Force -Path (Join-Path $sameSeqHome ".grove") | Out-Null
+[System.IO.File]::WriteAllText((Join-Path $sameSeqHome ".grove\.sequence"), "format 1`nstable=9`n")
+$r = Run-Install @()
+Report ($r.Rc -eq 0) "same-sequence reinstall allowed"
 
 New-Manifest 7 ($now + 86400) "https://evil.example.com/dl"
 $r = Run-Install @()

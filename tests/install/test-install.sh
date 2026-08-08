@@ -72,8 +72,22 @@ report $? "binaries are executable"
 [ -x "$work/inst1/grove-desktop/grove-desktop$ext" ] && [ -f "$work/inst1/grove-desktop/ui/views/placeholder.hbs" ]
 report $? "desktop app installed with ui templates"
 
+case $os_part in
+  linux)
+    grep -q "^Exec=$work/inst1/grove-desktop/grove-desktop$" "$work/home1/.local/share/applications/grove.desktop"
+    report $? "linux launcher entry created"
+    ;;
+  macos)
+    [ -x "$work/home1/Applications/Grove.app/Contents/MacOS/launcher" ] && [ -f "$work/home1/Applications/Grove.app/Contents/Info.plist" ]
+    report $? "macos launcher app created"
+    ;;
+esac
+
 grep -q '^stable=1$' "$work/home1/.grove/.sequence"
 report $? "sequence file written"
+
+grep -qF "export PATH=\"$work/inst1/bin:\$PATH\"" "$work/home1/.profile"
+report $? "PATH line added to .profile"
 
 run_install 2 "--only grove-mcp" > "$work/out2" 2>&1
 report $? "--only grove-mcp installs"
@@ -81,11 +95,17 @@ report $? "--only grove-mcp installs"
 [ -x "$work/inst2/bin/grove-mcp$ext" ] && [ ! -e "$work/inst2/bin/grove$ext" ] && [ ! -e "$work/inst2/grove-desktop" ]
 report $? "--only skips the other components"
 
+[ ! -e "$work/home2/.local/share/applications/grove.desktop" ] && [ ! -e "$work/home2/Applications/Grove.app" ]
+report $? "--only grove-mcp creates no launcher"
+
 run_install 9 "--only grove-desktop" > "$work/out9" 2>&1
 report $? "--only grove-desktop installs"
 
 [ -x "$work/inst9/grove-desktop/grove-desktop$ext" ] && [ ! -e "$work/inst9/bin" ]
 report $? "--only grove-desktop skips cli binaries"
+
+[ ! -e "$work/home9/.profile" ]
+report $? "--only grove-desktop does not touch PATH"
 
 cp "$server/manifest.json" "$work/manifest.bak"
 printf 'tampered' >> "$server/manifest.json"
@@ -106,6 +126,12 @@ mkdir -p "$work/home5/.grove"
 printf 'format 1\nstable=9\n' > "$work/home5/.grove/.sequence"
 if run_install 5 "" > "$work/out5" 2>&1; then r=1; else r=0; fi
 report $r "rolled-back sequence rejected"
+
+run_install 1 "" > "$work/out1b" 2>&1
+report $? "same-sequence reinstall allowed"
+
+[ "$(grep -cF "export PATH=\"$work/inst1/bin" "$work/home1/.profile")" -eq 1 ]
+report $? "PATH line idempotent on reinstall"
 
 sed 's|https://github.com/alxshelepenok/grove/releases/download|https://evil.example.com/dl|' "$work/manifest.bak" > "$server/manifest.json"
 bin/sign.sh "$work/testkey.pem" "$server/manifest.json" "$server/manifest.json.sig"

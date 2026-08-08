@@ -352,9 +352,9 @@ jobs:
 
           ### Contents
 
-          - grove and grove-mcp CLI binaries + grove-desktop portable archives: linux-x64, macos-arm64, macos-x64, windows-x64
-          - Desktop OS bundles: msi + nsis (windows), dmg (macOS arm64 + x64), deb + AppImage (linux)
-          - Signed manifest, SHA256SUMS, CycloneDX SBOM, VEX, signed installers
+          - grove and grove-mcp CLI binaries + grove-desktop portable archives: linux-x64, macos-arm64, macos-x64, windows-x64.
+          - Desktop OS bundles: msi + nsis (windows), dmg (macOS arm64 + x64), deb + AppImage (linux).
+          - Signed manifest, SHA256SUMS, CycloneDX SBOM, VEX, signed installers.
           EOF
           cat manifest.json
 

@@ -28,13 +28,13 @@
 | --- | --- | --- | --- |
 | G-02 | Programmatic API with CLI parity and perf budget | count; current= target=2 | unverified |
 | G-04 | Agent discovery-to-delivery loop via MCP only | boolean; current=true | verified |
-| G-16 | Release distribution and signing: binary artifacts, signed manifest, installer, CI | count; current=16 target=19 | partial |
+| G-16 | Release distribution and signing: binary artifacts, signed manifest, installer, CI | count; current=19 target=19 | verified |
 
 ## Work items
 
 | ID | Type | Title | Goals | Cynefin | DoR | Status | Critical |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| W-03 | refactor | Extract Grove.API structured layer; CLI as thin renderer | G-02 | complex | ⊥ | proposed |  |
+| W-03 | refactor | Extract Grove.API structured layer; CLI as thin renderer | G-02 | complex | ⊥ | proposed | ★ |
 | W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-02 | complicated | ⊥ | proposed |  |
 | W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-02 | complicated | ⊥ | proposed |  |
 | W-06 | feature | grove serve: JSON-lines over stdio and localhost TCP | G-02 | complicated | ⊥ | rejected |  |
@@ -49,8 +49,8 @@
 | W-76 | feature | bin/audit.sh (trivy wrapper, VEX-aware) + security-scan.yml (PR, weekly, dispatch) | G-16 | complicated | ⊤ | done |  |
 | W-77 | feature | bin/sbom.sh + vex.json schema/validation + vendored JS provenance (drop unused rx/htmx) | G-16 | complicated | ⊤ | done |  |
 | W-78 | feature | release.yml: matrix build, audit gate, approval-gated sign-and-publish, dist/ commit-back, attestations, smoke | G-16 | complicated | ⊤ | done |  |
-| W-79 | feature | Dry-run release end-to-end, then v0.1.0 dress rehearsal; gaps recorded in runbooks | G-16 | complicated | ⊤ | ready | ★ |
-| W-80 | feature | Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs | G-16 | complicated | ⊤ | ready | ★ |
+| W-79 | feature | Dry-run release end-to-end, then v0.1.0 dress rehearsal; gaps recorded in runbooks | G-16 | complicated | ⊤ | done |  |
+| W-80 | feature | Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs | G-16 | complicated | ⊤ | ready |  |
 | W-81 | feature | install.ps1: PowerShell installer for Windows with trust-chain parity to install.sh | G-16 | complicated | ⊤ | done |  |
 | W-82 | feature | Pre-release hardening: input validation, tag-pinned build, audit UNKNOWN tier, smoke test, workflow nits | G-16 | complicated | ⊤ | done |  |
 | W-83 | feature | Desktop release artifacts: tauri bundles in the matrix, installers install grove-desktop, desktop SBOM coverage | G-16 | complicated | ⊤ | done |  |
@@ -59,6 +59,8 @@
 | W-86 | feature | Post-audit fixes: artifact name collision, desktop chmod, VEX exact match, pip pin, notes heredoc | G-16 | complicated | ⊤ | done |  |
 | W-87 | feature | Skill bundle: generated single-file grove-skill.md as a signed release artifact | G-16 | complicated | ⊤ | done |  |
 | W-88 | feature | grove://skill primer resource in grove-mcp (compact protocol text embedded in the server) | G-16 | complicated | ⊤ | done |  |
+| W-89 | feature | Desktop launcher integration in installers (Windows .lnk, macOS .app stub, Linux .desktop) | G-16 | clear | ⊤ | done |  |
+| W-90 | feature | Idempotent PATH integration in install.sh and install.ps1 | G-16 | clear | ⊤ | done |  |
 
 ## Decisions
 
@@ -114,7 +116,7 @@ graph TD
   G_02["G-02: Programmatic API with CLI parity and perf budget"]:::goal
   G_04["G-04: Agent discovery-to-delivery loop via MCP only"]:::goal
   G_16["G-16: Release distribution and signing: binary artifacts, signed manifest, installer, CI"]:::goal
-  W_03["W-03: Extract Grove.API structured layer; CLI as thin renderer"]:::feature
+  W_03["W-03: Extract Grove.API structured layer; CLI as thin renderer"]:::feature,critical
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_06["W-06: grove serve: JSON-lines over stdio and localhost TCP"]:::rejected
@@ -129,8 +131,8 @@ graph TD
   W_76["W-76: bin/audit.sh (trivy wrapper, VEX-aware) + security-scan.yml (PR, weekly, dispatch)"]:::done
   W_77["W-77: bin/sbom.sh + vex.json schema/validation + vendored JS provenance (drop unused rx/htmx)"]:::done
   W_78["W-78: release.yml: matrix build, audit gate, approval-gated sign-and-publish, dist/ commit-back, attestations, smoke"]:::done
-  W_79["W-79: Dry-run release end-to-end, then v0.1.0 dress rehearsal; gaps recorded in runbooks"]:::ready,critical
-  W_80["W-80: Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs"]:::ready,critical
+  W_79["W-79: Dry-run release end-to-end, then v0.1.0 dress rehearsal; gaps recorded in runbooks"]:::done
+  W_80["W-80: Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs"]:::ready
   W_81["W-81: install.ps1: PowerShell installer for Windows with trust-chain parity to install.sh"]:::done
   W_82["W-82: Pre-release hardening: input validation, tag-pinned build, audit UNKNOWN tier, smoke test, workflow nits"]:::done
   W_83["W-83: Desktop release artifacts: tauri bundles in the matrix, installers install grove-desktop, desktop SBOM coverage"]:::done
@@ -139,6 +141,8 @@ graph TD
   W_86["W-86: Post-audit fixes: artifact name collision, desktop chmod, VEX exact match, pip pin, notes heredoc"]:::done
   W_87["W-87: Skill bundle: generated single-file grove-skill.md as a signed release artifact"]:::done
   W_88["W-88: grove://skill primer resource in grove-mcp (compact protocol text embedded in the server)"]:::done
+  W_89["W-89: Desktop launcher integration in installers (Windows .lnk, macOS .app stub, Linux .desktop)"]:::done
+  W_90["W-90: Idempotent PATH integration in install.sh and install.ps1"]:::done
   D_04["D-04: grove-mcp: NDJSON stdio, tools 1:1 to commands, CLI exit codes as tool content"]:::decision
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -206,7 +210,7 @@ graph TD
   Y_01 -->|distills| D_01
   Y_03 -->|distills| D_04
   Y_04 -->|distills| Q_01
-  class W_79,W_80 critical
+  class W_03 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff
 classDef theme fill:#2a4a3a,color:#fff

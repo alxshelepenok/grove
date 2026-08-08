@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:3d803d6db3cac0274683a06e25ad65b2ee30de37295ab6aa44e10d0d73466650
+# checksum: sha256:4d219670cbea02fba5707804f23bc4fc1a240bdb64c3efdb870946482a8fabcd
 g G-02 status=unverified fitness_kind=count t_created=2026-07-19T01:14:01Z t_updated=2026-07-19T01:14:01Z "Programmatic API with CLI parity and perf budget"
   area: A-02
   fitness_target: 2
@@ -9,10 +9,10 @@ g G-04 status=verified fitness_kind=boolean t_created=2026-07-19T01:14:16Z t_upd
   area: A-04
   fitness_current: true
 
-g G-16 status=partial fitness_kind=count t_created=2026-08-04T19:44:12Z t_updated=2026-08-05T19:22:39Z "Release distribution and signing: binary artifacts, signed manifest, installer, CI"
+g G-16 status=verified fitness_kind=count t_created=2026-08-04T19:44:12Z t_updated=2026-08-08T15:02:56Z "Release distribution and signing: binary artifacts, signed manifest, installer, CI"
   area: A-06
   fitness_target: 19
-  fitness_current: 16
+  fitness_current: 19
 
 w W-03 type=refactor status=proposed cynefin=complex t_created=2026-07-19T01:14:57Z t_updated=2026-08-07T00:47:51Z "Extract Grove.API structured layer; CLI as thin renderer"
   goals: G-02
@@ -208,7 +208,7 @@ w W-78 type=feature status=done cynefin=complicated t_created=2026-08-04T19:46:0
   evidence:
     | .github/workflows/release.yml per plan 4.4: workflow_dispatch with version + mode (dry-run default, release, manifest-only, transparency-only). build matrix 4 targets (ubuntu-latest/macos-latest/macos-15-intel/windows-latest, cargo build --release --locked -p grove-core -p grove-mcp + cargo test --workspace --exclude grove-desktop --locked, tar.gz packaging, upload-artifact pinned 043fb46 v7.0.1). audit gate: trivy 0.73.0 with sha256 checksum + bin/audit.sh --fail-closed. sbom job: setup-julia fa02766 + trivy + cargo-cyclonedx 0.5.9, bin/sbom.sh, VEX validation. sign-and-publish: environment release (release-dry for dry-run with ephemeral key, real secret untouched), official actions only, umask 077 key import + fingerprint cross-check against committed pubkey, SHA256SUMS, manifest via bin/manifest.sh, SBOM/VEX/install.sh.sig signing, preconditions (version format, tag must pre-exist, release must not), gh release create --verify-tag, commit-back with PR fallback for the protected main, attest-build-provenance pinned 0f67c3f v4.1.1, post-release smoke (manifest sig + artifact hash against committed pubkey). bin/manifest.sh --refresh added for manifest-only (2 new golden tests, 12/12 pass) + mkdir -p output dir fix. Checklist review against 4.4/4.5 done: no caches, no pull_request_target, scoped token permissions, approval gate on every key use. yaml parses; shell suites 12/12 + 16/16; grove check ok. Live dry-run execution is W-79 scope (needs the push).
 
-w W-79 type=feature status=ready cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-07T00:58:07Z "Dry-run release end-to-end, then v0.1.0 dress rehearsal; gaps recorded in runbooks"
+w W-79 type=feature status=done cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-08T14:30:14Z "Dry-run release end-to-end, then v0.1.0 dress rehearsal; gaps recorded in runbooks"
   goals: G-16
   fitness: G-16=+1
   ac:
@@ -219,6 +219,12 @@ w W-79 type=feature status=ready cynefin=complicated t_created=2026-08-04T19:46:
     | the ceremony is executable from the runbook without improvisation
   evidence_strategy:
     | published v0.1.0 on GitHub Releases verifies on a clean machine via install.sh; runbook diff records every gap found
+  evidence:
+    | v0.1.1 published: 32 assets (4 CLI/MCP targets, desktop dmg/deb/AppImage/msi/nsis/tar.gz, sbom, vex, sigs); run 31258908586 builds+audit+sbom green
+    | smoke: manifest.json/install.sh/install.ps1 sigs verify against committed public key; grove-mcp win-x64 sha256 matches signed manifest; sequence=2, expires_at=2027-02-04
+    | clean installs ok: bash one-liner and install.ps1 (isolated HOME) installed all 3 components, .sequence written; user machine on 0.1.1 seq 2
+    | gaps found and fixed: commit-back PR creation denied (release.yml: step moved last, PR failure = warning); same-sequence reinstall refused (installers -le -> -lt, tests 21/21 sh + 17/17 ps1); PR #14 merged, raw main serves manifest 0.1.1 seq 2
+    | runbook gaps recorded: enable 'Actions can create PRs' repo setting; PR-create fallback now manual-link warning
 
 w W-80 type=feature status=ready cynefin=complicated t_created=2026-08-04T19:46:00Z t_updated=2026-08-07T00:58:08Z "Phase 4: CONTRIBUTING dep policy, runbook set, architecture + policy docs"
   goals: G-16
@@ -346,6 +352,42 @@ w W-88 type=feature status=done cynefin=complicated t_created=2026-08-05T19:22:0
     | mcp resources/list + resources/read test asserts the primer is served and covers the protocol keywords; cargo test green
   evidence:
     | grove://skill resource in grove-mcp: packages/core/assets/skill-primer.md (~100 lines: dual-track loop, DoR discipline, evidence/DoD, WIP limit + session tokens, statuses, chaotic halts, distill/archive cadence, operational rules, command map) with a header stating it is a condensed derivative of docs/skills and that grove-skill.md wins on disagreement; embedded via include_str! in packages/core/src/mcp.rs. resources/list prepends the static primer entry (text/markdown) alongside packet/show node resources; resources/read serves it before the uri split. Tests updated in packages/mcp/tests/mcp.rs: resource counts 6->7 and 2->3, primer listed and read, keyword coverage asserted (dual-track, Definition of Ready, WIP_LIMIT, chaotic, distill, evidence). cargo test --workspace --exclude grove-desktop all green; README lists the new resource. grove check ok.
+
+w W-89 type=feature status=done cynefin=clear t_created=2026-08-08T14:27:57Z t_updated=2026-08-08T14:52:21Z "Desktop launcher integration in installers (Windows .lnk, macOS .app stub, Linux .desktop)"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | install.ps1 creates Desktop and Start Menu shortcuts for grove-desktop.exe idempotently (WScript.Shell COM, no elevation)
+    | install.sh creates ~/Applications/grove.app stub on macOS and ~/.local/share/applications/grove.desktop on Linux, idempotently
+    | launcher entries point at the installed grove-desktop binary and survive same-sequence reinstall
+    | tests/install/test-install.sh and test-install.ps1 assert launcher artifacts
+  hypothesis:
+    | Self-created launcher entries keep the verified tar.gz install flow single-sourced; no MSI/NSIS/DMG second install tree is needed for launcher presence
+  evidence_strategy:
+    | test-install.sh/test-install.ps1 green on CI (ubuntu, macos, windows) asserting .desktop/.app/.lnk creation; files and test counts in evidence
+  evidence:
+    | install.sh: install_launcher linux (.desktop under ~/.local/share/applications) + macos (~/Applications/grove.app stub with Info.plist + exec launcher); install.ps1: Install-Launcher via WScript.Shell COM (Desktop via GetFolderPath, Start Menu Programs), GROVE_SHORTCUT_ROOT test hook
+    | tests: test-install.sh 22/22 (linux .desktop Exec assert, macos .app assert, --only creates no launcher); test-install.ps1 20/20 (lnk creation, TargetPath equals installed binary, no shortcut for -Only grove-mcp); ran locally on windows; linux/macos launcher asserts covered by CI shell-tests matrix
+    | test fix: work dir moved from short 8.3 TEMP to LOCALAPPDATA long path; COM Save resolves 8.3 to long form, string compare unstable
+    | docs/install.md: launcher behavior documented next to installer options
+
+w W-90 type=feature status=done cynefin=clear t_created=2026-08-08T14:27:57Z t_updated=2026-08-08T15:02:56Z "Idempotent PATH integration in install.sh and install.ps1"
+  goals: G-16
+  fitness: G-16=+1
+  ac:
+    | install.sh appends an idempotent marked PATH line to ~/.profile and detected shell rc files (~/.bashrc, ~/.zshrc when present)
+    | install.ps1 persists the bin dir to user PATH via [Environment]::SetEnvironmentVariable without duplicates and without setx
+    | re-running installers does not duplicate PATH entries
+    | tests/install/test-install.sh and test-install.ps1 assert PATH writes and double-run idempotency
+  hypothesis:
+    | Rustup-style rc-file line plus per-user registry PATH cover the target shells without elevation or setx 1024-char truncation risk
+  evidence_strategy:
+    | test-install.sh/test-install.ps1 green incl. idempotency assertions; CI matrix green; test counts in evidence
+  evidence:
+    | install.sh: update_path_rc - idempotent marked export line in ~/.profile plus ~/.bashrc/~/.zshrc when present, runs when grove or grove-mcp installed; install.ps1: Update-UserPath - per-user registry PATH via [Environment]::SetEnvironmentVariable (no setx), trailing-slash/case-insensitive dup check, GROVE_USER_PATH_FILE test hook
+    | tests: test-install.sh 25/25 (PATH line in .profile, idempotency on reinstall, --only grove-desktop leaves PATH alone); test-install.ps1 23/23 (PATH file write, idempotency via pre-seeded file, no PATH for -Only grove-desktop)
+    | bug found by tests: redirect to ~/.profile failed when HOME dir absent (custom --prefix outside HOME); fixed with mkdir -p HOME in update_path_rc
+    | docs/install.md: automatic PATH registration documented
 
 d D-04 status=accepted t_created=2026-07-20T03:29:25Z t_updated=2026-07-28T01:36:10Z "grove-mcp: NDJSON stdio, tools 1:1 to commands, CLI exit codes as tool content"
   context:

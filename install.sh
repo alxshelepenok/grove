@@ -170,6 +170,68 @@ install_archive() {
   info "installed $binname ($mver) to $prefix/bin/$binname"
 }
 
+update_path_rc() {
+  mkdir -p "$HOME"
+  line="export PATH=\"$prefix/bin:\$PATH\""
+  rcs="$HOME/.profile"
+  [ -f "$HOME/.bashrc" ] && rcs="$rcs $HOME/.bashrc"
+  [ -f "$HOME/.zshrc" ] && rcs="$rcs $HOME/.zshrc"
+  for rc in $rcs; do
+    if [ -f "$rc" ] && grep -qF "$line" "$rc"; then
+      continue
+    fi
+    printf '%s # grove\n' "$line" >> "$rc"
+    info "added $prefix/bin to PATH in $rc"
+  done
+  info "open a new shell or source your rc file to pick up the PATH change"
+}
+
+install_launcher() {
+  case $1 in
+    linux_*)
+      appsdir="$HOME/.local/share/applications"
+      mkdir -p "$appsdir"
+      cat > "$appsdir/grove.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=Grove
+Comment=Grove desktop
+Exec=$prefix/grove-desktop/grove-desktop
+Terminal=false
+Categories=Development;Utility;
+EOF
+      info "created launcher entry $appsdir/grove.desktop"
+      ;;
+    macos_*)
+      appdir="$HOME/Applications/Grove.app"
+      rm -rf "$appdir"
+      mkdir -p "$appdir/Contents/MacOS"
+      cat > "$appdir/Contents/Info.plist" <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleExecutable</key>
+  <string>launcher</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.grove.desktop</string>
+  <key>CFBundleName</key>
+  <string>Grove</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+</dict>
+</plist>
+EOF
+      cat > "$appdir/Contents/MacOS/launcher" <<EOF
+#!/bin/sh
+exec "$prefix/grove-desktop/grove-desktop" "\$@"
+EOF
+      chmod +x "$appdir/Contents/MacOS/launcher"
+      info "created launcher app $appdir"
+      ;;
+  esac
+}
+
 break_glass() {
   url="$GROVE_ARTIFACT_URL"
   echo "WARNING: GROVE_ARTIFACT_URL break-glass mode - skipping manifest, signature, and hash verification" >&2
@@ -310,8 +372,8 @@ main_install() {
   fi
 
   stored=$(read_sequence "$channel")
-  if [ -n "$stored" ] && [ "$m_sequence" -le "$stored" ]; then
-    die "manifest sequence $m_sequence is not newer than installed sequence $stored - possible rollback, refusing"
+  if [ -n "$stored" ] && [ "$m_sequence" -lt "$stored" ]; then
+    die "manifest sequence $m_sequence is older than installed sequence $stored - possible rollback, refusing"
   fi
   if [ "$m_sequence" -lt "$MINIMUM_SEQUENCE" ]; then
     die "manifest sequence $m_sequence is below the minimum $MINIMUM_SEQUENCE"
@@ -334,9 +396,15 @@ main_install() {
     install_archive "$work/$comp.tar.gz" "$comp" "$m_version" "$target"
   done
 
+  case " $only " in
+    *" grove-desktop "*) install_launcher "$target" ;;
+  esac
+  case " $only " in
+    *" grove "* | *" grove-mcp "*) update_path_rc ;;
+  esac
+
   write_sequence "$channel" "$m_sequence"
   info "grove $m_version installed (channel $channel, sequence $m_sequence)"
-  info "add $prefix/bin to your PATH if it is not already there"
   info "verify any artifact again with: bin/verify.sh docs/security/artifacts/public-keys/grove-manifest-2026-08.pem <file> <file.sig>"
 }
 

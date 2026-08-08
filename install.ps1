@@ -8,7 +8,7 @@ param(
 $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-foreach ($hook in @("GROVE_TRUSTED_MODULUS_HEX", "GROVE_FETCH_ROOT", "GROVE_HOME")) {
+foreach ($hook in @("GROVE_TRUSTED_MODULUS_HEX", "GROVE_FETCH_ROOT", "GROVE_HOME", "GROVE_SHORTCUT_ROOT", "GROVE_USER_PATH_FILE")) {
   if (Get-Item "env:$hook" -ErrorAction SilentlyContinue) {
     Write-Host "WARNING: $hook is set - trust/store override active (test hook, not for production use)" -ForegroundColor Yellow
   }
@@ -136,6 +136,49 @@ function Install-Archive([string]$Archive, [string]$Comp, [string]$Mver) {
   }
 }
 
+function Update-UserPath([string]$BinDir) {
+  $userPath = ""
+  if ($env:GROVE_USER_PATH_FILE) {
+    if (Test-Path $env:GROVE_USER_PATH_FILE) { $userPath = [System.IO.File]::ReadAllText($env:GROVE_USER_PATH_FILE).Trim() }
+  } else {
+    $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+    if ($null -eq $userPath) { $userPath = "" }
+  }
+  $entries = @()
+  if ($userPath) { $entries = @($userPath -split ';' | Where-Object { $_ -ne '' }) }
+  foreach ($e in $entries) {
+    if ($e.TrimEnd('\') -ieq $BinDir.TrimEnd('\')) {
+      Write-Host "user PATH already contains $BinDir"
+      return
+    }
+  }
+  $newPath = (($entries + $BinDir) -join ';')
+  if ($env:GROVE_USER_PATH_FILE) {
+    [System.IO.File]::WriteAllText($env:GROVE_USER_PATH_FILE, $newPath)
+    Write-Host "added $BinDir to user PATH (test hook file)"
+  } else {
+    [Environment]::SetEnvironmentVariable('Path', $newPath, 'User')
+    Write-Host "added $BinDir to user PATH (open a new terminal to pick it up)"
+  }
+}
+
+function Install-Launcher([string]$BinPath) {
+  if ($env:GROVE_SHORTCUT_ROOT) {
+    $dirs = @((Join-Path $env:GROVE_SHORTCUT_ROOT "Desktop"), (Join-Path $env:GROVE_SHORTCUT_ROOT "StartMenu\Programs"))
+  } else {
+    $dirs = @([Environment]::GetFolderPath('Desktop'), (Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"))
+  }
+  New-Item -ItemType Directory -Force -Path $dirs | Out-Null
+  $ws = New-Object -ComObject WScript.Shell
+  foreach ($dir in $dirs) {
+    $shortcut = $ws.CreateShortcut((Join-Path $dir "Grove.lnk"))
+    $shortcut.TargetPath = $BinPath
+    $shortcut.WorkingDirectory = Split-Path $BinPath
+    $shortcut.Save()
+  }
+  Write-Host "created desktop and start menu shortcuts for grove-desktop"
+}
+
 function Invoke-BreakGlass {
   $url = $env:GROVE_ARTIFACT_URL
   Write-Host "WARNING: GROVE_ARTIFACT_URL break-glass mode - skipping manifest, signature, and hash verification" -ForegroundColor Yellow
@@ -185,8 +228,8 @@ function Invoke-MainInstall {
   }
 
   $stored = Read-Sequence $Channel
-  if (($null -ne $stored) -and ($mSequence -le $stored)) {
-    Die "manifest sequence $mSequence is not newer than installed sequence $stored - possible rollback, refusing"
+  if (($null -ne $stored) -and ($mSequence -lt $stored)) {
+    Die "manifest sequence $mSequence is older than installed sequence $stored - possible rollback, refusing"
   }
   if ($mSequence -lt $MinimumSequence) {
     Die "manifest sequence $mSequence is below the minimum $MinimumSequence"
@@ -212,9 +255,15 @@ function Invoke-MainInstall {
     Install-Archive $archive $comp $mVersion
   }
 
+  if ($Only -contains "grove-desktop") {
+    Install-Launcher (Join-Path $Prefix "grove-desktop\grove-desktop.exe")
+  }
+  if (($Only -contains "grove") -or ($Only -contains "grove-mcp")) {
+    Update-UserPath (Join-Path $Prefix "bin")
+  }
+
   Write-Sequence $Channel $mSequence
   Write-Host "grove $mVersion installed (channel $Channel, sequence $mSequence)"
-  Write-Host "add $Prefix\bin to your PATH if it is not already there"
 }
 
 if ($env:GROVE_ARTIFACT_URL) {
