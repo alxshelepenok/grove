@@ -410,30 +410,6 @@ jobs:
             docs/security/artifacts/vex.json docs/security/artifacts/vex.json.sig \
             install.sh install.sh.sig install.ps1 install.ps1.sig
 
-      - name: Commit transparency log
-        if: inputs.mode != 'dry-run'
-        run: |
-          set -euo pipefail
-          git config user.name "grove-release[bot]"
-          git config user.email "grove-release[bot]@users.noreply.github.com"
-          git add manifest.json manifest.json.sig docs/security/artifacts/ install.sh.sig install.ps1.sig
-          if git diff --cached --quiet; then
-            echo "nothing to commit"
-            exit 0
-          fi
-          git commit -m "release: transparency artifacts ($MODE $VERSION)"
-          if ! git push origin HEAD:main; then
-            if [ -n "$VERSION" ]; then
-              branch="release/v$VERSION"
-            else
-              branch="release/$MODE-$(date -u +%Y%m%d%H%M%S)"
-            fi
-            git push origin "HEAD:refs/heads/$branch"
-            gh pr create --base main --head "$branch" \
-              --title "release: transparency artifacts ($MODE $VERSION)" \
-              --body "Opened by the release workflow because direct push to main is protected. Merge to sync the root manifest and docs/security/artifacts."
-          fi
-
       - name: Attest build provenance
         if: inputs.mode == 'release'
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
@@ -470,3 +446,29 @@ jobs:
           actual_dt=$(sha256sum smoke/grove-desktop.tar.gz | cut -d' ' -f1)
           [ "$actual_dt" = "$expect_dt" ] || { echo "smoke desktop hash mismatch"; exit 1; }
           echo "smoke ok: published manifest, install.sh, install.ps1 verify; grove-mcp and grove-desktop linux-x64 match their signed hashes"
+
+      - name: Commit transparency log
+        if: inputs.mode != 'dry-run'
+        run: |
+          set -euo pipefail
+          git config user.name "grove-release[bot]"
+          git config user.email "grove-release[bot]@users.noreply.github.com"
+          git add manifest.json manifest.json.sig docs/security/artifacts/ install.sh.sig install.ps1.sig
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
+            exit 0
+          fi
+          git commit -m "release: transparency artifacts ($MODE $VERSION)"
+          if ! git push origin HEAD:main; then
+            if [ -n "$VERSION" ]; then
+              branch="release/v$VERSION"
+            else
+              branch="release/$MODE-$(date -u +%Y%m%d%H%M%S)"
+            fi
+            git push origin "HEAD:refs/heads/$branch"
+            if ! gh pr create --base main --head "$branch" \
+              --title "release: transparency artifacts ($MODE $VERSION)" \
+              --body "Opened by the release workflow because direct push to main is protected. Merge to sync the root manifest and docs/security/artifacts."; then
+              echo "::warning::could not open the PR automatically; allow GitHub Actions to create pull requests in repo settings or open it manually: https://github.com/$GITHUB_REPOSITORY/pull/new/$branch"
+            fi
+          fi
