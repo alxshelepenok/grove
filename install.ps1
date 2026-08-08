@@ -154,7 +154,7 @@ function Invoke-MainInstall {
   if ($Version) {
     $manifestUrl = "$ReleaseBase/v$Version/manifest.json"
   } else {
-    $manifestUrl = "$RawBase/dist/manifest.json"
+    $manifestUrl = "$RawBase/manifest.json"
   }
 
   $tmp = Join-Path $env:TEMP ("grove-manifest-" + [Guid]::NewGuid().ToString("N"))

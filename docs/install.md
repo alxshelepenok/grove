@@ -1,6 +1,6 @@
 # Install
 
-> Releases start with `v0.1.0`. Until the first release is published, the one-liner and the verify-then-run flow cannot work: `install.sh.sig`, `install.ps1.sig`, and `dist/manifest.json` only appear once `v0.1.0` is out. Use [From source](#from-source-developers) in the meantime.
+> Releases start with `v0.1.1`. Until the first release is published, the one-liner and the verify-then-run flow cannot work: `install.sh.sig`, `install.ps1.sig`, and `manifest.json` only appear once `v0.1.1` is out. Use [From source](#from-source-developers) in the meantime.
 
 ## Quickstart
 
