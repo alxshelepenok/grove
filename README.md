@@ -34,9 +34,9 @@ Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, Cline, GitHub Copil
 
 | <picture><source type="image/webp" srcset=".github/assets/graph.webp" /><img src=".github/assets/graph.png" alt="Interactive graph view" /></picture> | <picture><source type="image/webp" srcset=".github/assets/graph_archived.webp" /><img src=".github/assets/graph_archived.png" alt="Graph with archived nodes included" /></picture> | <picture><source type="image/webp" srcset=".github/assets/packet.webp" /><img src=".github/assets/packet.png" alt="Execution packet of a work item" /></picture> |
 | --- | --- | --- |
-| **Graph** - the reasoning graph, explored interactively | **Graph, archived** - the same view at 143 nodes, history included | **Packet** - everything an agent needs for one work item, nothing more |
+| The reasoning graph, explored interactively. | The same view at 143 nodes, history included. | Everything an agent needs for one work item, nothing more. |
 | <picture><source type="image/webp" srcset=".github/assets/work.webp" /><img src=".github/assets/work.png" alt="Work items with DoR and status" /></picture> | <picture><source type="image/webp" srcset=".github/assets/areas.webp" /><img src=".github/assets/areas.png" alt="Areas with goals, work, and content health" /></picture> | <picture><source type="image/webp" srcset=".github/assets/themes.webp" /><img src=".github/assets/themes.png" alt="Themes and the critical path" /></picture> |
-| **Work** - items tracked from proposal to done | **Areas** - goals, work, and content health per area | **Themes** - work grouped by theme, with the critical path |
+| Items tracked from proposal to done. | Goals, work, and content health per area. | Work grouped by theme, with the critical path. |
 
 ## Agents lose context as projects grow
 
