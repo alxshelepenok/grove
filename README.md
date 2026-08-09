@@ -5,6 +5,10 @@
   </picture>
 </p>
 
+<h3 align="center">
+  Code grows. Context windows don't. Plant a <i>Grove</i> 🌳
+</h3>
+
 ***G**raph-driven **R**easoning **O**ver **V**erified **E**vidence. A formal workflow protocol that keeps AI coding agents on track through machine-enforced invariants, verified evidence, and structured context. Designed to keep deep, long-running projects coherent across sessions, agents, and months.*
 
 <p align="center">
