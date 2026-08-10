@@ -25,6 +25,9 @@ Instead of lossy prompt compression or summarization, Grove structures project s
 
 Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, Cline, GitHub Copilot, and any other agent. Grove includes a CLI, a built-in MCP server, and a drop-in agent skill bundle so you can integrate it into your workspace immediately.
 
+> [!IMPORTANT]
+> A note on the desktop app shown below. It exists to make the graph, the evidence, and the health of a project visible at a glance, but it is still experimental and has not been tested on macOS yet. The CLI and the MCP server are the stable, tested interfaces. The UI is implemented without any JavaScript framework, mostly plain HTML, CSS, and Tauri, which keeps it fast, and the graph is rendered with WebGL.
+
 <p align="center">
   <picture>
     <source type="image/webp" srcset=".github/assets/overview.webp" />
@@ -32,11 +35,78 @@ Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, Cline, GitHub Copil
   </picture>
 </p>
 
-| <picture><source type="image/webp" srcset=".github/assets/graph.webp" /><img src=".github/assets/graph.png" alt="Interactive graph view" /></picture> | <picture><source type="image/webp" srcset=".github/assets/graph_archived.webp" /><img src=".github/assets/graph_archived.png" alt="Graph with archived nodes included" /></picture> | <picture><source type="image/webp" srcset=".github/assets/packet.webp" /><img src=".github/assets/packet.png" alt="Execution packet of a work item" /></picture> |
-| --- | --- | --- |
-| The reasoning graph, explored interactively. | The same view at 143 nodes, history included. | Everything an agent needs for one work item, nothing more. |
-| <picture><source type="image/webp" srcset=".github/assets/work.webp" /><img src=".github/assets/work.png" alt="Work items with DoR and status" /></picture> | <picture><source type="image/webp" srcset=".github/assets/areas.webp" /><img src=".github/assets/areas.png" alt="Areas with goals, work, and content health" /></picture> | <picture><source type="image/webp" srcset=".github/assets/themes.webp" /><img src=".github/assets/themes.png" alt="Themes and the critical path" /></picture> |
-| Items tracked from proposal to done. | Goals, work, and content health per area. | Work grouped by theme, with the critical path. |
+<table>
+  <colgroup>
+    <col style="width: 33.3333%">
+    <col style="width: 33.3333%">
+    <col style="width: 33.3333%">
+  </colgroup>
+  <tr>
+    <td width="33.33%">
+      <picture>
+        <source type="image/webp" srcset=".github/assets/graph.webp" />
+        <img src=".github/assets/graph.png" alt="Interactive graph view" />
+      </picture>
+    </td>
+    <td width="33.33%">
+      <picture>
+        <source type="image/webp" srcset=".github/assets/graph_archived.webp" />
+        <img src=".github/assets/graph_archived.png" alt="Graph with archived nodes included" />
+      </picture>
+    </td>
+    <td width="33.33%">
+      <picture>
+        <source type="image/webp" srcset=".github/assets/packet.webp" />
+        <img src=".github/assets/packet.png" alt="Execution packet of a work item" />
+      </picture>
+    </td>
+  </tr>
+  <tr></tr>
+  <tr>
+    <td width="33.33%">
+      The reasoning graph, explored live.
+    </td>
+    <td width="33.33%">
+      The same view at 143 nodes, history included.
+    </td>
+    <td width="33.33%">
+      All an agent needs for one work item, nothing more.
+    </td>
+  </tr>
+  <tr></tr>
+  <tr>
+    <td width="33.33%">
+      <picture>
+        <source type="image/webp" srcset=".github/assets/work.webp" />
+        <img src=".github/assets/work.png" alt="Work items with DoR and status" />
+      </picture>
+    </td>
+    <td width="33.33%">
+      <picture>
+        <source type="image/webp" srcset=".github/assets/areas.webp" />
+        <img src=".github/assets/areas.png" alt="Areas with goals, work, and content health" />
+      </picture>
+    </td>
+    <td width="33.33%">
+      <picture>
+        <source type="image/webp" srcset=".github/assets/themes.webp" />
+        <img src=".github/assets/themes.png" alt="Themes and the critical path" />
+      </picture>
+    </td>
+  </tr>
+  <tr></tr>
+  <tr>
+    <td width="33.33%">
+      Work items tracked from proposal to done.
+    </td>
+    <td width="33.33%">
+      Goals, work, and content health per area.
+    </td>
+    <td width="33.33%">
+      Work grouped by theme, with the critical path.
+    </td>
+  </tr>
+</table>
 
 ## Agents lose context as projects grow
 
