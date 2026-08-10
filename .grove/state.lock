@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:1fc7ea85c6ed33da38c97d9733880023357bffbd83200e5f24dbc7edf8f71a72
+# checksum: sha256:3a91ae55ea96144e6b0071f465b50ea947ec7feef6b45edf9089229c1c35bfad
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -192,6 +192,10 @@ y Y-07 status=active t_created=2026-08-08T23:08:01Z t_updated=2026-08-08T23:19:4
   tags: thin adapter
   surface: packages/core/src/mcp.rs, packages/core/src/cli.rs
 
+y Y-08 status=active t_created=2026-08-10T20:12:04Z t_updated=2026-08-10T20:13:36Z "Keep embedded-asset filenames URL-plain: percent-encoded paths (%5B etc.) against frontendDist assets are decoded inconsistently across webviews, silently breaking @font-face on systems without local font fallbacks"
+  tags: url-plain asset
+  surface: packages/desktop/ui/css/fonts.css, packages/desktop/src-tauri/tauri.conf.json
+
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"
   surface: packages/grove/src/stats.jl, packages/grove/test/test_stats.jl
 
@@ -243,6 +247,7 @@ e W-83 produces Y-06 t_created=2026-08-05T19:13:24Z
 e W-84 blocks W-79 t_created=2026-08-05T18:09:08Z
 e W-86 blocks W-79 t_created=2026-08-05T19:13:44Z
 e W-87 blocks W-79 t_created=2026-08-05T19:22:39Z
+e W-97 produces Y-08 t_created=2026-08-10T20:12:04Z
 e Y-01 distills D-01 t_created=2026-07-20T03:15:28Z
 e Y-03 distills D-04 t_created=2026-07-28T01:36:10Z
 e Y-04 distills Q-01 t_created=2026-08-04T18:34:40Z
@@ -333,6 +338,11 @@ g G-19 status=verified fitness_kind=count t_created=2026-08-10T16:19:08Z t_updat
   area: A-05
   fitness_target: 3
   fitness_current: 3
+
+g G-20 status=verified fitness_kind=count t_created=2026-08-10T19:52:01Z t_updated=2026-08-10T20:13:52Z "Desktop fidelity: bundled fonts and window state persistence"
+  area: A-05
+  fitness_target: 2
+  fitness_current: 2
 
 w W-01 type=feature status=done cynefin=complicated t_created=2026-07-19T01:14:39Z t_updated=2026-07-27T18:21:48Z "Extend grove stats with audit-cost metrics"
   goals: G-01
@@ -2246,6 +2256,36 @@ w W-96 type=bug status=done cynefin=complicated t_created=2026-08-10T16:46:37Z t
     | repro closed: conformance scenario add-g-fitness-required now records rejected legacy writes (add g --fitness=1/1 and set G-02 fitness=1/1 exit 1) and accepted structured write (set G-02 fitness_target=3); negative verify run with pre-patch cli.jl drifted exactly on those steps; corpus re-recorded, julia verify 26/26 green
     | suites green: cargo test --workspace 34 suites 427 passed 0 failed (ops.rs replay covers rejected legacy set/add, fitness_target set+clear, legacy removal undo); julia --project test/runtests.jl exit 0; wave2b/next-log fixture migrated to structured flags
     | smoke on rebuilt target/debug/grove.exe against scratch root: set G-01 fitness=1/1 exit 1, add g --fitness=1/1 exit 1, set G-01 fitness_target=2 exit 0, legacy label hand-injected + repair + set G-01 fitness= removes it; grep of project state.lock shows no legacy fitness= labels on g records (G-17/18/19 structured); grove check ok
+
+w W-97 type=bug status=done cynefin=complicated t_created=2026-08-10T19:52:12Z t_updated=2026-08-10T20:13:52Z "Fonts may not load from embedded assets in production builds"
+  goals: G-20
+  fitness: G-20=+1
+  surface: packages/desktop/ui/css/fonts.css, packages/desktop/ui/fonts
+  ac:
+    | on a system without Geist installed, a production build renders UI text in Geist/Geist Mono (verified in webview devtools: font served from the tauri asset protocol, not a system fallback)
+    | font file URLs in fonts.css resolve identically in dev and production asset lookups (no percent-encoding ambiguity)
+  hypothesis:
+    | fonts.css references files with literal [ ] in names via percent-encoded URLs (Geist%5Bwght%5D.ttf); whether the encoded path matches the embedded asset key depends on webview/asset-protocol decoding, so the @font-face src can silently miss in production; systems with Geist installed mask the failure.
+  repro:
+    | Run a production build on a machine without Geist fonts installed: text renders in a fallback system font, visibly different from dev machines where Geist is installed system-wide.
+  evidence_strategy:
+    | rename font files to bracket-free names and point fonts.css at the plain paths; add a views.rs test asserting every url() in fonts.css has no percent-encoding and resolves to an existing file under ui/fonts; manual devtools check on a machine without Geist
+  evidence:
+    | impl: font files renamed bracket-free (Geist-Variable.ttf, Geist-Italic-Variable.ttf, GeistMono-Variable.ttf, GeistMono-Italic-Variable.ttf, GeistPixel.ttf); fonts.css urls rewritten without percent-encoding so the @font-face path matches the embedded frontendDist asset key verbatim on every webview. New views.rs test font_faces_use_plain_paths_that_exist asserts all 5 urls are plain and resolve to files. cargo test -p grove-desktop: 127 passed, 0 failed. Note: packages/desktop/tools/manifests/assets.ts still references the old bracketed names under the nonexistent tools/public dir (dead code, no importers) — flagged, not touched. Manual devtools check on a Geist-free machine pending.
+
+w W-98 type=feature status=done cynefin=complicated t_created=2026-08-10T19:52:12Z t_updated=2026-08-10T20:13:52Z "Persist and restore window size/position across launches"
+  goals: G-20
+  fitness: G-20=+1
+  surface: packages/desktop/src-tauri/Cargo.toml, packages/desktop/src-tauri/src/lib.rs, packages/desktop/src-tauri/tauri.conf.json, packages/desktop/src-tauri/capabilities
+  ac:
+    | closing the app and relaunching restores the previous window size, position and maximized state
+    | if the saved position was on a monitor that is no longer connected, the window opens on an available monitor instead of off-screen
+  hypothesis:
+    | tauri-plugin-window-state persists geometry and restores it only when the saved rect intersects a currently connected monitor, so the disconnected-monitor case is handled out of the box; the window config already uses visible:false which is the plugin's recommended setup
+  evidence_strategy:
+    | add tauri-plugin-window-state with default flags; views.rs test asserts the plugin is registered in lib.rs and the capability/permissions wiring exists; manual: resize/move/maximize, relaunch, and relaunch after disconnecting a monitor
+  evidence:
+    | impl: tauri-plugin-window-state v2 added to Cargo.toml and registered in lib.rs via tauri_plugin_window_state::Builder::new().build() with default flags (size, position, maximized). The plugin persists geometry to the app config dir and restores it on launch; per its documented behavior position restore is skipped when the saved rect does not intersect any currently connected monitor, covering the disconnected-monitor case. Window config already used visible:false, the recommended setup. New views.rs test window_state_plugin_registered asserts dep + builder registration. cargo test -p grove-desktop: 128 passed, 0 failed. Manual checks (resize/move/maximize + relaunch, relaunch after monitor disconnect) pending.
 
 d D-01 status=accepted t_created=2026-07-19T02:32:25Z t_updated=2026-07-20T03:20:22Z "Conformance fixtures use output normalization, not clock injection"
   context:

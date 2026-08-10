@@ -6,8 +6,9 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 11 | validated B 0 · answered Q 0 · accepted D 6 · active Discovery 5 |
+| C (content) | 12 | validated B 0 · answered Q 0 · accepted D 6 · active Discovery 6 |
 | V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
+| Decay | 1 | Discovery with decay signals |
 
 ## Areas
 
@@ -79,6 +80,7 @@
 | Y-05 | G-16 implementation audit: pre-release fixes and desktop artifact gap | verify-then-parse | superseded |
 | Y-06 | G-16 follow-up audit: artifact name collision and installer parity bugs | verify-then-parse | superseded |
 | Y-07 | MCP tool failures must surface CLI stderr; a bare exit code leaves clients blind | thin adapter | active |
+| Y-08 | Keep embedded-asset filenames URL-plain: percent-encoded paths (%5B etc.) against frontendDist assets are decoded inconsistently across webviews, silently breaking @font-face on systems without local font fallbacks | url-plain asset | active |
 
 ## Dependency graph
 
@@ -107,6 +109,7 @@ graph TD
   Y_05["Y-05: G-16 implementation audit: pre-release fixes and desktop artifact gap"]:::discovery
   Y_06["Y-06: G-16 follow-up audit: artifact name collision and installer parity bugs"]:::discovery
   Y_07["Y-07: MCP tool failures must surface CLI stderr; a bare exit code leaves clients blind"]:::discovery
+  Y_08["Y-08: Keep embedded-asset filenames URL-plain: percent-encoded paths (%5B etc.) against frontendDist assets are decoded inconsistently across webviews, silently breaking @font-face on systems without local font fallbacks"]:::discovery
   A_01["A-01: Evals"]:::area
   A_02["A-02: API"]:::area
   A_03["A-03: Rust core"]:::area
@@ -150,6 +153,7 @@ graph TD
   W_84 ==>|blocks| W_79
   W_86 ==>|blocks| W_79
   W_87 ==>|blocks| W_79
+  W_97 -->|produces| Y_08
   Y_01 -->|distills| D_01
   Y_03 -->|distills| D_04
   Y_04 -->|distills| Q_01

@@ -174,6 +174,7 @@ pub fn run() {
     #[allow(unused_mut)]
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_window_state::Builder::new().build())
         .append_invoke_initialization_script(&init_script())
         .manage(AppState { project, templates })
         .invoke_handler(tauri::generate_handler![

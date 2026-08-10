@@ -2954,3 +2954,43 @@ fn dev_debug_tooling_wiring() {
         "no server-rendered debug template"
     );
 }
+
+#[test]
+fn font_faces_use_plain_paths_that_exist() {
+    let css = std::fs::read_to_string(ui_dir().join("css").join("fonts.css")).unwrap();
+    let mut count = 0;
+    for line in css.lines() {
+        let Some(rest) = line.split("url(\"").nth(1) else {
+            continue;
+        };
+        let url = rest.split('"').next().expect("url is quoted");
+        assert!(!url.contains('%'), "percent-encoded font url: {url}");
+        let rel = url.strip_prefix('/').unwrap_or(url);
+        assert!(
+            ui_dir().join(rel).is_file(),
+            "font file missing for url: {url}"
+        );
+        count += 1;
+    }
+    assert_eq!(count, 5, "every @font-face src is covered");
+}
+
+#[test]
+fn window_state_plugin_registered() {
+    let lib = std::fs::read_to_string(
+        ui_dir().join("..").join("src-tauri").join("src").join("lib.rs"),
+    )
+    .unwrap();
+    assert!(
+        lib.contains("tauri_plugin_window_state::Builder::new().build()"),
+        "window-state plugin registered on the builder"
+    );
+    let manifest = std::fs::read_to_string(
+        ui_dir().join("..").join("src-tauri").join("Cargo.toml"),
+    )
+    .unwrap();
+    assert!(
+        manifest.contains("tauri-plugin-window-state"),
+        "window-state crate is a dependency"
+    );
+}
