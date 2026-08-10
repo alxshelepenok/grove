@@ -167,9 +167,9 @@ With **`fitness_kind`**, **`fitness_target`** and **`fitness_current`** are sing
 | `metric` | Non‑negative integer **N** | Same inequality as **`count`**. |
 | `manual` | Optional label | **Never** auto-derived; use **`grove set G-NN status=…`**. |
 
-**`grove field G-NN fitness_target`** on a structured goal triggers a refresh. **`grove field G-NN fitness_current`** is **rejected** unless **`fitness_kind=manual`**.
+**`grove field G-NN fitness_target`** and **`grove set G-NN fitness_target=…`** on a structured goal trigger a refresh. **`grove field G-NN fitness_current`** is **rejected** unless **`fitness_kind=manual`**.
 
-The header **`fitness="…"`** string may still be used as a display subtitle next to structured data.
+The legacy header **`fitness="…"`** string is read-path only: old locks keep working, but CLI writes are rejected (`add g --fitness=…`, `set G-NN fitness=…`). **`grove set G-NN fitness=`** (empty value) removes a leftover legacy label during migration.
 
 **`y` (discovery):**
 
@@ -229,7 +229,7 @@ Within a record, fields appear in the order listed in §6.5 tables. Prose lines 
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
 # checksum: sha256:0000000000000000000000000000000000000000000000000000000000000000
-g G-01 status=verified fitness="5/5 modules" fitness_kind=count t_created=2026-01-10T08:00:00Z t_updated=2026-05-04T22:13:09Z "Migrate auth"
+g G-01 status=verified fitness_kind=count t_created=2026-01-10T08:00:00Z t_updated=2026-05-04T22:13:09Z "Migrate auth"
   area: A-01
   fitness_target: 5
   fitness_current: 5

@@ -4,7 +4,7 @@
     @test isfile(joinpath(tmp, ".grove", "state.lock"))
     @test isfile(joinpath(tmp, ".grove", "index.md"))
     @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-    @test M.main(["add", "g", "--title=Migrate", "--fitness=5/5 modules", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+    @test M.main(["add", "g", "--title=Migrate", "--fitness-kind=count", "--fitness-target=5", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
     @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
                   "--title=Add login", "--root=$tmp", "--quiet"]) == 0
     @test M.main(["check", "--root=$tmp", "--quiet"]) == 0
@@ -17,7 +17,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=X", "--fitness=1/1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=X", "--fitness-kind=count", "--fitness-target=1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01", "--title=W",
                       "--root=$tmp", "--quiet"]) == 0
         for fn = ("ac", "hypothesis", "evidence_strategy")

@@ -280,9 +280,26 @@ pub fn cmd_init(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRes
     r
 }
 
+pub const USAGE_ADD: &str = "usage: grove add <kind> --title=\"\u{2026}\" [...]";
+
 pub fn cmd_add(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
+    if kw_get(kw, "help").is_some() {
+        let mut r = OpResult::ok();
+        r.out.push_str(USAGE_ADD);
+        r.out.push('\n');
+        return r;
+    }
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, "usage: grove add <kind> [...]");
+        return OpResult::fail(EXIT_ERR, USAGE_ADD);
+    }
+    if pos.len() > 1 {
+        return OpResult::fail(
+            EXIT_ERR,
+            &format!("{USAGE_ADD} (unexpected positional argument: {})", pos[1]),
+        );
+    }
+    if kw.is_empty() && pos[0].as_str() != "a" && pos[0].as_str() != "y" {
+        return OpResult::fail(EXIT_ERR, USAGE_ADD);
     }
     let mut st = match load(ctx, true) {
         Ok(s) => s,

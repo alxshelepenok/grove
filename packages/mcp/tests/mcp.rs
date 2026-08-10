@@ -302,7 +302,7 @@ fn tools_call_maps_arguments_to_cli() {
         &mut s,
         12,
         "add",
-        serde_json::json!({"kind": "g", "title": "Goal one", "area": "A-01"}),
+        serde_json::json!({"kind": "g", "title": "Goal one", "area": "A-01", "fitness_kind": "manual"}),
     );
     assert_eq!(text_of(&v), "G-01");
     let v = call(
@@ -386,7 +386,7 @@ fn guard_refusal_is_tool_error_not_protocol_error() {
         &mut s,
         12,
         "add",
-        serde_json::json!({"kind": "g", "title": "Goal", "area": "A-01"}),
+        serde_json::json!({"kind": "g", "title": "Goal", "area": "A-01", "fitness_kind": "manual"}),
     );
     assert_eq!(text_of(&v), "G-01");
     let v = call(
@@ -433,7 +433,7 @@ fn scripted_session_drives_full_work_loop() {
     let v = step(
         &mut s,
         "add",
-        serde_json::json!({"kind": "g", "title": "Loop goal", "area": "A-01"}),
+        serde_json::json!({"kind": "g", "title": "Loop goal", "area": "A-01", "fitness_kind": "manual"}),
     );
     assert_eq!(text_of(&v), "G-01");
     let v = step(
@@ -505,7 +505,7 @@ fn resources_list_and_read_match_cli_output() {
         &mut s,
         12,
         "add",
-        serde_json::json!({"kind": "g", "title": "Res goal", "area": "A-01"}),
+        serde_json::json!({"kind": "g", "title": "Res goal", "area": "A-01", "fitness_kind": "manual"}),
     );
     call(
         &mut s,

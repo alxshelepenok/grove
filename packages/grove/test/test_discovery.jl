@@ -119,7 +119,7 @@ end
         @test M.main(["add", "b", "--title=B", "--cynefin=clear",
                       "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
 
         @test M.main(["add", "y", "--title=T", "--tags=auth", "--surface=src/a.jl",
                       "--from=W-01,B-01", "--root=$tmp", "--quiet"]) == 0

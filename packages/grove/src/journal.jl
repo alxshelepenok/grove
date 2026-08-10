@@ -211,7 +211,20 @@ function journal_apply_inverse!(st::State, inv)::Union{Nothing,String}
         return nothing
     elseif op == "set_g_attr_fitness"
         n = st.nodes[String(inv["id"])]
-        n.attrs["fitness"] = String(get(inv, "old", "")::Union{String,Any})
+        if haskey(inv, "had_before") && !Bool(inv["had_before"])
+            delete!(n.attrs, "fitness")
+        else
+            n.attrs["fitness"] = String(get(inv, "old", "")::Union{String,Any})
+        end
+        stamp_touch_node!(n)
+        return nothing
+    elseif op == "set_g_fitness_target"
+        n = st.nodes[String(inv["id"])]
+        if Bool(get(inv, "had_before", false))
+            n.fields[:fitness_target] = String(get(inv, "old", "")::Union{String,Any})
+        else
+            delete!(n.fields, :fitness_target)
+        end
         stamp_touch_node!(n)
         return nothing
     elseif op == "set_g_attr_fitness_kind"

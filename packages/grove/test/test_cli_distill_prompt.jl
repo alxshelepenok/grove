@@ -12,7 +12,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=Track", "--fitness=1/1 milestones", "--area=A-01", "--root=$tmp", "--quiet"]) ==
+        @test M.main(["add", "g", "--title=Track", "--fitness-kind=count", "--fitness-target=1", "--area=A-01", "--root=$tmp", "--quiet"]) ==
               0
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01", "--title=Do",
                       "--root=$tmp", "--quiet"]) == 0
@@ -47,7 +47,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=T", "--fitness=1/1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=T", "--fitness-kind=count", "--fitness-target=1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["field", "G-01", "notes", "add", "distill --distill-deferred", "--root=$tmp",
                       "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01", "--title=W",

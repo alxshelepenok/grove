@@ -45,7 +45,7 @@
     try
         @test M.main(["init", "--root=$ta", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$ta", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=ArchTest", "--fitness=1/1", "--area=A-01", "--root=$ta", "--quiet"]) ==
+        @test M.main(["add", "g", "--title=ArchTest", "--fitness-kind=count", "--fitness-target=1", "--area=A-01", "--root=$ta", "--quiet"]) ==
               0
         @test M.main(["archive", "G-01", "--root=$ta"]) == M.EXIT_GUARD
         @test M.main(["set", "G-01", "status=verified", "--root=$ta", "--quiet"]) == 0

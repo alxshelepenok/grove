@@ -1,13 +1,13 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:d3a3134ceb679c0d835c789dca3e531a4adddf02f43eed177c1a2cf1862fef9a
+# checksum: sha256:5a30074ab71f893d9c168861db6dda7bdb1d561ffc50a3b56c4a6ea21a9a4671
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
 
-g G-18 status=unverified fitness_kind=count t_created=2026-08-08T23:19:46Z t_updated=2026-08-08T23:19:46Z "MCP client surface hardening"
-  area: A-04
-  fitness_target: 1
+g G-19 status=unverified fitness_kind=count t_created=2026-08-10T16:19:08Z t_updated=2026-08-10T16:34:57Z "Linux desktop parity"
+  area: A-05
+  fitness_target: 3
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -29,6 +29,41 @@ w W-05 type=refactor status=proposed cynefin=complicated t_created=2026-07-19T01
     | lands after the benchmark suite (W-04) and before the 10k-node budget is enforced
   why:
     | Enabling work: clears the known scaling debt before the 10k-node budget applies
+
+w W-91 type=bug status=proposed cynefin=complicated t_created=2026-08-10T16:19:24Z t_updated=2026-08-10T16:26:45Z "Linux: gate titlebar corner rounding to Windows only"
+  goals: G-19
+  fitness: G-19=+1
+  surface: packages/desktop/ui/css/components/window.css, packages/desktop/ui/js/integration/window-chrome.js, packages/desktop/src-tauri/src/lib.rs
+  ac:
+    | on Linux the close button and titlebar have square corners matching the undecorated window
+    | on Windows 11 the rounded corner rendering is unchanged
+  hypothesis:
+    | window.css:10,109 hardcodes 6px top-right radius for all platforms; no platform detection exists anywhere in ui/
+  evidence_strategy:
+    | visual check on Linux build + Windows build; css selector gated by html[data-platform]
+
+w W-92 type=bug status=proposed cynefin=complicated t_created=2026-08-10T16:19:25Z t_updated=2026-08-10T16:26:45Z "Linux: ship app icon and add Icon= to desktop entry"
+  goals: G-19
+  fitness: G-19=+1
+  surface: install.sh, .github/workflows/release.yml, tests/install/test-install.sh
+  ac:
+    | launcher shows the Grove icon after a fresh install.sh run on Linux
+  hypothesis:
+    | install.sh:189-204 writes grove.desktop without Icon= and the release archive (release.yml:144-152) ships no raster icon
+  evidence_strategy:
+    | tests/install/test-install.sh asserts the Icon= line; manual check of the apps menu
+
+w W-93 type=bug status=proposed cynefin=complicated t_created=2026-08-10T16:19:25Z t_updated=2026-08-10T16:26:45Z "Linux: async directory picker without blocking the main thread"
+  goals: G-19
+  fitness: G-19=+1
+  surface: packages/desktop/src-tauri/src/commands/mod.rs, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | directory picker opens and returns a path on Linux without freezing the UI
+    | manual path input fallback still works
+  hypothesis:
+    | grove_pick_directory (commands/mod.rs:97-104) is a sync command calling blocking_pick_folder, which deadlocks the WebKitGTK main loop on Linux
+  evidence_strategy:
+    | async command with pick_folder callback; update string assertion in tests/views.rs:2677; manual test on Arch+Thunar
 
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
@@ -253,9 +288,9 @@ e Y-04 distills Q-01 t_created=2026-08-04T18:34:40Z
 e Y-07 distills D-04 t_created=2026-08-08T23:08:01Z
 
 :archive
-g G-01 status=verified fitness_kind=boolean t_created=2026-07-19T01:13:53Z t_updated=2026-07-27T18:21:48Z "Effectiveness report v1 on dogfood telemetry"
+g G-01 status=verified fitness_kind=boolean t_created=2026-07-19T01:13:53Z t_updated=2026-08-10T18:45:36Z "Effectiveness report v1 on dogfood telemetry"
   area: A-01
-  fitness_current: true
+  fitness_current: false
 
 g G-02 status=verified fitness_kind=manual t_created=2026-07-19T01:14:01Z t_updated=2026-08-08T23:06:46Z "Programmatic API with CLI parity and perf budget"
   area: A-02
@@ -327,6 +362,11 @@ g G-16 status=verified fitness_kind=count t_created=2026-08-04T19:44:12Z t_updat
   area: A-06
   fitness_target: 19
   fitness_current: 20
+
+g G-18 status=verified fitness_kind=count t_created=2026-08-08T23:19:46Z t_updated=2026-08-10T19:14:33Z "MCP client surface hardening"
+  area: A-04
+  fitness_target: 3
+  fitness_current: 3
 
 w W-01 type=feature status=done cynefin=complicated t_created=2026-07-19T01:14:39Z t_updated=2026-07-27T18:21:48Z "Extend grove stats with audit-cost metrics"
   goals: G-01
@@ -2140,6 +2180,59 @@ w W-90 type=feature status=done cynefin=clear t_created=2026-08-08T14:27:57Z t_u
     | tests: test-install.sh 25/25 (PATH line in .profile, idempotency on reinstall, --only grove-desktop leaves PATH alone); test-install.ps1 23/23 (PATH file write, idempotency via pre-seeded file, no PATH for -Only grove-desktop)
     | bug found by tests: redirect to ~/.profile failed when HOME dir absent (custom --prefix outside HOME); fixed with mkdir -p HOME in update_path_rc
     | docs/install.md: automatic PATH registration documented
+
+w W-94 type=bug status=done cynefin=complicated t_created=2026-08-10T16:34:40Z t_updated=2026-08-10T19:14:33Z "CLI: reject positional args and bare add invocations instead of silent defaults"
+  goals: G-18
+  fitness: G-18=+1
+  surface: packages/core/src/cli.rs, packages/grove/src/cli.jl, packages/grove/conformance/scenarios.jl, packages/grove/conformance/corpus/add-usage-guards.json
+  ac:
+    | add with a positional title exits nonzero with a usage hint; bare add w and add w --help print usage and create nothing
+  hypothesis:
+    | grove add accepts a positional title and silently drops it; grove add w --help creates an empty node instead of printing usage
+  repro:
+    | Reproduced on target/debug/grove.exe against a scratch root: `grove add w "My positional title"` exits 0 and creates a W with an empty title, the positional arg is silently dropped.
+    | `grove add w --help` exits 0 and creates an empty node instead of printing usage.
+  evidence_strategy:
+    | cli conformance cases: positional title rejected, bare add rejected, empty-node regression covered by a lock assertion
+  evidence:
+    | Repro test added: conformance scenario add-usage-guards (packages/grove/conformance/corpus/add-usage-guards.json) covering positional title, bare add w, add w --help, and a lock assertion that only the valid W-01 exists.
+    | Negative run: HEAD cli.jl against the new corpus drifts on add-usage-guards steps 2 and 3 (exit 0 got, 1 expected); after fix julia run.jl verify reports 25/25 scenarios green. Changes uncommitted per no-commit policy.
+    | No regression: julia test/runtests.jl exit 0 (incl. test_areas.jl); cargo test -p grove-core 288 passed 0 failed, corpus_replay 28/28; smoke on rebuilt grove.exe: positional and bare add exit 1 with usage, add w --help exits 0 with usage, valid add creates W-01.
+
+w W-95 type=bug status=done cynefin=complicated t_created=2026-08-10T16:34:40Z t_updated=2026-08-10T19:14:33Z "CLI: require fitness kind and target when creating a goal"
+  goals: G-18
+  fitness: G-18=+1
+  surface: packages/core/src/ops.rs, packages/grove/src/cli.jl, packages/core/src/mcp.rs, packages/grove/conformance/scenarios.jl, packages/grove/conformance/corpus/add-g-fitness-required.json
+  ac:
+    | add g without fitness kind and target exits nonzero; n/a fitness is only possible via an explicit value
+  hypothesis:
+    | add g accepts --area alone and drops --fitness_kind/--fitness_target silently; G-19 was created with no fitness this way
+  repro:
+    | Reproduced on target/debug/grove.exe against a scratch root: `grove add g --area=A-01 --title="No fitness goal"` exits 0 and creates a goal with neither fitness_kind nor fitness_target.
+  evidence_strategy:
+    | cli conformance case: add g missing fitness fails; existing goals unchanged
+  evidence:
+    | Repro test added: conformance scenario add-g-fitness-required (no-fitness add g fails, count without target fails, manual/legacy/structured succeed, lock assertion lists only the three created goals); plus negative steps add_g_nofitness/add_g_notarget in packages/core/tests/ops.rs.
+    | Negative run: HEAD cli.jl against the new corpus drifts on add-g-fitness-required steps 3 and 4 (exit 0 got, 1 expected); after fix julia run.jl verify reports 26/26 scenarios green. Changes uncommitted per no-commit policy.
+    | No regression: julia test/runtests.jl exit 0; cargo test --workspace 34 suites 427 passed 0 failed (core, mcp, desktop); smoke on rebuilt grove.exe: add g without fitness exits 1 with guidance, count without target exits 1, manual/legacy/structured create G-01..G-03.
+
+w W-96 type=bug status=done cynefin=complicated t_created=2026-08-10T16:46:37Z t_updated=2026-08-10T19:14:33Z "CLI: reject legacy fitness label writes; allow structured fitness_target only"
+  goals: G-18
+  fitness: G-18=+1
+  surface: packages/core/src/ops.rs, packages/core/src/journal.rs, packages/core/src/mcp.rs, packages/grove/src/cli.jl, packages/grove/src/journal.jl, packages/grove/conformance/scenarios.jl, packages/core/tests/ops.rs, packages/core/tests/fixtures/wave2b/next-log.json, docs/skills/cli.md, docs/skills/lockfile.md, docs/skills/planning.md
+  ac:
+    | set fitness=<label> exits nonzero; structured target is settable post-creation (set <G> fitness_target=N works)
+    | no legacy fitness= labels remain in state.lock after migration
+  hypothesis:
+    | set <G> fitness=count/N writes a legacy header label while add g writes structured fitness_target; both forms now coexist in state.lock (G-17 vs G-18/G-19)
+  repro:
+    | Reproduced on target/debug/grove.exe against a scratch root: `grove set G-01 fitness=count/1` exits 0 and writes the legacy header label fitness=count/1, while `add g --fitness-kind=count --fitness-target=1` writes structured fitness_kind + fitness_target.
+  evidence_strategy:
+    | conformance cases for rejected legacy write and accepted structured write; grep of state.lock shows no fitness= labels on g records
+  evidence:
+    | repro closed: conformance scenario add-g-fitness-required now records rejected legacy writes (add g --fitness=1/1 and set G-02 fitness=1/1 exit 1) and accepted structured write (set G-02 fitness_target=3); negative verify run with pre-patch cli.jl drifted exactly on those steps; corpus re-recorded, julia verify 26/26 green
+    | suites green: cargo test --workspace 34 suites 427 passed 0 failed (ops.rs replay covers rejected legacy set/add, fitness_target set+clear, legacy removal undo); julia --project test/runtests.jl exit 0; wave2b/next-log fixture migrated to structured flags
+    | smoke on rebuilt target/debug/grove.exe against scratch root: set G-01 fitness=1/1 exit 1, add g --fitness=1/1 exit 1, set G-01 fitness_target=2 exit 0, legacy label hand-injected + repair + set G-01 fitness= removes it; grep of project state.lock shows no legacy fitness= labels on g records (G-17/18/19 structured); grove check ok
 
 d D-01 status=accepted t_created=2026-07-19T02:32:25Z t_updated=2026-07-20T03:20:22Z "Conformance fixtures use output normalization, not clock injection"
   context:

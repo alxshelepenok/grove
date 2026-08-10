@@ -1,0 +1,98 @@
+{
+  "name": "add-usage-guards",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "Positional title"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "usage: grove add <kind> --title=\"…\" [...] (unexpected positional argument: Positional title)\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "w"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "usage: grove add <kind> --title=\"…\" [...]\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--help"
+      ],
+      "exit": 0,
+      "stdout": "usage: grove add <kind> --title=\"…\" [...]\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "usage: grove add <kind> --title=\"…\" [...]\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "w",
+        "--type=bug",
+        "--cynefin=clear",
+        "--title=Real",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "W-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=bug status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Real\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "list",
+        "w"
+      ],
+      "exit": 0,
+      "stdout": "W-01\tproposed\tReal\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=bug status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Real\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=bug status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Real\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n"
+    }
+  ]
+}

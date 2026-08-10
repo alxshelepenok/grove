@@ -236,7 +236,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "t", "--title=T", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--title=W",
                       "--root=$tmp", "--quiet"]) == 0
@@ -282,7 +282,7 @@ end
 
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=complex", "--goals=G-01",
                       "--title=F", "--surface=src/a.jl,src/b.jl",
                       "--root=$tmp", "--quiet"]) == 0
@@ -351,7 +351,7 @@ end
             println(io, "| auth | a term | test |")
         end
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "G-01", "requires_coverage=true", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=complex", "--goals=G-01",
                       "--title=F", "--surface=src/a.jl,src/b.jl",

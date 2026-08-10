@@ -52,12 +52,11 @@ For every work item before it becomes `ready`:
 For every goal at creation:
 
 ```bash
-grove add g --area=A-NN --title="..."
-grove set G-NN fitness_kind=count      # or ratio | boolean | metric
-grove field G-NN fitness_target add N  # e.g. the number of planned work items
+grove add g --area=A-NN --title="..." --fitness-kind=count --fitness-target=N
+# fitness_target e.g. the number of planned work items
 ```
 
-`fitness n/a` is legitimate only as a deliberate `fitness_kind=manual` decision. A goal with `n/a` because nobody set the target is a planning error - today nothing flags it mechanically, so the discipline is on you.
+`fitness n/a` is legitimate only as a deliberate `fitness_kind=manual` decision. `add g` refuses a missing fitness specification outright (pass `--fitness-kind` with `--fitness-target` for `count` / `metric` / `ratio`, or `--fitness-kind=manual`); the legacy `--fitness="…"` label is retired (writes rejected), and the `set` / `field` backfill above no longer works.
 
 ## 4. Planning workflow
 

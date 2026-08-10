@@ -1,12 +1,12 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:7f935a32e5457efd3dbb704e5054b781b949314462f822f2ec9d12170ff8272f
+# checksum: sha256:fd997f18b00d48082d54fcf3c3ccdc055a29c7ca3f82891ed6abbaf84fd60ada
 g G-01 status=verified fitness_kind=count t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Goal one"
   area: A-01
   fitness_target: 1
   fitness_current: 3
 
-g G-02 status=declined fitness=1/2 fitness_kind=ratio requires_coverage=true t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Goal two"
+g G-02 status=declined fitness_kind=ratio requires_coverage=true t_created=2031-01-01T00:00:00Z t_updated=2031-01-01T00:00:00Z "Goal two"
   area: A-01
   fitness_current: 0
 

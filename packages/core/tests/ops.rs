@@ -93,7 +93,7 @@ fn replay_truth_scenario() {
         &[r#"{"v":1,"cmd":"add","ts":"2031-01-01T00:00:00Z","inv":{"id":"A-01","op":"rm_node"}}"#]);
     step!(ctx, "add_g", op_add(&mut ctx.st, "g", &kw(&[("title", "Goal one"), ("area", "A-01"), ("fitness-kind", "count"), ("fitness-target", "1")])), 0, "G-01\n", "",
         &[r#"{"v":1,"cmd":"add","ts":"2031-01-01T00:00:00Z","inv":{"id":"G-01","op":"rm_node"}}"#]);
-    step!(ctx, "add_g2", op_add(&mut ctx.st, "g", &kw(&[("title", "Goal two"), ("area", "A-01")])), 0, "G-02\n", "",
+    step!(ctx, "add_g2", op_add(&mut ctx.st, "g", &kw(&[("title", "Goal two"), ("area", "A-01"), ("fitness-kind", "manual")])), 0, "G-02\n", "",
         &[r#"{"v":1,"cmd":"add","ts":"2031-01-01T00:00:00Z","inv":{"id":"G-02","op":"rm_node"}}"#]);
     step!(ctx, "add_t", op_add(&mut ctx.st, "t", &kw(&[("title", "Theme one")])), 0, "T-01\n", "",
         &[r#"{"v":1,"cmd":"add","ts":"2031-01-01T00:00:00Z","inv":{"id":"T-01","op":"rm_node"}}"#]);
@@ -118,6 +118,10 @@ fn replay_truth_scenario() {
         "add g: --area=A-NN is required (create one with grove add a --title=...)\n", &[]);
     step!(ctx, "add_g_badarea", op_add(&mut ctx.st, "g", &kw(&[("title", "Goal bad"), ("area", "A-99")])), 1, "",
         "add g: unknown --area id: A-99\n", &[]);
+    step!(ctx, "add_g_nofitness", op_add(&mut ctx.st, "g", &kw(&[("title", "Goal bad"), ("area", "A-01")])), 1, "",
+        "add g: fitness is required (pass --fitness-kind + --fitness-target, or --fitness-kind=manual for n/a)\n", &[]);
+    step!(ctx, "add_g_notarget", op_add(&mut ctx.st, "g", &kw(&[("title", "Goal bad"), ("area", "A-01"), ("fitness-kind", "count")])), 1, "",
+        "add g: --fitness-target is required for --fitness-kind=count\n", &[]);
     step!(ctx, "add_y_notitle", op_add(&mut ctx.st, "y", &kw(&[("tags", "term-one"), ("from", "W-01")])), 1, "",
         "add y: --title is required\n", &[]);
     step!(ctx, "add_y_notags", op_add(&mut ctx.st, "y", &kw(&[("title", "X"), ("from", "W-01")])), 1, "",
@@ -172,10 +176,22 @@ fn replay_truth_scenario() {
         &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"id":"W-01","old":"bug","op":"set_type"}}"#]);
     step!(ctx, "set_title", op_set(&mut ctx.st, "W-01", "title", "Work One Renamed", EFF), 0, "", "",
         &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"id":"W-01","old":"Work one","op":"set_title"}}"#]);
-    step!(ctx, "set_g_fitness", op_set(&mut ctx.st, "G-02", "fitness", "1/2", EFF), 0, "", "",
-        &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"id":"G-02","old":"","op":"set_g_attr_fitness"}}"#]);
+    step!(ctx, "set_g_fitness_legacy_rejected", op_set(&mut ctx.st, "G-02", "fitness", "1/2", EFF), 1, "",
+        "set: key fitness is retired (legacy label); use fitness_kind + set <G> fitness_target=N (empty value removes a legacy label)\n", &[]);
+    step!(ctx, "set_g_fitness_target", op_set(&mut ctx.st, "G-02", "fitness_target", "2", EFF), 0, "", "",
+        &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"id":"G-02","had_before":false,"old":"","op":"set_g_fitness_target"}}"#]);
+    step!(ctx, "set_g_fitness_target_clear", op_set(&mut ctx.st, "G-02", "fitness_target", "", EFF), 0, "", "",
+        &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"id":"G-02","had_before":true,"old":"2","op":"set_g_fitness_target"}}"#]);
+    ctx.st
+        .nodes
+        .get_mut("G-02")
+        .unwrap()
+        .attrs
+        .insert("fitness".to_string(), "1/2".to_string());
+    step!(ctx, "set_g_fitness_legacy_remove", op_set(&mut ctx.st, "G-02", "fitness", "", EFF), 0, "", "",
+        &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"id":"G-02","had_before":true,"old":"1/2","op":"set_g_attr_fitness"}}"#]);
     step!(ctx, "set_g_fitness_kind", op_set(&mut ctx.st, "G-02", "fitness_kind", "count", EFF), 0, "", "",
-        &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"new":"count","id":"G-02","had_before":false,"old":"","op":"set_g_attr_fitness_kind"}}"#]);
+        &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"new":"count","id":"G-02","had_before":true,"old":"manual","op":"set_g_attr_fitness_kind"}}"#]);
     step!(ctx, "set_g_fitness_kind2", op_set(&mut ctx.st, "G-02", "fitness_kind", "ratio", EFF), 0, "", "",
         &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"new":"ratio","id":"G-02","had_before":true,"old":"count","op":"set_g_attr_fitness_kind"}}"#]);
     step!(ctx, "set_g_fitness_kind_bad", op_set(&mut ctx.st, "G-02", "fitness_kind", "bogus", EFF), 1, "",
@@ -350,7 +366,7 @@ fn replay_truth_scenario() {
     step!(ctx, "set_w3_done_noev", op_set(&mut ctx.st, "W-06", "status", "done", "crashgrabber"), 4, "",
         "I3: W-06 has no evidence; use `grove evidence W-06 \"…\"`\n", &[]);
 
-    assert_eq!(ctx.mirror.len(), 65, "final journal line count");
+    assert_eq!(ctx.mirror.len(), 67, "final journal line count");
     ctx.assert_file_mirror();
 
     let _ = std::fs::remove_dir_all(&dir);
@@ -363,7 +379,7 @@ fn small_state() -> State {
     let r = op_add(
         &mut st,
         "g",
-        &kw(&[("title", "Goal one"), ("area", "A-01")]),
+        &kw(&[("title", "Goal one"), ("area", "A-01"), ("fitness-kind", "manual")]),
     );
     assert_eq!(r.code, 0, "{}", r.err);
     let r = op_add(&mut st, "t", &kw(&[("title", "Theme one")]));
@@ -524,6 +540,27 @@ fn fitness_current_derived_guard() {
         r.err,
         "grove field: `fitness_current` is derived for structured goals; use kind=manual to author it\n"
     );
+}
+
+#[test]
+fn add_g_legacy_label_rejected() {
+    pin(TS);
+    let mut st = State::default();
+    let r = op_add(&mut st, "a", &kw(&[("title", "Area One")]));
+    assert_eq!(r.code, 0, "{}", r.err);
+    let before = serialize(&st);
+    let r = op_add(
+        &mut st,
+        "g",
+        &kw(&[("title", "legacy"), ("area", "A-01"), ("fitness", "1/1")]),
+    );
+    assert_eq!(r.code, 1);
+    assert_eq!(
+        r.err,
+        "add g: --fitness is retired (legacy label); use --fitness-kind + --fitness-target\n"
+    );
+    assert!(r.journal.is_empty(), "rejected add must not journal");
+    assert_eq!(serialize(&st), before, "rejected add must not mutate");
 }
 
 #[test]

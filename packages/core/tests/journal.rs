@@ -137,6 +137,18 @@ fn set_simple_record_lines() {
         r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"id":"G-02","old":"","op":"set_g_attr_fitness"}}"#
     );
     assert_eq!(
+        wrap_journal_record("set", jinv_set_g_attr_fitness("G-02", true, "1/2")),
+        r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"id":"G-02","had_before":true,"old":"1/2","op":"set_g_attr_fitness"}}"#
+    );
+    assert_eq!(
+        wrap_journal_record("set", jinv_set_g_fitness_target("G-02", false, "")),
+        r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"id":"G-02","had_before":false,"old":"","op":"set_g_fitness_target"}}"#
+    );
+    assert_eq!(
+        wrap_journal_record("set", jinv_set_g_fitness_target("G-02", true, "3")),
+        r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"id":"G-02","had_before":true,"old":"3","op":"set_g_fitness_target"}}"#
+    );
+    assert_eq!(
         wrap_journal_record("set", jinv_set_g_attr_fitness_kind("G-02", false, "", "count")),
         r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"new":"count","id":"G-02","had_before":false,"old":"","op":"set_g_attr_fitness_kind"}}"#
     );

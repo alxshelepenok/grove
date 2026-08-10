@@ -199,7 +199,7 @@ Optional allocation tuning (persisted once in the optional `# @grove-id stride=�
 
 | Kind | Required flags | Optional |
 | --- | --- | --- |
-| `g` | `--title="…"`, `--area=A-NN` | `--fitness="…"` (legacy label), `--fitness-kind=count|ratio|boolean|metric|manual`, `--fitness-target=…`, `--status=unverified` |
+| `g` | `--title="…"`, `--area=A-NN`, fitness spec (`--fitness-kind=count\|ratio\|boolean\|metric\|manual`) | `--fitness-target=…` (required for `count` / `metric` / `ratio`), `--status=unverified` |
 | `w` | `--title="…"`, `--type=feature\|refactor\|bug\|spike`, `--cynefin=…` | `--goals=G-01,G-02`, `--theme=T-01`, `--surface=p1,p2` (declared estimate, feeds coverage), `--status=proposed` |
 | `d` | `--title="…"` | `--supersedes=D-01`, `--status=proposed` |
 | `q` | `--title="…"`, `--cynefin=…` | `--targets=W-01`, `--status=open` |
@@ -210,9 +210,9 @@ Optional allocation tuning (persisted once in the optional `# @grove-id stride=�
 
 `y` starts `proposed`; `--from=W-NN` wires a `produces` edge, `--from=D/Q/B` wires `distills` edges. The CLI prints the assigned ID. CSV list options (`--tags`, `--surface`, `--goals`) refuse duplicate entries (compared after trimming surrounding whitespace) at capture.
 
-Every goal belongs to exactly one area (I₁₃): `add g` refuses a missing or unknown `--area`. An area-less goal in the lock is an I13 violation, fixed via `grove set G-NN area=A-NN`; create real areas with `add a`.
+Every goal belongs to exactly one area (I₁₃): `add g` refuses a missing or unknown `--area`. An area-less goal in the lock is an I13 violation, fixed via `grove set G-NN area=A-NN`; create real areas with `add a`. `add g` also refuses a missing fitness specification: pass `--fitness-kind` (with `--fitness-target` for `count` / `metric` / `ratio`) or `--fitness-kind=manual` for a deliberate n/a. The legacy `--fitness="…"` label is retired: writes are rejected.
 
-**`grove set <ID> <key>=<value>`:** keys: `status`, `cynefin`, `type`, `title`, `fitness` (G only, legacy display string), `fitness_kind` (G only), `area` (G only: owning area `A-NN`, I₁₃), `requires_coverage` (G/T only: `true` for θ=0.5 or a float in `(0,1]`; opts linked complex features into the DoR coverage conjunct, see [model §1.7](model.md#17-definition-of-ready)). Status transitions are guarded:
+**`grove set <ID> <key>=<value>`:** keys: `status`, `cynefin`, `type`, `title`, `fitness_kind` (G only), `fitness_target` (G only: set or refresh the structured threshold; empty value clears it), `area` (G only: owning area `A-NN`, I₁₃), `requires_coverage` (G/T only: `true` for θ=0.5 or a float in `(0,1]`; opts linked complex features into the DoR coverage conjunct, see [model §1.7](model.md#17-definition-of-ready)). The retired legacy key `fitness` is rejected on writes; `set G-NN fitness=` (empty value) removes a leftover legacy label from an old lock. Status transitions are guarded:
 
 - `W status=progress`: I₁ DoR ≡ ⊤, I₄ WIP, I₅ predecessors `terminal⁺`, I₁₁ no other session holds the token. Records the session token.
 - `W status=done`: I₃ evidence non-empty, I₅ predecessors `terminal⁺`, I₁₀ atomic: fitness deltas for every linked goal must be staged via `grove fitness` since the last status mutation; otherwise rejected. On success, applies deltas, re-derives `status(g)` and `status(t)`, runs `grove render`. If a linked goal **newly** reaches `verified`, the CLI prints a **lazy distill** hint to stderr (`grove distill G-NN`, or `grove distill G-NN --null`); goals with a `notes` line containing `--distill-deferred` suppress the hint (see [rules](rules.md) § lazy distillation).
@@ -294,7 +294,7 @@ Each response is a single JSON object. Types: **string**, **bool**, **array**, *
 ```bash
 grove init
 grove add a --title="Auth"
-grove add g --title="Migrate auth" --fitness="5/5 modules" --area=A-01
+grove add g --title="Migrate auth" --area=A-01 --fitness-kind=count --fitness-target=5
 grove add w --type=feature --cynefin=clear --goals=G-01 \
           --title="Add login flow"
 grove add q --cynefin=complicated --targets=W-01 \

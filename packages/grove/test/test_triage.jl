@@ -15,8 +15,8 @@ end
 function triage_fixture(tmp)
     @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
     @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-    @test M.main(["add", "g", "--title=G1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
-    @test M.main(["add", "g", "--title=G2", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+    @test M.main(["add", "g", "--title=G1", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
+    @test M.main(["add", "g", "--title=G2", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
     @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
                   "--title=NoSurface", "--root=$tmp", "--quiet"]) == 0
     @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",

@@ -53,7 +53,7 @@ end
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test !isfile(jp)
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=X", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=X", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         @test isfile(jp)
         st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
         @test haskey(st.nodes, "G-01")
@@ -62,7 +62,7 @@ end
         stU = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
         @test !haskey(stU.nodes, "G-01")
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=Y", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=Y", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         stR = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
         @test haskey(stR.nodes, "G-01")
         @test stR.nodes["G-01"].title == "Y"
@@ -115,7 +115,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=T", "--fitness=1/1 phases", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=T", "--fitness-kind=count", "--fitness-target=1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
         cap = joinpath(tmp, "_log.txt")
         rc = open(cap, "w") do fh
             redirect_stdout(fh) do
@@ -140,7 +140,7 @@ end
         bob = "--session=bob"
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01", "--title=T",
                       "--root=$tmp", "--quiet"]) == 0
         for (fn, ln) in (("ac", "a"), ("hypothesis", "h"), ("evidence_strategy", "s"))

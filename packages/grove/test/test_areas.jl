@@ -117,7 +117,7 @@ end
                                     "--root=$tmp", "--quiet"])
         @test rc3 == M.EXIT_ERR
 
-        @test M.main(["add", "g", "--title=Ok", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=Ok", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
         @test st.nodes["G-01"].fields[:area] == "A-01"
         @test !haskey(st.nodes, "G-02")
@@ -132,7 +132,7 @@ end
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Platform", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=CLI", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         lock = joinpath(tmp, ".grove", "state.lock")
 
         @test M.main(["set", "G-01", "area=A-02", "--root=$tmp", "--quiet"]) == 0

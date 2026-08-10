@@ -1,7 +1,7 @@
 function distill_drive_verified(tmp::AbstractString)
     @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
     @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-    @test M.main(["add", "g", "--title=G", "--fitness=1/1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+    @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
     @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
                   "--title=W", "--root=$tmp", "--quiet"]) == 0
     for fn in ("ac", "hypothesis", "evidence_strategy")
@@ -89,7 +89,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--fitness=1/1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--title=W",
                       "--root=$tmp", "--quiet"]) == 0
         @test M.main(["distill", "G-99", "--root=$tmp", "--quiet"]) == M.EXIT_NOTFOUND
@@ -239,7 +239,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--fitness=1/1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
                       "--title=W", "--root=$tmp", "--quiet"]) == 0
         for fn in ("ac", "hypothesis", "evidence_strategy")
