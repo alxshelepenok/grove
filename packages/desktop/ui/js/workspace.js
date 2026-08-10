@@ -7,8 +7,20 @@ const resolveAppEnv = () => {
       : "development";
 };
 
+const resolvePlatform = () => {
+  const injected = window.__GROVE_PLATFORM__;
+  if (injected === "windows" || injected === "macos" || injected === "linux") {
+    return injected;
+  }
+
+  return navigator.userAgent.includes("Windows") ? "windows" : "linux";
+};
+
 window.workspace = {
   target: "grove-desktop",
   appEnv: resolveAppEnv(),
+  platform: resolvePlatform(),
   isTauri: typeof window.__TAURI_INTERNALS__ !== "undefined",
 };
+
+document.documentElement.dataset.platform = window.workspace.platform;

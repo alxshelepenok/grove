@@ -95,12 +95,16 @@ pub fn grove_project_remove(
 }
 
 #[tauri::command]
-pub fn grove_pick_directory(app: tauri::AppHandle) -> Option<String> {
+pub async fn grove_pick_directory(app: tauri::AppHandle) -> Option<String> {
     use tauri_plugin_dialog::DialogExt;
-    app.dialog()
-        .file()
-        .blocking_pick_folder()
-        .map(|p| p.to_string())
+    let (tx, rx) = std::sync::mpsc::channel();
+    app.dialog().file().pick_folder(move |path| {
+        let _ = tx.send(path.map(|p| p.to_string()));
+    });
+    tauri::async_runtime::spawn_blocking(move || rx.recv().unwrap_or(None))
+        .await
+        .ok()
+        .flatten()
 }
 
 #[tauri::command]

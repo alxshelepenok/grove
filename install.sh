@@ -197,6 +197,7 @@ Type=Application
 Name=Grove
 Comment=Grove desktop
 Exec=$prefix/grove-desktop/grove-desktop
+Icon=$prefix/grove-desktop/icon.png
 Terminal=false
 Categories=Development;Utility;
 EOF
@@ -258,9 +259,10 @@ run_self_test() {
   printf '#!/usr/bin/env bash\necho fake grove-mcp\n' > "$work/fake-bin/grove-mcp"
   printf '#!/usr/bin/env bash\necho fake grove-desktop\n' > "$work/fake-desktop/grove-desktop"
   printf 'placeholder\n' > "$work/fake-desktop/ui/views/placeholder.hbs"
+  printf 'fake png\n' > "$work/fake-desktop/icon.png"
   tar -czf "$work/server/grove-v9.9.9-selftest.tar.gz" -C "$work/fake-bin" grove
   tar -czf "$work/server/grove-mcp-v9.9.9-selftest.tar.gz" -C "$work/fake-bin" grove-mcp
-  tar -czf "$work/server/grove-desktop-v9.9.9-selftest.tar.gz" -C "$work/fake-desktop" grove-desktop ui
+  tar -czf "$work/server/grove-desktop-v9.9.9-selftest.tar.gz" -C "$work/fake-desktop" grove-desktop icon.png ui
 
   make_manifest() {
     expires_iso=$(date -u -d "@$2" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "$2" +%Y-%m-%dT%H:%M:%SZ)
@@ -320,6 +322,8 @@ EOF
   st_report $? "binaries installed and executable"
   [ -f "$work/inst1/grove-desktop/grove-desktop" ] && [ -d "$work/inst1/grove-desktop/ui/views" ]
   st_report $? "desktop app installed with ui templates"
+  [ -f "$work/inst1/grove-desktop/icon.png" ]
+  st_report $? "desktop archive ships the launcher icon"
 
   make_manifest 7 $((now + 86400)) "$good_base"
   printf 'tampered' >> "$work/server/manifest.json"

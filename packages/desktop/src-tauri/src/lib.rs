@@ -77,8 +77,22 @@ pub fn app_env() -> &'static str {
     env_for_profile(cfg!(debug_assertions))
 }
 
-fn app_env_init_script() -> String {
-    format!(r#"window.__GROVE_APP_ENV__ = "{}";"#, app_env())
+const fn platform() -> &'static str {
+    if cfg!(windows) {
+        "windows"
+    } else if cfg!(target_os = "macos") {
+        "macos"
+    } else {
+        "linux"
+    }
+}
+
+fn init_script() -> String {
+    format!(
+        r#"window.__GROVE_APP_ENV__ = "{}";window.__GROVE_PLATFORM__ = "{}";"#,
+        app_env(),
+        platform()
+    )
 }
 
 fn discover_root(start: &str) -> Option<String> {
@@ -160,7 +174,7 @@ pub fn run() {
     #[allow(unused_mut)]
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .append_invoke_initialization_script(&app_env_init_script())
+        .append_invoke_initialization_script(&init_script())
         .manage(AppState { project, templates })
         .invoke_handler(tauri::generate_handler![
             commands::grove_view,
@@ -211,11 +225,25 @@ mod tests {
     }
 
     #[test]
-    fn init_script_injects_app_env_before_page_scripts() {
+    fn init_script_injects_app_env_and_platform_before_page_scripts() {
         assert_eq!(
-            app_env_init_script(),
-            format!(r#"window.__GROVE_APP_ENV__ = "{}";"#, app_env())
+            init_script(),
+            format!(
+                r#"window.__GROVE_APP_ENV__ = "{}";window.__GROVE_PLATFORM__ = "{}";"#,
+                app_env(),
+                platform()
+            )
         );
+    }
+
+    #[test]
+    fn platform_matches_compile_time_target() {
+        #[cfg(windows)]
+        assert_eq!(platform(), "windows");
+        #[cfg(target_os = "macos")]
+        assert_eq!(platform(), "macos");
+        #[cfg(all(not(windows), not(target_os = "macos")))]
+        assert_eq!(platform(), "linux");
     }
 
     #[test]

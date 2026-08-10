@@ -10,6 +10,7 @@ const updateMaximizeButton = async () => {
 export const initWindowChrome = () => {
   if (!tauriBridge.available) return;
 
+  tauriBridge.show();
   if (window.workspace?.appEnv === "production") {
     window.addEventListener("contextmenu", (e) => e.preventDefault(), true);
     window.addEventListener("keydown", (e) => {

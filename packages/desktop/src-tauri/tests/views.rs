@@ -2676,11 +2676,16 @@ fn directory_picker_wiring() {
     for token in [
         "grove_pick_directory",
         "DialogExt",
-        "blocking_pick_folder",
+        "pick_folder",
+        "spawn_blocking",
         "Option<String>",
     ] {
         assert!(cmds.contains(token), "commands/mod.rs: {token}");
     }
+    assert!(
+        !cmds.contains("blocking_pick_folder"),
+        "directory picker must not block the main thread"
+    );
 
     let picker = std::fs::read_to_string(
         ui_dir()

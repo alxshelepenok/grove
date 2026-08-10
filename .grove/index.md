@@ -7,7 +7,7 @@
 | Measure | Count | Composition |
 | --- | --- | --- |
 | C (content) | 11 | validated B 0 · answered Q 0 · accepted D 6 · active Discovery 5 |
-| V (uncertainty) | 15 | open Q 2 · pending B 4 · W below DoR 5 · uncovered surface 4 |
+| V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
 
@@ -17,7 +17,7 @@
 | A-02 | API | 0 | 3 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-05 | Desktop | 1 | 6 | C: validated B 0 · answered Q 0 · accepted D 0 · active Discovery 1; V: open Q 0 · pending B 0 · W below DoR 3 · uncovered surface 3 |
+| A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 
 > Relevance view, not a partition: a node touching two areas counts in both; a W without goals counts in none. The Content health totals above are primary.
@@ -27,7 +27,6 @@
 | ID | Outcome | Fitness function | Status |
 | --- | --- | --- | --- |
 | G-17 | Scaling and performance budget | count; current= target=2 | unverified |
-| G-19 | Linux desktop parity | count; current= target=3 | unverified |
 
 ## Work items
 
@@ -35,9 +34,6 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed | ★ |
 | W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-17 | complicated | ⊥ | proposed |  |
-| W-91 | bug | Linux: gate titlebar corner rounding to Windows only | G-19 | complicated | ⊥ | proposed |  |
-| W-92 | bug | Linux: ship app icon and add Icon= to desktop entry | G-19 | complicated | ⊥ | proposed |  |
-| W-93 | bug | Linux: async directory picker without blocking the main thread | G-19 | complicated | ⊥ | proposed |  |
 
 ## Decisions
 
@@ -89,12 +85,8 @@
 ```mermaid
 graph TD
   G_17["G-17: Scaling and performance budget"]:::goal
-  G_19["G-19: Linux desktop parity"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
-  W_91["W-91: Linux: gate titlebar corner rounding to Windows only"]:::feature
-  W_92["W-92: Linux: ship app icon and add Icon= to desktop entry"]:::feature
-  W_93["W-93: Linux: async directory picker without blocking the main thread"]:::feature
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision

@@ -31,12 +31,13 @@ printf '#!/usr/bin/env bash\necho fake grove-mcp\n' > "$server/grove-mcp$ext"
 mkdir -p "$server/dt/ui/views"
 printf '#!/usr/bin/env bash\necho fake grove-desktop\n' > "$server/dt/grove-desktop$ext"
 printf 'placeholder\n' > "$server/dt/ui/views/placeholder.hbs"
+printf 'fake png\n' > "$server/dt/icon.png"
 chmod +x "$server/grove$ext" "$server/grove-mcp$ext" "$server/dt/grove-desktop$ext"
 (
   cd "$server"
   tar -czf "grove-v0.3.0-$target.tar.gz" "grove$ext"
   tar -czf "grove-mcp-v0.3.0-$target.tar.gz" "grove-mcp$ext"
-  tar -czf "grove-desktop-v0.3.0-$target.tar.gz" -C dt "grove-desktop$ext" ui
+  tar -czf "grove-desktop-v0.3.0-$target.tar.gz" -C dt "grove-desktop$ext" icon.png ui
   rm "grove$ext" "grove-mcp$ext"
   rm -rf dt
   sha256sum *.tar.gz > "$server/SHA256SUMS" 2>/dev/null || {
@@ -76,6 +77,8 @@ case $os_part in
   linux)
     grep -q "^Exec=$work/inst1/grove-desktop/grove-desktop$" "$work/home1/.local/share/applications/grove.desktop"
     report $? "linux launcher entry created"
+    grep -q "^Icon=$work/inst1/grove-desktop/icon.png$" "$work/home1/.local/share/applications/grove.desktop" && [ -f "$work/inst1/grove-desktop/icon.png" ]
+    report $? "linux launcher entry references the shipped icon"
     ;;
   macos)
     [ -x "$work/home1/Applications/Grove.app/Contents/MacOS/launcher" ] && [ -f "$work/home1/Applications/Grove.app/Contents/Info.plist" ]
