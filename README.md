@@ -33,29 +33,39 @@ Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, Cline, GitHub Copil
 </p>
 
 <table>
+  <colgroup>
+    <col style="width: 33.3333%">
+    <col style="width: 33.3333%">
+    <col style="width: 33.3333%">
+  </colgroup>
   <tr>
     <td width="33.33%">
       <picture>
         <source type="image/webp" srcset=".github/assets/graph.webp" />
         <img src=".github/assets/graph.png" alt="Interactive graph view" />
       </picture>
-      <br />
-      The reasoning graph, explored interactively.
     </td>
     <td width="33.33%">
       <picture>
         <source type="image/webp" srcset=".github/assets/graph_archived.webp" />
         <img src=".github/assets/graph_archived.png" alt="Graph with archived nodes included" />
       </picture>
-      <br />
-      The same view at 143 nodes, history included.
     </td>
     <td width="33.33%">
       <picture>
         <source type="image/webp" srcset=".github/assets/packet.webp" />
         <img src=".github/assets/packet.png" alt="Execution packet of a work item" />
       </picture>
-      <br />
+    </td>
+  </tr>
+  <tr>
+    <td width="33.33%">
+      The reasoning graph, explored interactively.
+    </td>
+    <td width="33.33%">
+      The same view at 143 nodes, history included.
+    </td>
+    <td width="33.33%">
       Everything an agent needs for one work item, nothing more.
     </td>
   </tr>
@@ -65,23 +75,28 @@ Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, Cline, GitHub Copil
         <source type="image/webp" srcset=".github/assets/work.webp" />
         <img src=".github/assets/work.png" alt="Work items with DoR and status" />
       </picture>
-      <br />
-      Work items tracked from proposal to done.
     </td>
     <td width="33.33%">
       <picture>
         <source type="image/webp" srcset=".github/assets/areas.webp" />
         <img src=".github/assets/areas.png" alt="Areas with goals, work, and content health" />
       </picture>
-      <br />
-      Goals, work, and content health per area.
     </td>
     <td width="33.33%">
       <picture>
         <source type="image/webp" srcset=".github/assets/themes.webp" />
         <img src=".github/assets/themes.png" alt="Themes and the critical path" />
       </picture>
-      <br />
+    </td>
+  </tr>
+  <tr>
+    <td width="33.33%">
+      Work items tracked from proposal to done.
+    </td>
+    <td width="33.33%">
+      Goals, work, and content health per area.
+    </td>
+    <td width="33.33%">
       Work grouped by theme, with the critical path.
     </td>
   </tr>
