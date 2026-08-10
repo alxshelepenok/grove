@@ -25,7 +25,8 @@ Instead of lossy prompt compression or summarization, Grove structures project s
 
 Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, Cline, GitHub Copilot, and any other agent. Grove includes a CLI, a built-in MCP server, and a drop-in agent skill bundle so you can integrate it into your workspace immediately.
 
-> A note on the desktop app shown below. It exists to make the graph, the evidence, and the health of a project visible at a glance, but it is still experimental and has not been tested on macOS yet. The CLI and the MCP server are the stable, tested interfaces; the app is where active UI work happens. The UI is implemented without any JavaScript framework, mostly plain HTML, CSS, and Tauri, which keeps it fast, and the graph is rendered with WebGL.
+> [!IMPORTANT]
+> A note on the desktop app shown below. It exists to make the graph, the evidence, and the health of a project visible at a glance, but it is still experimental and has not been tested on macOS yet. The CLI and the MCP server are the stable, tested interfaces. The UI is implemented without any JavaScript framework, mostly plain HTML, CSS, and Tauri, which keeps it fast, and the graph is rendered with WebGL.
 
 <p align="center">
   <picture>
