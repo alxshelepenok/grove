@@ -2,9 +2,9 @@
   "dependencies": [
     {
       "dependsOn": [
-        "50661d01-7d0e-4045-95c7-01dcd3ecd2c1"
+        "b7e824d8-58a5-4294-a200-f3189880944e"
       ],
-      "ref": "4fe45dce-6d84-42b0-9f1f-bdfd80bf35e3"
+      "ref": "14748ed8-c7fd-4f30-9d6e-3b0356c92e80"
     },
     {
       "dependsOn": [
@@ -14,7 +14,7 @@
         "pkg:julia/SHA@0.7.0?uuid=ea8e919c-243c-51af-8825-aaa63cd721ce",
         "pkg:julia/TOML@1.0.3?uuid=fa267f1f-6049-4f14-aa54-33bafae1ed76"
       ],
-      "ref": "50661d01-7d0e-4045-95c7-01dcd3ecd2c1"
+      "ref": "b7e824d8-58a5-4294-a200-f3189880944e"
     },
     {
       "dependsOn": [
@@ -2797,7 +2797,7 @@
       "ref": "registry+https://github.com/rust-lang/crates.io-index#zvariant_utils@3.5.0"
     }
   ],
-  "serialNumber": "urn:uuid:02eacd4e-ee40-456f-a59f-83716f8c4ec9",
+  "serialNumber": "urn:uuid:3ebc5886-8091-4d29-b54a-fbf3bc7e4541",
   "specVersion": "1.6",
   "metadata": {
     "tools": [
@@ -2813,14 +2813,14 @@
       "bom-ref": "pkg:generic/grove",
       "type": "application"
     },
-    "timestamp": "2026-08-10T20:00:11Z"
+    "timestamp": "2026-08-10T21:24:24Z"
   },
   "bomFormat": "CycloneDX",
   "version": 1,
   "components": [
     {
       "name": "packages/grove",
-      "bom-ref": "4fe45dce-6d84-42b0-9f1f-bdfd80bf35e3",
+      "bom-ref": "14748ed8-c7fd-4f30-9d6e-3b0356c92e80",
       "properties": [
         {
           "name": "aquasecurity:trivy:SchemaVersion",
