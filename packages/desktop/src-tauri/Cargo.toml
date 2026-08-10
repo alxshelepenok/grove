@@ -17,6 +17,7 @@ path = "src/main.rs"
 grove-core = { path = "../../core" }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
+tauri-plugin-window-state = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 handlebars = "6"
