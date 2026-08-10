@@ -148,7 +148,7 @@ Grove forces the agent to decompose the product into a strict typed hierarchy. I
 | **Area** | `A-NN` | Permanent scope skeleton above goals; never archived. |
 | **Goal** | `G-NN` | Outcome with a measurable fitness function. |
 | **Theme** | `T-NN` | Optional grouping of related work items. |
-| **Work item** | `W-NN` | Executable unit with Definition of Ready + Definition of Done. |
+| **Work** | `W-NN` | Executable unit with Definition of Ready + Definition of Done. |
 | **Decision** | `D-NN` | ADR: immutable once accepted, superseded only with recorded rationale. |
 | **Question** | `Q-NN` | Open unknown, declared instead of pretended away. |
 | **Assumption** | `B-NN` | Falsifiable hypothesis with a validation method and result. |

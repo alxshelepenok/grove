@@ -394,6 +394,24 @@ pub fn jinv_set_g_area(id: &str, had_before: bool, old: &str) -> JuliaDict {
     ])
 }
 
+pub fn jinv_set_g_attr_fitness(id: &str, had_before: bool, old: &str) -> JuliaDict {
+    JuliaDict::from_pairs(vec![
+        ("op".to_string(), s("set_g_attr_fitness")),
+        ("id".to_string(), s(id)),
+        ("had_before".to_string(), JVal::Bool(had_before)),
+        ("old".to_string(), s(old)),
+    ])
+}
+
+pub fn jinv_set_g_fitness_target(id: &str, had_before: bool, old: &str) -> JuliaDict {
+    JuliaDict::from_pairs(vec![
+        ("op".to_string(), s("set_g_fitness_target")),
+        ("id".to_string(), s(id)),
+        ("had_before".to_string(), JVal::Bool(had_before)),
+        ("old".to_string(), s(old)),
+    ])
+}
+
 pub fn jinv_set_status_plain(id: &str, old_status: &str) -> JuliaDict {
     JuliaDict::from_pairs(vec![
         ("op".to_string(), s("set_status_plain")),
@@ -682,8 +700,34 @@ pub fn journal_apply_inverse(st: &mut State, inv: &Json) -> Option<String> {
             let Some(n) = st.nodes.get_mut(id) else {
                 return fail(format!("missing node {id}"));
             };
-            let old = inv_str(inv, "old").unwrap_or("").to_string();
-            n.attrs.insert("fitness".to_string(), old);
+            match inv.get("had_before").and_then(|v| v.as_bool()) {
+                Some(false) => {
+                    n.attrs.remove("fitness");
+                }
+                _ => {
+                    let old = inv_str(inv, "old").unwrap_or("").to_string();
+                    n.attrs.insert("fitness".to_string(), old);
+                }
+            }
+            stamp_touch_node(n);
+            None
+        }
+        "set_g_fitness_target" => {
+            let id = req!(inv_str(inv, "id"), "id");
+            let Some(n) = st.nodes.get_mut(id) else {
+                return fail(format!("missing node {id}"));
+            };
+            let had = inv
+                .get("had_before")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
+            if had {
+                let old = inv_str(inv, "old").unwrap_or("").to_string();
+                n.fields
+                    .insert("fitness_target".to_string(), FieldValue::Single(old));
+            } else {
+                n.fields.remove("fitness_target");
+            }
             stamp_touch_node(n);
             None
         }

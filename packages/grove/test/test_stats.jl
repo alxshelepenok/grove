@@ -142,7 +142,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--title=W",
                       "--root=$tmp", "--quiet"]) == 0
         rc, etxt = stats_capture_err(["set", "W-01", "status=progress", "--root=$tmp", "--quiet"])
@@ -169,7 +169,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["undo", "--steps=1", "--root=$tmp", "--quiet"]) == 0
         jp = joinpath(tmp, ".grove", "journal.log")
         _, recs = M.journal_read_nonempty_pairs(jp)
@@ -189,7 +189,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["gate", "--root=$tmp", "--quiet"]) == 0
         jp = joinpath(tmp, ".grove", "journal.log")
         _, recs = M.journal_read_nonempty_pairs(jp)
@@ -232,7 +232,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--fitness=1/1", "--area=A-01",
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1", "--area=A-01",
                       "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
                       "--title=W", "--root=$tmp", "--quiet"]) == 0
@@ -316,7 +316,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "G-01", "status=verified", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["distill", "G-01", "--null", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["archive", "G-01", "--root=$tmp", "--quiet"]) == 0

@@ -25,7 +25,7 @@ end
     tmp = mktempdir()
     @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
     @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-    @test M.main(["add", "g", "--title=Goal", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+    @test M.main(["add", "g", "--title=Goal", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
     @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
                   "--title=W", "--root=$tmp", "--quiet"]) == 0
     @test M.main(["add", "q", "--cynefin=clear", "--targets=W-01",
@@ -56,7 +56,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=X", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=X", "--area=A-01", "--fitness-kind=manual", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01", "--title=T",
                       "--root=$tmp", "--quiet"]) == 0
         @test M.main(["fitness", "W-01", "G-01", "2", "--root=$tmp", "--quiet"]) == 0

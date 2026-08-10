@@ -23,7 +23,7 @@ end
 function cone_fixture(tmp)
     @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
     @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-    @test M.main(["add", "g", "--title=Reliable auth", "--fitness=5/5 flows", "--area=A-01",
+    @test M.main(["add", "g", "--title=Reliable auth", "--fitness-kind=count", "--fitness-target=5", "--area=A-01",
                   "--root=$tmp", "--quiet"]) == 0
     for t in ("Auth schema", "Token store", "Login flow", "SSO login")
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
@@ -126,7 +126,7 @@ end
     try
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--fitness=1/1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
                       "--title=Solo", "--root=$tmp", "--quiet"]) == 0
         rc, md = cone_run_cli(["packet", "W-01", "--cone", "--root=$tmp"])
@@ -169,7 +169,7 @@ end
             println(io, "| auth | a term | test |")
         end
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
-        @test M.main(["add", "g", "--title=G", "--fitness=1/1", "--area=A-01",
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1", "--area=A-01",
                       "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
                       "--title=W", "--surface=src/a.jl", "--root=$tmp", "--quiet"]) == 0

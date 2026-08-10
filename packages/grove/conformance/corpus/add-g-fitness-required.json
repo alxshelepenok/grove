@@ -1,0 +1,159 @@
+{
+  "name": "add-g-fitness-required",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "a",
+        "--title=Area",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "A-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=NoFitness",
+        "--area=A-01"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "add g: fitness is required (pass --fitness-kind + --fitness-target, or --fitness-kind=manual for n/a)\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=NoTarget",
+        "--area=A-01",
+        "--fitness-kind=count"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "add g: --fitness-target is required for --fitness-kind=count\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Manual",
+        "--area=A-01",
+        "--fitness-kind=manual",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "G-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Manual\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Legacy",
+        "--area=A-01",
+        "--fitness=1/1"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "add g: --fitness is retired (legacy label); use --fitness-kind + --fitness-target\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Manual\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Structured",
+        "--area=A-01",
+        "--fitness-kind=count",
+        "--fitness-target=2",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "G-02\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Manual\"\n  area: A-01\n\ng G-02 status=unverified fitness_kind=count t_created=<ts> t_updated=<ts> \"Structured\"\n  area: A-01\n  fitness_target: 2\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "G-02",
+        "fitness=1/1"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "set: key fitness is retired (legacy label); use fitness_kind + set <G> fitness_target=N (empty value removes a legacy label)\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Manual\"\n  area: A-01\n\ng G-02 status=unverified fitness_kind=count t_created=<ts> t_updated=<ts> \"Structured\"\n  area: A-01\n  fitness_target: 2\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "G-02",
+        "fitness_target=3",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Manual\"\n  area: A-01\n\ng G-02 status=unverified fitness_kind=count t_created=<ts> t_updated=<ts> \"Structured\"\n  area: A-01\n  fitness_target: 3\n  fitness_current: 0\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"had_before\":true,\"old\":\"2\",\"op\":\"set_g_fitness_target\"}}\n"
+    },
+    {
+      "args": [
+        "show",
+        "G-02"
+      ],
+      "exit": 0,
+      "stdout": "g G-02 status=unverified fitness_kind=count t_created=<ts> t_updated=<ts> \"Structured\"\n  area: A-01\n  fitness_target: 3\n  fitness_current: 0\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Manual\"\n  area: A-01\n\ng G-02 status=unverified fitness_kind=count t_created=<ts> t_updated=<ts> \"Structured\"\n  area: A-01\n  fitness_target: 3\n  fitness_current: 0\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"had_before\":true,\"old\":\"2\",\"op\":\"set_g_fitness_target\"}}\n"
+    },
+    {
+      "args": [
+        "list",
+        "g"
+      ],
+      "exit": 0,
+      "stdout": "G-01\tunverified\tManual\nG-02\tunverified\tStructured\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Manual\"\n  area: A-01\n\ng G-02 status=unverified fitness_kind=count t_created=<ts> t_updated=<ts> \"Structured\"\n  area: A-01\n  fitness_target: 3\n  fitness_current: 0\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"had_before\":true,\"old\":\"2\",\"op\":\"set_g_fitness_target\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Manual\"\n  area: A-01\n\ng G-02 status=unverified fitness_kind=count t_created=<ts> t_updated=<ts> \"Structured\"\n  area: A-01\n  fitness_target: 3\n  fitness_current: 0\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"had_before\":true,\"old\":\"2\",\"op\":\"set_g_fitness_target\"}}\n"
+    }
+  ]
+}

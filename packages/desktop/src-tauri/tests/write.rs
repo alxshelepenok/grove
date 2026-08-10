@@ -105,7 +105,7 @@ fn write_round_trip_per_verb() {
 
     let a = ok(&root, "add", &["a", "--title=Area"]);
     assert_eq!(a.trim(), "A-01");
-    let g = ok(&root, "add", &["g", "--title=Goal", "--area=A-01"]);
+    let g = ok(&root, "add", &["g", "--title=Goal", "--area=A-01", "--fitness-kind=manual"]);
     assert_eq!(g.trim(), "G-01");
     let w = ok(&root, "add", &["w", "--title=Work", "--goals=G-01"]);
     assert_eq!(w.trim(), "W-01");
@@ -193,7 +193,7 @@ fn write_distill_archive_round_trip() {
     let (_guard, _home) = common::isolated_grove_home("distill-archive-home");
     let root = init_root(&tmpdir("distill-archive"));
     ok(&root, "add", &["a", "--title=Area"]);
-    ok(&root, "add", &["g", "--title=Goal", "--area=A-01"]);
+    ok(&root, "add", &["g", "--title=Goal", "--area=A-01", "--fitness-kind=manual"]);
     ok(&root, "set", &["G-01", "status=verified"]);
     ok(&root, "distill", &["G-01", "--null"]);
     ok(&root, "archive", &["G-01"]);

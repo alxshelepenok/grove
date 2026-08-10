@@ -421,6 +421,7 @@ fn archive_record_is_audit_only_and_not_undoable() {
         &[
             ("title".to_string(), "G".to_string()),
             ("area".to_string(), "A-01".to_string()),
+            ("fitness-kind".to_string(), "manual".to_string()),
         ],
     );
     assert_eq!(r.code, EXIT_OK, "{}", r.err);

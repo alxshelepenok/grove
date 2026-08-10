@@ -330,7 +330,7 @@ fn detect_on_temp_root_matches_status_output() {
         &root,
         SESSION,
         "add",
-        &["g".to_string(), "--title=Goal".to_string(), "--area=A-01".to_string()],
+        &["g".to_string(), "--title=Goal".to_string(), "--area=A-01".to_string(), "--fitness-kind=manual".to_string()],
     )
     .unwrap();
 

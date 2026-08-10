@@ -134,8 +134,13 @@ function csv_dup_guard(kind::Symbol, opt::AbstractString, entries::Vector{String
     nothing
 end
 
+const USAGE_ADD = "usage: grove add <kind> --title=\"…\" [...]"
+
 function cmd_add(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (println(stderr, "usage: grove add <kind> [...]"); return EXIT_ERR)
+    haskey(kw, "help") && (println(USAGE_ADD); return EXIT_OK)
+    length(pos) >= 1 || (println(stderr, USAGE_ADD); return EXIT_ERR)
+    length(pos) > 1 && (println(stderr, "$USAGE_ADD (unexpected positional argument: $(pos[2]))"); return EXIT_ERR)
+    isempty(kw) && !(pos[1] in ("a", "y")) && (println(stderr, USAGE_ADD); return EXIT_ERR)
     kind = Symbol(pos[1])
     kind in NODE_KINDS || (println(stderr, "unknown kind: $kind"); return EXIT_ERR)
     st = load(ctx)
@@ -159,7 +164,8 @@ function cmd_add(ctx::CliCtx, pos, kw)
         isempty(surface) || (n.fields[:surface] = surface)
     elseif kind === :g
         n.status = Symbol(get(kw, "status", "unverified"))
-        haskey(kw, "fitness") && (n.attrs["fitness"] = kw["fitness"])
+        haskey(kw, "fitness") &&
+            (println(stderr, "add g: --fitness is retired (legacy label); use --fitness-kind + --fitness-target"); return EXIT_ERR)
         if haskey(kw, "fitness-kind")
             fk = Symbol(lowercase(strip(kw["fitness-kind"])))
             fk in GOAL_FITNESS_KINDS || (println(stderr, "bad --fitness-kind"); return EXIT_ERR)
@@ -171,6 +177,15 @@ function cmd_add(ctx::CliCtx, pos, kw)
         an = get(st.nodes, aref, nothing)
         (an === nothing || an.kind !== :a) && (println(stderr, "add g: unknown --area id: $aref"); return EXIT_ERR)
         n.fields[:area] = aref
+        has_fitness = haskey(kw, "fitness-kind")
+        has_fitness || (println(stderr, "add g: fitness is required (pass --fitness-kind + --fitness-target, or --fitness-kind=manual for n/a)"); return EXIT_ERR)
+        if haskey(kw, "fitness-kind")
+            fk2 = lowercase(strip(kw["fitness-kind"]))
+            if fk2 in ("count", "metric", "ratio")
+                isempty(strip(get(kw, "fitness-target", ""))) &&
+                    (println(stderr, "add g: --fitness-target is required for --fitness-kind=$fk2"); return EXIT_ERR)
+            end
+        end
     elseif kind === :d
         n.status = Symbol(get(kw, "status", "proposed"))
     elseif kind === :q
@@ -448,12 +463,30 @@ function cmd_set(ctx::CliCtx, pos, kw)
         ))
         n.title = val
     elseif key == "fitness" && n.kind === :g
+        isempty(strip(val)) ||
+            (println(stderr, "set: key fitness is retired (legacy label); use fitness_kind + set <G> fitness_target=N (empty value removes a legacy label)"); return EXIT_ERR)
+        hb = haskey(n.attrs, "fitness")
         jr = wrap_journal_record("set", Dict{String,Any}(
             "op" => "set_g_attr_fitness",
             "id" => String(id),
-            "old" => get(n.attrs, "fitness", ""),
+            "had_before" => hb,
+            "old" => hb ? String(n.attrs["fitness"]) : "",
         ))
-        n.attrs["fitness"] = val
+        delete!(n.attrs, "fitness")
+        refresh_goal_structured_fitness!(st, n)
+    elseif key == "fitness_target" && n.kind === :g
+        hb = haskey(n.fields, :fitness_target)
+        jr = wrap_journal_record("set", Dict{String,Any}(
+            "op" => "set_g_fitness_target",
+            "id" => String(id),
+            "had_before" => hb,
+            "old" => hb ? String(n.fields[:fitness_target]) : "",
+        ))
+        if isempty(strip(val))
+            delete!(n.fields, :fitness_target)
+        else
+            n.fields[:fitness_target] = val
+        end
         refresh_goal_structured_fitness!(st, n)
     elseif key == "fitness_kind" && n.kind === :g
         ks = Symbol(lowercase(strip(val)))

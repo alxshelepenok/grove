@@ -26,7 +26,7 @@ cynefin(n) = chaotic      → STOP; escalate to user; do not write code.
 **If `.grove/state.lock` does not exist:**
 
 1. Run `grove init`. This creates `.grove/state.lock`, `.grove/index.md`, and `.grove/glossary.md`.
-2. Ask the user for top-level outcome(s) and their scope partition. Create areas via `grove add a --title=…`, then `G-NN` rows via `grove add g --title=… --fitness=… --area=A-NN`.
+2. Ask the user for top-level outcome(s) and their scope partition. Create areas via `grove add a --title=…`, then `G-NN` rows via `grove add g --title=… --area=A-NN --fitness-kind=… --fitness-target=…`.
 3. For each G, decide track:
    - **greenfield**: start the Discovery loop (impact map, then Q / B / D / W).
    - **existing code**: start a refactor scan (creates `T-NN` and `W:refactor` items).

@@ -117,8 +117,11 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
         }
         Kind::G => {
             n.status = kw_get(kw, "status").unwrap_or("unverified").to_string();
-            if let Some(f) = kw_get(kw, "fitness") {
-                n.attrs.insert("fitness".to_string(), f.to_string());
+            if kw_has(kw, "fitness") {
+                bail!(
+                    EXIT_ERR,
+                    "add g: --fitness is retired (legacy label); use --fitness-kind + --fitness-target"
+                );
             }
             if let Some(fk_raw) = kw_get(kw, "fitness-kind") {
                 let fk = fk_raw.trim().to_lowercase();
@@ -146,6 +149,27 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
                 bail!(EXIT_ERR, &format!("add g: unknown --area id: {aref}"));
             }
             n.set_single("area", aref);
+            let has_fitness = kw_has(kw, "fitness-kind");
+            if !has_fitness {
+                bail!(
+                    EXIT_ERR,
+                    "add g: fitness is required (pass --fitness-kind + --fitness-target, or --fitness-kind=manual for n/a)"
+                );
+            }
+            if let Some(fk_raw) = kw_get(kw, "fitness-kind") {
+                let fk = fk_raw.trim().to_lowercase();
+                if matches!(fk.as_str(), "count" | "metric" | "ratio")
+                    && kw_get(kw, "fitness-target")
+                        .unwrap_or("")
+                        .trim()
+                        .is_empty()
+                {
+                    bail!(
+                        EXIT_ERR,
+                        &format!("add g: --fitness-target is required for --fitness-kind={fk}")
+                    );
+                }
+            }
         }
         Kind::D => {
             n.status = kw_get(kw, "status").unwrap_or("proposed").to_string();
@@ -499,14 +523,36 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
             n.title = val.to_string();
         }
         "fitness" if kind == Kind::G => {
+            if !val.trim().is_empty() {
+                return OpResult::fail(
+                    EXIT_ERR,
+                    "set: key fitness is retired (legacy label); use fitness_kind + set <G> fitness_target=N (empty value removes a legacy label)",
+                );
+            }
             {
                 let n = st.nodes.get_mut(id).expect("checked");
+                let hb = n.attrs.contains_key("fitness");
                 let old = n.attr("fitness");
-                line = wrap_journal_record(
-                    "set",
-                    jinv_set_simple_old("set_g_attr_fitness", id, &old),
-                );
-                n.attrs.insert("fitness".to_string(), val.to_string());
+                line = wrap_journal_record("set", jinv_set_g_attr_fitness(id, hb, &old));
+                n.attrs.remove("fitness");
+            }
+            refresh_goal_structured_fitness(st, id);
+        }
+        "fitness_target" if kind == Kind::G => {
+            {
+                let n = st.nodes.get_mut(id).expect("checked");
+                let hb = n.fields.contains_key("fitness_target");
+                let old = if hb {
+                    n.single("fitness_target")
+                } else {
+                    String::new()
+                };
+                line = wrap_journal_record("set", jinv_set_g_fitness_target(id, hb, &old));
+                if val.trim().is_empty() {
+                    n.fields.remove("fitness_target");
+                } else {
+                    n.set_single("fitness_target", val.to_string());
+                }
             }
             refresh_goal_structured_fitness(st, id);
         }
