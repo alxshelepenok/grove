@@ -58,17 +58,19 @@ Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, Cline, GitHub Copil
       </picture>
     </td>
   </tr>
+  <tr></tr>
   <tr>
     <td width="33.33%">
-      The reasoning graph, explored interactively.
+      The reasoning graph, explored live.
     </td>
     <td width="33.33%">
       The same view at 143 nodes, history included.
     </td>
     <td width="33.33%">
-      Everything an agent needs for one work item, nothing more.
+      All an agent needs for one work item, nothing more.
     </td>
   </tr>
+  <tr></tr>
   <tr>
     <td width="33.33%">
       <picture>
@@ -89,6 +91,7 @@ Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, Cline, GitHub Copil
       </picture>
     </td>
   </tr>
+  <tr></tr>
   <tr>
     <td width="33.33%">
       Work items tracked from proposal to done.
