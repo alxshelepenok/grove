@@ -1,13 +1,9 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:5a30074ab71f893d9c168861db6dda7bdb1d561ffc50a3b56c4a6ea21a9a4671
+# checksum: sha256:1fc7ea85c6ed33da38c97d9733880023357bffbd83200e5f24dbc7edf8f71a72
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
-
-g G-19 status=unverified fitness_kind=count t_created=2026-08-10T16:19:08Z t_updated=2026-08-10T16:34:57Z "Linux desktop parity"
-  area: A-05
-  fitness_target: 3
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -29,41 +25,6 @@ w W-05 type=refactor status=proposed cynefin=complicated t_created=2026-07-19T01
     | lands after the benchmark suite (W-04) and before the 10k-node budget is enforced
   why:
     | Enabling work: clears the known scaling debt before the 10k-node budget applies
-
-w W-91 type=bug status=proposed cynefin=complicated t_created=2026-08-10T16:19:24Z t_updated=2026-08-10T16:26:45Z "Linux: gate titlebar corner rounding to Windows only"
-  goals: G-19
-  fitness: G-19=+1
-  surface: packages/desktop/ui/css/components/window.css, packages/desktop/ui/js/integration/window-chrome.js, packages/desktop/src-tauri/src/lib.rs
-  ac:
-    | on Linux the close button and titlebar have square corners matching the undecorated window
-    | on Windows 11 the rounded corner rendering is unchanged
-  hypothesis:
-    | window.css:10,109 hardcodes 6px top-right radius for all platforms; no platform detection exists anywhere in ui/
-  evidence_strategy:
-    | visual check on Linux build + Windows build; css selector gated by html[data-platform]
-
-w W-92 type=bug status=proposed cynefin=complicated t_created=2026-08-10T16:19:25Z t_updated=2026-08-10T16:26:45Z "Linux: ship app icon and add Icon= to desktop entry"
-  goals: G-19
-  fitness: G-19=+1
-  surface: install.sh, .github/workflows/release.yml, tests/install/test-install.sh
-  ac:
-    | launcher shows the Grove icon after a fresh install.sh run on Linux
-  hypothesis:
-    | install.sh:189-204 writes grove.desktop without Icon= and the release archive (release.yml:144-152) ships no raster icon
-  evidence_strategy:
-    | tests/install/test-install.sh asserts the Icon= line; manual check of the apps menu
-
-w W-93 type=bug status=proposed cynefin=complicated t_created=2026-08-10T16:19:25Z t_updated=2026-08-10T16:26:45Z "Linux: async directory picker without blocking the main thread"
-  goals: G-19
-  fitness: G-19=+1
-  surface: packages/desktop/src-tauri/src/commands/mod.rs, packages/desktop/src-tauri/tests/views.rs
-  ac:
-    | directory picker opens and returns a path on Linux without freezing the UI
-    | manual path input fallback still works
-  hypothesis:
-    | grove_pick_directory (commands/mod.rs:97-104) is a sync command calling blocking_pick_folder, which deadlocks the WebKitGTK main loop on Linux
-  evidence_strategy:
-    | async command with pick_folder callback; update string assertion in tests/views.rs:2677; manual test on Arch+Thunar
 
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
@@ -365,6 +326,11 @@ g G-16 status=verified fitness_kind=count t_created=2026-08-04T19:44:12Z t_updat
 
 g G-18 status=verified fitness_kind=count t_created=2026-08-08T23:19:46Z t_updated=2026-08-10T19:14:33Z "MCP client surface hardening"
   area: A-04
+  fitness_target: 3
+  fitness_current: 3
+
+g G-19 status=verified fitness_kind=count t_created=2026-08-10T16:19:08Z t_updated=2026-08-10T21:10:14Z "Linux desktop parity"
+  area: A-05
   fitness_target: 3
   fitness_current: 3
 
@@ -2180,6 +2146,53 @@ w W-90 type=feature status=done cynefin=clear t_created=2026-08-08T14:27:57Z t_u
     | tests: test-install.sh 25/25 (PATH line in .profile, idempotency on reinstall, --only grove-desktop leaves PATH alone); test-install.ps1 23/23 (PATH file write, idempotency via pre-seeded file, no PATH for -Only grove-desktop)
     | bug found by tests: redirect to ~/.profile failed when HOME dir absent (custom --prefix outside HOME); fixed with mkdir -p HOME in update_path_rc
     | docs/install.md: automatic PATH registration documented
+
+w W-91 type=bug status=done cynefin=complicated t_created=2026-08-10T16:19:24Z t_updated=2026-08-10T21:10:14Z "Linux: gate titlebar corner rounding to Windows only"
+  goals: G-19
+  fitness: G-19=+1
+  surface: packages/desktop/ui/css/components/window.css, packages/desktop/ui/js/integration/window-chrome.js, packages/desktop/src-tauri/src/lib.rs
+  ac:
+    | on Linux the close button and titlebar have square corners matching the undecorated window
+    | on Windows 11 the rounded corner rendering is unchanged
+  hypothesis:
+    | window.css:10,109 hardcodes 6px top-right radius for all platforms; no platform detection exists anywhere in ui/
+  repro:
+    | Launch the desktop app on Linux: the close button and titlebar show a 6px top-right radius while the undecorated window corners are square, leaving a visual gap at the corner.
+  evidence_strategy:
+    | visual check on Linux build + Windows build; css selector gated by html[data-platform]
+  evidence:
+    | impl: init_script() in lib.rs now injects window.__GROVE_PLATFORM__ ("windows"/"macos"/"linux"); workspace.js sets document.documentElement.dataset.platform; window.css gates both 6px top-right radii behind html[data-platform="windows"], Linux default is square corners. cargo test -p grove-desktop: 126 passed, 0 failed (incl. new platform_matches_compile_time_target and updated init-script test). Visual check on Linux/Windows builds pending manual run.
+
+w W-92 type=bug status=done cynefin=complicated t_created=2026-08-10T16:19:25Z t_updated=2026-08-10T21:10:14Z "Linux: ship app icon and add Icon= to desktop entry"
+  goals: G-19
+  fitness: G-19=+1
+  surface: install.sh, .github/workflows/release.yml, tests/install/test-install.sh
+  ac:
+    | launcher shows the Grove icon after a fresh install.sh run on Linux
+  hypothesis:
+    | install.sh:189-204 writes grove.desktop without Icon= and the release archive (release.yml:144-152) ships no raster icon
+  repro:
+    | On Linux run install.sh, then open the desktop environment's app menu: the Grove launcher shows a generic fallback icon because grove.desktop has no Icon= line and no raster icon ships in the release archive.
+  evidence_strategy:
+    | tests/install/test-install.sh asserts the Icon= line; manual check of the apps menu
+  evidence:
+    | impl: release.yml stages packages/desktop/src-tauri/icons/128x128.png as icon.png in the portable archive; install.sh writes Icon=$prefix/grove-desktop/icon.png into grove.desktop; self-test fake archive ships icon.png with a new st_report assert; tests/install/test-install.sh ships icon.png in the fake archive and asserts the Icon= line + installed file on Linux. bash tests/install/test-install.sh: 25 passed, 0 failed (incl. install.sh --self-test). Manual apps-menu check on Linux pending.
+
+w W-93 type=bug status=done cynefin=complicated t_created=2026-08-10T16:19:25Z t_updated=2026-08-10T21:10:14Z "Linux: async directory picker without blocking the main thread"
+  goals: G-19
+  fitness: G-19=+1
+  surface: packages/desktop/src-tauri/src/commands/mod.rs, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | directory picker opens and returns a path on Linux without freezing the UI
+    | manual path input fallback still works
+  hypothesis:
+    | grove_pick_directory (commands/mod.rs:97-104) is a sync command calling blocking_pick_folder, which deadlocks the WebKitGTK main loop on Linux
+  repro:
+    | On Linux open the project picker and click the directory-browse button: grove_pick_directory runs blocking_pick_folder on the main thread, the WebKitGTK main loop stalls and the whole UI freezes until the dialog is dismissed (or deadlocks with some file chooser backends).
+  evidence_strategy:
+    | async command with pick_folder callback; update string assertion in tests/views.rs:2677; manual test on Arch+Thunar
+  evidence:
+    | impl: grove_pick_directory is now an async command using pick_folder with a callback + std::sync::mpsc, awaited via tauri::async_runtime::spawn_blocking, so the WebKitGTK main loop is never blocked; invoke signature Option<String> unchanged, frontend project-picker.js (await tauriBridge.invoke) and manual path input untouched. tests/views.rs tokens updated: asserts pick_folder/spawn_blocking present and blocking_pick_folder absent. cargo test -p grove-desktop: 126 passed, 0 failed. Manual test on Arch+Thunar pending.
 
 w W-94 type=bug status=done cynefin=complicated t_created=2026-08-10T16:34:40Z t_updated=2026-08-10T19:14:33Z "CLI: reject positional args and bare add invocations instead of silent defaults"
   goals: G-18

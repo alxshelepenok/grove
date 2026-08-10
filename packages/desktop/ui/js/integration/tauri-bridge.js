@@ -14,6 +14,10 @@ class TauriBridge {
     return this._invoke?.("plugin:window|toggle_maximize");
   }
 
+  show() {
+    return this._invoke?.("plugin:window|show");
+  }
+
   close() {
     return this._invoke?.("plugin:window|close");
   }

@@ -15,6 +15,7 @@
         "height": 760,
         "minWidth": 940,
         "minHeight": 620,
+        "visible": false,
         "resizable": true,
         "decorations": false,
         "url": "index.html"

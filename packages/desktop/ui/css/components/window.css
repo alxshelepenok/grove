@@ -7,13 +7,16 @@
   flex: 0 0 auto;
   background: var(--wv-color-bg-surface);
   border-bottom: 1px solid var(--wv-color-border-subtle);
-  border-radius: 0 var(--wv-radius-lg) 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   user-select: none;
   -webkit-app-region: drag;
   overflow: hidden;
+}
+
+html[data-platform="windows"] .title-bar {
+  border-radius: 0 var(--wv-radius-lg) 0 0;
 }
 
 .title-bar.inactive {
@@ -106,7 +109,7 @@
   outline: none;
 }
 
-.title-bar-controls button[aria-label="Close"] {
+html[data-platform="windows"] .title-bar-controls button[aria-label="Close"] {
   border-radius: 0 var(--wv-radius-lg) 0 0;
 }
 
