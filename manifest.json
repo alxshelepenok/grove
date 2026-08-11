@@ -1,70 +1,70 @@
 {
-  "version": "0.1.4",
-  "created_at": "2026-08-10T21:51:39Z",
-  "expires_at": "2027-02-06T21:51:39Z",
+  "version": "0.1.5",
+  "created_at": "2026-08-11T00:48:16Z",
+  "expires_at": "2027-02-07T00:48:16Z",
   "channels": {
     "stable": {
-      "sequence": 5,
+      "sequence": 6,
       "artifacts": {
         "grove_desktop_linux_x64": {
-          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.4/grove-desktop-v0.1.4-linux-x64.tar.gz",
-          "sha256": "d9f0a689e156e93466a30da97824480880b79e43daf4631b343873a81f448c7a",
-          "size": 5663458
+          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.5/grove-desktop-v0.1.5-linux-x64.tar.gz",
+          "sha256": "136ed92fd76096d92aa14d06e52658e52e192fa3f4f27caaad1bfb6c079e21d9",
+          "size": 5723837
         },
         "grove_desktop_macos_arm64": {
-          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.4/grove-desktop-v0.1.4-macos-arm64.tar.gz",
-          "sha256": "3b98fe931a78b26a58dafc938010dfecfc11bcfcbd67e92c5de41de57aeb1fed",
-          "size": 4499955
+          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.5/grove-desktop-v0.1.5-macos-arm64.tar.gz",
+          "sha256": "e306c7bc8de791a910073cf8b9624a62c8f77e1e6aaec83494c0c628099072a1",
+          "size": 4554184
         },
         "grove_desktop_macos_x64": {
-          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.4/grove-desktop-v0.1.4-macos-x64.tar.gz",
-          "sha256": "dfff86494f1f608577b7eb3e75a684f40da332208bb35a55937096c8404d2306",
-          "size": 4652292
+          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.5/grove-desktop-v0.1.5-macos-x64.tar.gz",
+          "sha256": "18e2e06857170799e7679aa83ea8550bd4f178fe64d58562af8e80035aeb87d8",
+          "size": 4707616
         },
         "grove_desktop_windows_x64": {
-          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.4/grove-desktop-v0.1.4-windows-x64.tar.gz",
-          "sha256": "575cf5fff805ca47338087badb5081fcc4b604ed696e18ac2d3670acfd20bccf",
-          "size": 4398711
+          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.5/grove-desktop-v0.1.5-windows-x64.tar.gz",
+          "sha256": "1aca4a1d7394f3ea2e4d8a68f6388781021881afcd937e6e8436ecef336115b6",
+          "size": 4462048
         },
         "grove_linux_x64": {
-          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.4/grove-v0.1.4-linux-x64.tar.gz",
-          "sha256": "3684e813ab2d03a847526ee10fa681de9d42185825c90a26ec8b46c1fce15577",
-          "size": 898909
+          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.5/grove-v0.1.5-linux-x64.tar.gz",
+          "sha256": "95b8394eabcb17e851d7e10a9a12b062f5ca31cca34633b308145c1fec8aa36c",
+          "size": 898892
         },
         "grove_macos_arm64": {
-          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.4/grove-v0.1.4-macos-arm64.tar.gz",
-          "sha256": "413a2109dbde0cf34f3bb2d1ca420a3d55e22f56def1dbc9dd6a4c0b728fd637",
-          "size": 805292
+          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.5/grove-v0.1.5-macos-arm64.tar.gz",
+          "sha256": "8f180c0434927541c489893710050d94ff58f9a0219c7df589093ec4076e4c9c",
+          "size": 805276
         },
         "grove_macos_x64": {
-          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.4/grove-v0.1.4-macos-x64.tar.gz",
-          "sha256": "e5c6b08bff06412080ba6b8b20e50db269edcbc29af8e32fd26ed0994e385670",
-          "size": 870893
+          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.5/grove-v0.1.5-macos-x64.tar.gz",
+          "sha256": "4598c204c5280fa9af2fdb15269c2374dd164bef0de35d194a851d1c81e7b716",
+          "size": 870900
         },
         "grove_mcp_linux_x64": {
-          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.4/grove-mcp-v0.1.4-linux-x64.tar.gz",
-          "sha256": "e528e12685d7f93b2e94cdd81ae039c744a66c8d3a1862ea88498b3695a0fe3c",
-          "size": 920428
+          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.5/grove-mcp-v0.1.5-linux-x64.tar.gz",
+          "sha256": "7822146767ebd026ee5cc36c99dc0784134ceca177e327459e9cdfe238c6d2c8",
+          "size": 920416
         },
         "grove_mcp_macos_arm64": {
-          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.4/grove-mcp-v0.1.4-macos-arm64.tar.gz",
-          "sha256": "261d185d67f9a962fc86c94a7353b508c7ead0b6d304362e9d6575d494351b27",
-          "size": 827755
+          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.5/grove-mcp-v0.1.5-macos-arm64.tar.gz",
+          "sha256": "35005e429c2cb659f2e7b340dd96560b6305ccd6de5f3ab8f9bf8073fa487af3",
+          "size": 827760
         },
         "grove_mcp_macos_x64": {
-          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.4/grove-mcp-v0.1.4-macos-x64.tar.gz",
-          "sha256": "c62db355239a9f17d96e03d5d7b83b5b69ee46fb8d676dbe3ec4025e36804a60",
-          "size": 891374
+          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.5/grove-mcp-v0.1.5-macos-x64.tar.gz",
+          "sha256": "7bd83e783a07f2802baea993a257095207d7850d7fbdbf8241c20de9cefb1811",
+          "size": 891368
         },
         "grove_mcp_windows_x64": {
-          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.4/grove-mcp-v0.1.4-windows-x64.tar.gz",
-          "sha256": "cffc2b12d7a176601d8ff5e5826b32308f236c41c1a9e8e124e3e91ed461c42c",
-          "size": 814513
+          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.5/grove-mcp-v0.1.5-windows-x64.tar.gz",
+          "sha256": "49034678156817de6c4e5ecdf3be3f3ffbc41587b236aa0817271ebc7cd21966",
+          "size": 814486
         },
         "grove_windows_x64": {
-          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.4/grove-v0.1.4-windows-x64.tar.gz",
-          "sha256": "f28620a35bafedfeb82e5ef3c345245dc6a636daec8085e71bdd117bfdf0596f",
-          "size": 789819
+          "url": "https://github.com/alxshelepenok/grove/releases/download/v0.1.5/grove-v0.1.5-windows-x64.tar.gz",
+          "sha256": "51a1ed798c9c8e092345cee876fb68afc4a5cfce27a6d7057be0afeb8817cf3e",
+          "size": 789855
         }
       }
     }
