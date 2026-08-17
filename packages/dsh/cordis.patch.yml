@@ -1,0 +1,5 @@
+- insert:
+    - id: grove
+      name: dsh-grove
+      config:
+        bin: grove

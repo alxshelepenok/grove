@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:5bd843d1fd6e024fbaaf6b35a8352d1a9aaca4582b28825fe6a7ad72ccad3914
+# checksum: sha256:36877da26840602112d8e6bfac32ed1c3a38d4488076793447e6875203a9b48d
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -24,6 +24,11 @@ g G-24 status=verified fitness_kind=count t_created=2026-08-17T06:05:26Z t_updat
   area: A-05
   fitness_target: 1
   fitness_current: 1
+
+g G-25 status=verified fitness_kind=count t_created=2026-08-17T10:50:14Z t_updated=2026-08-17T11:59:08Z "DeepSeek Harness plugin exposes the Grove CLI as agent tools"
+  area: A-07
+  fitness_target: 7
+  fitness_current: 7
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -90,6 +95,113 @@ w W-102 type=bug status=done cynefin=clear t_created=2026-08-17T06:16:17Z t_upda
     | Visual check of narrow area cards at the 340 px grid minimum with before and after screenshots of the A-22 and A-02 cards.
   evidence:
     | cargo test -p grove-desktop green after the app was closed (binary relinked): 134 passed, 0 failed, including areas_fragment_card_header_keeps_id_token_whole (gap-8 on card-title, text-nowrap on the id span, both utilities present in utilities.css). Live smoke_render on merlinguild: area card headers render with class "card-title flex-between gap-8" and the id token spans carry text-nowrap. The [A-NN] break point was the hyphen (UAX #14 break after U+002D); nowrap removes it so the token wraps as a unit.
+
+w W-103 type=feature status=done cynefin=clear t_created=2026-08-17T10:51:35Z t_updated=2026-08-17T11:06:11Z "Scaffold the dsh bundle package (package.json, cordis.patch.yml, TS entry)"
+  goals: G-25
+  fitness: G-25=+1
+  ac:
+    | packages/dsh-plugin/ contains package.json with a dsh.bundle.patch entry, cordis.patch.yml, and src/index.ts exporting name and apply(ctx).
+    | pnpm install and tsc --noEmit succeed in packages/dsh-plugin/.
+  hypothesis:
+    | The bundle format from the official plugin guide (dsh.bundle.patch pointing at cordis.patch.yml) is sufficient for dsh plugin add to mount the package into a profile.
+  evidence_strategy:
+    | Directory listing plus tsc --noEmit output; dsh plugin add acceptance is proven later in W-106.
+  evidence:
+    | packages/dsh-plugin/ created: package.json (dsh.bundle.patch -> ./cordis.patch.yml), cordis.patch.yml (insert row id=grove, name=dsh-grove), src/index.ts exporting name, inject=['tools'], apply(ctx, config); tsconfig.json.
+    | npm install: 0 vulnerabilities; npx tsc --noEmit -p tsconfig.json: clean; npm run build emits lib/index.js + lib/index.d.ts. dsh plugin add acceptance deferred to W-106 per strategy.
+
+w W-104 type=feature status=done cynefin=clear t_created=2026-08-17T10:51:35Z t_updated=2026-08-17T11:11:23Z "Implement read-only Grove tools (status, next, packet, list, show, ready, path)"
+  goals: G-25
+  fitness: G-25=+1
+  ac:
+    | Each of status, next, packet, list, show, ready, path is registered as a dsh tool that execs the grove CLI and returns stdout.
+    | A CLI exit code other than zero surfaces stderr as the tool error instead of a silent empty result.
+    | Unit tests mock child_process.execFile and assert the exact argv for every read-only tool.
+  hypothesis:
+    | Read commands are stateless one-shot CLI calls, so a single execFile wrapper with per-command argv builders covers the whole read surface.
+  evidence_strategy:
+    | vitest run output for the wrapper module plus tsc --noEmit clean.
+  evidence:
+    | vitest run: 2 files, 15/15 tests passed (grove-cli.spec.ts 4, read.spec.ts 11: argv asserted per tool incl. cone flags and list filters, stderr error propagation).
+    | tsc --noEmit clean. Files: src/grove-cli.ts (execFile wrapper), src/tools/read.ts (createReadTools: grove_status/next/ready/path/packet/show/list), registered from src/index.ts apply().
+
+w W-105 type=feature status=done cynefin=complicated t_created=2026-08-17T10:51:35Z t_updated=2026-08-17T11:16:18Z "Implement mutating Grove tools (add, field, set, evidence, fitness, link)"
+  goals: G-25
+  fitness: G-25=+1
+  ac:
+    | add, field, set, evidence, fitness, link are registered as dsh tools with typed parameters matching the CLI grammar.
+    | Every mutating tool forwards GROVE_SESSION or an explicit session value so the session-token guard I11 keeps working.
+    | Unit tests assert argv construction and error propagation for each mutating command.
+  hypothesis:
+    | Mutations stay correct because the CLI owns every invariant; the wrapper only needs faithful argv construction and session forwarding.
+  evidence_strategy:
+    | vitest run output plus a scripted CLI round trip (add, field, evidence, set status=done on a scratch grove project) executed through the wrapper functions directly.
+  evidence:
+    | vitest run: 3 files, 28/28 tests passed (mutate.spec.ts 13: argv per command, +1/-1 delta formatting, --session forwarding, DoR refusal propagation); tsc --noEmit clean.
+    | Round trip through built lib/ against scratch project (GROVE_PROJECT=target/tmp/scratch-grove, scripts/round-trip.mjs): add A-01, add G-01 (count 1), add W-01, field ac/hypothesis/evidence_strategy, fitness +1, evidence, set ready/progress/done; grove_show G-01 reports status=verified fitness_current=1.
+
+w W-106 type=feature status=done cynefin=complicated t_created=2026-08-17T10:51:35Z t_updated=2026-08-17T11:31:21Z "Smoke test the bundle in a live dsh profile and document the setup"
+  goals: G-25
+  fitness: G-25=+1
+  ac:
+    | dsh plugin --profile demo add packages/dsh-plugin mounts the bundle and dsh --profile demo --dump-config lists it.
+    | A probe tool returns the grove --version string from inside the dsh runtime (validates B-05).
+    | A headless dsh run completes grove status and grove next through the registered tools against a scratch grove project.
+    | packages/dsh-plugin/README.md documents install, prerequisites, and configuration.
+  hypothesis:
+    | If B-05 holds, the remaining risk is configuration shape, which dump-config and one headless run expose immediately.
+  evidence_strategy:
+    | Recorded outputs of plugin add, dump-config, the probe call, and the headless run.
+  evidence:
+    | dsh plugin --profile headless add packages/dsh-plugin: '+ dsh-grove link:...'; dsh --profile demo --dump-config shows layer '# == dsh-grove' with row id=grove config bin=grove.
+    | Keyless headless smoke (dsh 0.1.0-rc.6, profile headless, overlay test/fixtures/headless-smoke.patch.yml with mock model): run exited 0; session 55bae3b3 log shows tool/call grove_status seq 19 with full status report at seq 20, tool/call grove_next seq 29 with empty stdout (nothing ready on scratch) at seq 30, both isError=false. This validates B-05.
+    | packages/dsh-plugin/README.md documents prerequisites, dsh plugin add install, bin config override, the 13 tools, session forwarding, and dev commands. Note: dsh plugin forwards to pnpm; pnpm 11.22.0 was installed globally during this work item.
+
+w W-107 type=refactor status=done cynefin=complicated t_created=2026-08-17T11:43:09Z t_updated=2026-08-17T11:51:44Z "Restructure the plugin as packages/dsh on the Bun toolchain"
+  goals: G-25
+  fitness: G-25=+1
+  ac:
+    | The package directory is renamed from packages/dsh-plugin to packages/dsh with all sources, tests, fixtures, and README intact.
+    | bun install produces bun.lock, and bun run build emits into target/ (package.json main/types point at target/, tsconfig outDir is target).
+    | .gitignore covers bun.lock, node_modules, and target for the package.
+    | Both dsh profiles (demo, headless) are re-linked to packages/dsh and dump-config still shows the dsh-grove layer.
+  hypothesis:
+    | The package has no publishing constraint tying it to npm/lib; Bun handles install and script running, and the dsh loader only needs main to resolve.
+  evidence_strategy:
+    | Test suite green before and after the move (vitest still in place at this step); bun install/build output; dump-config output; git status check that the three artifacts are ignored.
+  evidence:
+    | Before: vitest 28/28 on packages/dsh-plugin. After: directory at packages/dsh (copy+remove; plain mv hit a transient Windows lock), bun install OK (12 packages) with an overrides stub for the unpublished peer @deepseek-ai/dsh-type-meta (test/stubs/dsh-type-meta), bun run build emits target/, vitest still 28/28 after the move.
+    | .gitignore: /packages/dsh/{node_modules,target,bun.lock} verified via git check-ignore. Profiles demo and headless re-linked (link:Y:/Projects/grove/packages/dsh); dump-config shows the '# == dsh-grove' layer.
+
+w W-108 type=refactor status=done cynefin=clear t_created=2026-08-17T11:43:09Z t_updated=2026-08-17T11:54:34Z "Migrate the plugin tests to bun test"
+  goals: G-25
+  fitness: G-25=+1
+  ac:
+    | Every spec file runs under bun test (bun:test imports, mock.module instead of vi.mock) with the same argv and error-propagation coverage.
+    | vitest is removed from devDependencies and the test script runs bun test.
+  hypothesis:
+    | The specs only need module mocking and assertions, both covered by bun:test, so the migration is mechanical.
+  evidence_strategy:
+    | bun test output showing all suites and assertions passing; package.json diff without vitest.
+  evidence:
+    | bun test: 28 pass, 0 fail across 3 files (same argv/error coverage, mock.module('node:child_process') replacing vi.mock, top-level await import after mocking). vitest removed from devDependencies; test script is 'bun test'; bun install pruned cleanly.
+
+w W-109 type=refactor status=done cynefin=clear t_created=2026-08-17T11:43:09Z t_updated=2026-08-17T11:59:08Z "Apply project code style (comments, quotes, semicolons, aliases)"
+  goals: G-25
+  fitness: G-25=+1
+  ac:
+    | No comments remain in the plugin TS/JS sources (per project style).
+    | All string literals use double quotes and every statement ends with a semicolon.
+    | tsconfig declares path aliases and source imports use them; the build (bun build) resolves aliases so emitted JS stays Node-resolvable.
+    | bun test, the type check, and the headless dsh smoke run all pass after the style pass.
+  hypothesis:
+    | The pass is mechanical: sed-class edits plus a paths block in tsconfig, with bundling absorbing the alias resolution.
+  evidence_strategy:
+    | grep showing zero comment lines and zero single-quote literals in src/, bun test and tsc output, and a repeated headless smoke run.
+  evidence:
+    | grep over src/, scripts/, test/: zero comment lines, zero single-quote literals; all statements semicolon-terminated; imports use the @/* alias (tsconfig baseUrl+paths, moduleResolution Bundler).
+    | bun test: 28 pass / 0 fail; tsc --noEmit clean; bun build (multi-entry, --external=@deepseek-ai/*) emits target/{index,grove-cli,tools/*}.js with aliases resolved plus tsc --emitDeclarationOnly d.ts files.
+    | Post-restyle validation: scripts/round-trip.mjs against bundled target/ output reaches done (ROUND_TRIP_OK); headless dsh run with the smoke overlay exits 0 and returns the grove status report through the rebuilt bundle.
 
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
@@ -180,6 +292,28 @@ d D-10 status=accepted t_created=2026-08-07T13:50:41Z t_updated=2026-08-07T13:50
   validation:
     | LICENSE file carries the AGPL-3.0 text; crates declare AGPL-3.0-only; the shields license badge re-detects on the next GitHub metadata refresh
 
+d D-12 status=accepted t_created=2026-08-17T10:50:14Z t_updated=2026-08-17T11:31:56Z "dsh plugin as a thin CLI wrapper bundle"
+  context:
+    | DeepSeek Harness (dsh) is a plugin-based agent runtime in developer preview; Grove already exposes CLI, MCP, and skill interfaces, and dsh supports external MCP servers.
+  options:
+    | 1. No code, connect the Grove MCP server from dsh. 2. Thin dsh bundle that wraps the grove CLI via child_process (variant A). 3. Native Cordis service integration against the Grove core (variant B).
+  decision:
+    | Build variant A: an npm bundle (package.json with dsh.bundle.patch, cordis.patch.yml, one TS module exporting apply) that registers grove CLI calls as dsh tools; all protocol enforcement stays in the Rust/Julia CLI.
+  consequences:
+    | The plugin requires a grove binary on PATH at runtime; breaking changes in the dsh plugin contract (developer preview) may force a rewrite; no UI or event integration beyond plain tools.
+  validation:
+    | A live dsh profile loads the bundle and a headless agent run completes a grove next/packet round trip through the registered tools.
+
+d D-13 status=accepted t_created=2026-08-17T11:42:38Z t_updated=2026-08-17T11:59:20Z "Bun toolchain and project code style for the dsh plugin"
+  context:
+    | The plugin landed on npm/vitest with lib/ output (W-103..W-105); the owner mandates the house toolchain and style instead.
+  decision:
+    | The package lives at packages/dsh, uses Bun for install/test/build, tests run on bun test, build output goes to target/, and sources follow project style: no comments, double quotes, semicolons, tsconfig path aliases.
+  consequences:
+    | bun.lock, node_modules, and target are git-ignored; dsh profiles must be re-linked to the new path; aliases require bundling (bun build) so emitted JS stays Node-resolvable.
+  validation:
+    | bun test and bun build pass, and the headless dsh smoke run still completes after re-linking the profile.
+
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
     | attestations already give a GitHub-backed second path; cosign keyless would add a Sigstore-anchored one without storing another key, at the cost of another tool in the sign job; deferred from v1, revisit after the first releases
@@ -187,6 +321,15 @@ q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=
 q Q-04 status=open cynefin=complicated t_created=2026-08-07T00:57:08Z t_updated=2026-08-07T00:57:08Z "What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"
   why:
     | macos-13 retired 2025-12, macos-15-intel is the last free Intel image until ~August 2027; options recorded in the release plan: cross-compile x86_64-apple-darwin on the arm64 runner (lipo or separate leg) or drop the macos_x64 target
+
+q Q-05 status=answered cynefin=complicated t_created=2026-08-17T10:50:14Z t_updated=2026-08-17T11:31:47Z "What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1?"
+  why:
+    | Community tutorials show ctx.tools.register(...) but the exact argument shape and JSON-schema format are not documented; the scaffold cannot be finalised without the real signature from the dsh source.
+  outcome:
+    | Registration is ctx.tools.register(defineTool({...})) with defineTool imported from @deepseek-ai/dsh-tools; the plugin module exports name, inject = ['tools'], and apply(ctx, config). Reference: packages/todo/tool-todo/src/index.ts at 47f9438.
+    | parameters is a ParameterSchemaSpec: a per-key object { type, required, description, enum?, items?, properties?, additionalProperties? } that defineTool compiles to JSON Schema (packages/core/tools/src/schema.ts:545).
+    | output is { schema: ValueSchemaSpec, render(args, value) -> ContentBlock[] }; execute(args, exec) returns the value (Promise allowed) and a thrown error surfaces as the tool error.
+    | First-party process spawning goes through the ctx.terminals service (tool-terminal), not raw child_process, so B-05 stays open until the smoke test.
 
 b B-01 status=testing cynefin=complicated t_created=2026-07-19T01:19:39Z t_updated=2026-07-27T18:00:12Z "Surprise rate declines as C grows"
   vm:
@@ -212,7 +355,17 @@ b B-04 status=testing cynefin=complicated t_created=2026-07-19T01:20:01Z t_updat
   threshold:
     | higher first-pass rate across >= 5 occurrences
 
+b B-05 status=validated cynefin=complicated t_created=2026-08-17T10:50:14Z t_updated=2026-08-17T11:31:02Z "The dsh plugin runtime permits spawning the grove CLI as a child process"
+  vm:
+    | During the smoke-test work item, register a probe tool that execs `grove --version` inside the dsh runtime and observe the result.
+  threshold:
+    | Validated iff the probe returns the version string from inside a live dsh profile; invalidated_blocking iff the runtime denies spawning or PATH lookup.
+  result:
+    | Validated 2026-08-17: in a real headless dsh run (profile headless + dsh-grove layer, mock model), grove_status spawned the grove binary resolved from PATH and returned the full status report (session 55bae3b3, tool/result seq 20, isError=false); grove_next equally dispatched (seq 30).
+
 t T-01 status=open t_created=2026-07-19T01:14:31Z t_updated=2026-07-19T01:14:31Z "Scaling performance"
+
+t T-04 status=open t_created=2026-08-17T11:44:27Z t_updated=2026-08-17T11:44:38Z "Plugin toolchain restyle"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-07-27T14:44:48Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -278,6 +431,18 @@ y Y-08 status=active t_created=2026-08-10T20:12:04Z t_updated=2026-08-10T20:13:3
   tags: url-plain asset
   surface: packages/desktop/ui/css/fonts.css, packages/desktop/src-tauri/tauri.conf.json
 
+y Y-09 status=active t_created=2026-08-17T11:31:47Z t_updated=2026-08-17T11:59:56Z "A dsh agent runs keyless by overriding the agent-default-model row with a scripted mock provider, so tool plugins can be smoke-tested through the real Loader without API keys"
+  tags: dsh
+  surface: packages/dsh/test/fixtures/mock-grove-llm.mjs, packages/dsh/test/fixtures/headless-smoke.patch.yml
+
+y Y-10 status=active t_created=2026-08-17T11:31:56Z t_updated=2026-08-17T11:59:56Z "A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately"
+  tags: bundle
+  surface: packages/dsh/package.json, packages/dsh/cordis.patch.yml
+
+y Y-11 status=active t_created=2026-08-17T11:59:20Z t_updated=2026-08-17T11:59:28Z "bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it"
+  tags: dsh
+  surface: packages/dsh/package.json, packages/dsh/test/stubs/dsh-type-meta/package.json
+
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"
   surface: packages/grove/src/stats.jl, packages/grove/test/test_stats.jl
 
@@ -292,12 +457,18 @@ a A-05 status=present t_created=2026-07-19T01:13:44Z t_updated=2026-07-19T01:13:
 
 a A-06 status=present t_created=2026-08-04T19:44:12Z t_updated=2026-08-04T19:44:12Z "Release"
 
+a A-07 status=present t_created=2026-08-17T10:50:04Z t_updated=2026-08-17T10:50:04Z "Agent integrations"
+
 e D-10 supersedes D-08 t_created=2026-08-07T13:50:42Z
 e Q-01 asks W-06 t_created=2026-07-19T01:19:10Z
 e Q-02 asks W-09 t_created=2026-07-19T01:19:17Z
+e Q-05 asks W-103 t_created=2026-08-17T10:53:14Z
 e T-02 causes W-17 t_created=2026-07-28T02:40:29Z
 e T-02 causes W-85 t_created=2026-08-05T18:45:04Z
 e T-03 causes W-85 t_created=2026-08-05T18:45:33Z
+e T-04 causes W-107 t_created=2026-08-17T11:44:38Z
+e T-04 causes W-108 t_created=2026-08-17T11:44:38Z
+e T-04 causes W-109 t_created=2026-08-17T11:44:38Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z
@@ -308,6 +479,16 @@ e W-08 implements D-02 t_created=2026-07-19T11:20:42Z
 e W-09 blocks W-10 t_created=2026-07-19T01:21:34Z
 e W-09 implements D-03 t_created=2026-07-19T12:38:48Z
 e W-10 implements D-04 t_created=2026-07-20T03:30:33Z
+e W-103 blocks W-104 t_created=2026-08-17T10:53:14Z
+e W-103 blocks W-105 t_created=2026-08-17T10:53:14Z
+e W-103 implements D-12 t_created=2026-08-17T10:53:14Z
+e W-104 blocks W-106 t_created=2026-08-17T10:53:14Z
+e W-104 implements D-12 t_created=2026-08-17T10:53:14Z
+e W-105 blocks W-106 t_created=2026-08-17T10:53:14Z
+e W-105 implements D-12 t_created=2026-08-17T10:53:14Z
+e W-106 implements D-12 t_created=2026-08-17T10:53:14Z
+e W-107 blocks W-108 t_created=2026-08-17T11:44:06Z
+e W-108 blocks W-109 t_created=2026-08-17T11:44:06Z
 e W-14 blocks W-17 t_created=2026-07-27T23:47:28Z
 e W-17 blocks W-18 t_created=2026-07-27T23:47:41Z
 e W-17 blocks W-19 t_created=2026-07-27T23:47:55Z
@@ -334,6 +515,9 @@ e Y-01 distills D-01 t_created=2026-07-20T03:15:28Z
 e Y-03 distills D-04 t_created=2026-07-28T01:36:10Z
 e Y-04 distills Q-01 t_created=2026-08-04T18:34:40Z
 e Y-07 distills D-04 t_created=2026-08-08T23:08:01Z
+e Y-09 distills Q-05 t_created=2026-08-17T11:31:47Z
+e Y-10 distills D-12 t_created=2026-08-17T11:31:56Z
+e Y-11 distills D-13 t_created=2026-08-17T11:59:20Z
 
 :archive
 g G-01 status=verified fitness_kind=boolean t_created=2026-07-19T01:13:53Z t_updated=2026-08-10T18:45:36Z "Effectiveness report v1 on dogfood telemetry"
