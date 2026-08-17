@@ -73,3 +73,10 @@
   background: var(--wv-color-accent-bg);
   color: var(--wv-color-accent-strong);
 }
+
+.filter-tab-count-wide {
+  width: auto;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+}

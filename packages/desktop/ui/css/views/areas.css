@@ -46,6 +46,14 @@
   gap: var(--wv-space-1);
 }
 
+.area-chips .badge {
+  display: inline-block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .area-chip-mono {
   font-family: var(--wv-font-mono);
 }

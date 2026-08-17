@@ -28,6 +28,10 @@
 | ID | Outcome | Fitness function | Status |
 | --- | --- | --- | --- |
 | G-17 | Scaling and performance budget | count; current= target=2 | unverified |
+| G-21 | Graph kind filters keep every node attached | count; current=1 target=1 | verified |
+| G-22 | Area surface chips truncate with tooltip | count; current=1 target=1 | verified |
+| G-23 | Count badges switch style above ninety-nine | count; current=1 target=1 | verified |
+| G-24 | Area card headers wrap ids as units | count; current=1 target=1 | verified |
 
 ## Work items
 
@@ -35,6 +39,10 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed | ★ |
 | W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-17 | complicated | ⊥ | proposed |  |
+| W-100 | bug | Truncate area surface chips with ellipsis tooltip | G-22 | clear | ⊤ | done |  |
+| W-101 | bug | Widen count badges for totals above ninety-nine | G-23 | clear | ⊤ | done |  |
+| W-102 | bug | Keep area id tokens whole in card headers | G-24 | clear | ⊤ | done |  |
+| W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
 
@@ -87,8 +95,16 @@
 ```mermaid
 graph TD
   G_17["G-17: Scaling and performance budget"]:::goal
+  G_21["G-21: Graph kind filters keep every node attached"]:::goal
+  G_22["G-22: Area surface chips truncate with tooltip"]:::goal
+  G_23["G-23: Count badges switch style above ninety-nine"]:::goal
+  G_24["G-24: Area card headers wrap ids as units"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
+  W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
+  W_101["W-101: Widen count badges for totals above ninety-nine"]:::done
+  W_102["W-102: Keep area id tokens whole in card headers"]:::done
+  W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision

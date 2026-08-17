@@ -1,9 +1,29 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:3a91ae55ea96144e6b0071f465b50ea947ec7feef6b45edf9089229c1c35bfad
+# checksum: sha256:5bd843d1fd6e024fbaaf6b35a8352d1a9aaca4582b28825fe6a7ad72ccad3914
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
+
+g G-21 status=verified fitness_kind=count t_created=2026-08-17T06:05:26Z t_updated=2026-08-17T06:23:26Z "Graph kind filters keep every node attached"
+  area: A-05
+  fitness_target: 1
+  fitness_current: 1
+
+g G-22 status=verified fitness_kind=count t_created=2026-08-17T06:05:26Z t_updated=2026-08-17T06:32:15Z "Area surface chips truncate with tooltip"
+  area: A-05
+  fitness_target: 1
+  fitness_current: 1
+
+g G-23 status=verified fitness_kind=count t_created=2026-08-17T06:05:26Z t_updated=2026-08-17T06:37:59Z "Count badges switch style above ninety-nine"
+  area: A-05
+  fitness_target: 1
+  fitness_current: 1
+
+g G-24 status=verified fitness_kind=count t_created=2026-08-17T06:05:26Z t_updated=2026-08-17T06:43:35Z "Area card headers wrap ids as units"
+  area: A-05
+  fitness_target: 1
+  fitness_current: 1
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -25,6 +45,68 @@ w W-05 type=refactor status=proposed cynefin=complicated t_created=2026-07-19T01
     | lands after the benchmark suite (W-04) and before the 10k-node budget is enforced
   why:
     | Enabling work: clears the known scaling debt before the 10k-node budget applies
+
+w W-100 type=bug status=done cynefin=clear t_created=2026-08-17T06:14:00Z t_updated=2026-08-17T06:32:15Z "Truncate area surface chips with ellipsis tooltip"
+  goals: G-22
+  fitness: G-22=+1
+  surface: packages/desktop/ui/views/areas.hbs, packages/desktop/ui/css/views/areas.css
+  ac:
+    | A surface chip longer than the card width ends with a text-overflow ellipsis instead of being clipped.
+    | A truncated chip exposes the full path on hover via a title tooltip.
+    | Tag chips receive the same truncation and tooltip treatment.
+  repro:
+    | On the Areas view, surface chips with long paths overflow the card and are clipped mid-string with no ellipsis and no way to read the full value (merlinguild area cards, paths under packages/webview/src/modules/swap/).
+  evidence_strategy:
+    | Desktop render test asserting the title attribute on surface and tag chips; before and after screenshots of a merlinguild area card.
+  evidence:
+    | cargo test -p grove-desktop --test views green: 77 passed, 0 failed, including new areas_fragment_chips_carry_full_value_tooltip. Live smoke_render of the merlinguild project: all 44 surface chips carry the full path in the title attribute (e.g. packages/webview/src/modules/swap/services/bundle-chunker.ts). Ellipsis truncation is applied by the new .area-chips .badge rule (max-width: 100%, overflow: hidden, text-overflow: ellipsis) in ui/css/views/areas.css; visual screenshot not produced here (no running app instance), markup and style verified at render level.
+
+w W-101 type=bug status=done cynefin=clear t_created=2026-08-17T06:15:07Z t_updated=2026-08-17T06:37:59Z "Widen count badges for totals above ninety-nine"
+  goals: G-23
+  fitness: G-23=+1
+  surface: packages/desktop/ui/css/components/filter-tabs.css, packages/desktop/ui/css/components/badge.css, packages/desktop/ui/views/partials/filter-tabs.hbs, packages/desktop/src-tauri/src/templates.rs
+  ac:
+    | A filter tab count above 99 renders in a pill-style badge that fits all digits without clipping.
+    | Counts of 99 or below keep the existing circle style.
+    | The side-rail goals badge follows the same threshold and styles.
+  repro:
+    | Count badges are fixed-size circles (18 px filter tab counts, 16 px side-rail goals badge), so a three-digit count such as the merlinguild graph All tab value 235 renders clipped inside the circle.
+  evidence_strategy:
+    | Desktop render tests with a three-digit count fixture for both the filter tabs partial and the goals badge markup; screenshot of the merlinguild graph filter bar.
+  evidence:
+    | cargo test -p grove-desktop (lib + 4 integration targets) green: 133 passed, 0 failed, including filter_tabs_partial_widens_count_badge_above_ninety_nine (235 wide, 99 circle) and count_badge_wide_styles_and_goals_badge_wiring. Live smoke_render on merlinguild: graph All tab renders <span class="filter-tab-count filter-tab-count-wide">235</span>, two-digit counts keep the circle class. Goals badge toggle (badge-count-wide above 99 in main.js) asserted by wiring test; not exercised in a running app here (full cargo build is currently blocked by the running grove-desktop.exe locking the binary).
+
+w W-102 type=bug status=done cynefin=clear t_created=2026-08-17T06:16:17Z t_updated=2026-08-17T06:43:35Z "Keep area id tokens whole in card headers"
+  goals: G-24
+  fitness: G-24=+1
+  surface: packages/desktop/ui/views/areas.hbs, packages/desktop/ui/css/views/areas.css
+  ac:
+    | The bracketed area id never splits across lines; it wraps to the next line as a single unit.
+    | A visible gap separates the title and id group from the status badge at every card width.
+    | Long titles still wrap or truncate without pushing the badge out of the card.
+  repro:
+    | On the Areas view the bracketed area id breaks character by character across lines ([A- then 22]) when the card title wraps, and the status badge sits flush against the id with no gap (merlinguild cards A-22 and A-02).
+  evidence_strategy:
+    | Visual check of narrow area cards at the 340 px grid minimum with before and after screenshots of the A-22 and A-02 cards.
+  evidence:
+    | cargo test -p grove-desktop green after the app was closed (binary relinked): 134 passed, 0 failed, including areas_fragment_card_header_keeps_id_token_whole (gap-8 on card-title, text-nowrap on the id span, both utilities present in utilities.css). Live smoke_render on merlinguild: area card headers render with class "card-title flex-between gap-8" and the id token spans carry text-nowrap. The [A-NN] break point was the hyphen (UAX #14 break after U+002D); nowrap removes it so the token wraps as a unit.
+
+w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
+  goals: G-21
+  fitness: G-21=+1
+  surface: packages/desktop/src-tauri/src/views/graph.rs, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | In the Questions kind view of a merlinguild-shaped fixture every kept question node has at least one incident edge, real or virtual.
+    | In the Themes kind view every kept theme node is attached to the Project root via a virtual contains edge.
+    | The All view node and edge sets are unchanged by the fix, with no duplicate contains edges.
+    | Regression tests cover kind filters for questions, assumptions, decisions, and themes.
+  repro:
+    | Kind-filtered graph views detach nodes whose edges all lead to filtered-out kinds: on the merlinguild lock the Questions view floats 15 of 27 questions (each floating question holds an asks edge to a work item) and the Themes view floats all 5 membered themes with no Project root node at all.
+    | Root cause: full_graph assigns the virtual contains fallback by incidence in the unfiltered graph, and model_filtered keeps only the seed kind plus virtual-containment ancestors, so a node that is not orphaned globally ends up with zero visible edges.
+  evidence_strategy:
+    | cargo test -p grove-desktop --test views green including the new graph filter regression tests; manual render of the merlinguild project Questions and Themes views shows zero floating nodes.
+  evidence:
+    | cargo test -p grove-desktop green: 130 passed, 0 failed, including new regression tests graph_model_kind_filter_attaches_view_orphans_to_root (q/b/d/t filters) and graph_model_all_view_adds_no_duplicate_contains_edges. Live check on the merlinguild lock via a temporary example binary (removed after use): zero floating nodes in every kind filter; questions 28 nodes/27 edges, themes 6/5, decisions 16/15, all 236/390, root present in every non-empty view.
 
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:

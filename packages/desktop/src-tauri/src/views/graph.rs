@@ -305,19 +305,6 @@ pub fn model_filtered(
             n
         })
         .collect();
-    let has_root = kept.contains(ROOT_ID);
-    if has_root {
-        final_nodes.push(json!({
-            "id": ROOT_ID,
-            "kind": "root",
-            "status": "",
-            "title": root_title,
-            "wtype": "",
-            "archived": false,
-            "virtual": true,
-            "cluster": ROOT_CLUSTER,
-        }));
-    }
     let mut edge_count = 0;
     let mut virtual_edge_count = 0;
     let mut final_edges: Vec<Value> = Vec::new();
@@ -333,6 +320,36 @@ pub fn model_filtered(
             edge_count += 1;
         }
         final_edges.push(e.clone());
+    }
+
+    let mut incident: BTreeSet<&str> = BTreeSet::new();
+    for e in &final_edges {
+        incident.insert(e["from"].as_str().unwrap_or_default());
+        incident.insert(e["to"].as_str().unwrap_or_default());
+    }
+    let orphans: Vec<String> = final_nodes
+        .iter()
+        .filter_map(|n| n["id"].as_str())
+        .filter(|id| !incident.contains(*id))
+        .map(str::to_string)
+        .collect();
+    let mut has_root = kept.contains(ROOT_ID);
+    for id in &orphans {
+        final_edges.push(contains(ROOT_ID, id));
+        virtual_edge_count += 1;
+        has_root = true;
+    }
+    if has_root {
+        final_nodes.push(json!({
+            "id": ROOT_ID,
+            "kind": "root",
+            "status": "",
+            "title": root_title,
+            "wtype": "",
+            "archived": false,
+            "virtual": true,
+            "cluster": ROOT_CLUSTER,
+        }));
     }
 
     let mut filters: Vec<Value> = vec![json!({

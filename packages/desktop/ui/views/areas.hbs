@@ -11,8 +11,8 @@
     <div class="areas-grid">
       {{#each areas}}
       <div class="card area-card" id="area-{{id}}">
-        <div class="card-title flex-between">
-          <span>{{title}} <span class="text-mono text-muted ml-8 font-light">[{{id}}]</span></span>
+        <div class="card-title flex-between gap-8">
+          <span><span class="mr-8">{{title}}</span> <span class="text-mono text-muted font-light text-nowrap">[{{id}}]</span></span>
           {{> badge text=status class="capitalize" variant=status_variant}}
         </div>
 
@@ -74,7 +74,7 @@
             <span class="area-section-label">Surface</span>
           </div>
           <div class="area-chips">
-            {{#each surface}}<span class="badge badge-neutral area-chip-mono">{{this}}</span>{{/each}}
+            {{#each surface}}<span class="badge badge-neutral area-chip-mono" title="{{this}}">{{this}}</span>{{/each}}
           </div>
         </div>
         {{/if}}
@@ -85,7 +85,7 @@
             <span class="area-section-label">Tags</span>
           </div>
           <div class="area-chips">
-            {{#each tags}}<span class="badge badge-neutral">{{this}}</span>{{/each}}
+            {{#each tags}}<span class="badge badge-neutral" title="{{this}}">{{this}}</span>{{/each}}
           </div>
         </div>
         {{/if}}
