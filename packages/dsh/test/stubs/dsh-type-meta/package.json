@@ -1,0 +1,6 @@
+{
+  "name": "@deepseek-ai/dsh-type-meta",
+  "version": "0.0.1-rc.1",
+  "type": "module",
+  "main": "index.js"
+}

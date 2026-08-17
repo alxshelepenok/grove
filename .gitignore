@@ -1,10 +1,26 @@
-context.txt
-.grove/locks/
-/packages/grove/coverage/
+# julia
 *.jl.*.cov
 *.jl.mem
 Manifest*.toml
 LocalPreferences.toml
 JuliaLocalPreferences.toml
-spikes/W-25/sysimage/
-/target/
+/packages/grove/coverage/
+
+# storage
+storage
+
+# modules
+node_modules
+
+# build
+.astro
+target
+
+# notebooklm
+context.txt
+
+# grove
+.grove/locks/
+
+# lockfiles
+.osv.lock

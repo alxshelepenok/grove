@@ -1,0 +1,8 @@
+- insert:
+    - id: mock-grove-llm
+      name: 'dsh-grove/test/fixtures/mock-grove-llm.mjs'
+
+- id: agent-default-model
+  config:
+    provider: mock
+    model: mock-grove
