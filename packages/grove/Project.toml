@@ -1,6 +1,6 @@
 name = "grove"
 uuid = "8f4e2a1b-6c3d-4e5f-9a0b-1c2d3e4f5a6b"
-version = "0.1.5"
+version = "0.1.6"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
