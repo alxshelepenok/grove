@@ -433,6 +433,100 @@ fn areas_fragment_renders_cards_health_and_links() {
     assert!(!html.contains('\u{2014}'));
 }
 
+const AREAS_CHIP_LOCK: &str = r#"@grove 1
+# AUTO-GENERATED. Do not edit. Use `grove` CLI.
+# checksum: sha256:fixture
+a A-01 status=present t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Deep scope"
+  surface: packages/webview/src/modules/swap/services/bundle-chunk-builder.ts
+
+g G-01 status=unverified fitness_kind=count t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Goal"
+  area: A-01
+
+w W-01 type=feature status=proposed cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Tagged work"
+  goals: G-01
+  tags: normalization
+"#;
+
+#[test]
+fn areas_fragment_chips_carry_full_value_tooltip() {
+    let st = parse_fixture(AREAS_CHIP_LOCK).expect("areas chip fixture parses");
+    let html = templates().render("areas", &areas::model(&st)).unwrap();
+    assert!(
+        html.contains(
+            r#"<span class="badge badge-neutral area-chip-mono" title="packages/webview/src/modules/swap/services/bundle-chunk-builder.ts">packages/webview/src/modules/swap/services/bundle-chunk-builder.ts</span>"#
+        ),
+        "surface chip exposes the full path via a title tooltip"
+    );
+    assert!(
+        html.contains(r#"<span class="badge badge-neutral" title="normalization">normalization</span>"#),
+        "tag chip exposes the full value via a title tooltip"
+    );
+}
+
+#[test]
+fn areas_fragment_card_header_keeps_id_token_whole() {
+    let st = parse_fixture(AREAS_LOCK).expect("areas fixture parses");
+    let html = templates().render("areas", &areas::model(&st)).unwrap();
+    assert!(
+        html.contains(r#"<div class="card-title flex-between gap-8">"#),
+        "card header carries an explicit gap between title and badge"
+    );
+    assert!(
+        html.contains(
+            r#"<span class="text-mono text-muted font-light text-nowrap">[A-01]</span>"#
+        ),
+        "area id token marked nowrap so it never splits across lines"
+    );
+    let utilities = std::fs::read_to_string(ui_dir().join("css").join("utilities.css")).unwrap();
+    assert!(utilities.contains(".text-nowrap"), "nowrap utility present");
+    assert!(utilities.contains(".gap-8"), "8 px gap utility present");
+}
+
+#[test]
+fn filter_tabs_partial_widens_count_badge_above_ninety_nine() {
+    let html = templates()
+        .render(
+            "filter-tabs",
+            &serde_json::json!({
+                "tabs": [
+                    {"status": "all", "label": "All", "count": 235, "active": true},
+                    {"status": "t", "label": "Themes (T)", "count": 99, "active": false},
+                ],
+            }),
+        )
+        .unwrap();
+    assert!(
+        html.contains(r#"<span class="filter-tab-count filter-tab-count-wide">235</span>"#),
+        "count above 99 switches to the wide pill style"
+    );
+    assert!(
+        html.contains(r#"<span class="filter-tab-count">99</span>"#),
+        "count of 99 keeps the circle style"
+    );
+}
+
+#[test]
+fn count_badge_wide_styles_and_goals_badge_wiring() {
+    let ui = ui_dir();
+    let filter_css =
+        std::fs::read_to_string(ui.join("css").join("components").join("filter-tabs.css")).unwrap();
+    assert!(
+        filter_css.contains(".filter-tab-count-wide"),
+        "wide filter tab count style present"
+    );
+    let badge_css =
+        std::fs::read_to_string(ui.join("css").join("components").join("badge.css")).unwrap();
+    assert!(
+        badge_css.contains(".badge-count-wide"),
+        "wide side-rail count style present"
+    );
+    let main_js = std::fs::read_to_string(ui.join("js").join("main.js")).unwrap();
+    assert!(
+        main_js.contains(r#"badge.classList.toggle("badge-count-wide", n > 99)"#),
+        "goals badge toggles the wide style above 99"
+    );
+}
+
 #[test]
 fn areas_fragment_empty_state() {
     let st = parse_fixture(
@@ -1154,6 +1248,86 @@ fn graph_model_edgeless_qbd_attach_to_root() {
             "{linked} has a real edge and must not attach to Project"
         );
     }
+}
+
+const GRAPH_VIEW_ORPHAN_LOCK: &str = r#"@grove 1
+# AUTO-GENERATED. Do not edit. Use `grove` CLI.
+# checksum: sha256:fixture
+a A-01 status=present t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Area"
+
+g G-01 status=unverified fitness_kind=count t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Goal"
+  area: A-01
+
+w W-01 type=feature status=proposed cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Themed work"
+  goals: G-01
+  theme: T-01
+
+t T-01 status=open t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Membered theme"
+
+q Q-01 status=open cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Asking question"
+
+b B-01 status=proposed cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Testing bet"
+
+d D-01 status=accepted t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Implemented decision"
+
+e Q-01 asks W-01 t_created=2026-07-27T00:00:00Z
+e B-01 tests Q-01 t_created=2026-07-27T00:00:00Z
+e W-01 implements D-01 t_created=2026-07-27T00:00:00Z
+"#;
+
+fn incident_ids(m: &serde_json::Value) -> std::collections::BTreeSet<String> {
+    m["graph"]["edges"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|e| {
+            [
+                e["from"].as_str().unwrap().to_string(),
+                e["to"].as_str().unwrap().to_string(),
+            ]
+        })
+        .collect()
+}
+
+#[test]
+fn graph_model_kind_filter_attaches_view_orphans_to_root() {
+    let st = parse_fixture(GRAPH_VIEW_ORPHAN_LOCK).expect("fixture parses");
+    for (kind, id) in [("q", "Q-01"), ("b", "B-01"), ("d", "D-01"), ("t", "T-01")] {
+        let m = graph::model_filtered(&st, false, kind, "", graph::ROOT_TITLE);
+        let nodes = m["graph"]["nodes"].as_array().unwrap();
+        assert!(
+            nodes.iter().any(|n| n["id"] == "Project"),
+            "kind={kind}: root node present"
+        );
+        let contains = contains_edges(&m);
+        assert!(
+            contains.contains(&("Project".to_string(), id.to_string())),
+            "kind={kind}: missing contains edge Project -> {id}"
+        );
+        let incident = incident_ids(&m);
+        for n in nodes {
+            let node_id = n["id"].as_str().unwrap();
+            assert!(
+                incident.contains(node_id),
+                "kind={kind}: {node_id} has no visible incident edge"
+            );
+        }
+    }
+}
+
+#[test]
+fn graph_model_all_view_adds_no_duplicate_contains_edges() {
+    let st = parse_fixture(GRAPH_VIEW_ORPHAN_LOCK).expect("fixture parses");
+    let m = graph::model(&st, false, graph::ROOT_TITLE);
+    let contains = contains_edges(&m);
+    let mut unique = contains.clone();
+    unique.sort();
+    unique.dedup();
+    assert_eq!(
+        contains.len(),
+        unique.len(),
+        "all view gains no duplicate contains edges from the view-relative fallback"
+    );
 }
 
 fn graph_clusters(m: &serde_json::Value) -> std::collections::BTreeMap<String, String> {

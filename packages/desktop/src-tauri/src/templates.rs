@@ -5,6 +5,9 @@ use serde_json::json;
 use std::path::{Path, PathBuf};
 
 handlebars_helper!(eq: |a: Json, b: Json| a == b);
+handlebars_helper!(gt: |a: Json, b: Json| {
+    a.as_f64().zip(b.as_f64()).is_some_and(|(x, y)| x > y)
+});
 handlebars_helper!(json: |v: Json| serde_json::to_string(v)
     .unwrap_or_default()
     .replace("</", "<\\/"));
@@ -131,6 +134,7 @@ impl Templates {
     pub fn load(ui_dir: &Path) -> Result<Templates, String> {
         let mut reg = Handlebars::new();
         reg.register_helper("eq", Box::new(eq));
+        reg.register_helper("gt", Box::new(gt));
         reg.register_helper("emptyCtx", Box::new(EmptyCtx));
         reg.register_helper("json", Box::new(json));
         reg.register_helper(

@@ -20,6 +20,13 @@
   background: var(--wv-color-count-tag-bg);
 }
 
+.badge-count-wide {
+  width: auto;
+  min-width: 16px;
+  padding-right: 4px;
+  padding-left: 4px;
+}
+
 .badge-neutral {
   color: var(--wv-color-neutral-tag-text);
   background: var(--wv-color-neutral-tag-bg);

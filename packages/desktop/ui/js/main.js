@@ -87,6 +87,7 @@ const refreshStatusMetrics = async () => {
     const n = Number(metrics?.g) || 0;
     badge.textContent = String(n);
     badge.hidden = !n;
+    badge.classList.toggle("badge-count-wide", n > 99);
   }
 };
 
