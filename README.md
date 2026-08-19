@@ -11,6 +11,8 @@
 
 ***G**raph-driven **R**easoning **O**ver **V**erified **E**vidence. A formal workflow protocol that keeps AI coding agents on track through machine-enforced invariants, verified evidence, and structured context. Designed to keep deep, long-running projects coherent across sessions, agents, and months.*
 
+> **We no longer just write code. We hold the reins of a train running at 20 commits a day, making sure it doesn't derail.**
+
 <p align="center">
   <a href="https://notebook.google.com/notebook/434f3efc-c199-4b7e-ac61-92fbd85d655e"><img src="https://img.shields.io/badge/Notebook-q/a-8A2BE2?style=for-the-badge" alt="Notebook" /></a>
   <a href="docs/install.md#verify-before-you-run"><img src="https://img.shields.io/badge/signing-RSA--PSS-8A2BE2?style=for-the-badge" alt="Release signing" /></a>
@@ -19,11 +21,18 @@
   <a href="packages/grove/conformance"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Falxshelepenok%2Fgrove%2Fbadges%2F.github%2Fbadges%2Fconformance.json&style=for-the-badge" alt="Conformance" /></a>
 </p>
 
+**What this gives you:**
+- **Atomic progress:** every task is mechanically proven, not just claimed.
+- **Hierarchy over compression:** context is strictly structured, never lossily summarized.
+- **Absolute reproducibility:** every action is recorded, so any step, decision, or assumption can be replayed and retraced.
+- **Continuity across agents:** if an agent stops mid-goal, another agent on another client or model resumes from verified state.
+- **Total ownership:** every goal, decision, task, question, and assumption is stored in a persistent historical graph that belongs entirely to you.
+
 Grove enforces rules as deterministic invariants stored in a single checksummed lockfile. The agent cannot declare work done without falsifiable evidence, start unready tasks, or hallucinate progress.
 
 Instead of lossy prompt compression or summarization, Grove structures project state into a typed reasoning graph with machine-checkable edges. It routes exactly the execution packet needed for the current step, and nothing more.
 
-Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, Cline, GitHub Copilot, and any other agent. Grove includes a CLI, a built-in MCP server, and a drop-in agent skill bundle so you can integrate it into your workspace immediately.
+Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, Cline, GitHub Copilot, and any other agent. **Grove includes a CLI, a built-in MCP server, and a drop-in agent skill bundle** so you can integrate it into your workspace immediately.
 
 > [!IMPORTANT]
 > A note on the desktop app shown below. It exists to make the graph, the evidence, and the health of a project visible at a glance, but it is still experimental and has not been tested on macOS yet. The CLI and the MCP server are the stable, tested interfaces. The UI is implemented without any JavaScript framework, mostly plain HTML, CSS, and Tauri, which keeps it fast, and the graph is rendered with WebGL.
@@ -31,7 +40,7 @@ Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, Cline, GitHub Copil
 <p align="center">
   <picture>
     <source type="image/webp" srcset=".github/assets/overview.webp" />
-    <img src=".github/assets/overview.png" alt="Grove" />
+    <img src=".github/assets/overview.png" alt="Overview" />
   </picture>
 </p>
 
@@ -125,6 +134,35 @@ The obvious response to context amnesia is more tooling: summarization, compacti
 As a project evolves, its work is continuously organized into areas, goals, questions, assumptions, decisions, and executable work items. This hierarchy gives the agent a way to identify the context relevant to the current step instead of repeatedly carrying the entire project history into its context window.
 
 The result is not just better continuity; it also reduces token usage. The agent no longer loads unrelated project context simply to recover where it is and why the current task exists.
+
+## Map the entire codebase in a single prompt
+
+What happens when you point a frontier model at a raw codebase with Grove attached?
+
+Without a protocol, an agent skims the files, hallucinates a quick summary, and loses the plot after a few steps. With Grove, it maps the territory. In a real-world test on a complex codebase, a single prompt initiated a 5-hour autonomous Discovery session.
+
+The agent burned through its context window limit, but the result was a fully populated reasoning graph: **44 Areas, 47 Goals, and 89 Work items** targeting test coverage gaps and logic bugs. It didn't just dump a flat to-do list; it formally declared its open unknowns as Questions and grouped related efforts into Themes.
+
+Here is the exact prompt used to bootstrap the project:
+
+> Load the Grove skill and connect to the MCP server. Study the skill fully to understand the protocol constraints.
+>
+> Your objective is to run a complete Discovery phase across the entire codebase. Do not write implementation code yet, your job is project analysis and graph construction.
+>
+> 1. Break the project down into Areas. Note that a single package may contain multiple logical areas.
+> 2. Iterate through each Area and create Goals to address missing test coverage and explicit logic bugs.
+> 3. For each Goal, create Work items strictly formatted according to the Grove protocol.
+> 4. Group related work into Themes.
+> 5. Declare open unknowns as Questions and formalize architectural choices as Decisions where necessary.
+
+Because Grove enforces a Definition of Ready (DoR), the agent couldn't fake progress. Over the next day, the agent systematically executed the delivery phase, turning **75 tasks to Done**. The remaining tasks correctly stalled in `proposed` or `ready` states, waiting for human answers to the blocking Questions the agent had raised.
+
+<p align="center">
+  <picture>
+    <source type="image/webp" srcset=".github/assets/demo.webp" />
+    <img src=".github/assets/demo.png" alt="" />
+  </picture>
+</p>
 
 ## One project state, multiple interfaces
 
@@ -242,6 +280,24 @@ For parallel worktrees, `grove init --id-stride/--id-offset` allocates disjoint 
 On a single machine, concurrent mutations are protected by an exclusive `flock`, while claimed work is protected by session tokens.
 
 Multi-machine writes to a single lockfile are out of scope by design. Remote state transitions must be routed through a single canonical writer, such as a primary CI agent.
+
+## Executable history, not just an audit trail
+
+Git versions code. Grove versions the reasoning that produced it. Most agent harnesses and SDD (Spec-Driven Development) tools lose the "why" the moment a task is closed. Grove records every action into a persistent, executable journal, giving you something unprecedented: a full undo and replay at the level of project decisions.
+
+Every mutation appends one JSON line to `.grove/journal.log` holding the command, the UTC timestamp, the session token that wrote it, and the exact inverse of the change.
+
+```json
+{"v":1,"ts":"2026-07-19T12:35:19Z","cmd":"set","inv":{"op":"set_status_plain","id":"B-01","old_status":"testing"},"session":"host:0123456789abcdef"}
+```
+
+Because every record carries its own inverse, the journal is executable. grove undo replays these inverses in reverse order, restoring the exact prior state down to goal statuses, fitness deltas, and session claims. Git rolls back the implementation; Grove rolls back the hypothesis, the assumption status, and the goal fitness that justified it.
+
+This unlocks true project replay. You can take the state at t=0 and replay the journal to see exactly how the project arrived at its current shape. It acts as a git blame for decisions: instead of just seeing who wrote a line of code, you retrace what assumption was validated, what evidence forced a pivot, and why a specific path was chosen.
+
+The journal also captures the agent's invisible work. When the Definition of Ready (DoR) guard rejects a transition, the journal records the exact conjuncts that failed. Audit records such as gate runs, rejections, and undos are never inverted and never truncated. This captures what the agent attempted, not only what it changed.
+
+This persistent trail powers grove log and grove stats: reconstructing cycle times, DoR first-pass rates, and content health at any point in history. Because it is written in plain JSON lines, it requires no special permissions to read, serving as the raw material for building your own metrics or conducting post-mortem analyses of agent failure patterns.
 
 ## Continue when the agent disappears
 
