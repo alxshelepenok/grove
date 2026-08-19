@@ -11,8 +11,6 @@
 
 ***G**raph-driven **R**easoning **O**ver **V**erified **E**vidence. A formal workflow protocol that keeps AI coding agents on track through machine-enforced invariants, verified evidence, and structured context. Designed to keep deep, long-running projects coherent across sessions, agents, and months.*
 
-> **We no longer just write code. We hold the reins of a train running at 20 commits a day, making sure it doesn't derail.**
-
 <p align="center">
   <a href="https://notebook.google.com/notebook/434f3efc-c199-4b7e-ac61-92fbd85d655e"><img src="https://img.shields.io/badge/Notebook-q/a-8A2BE2?style=for-the-badge" alt="Notebook" /></a>
   <a href="docs/install.md#verify-before-you-run"><img src="https://img.shields.io/badge/signing-RSA--PSS-8A2BE2?style=for-the-badge" alt="Release signing" /></a>
@@ -20,6 +18,8 @@
   <a href="https://github.com/alxshelepenok/grove/actions/workflows/rust-tests.yml"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Falxshelepenok%2Fgrove%2Fbadges%2F.github%2Fbadges%2Ftests.json&style=for-the-badge" alt="Tests" /></a>
   <a href="packages/grove/conformance"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Falxshelepenok%2Fgrove%2Fbadges%2F.github%2Fbadges%2Fconformance.json&style=for-the-badge" alt="Conformance" /></a>
 </p>
+
+> **We no longer just write code. We hold the reins of a train running at 20 commits a day, making sure it doesn't derail.**
 
 **What this gives you:**
 - **Atomic progress:** every task is mechanically proven, not just claimed.
