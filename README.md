@@ -19,7 +19,8 @@
   <a href="packages/grove/conformance"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Falxshelepenok%2Fgrove%2Fbadges%2F.github%2Fbadges%2Fconformance.json&style=for-the-badge" alt="Conformance" /></a>
 </p>
 
-> **We no longer just write code. We hold the reins of a train running at 20 commits a day, making sure it doesn't derail.**
+> **We no longer just write code.**   
+> **We hold the reins of a train running at 20 commits a day, making sure it doesn't derail.**
 
 **What this gives you:**
 - **Atomic progress:** every task is mechanically proven, not just claimed.
