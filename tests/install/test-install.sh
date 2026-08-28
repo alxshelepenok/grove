@@ -185,6 +185,29 @@ report $? "break-glass does not touch anti-rollback state"
 bash install.sh --self-test > "$work/out9" 2>&1
 report $? "install.sh --self-test passes"
 
+if [ "$os_part" = macos ]; then
+  mkdir -p "$work/dt2/ui/views"
+  printf '#!/usr/bin/env bash\necho fake grove\n' > "$work/dt2/grove"
+  printf '#!/usr/bin/env bash\necho fake grove-desktop\n' > "$work/dt2/grove-desktop"
+  printf 'placeholder\n' > "$work/dt2/ui/views/placeholder.hbs"
+  printf 'fake png\n' > "$work/dt2/icon.png"
+  tar -czf "$server/grove-v0.3.0-$target.tar.gz" -C "$work/dt2" grove
+  tar -czf "$server/grove-desktop-v0.3.0-$target.tar.gz" -C "$work/dt2" grove-desktop icon.png ui
+  (
+    cd "$server"
+    sha256sum *.tar.gz > SHA256SUMS 2>/dev/null || {
+      for f in *.tar.gz; do printf '%s  %s\n' "$(shasum -a 256 "$f" | cut -d' ' -f1)" "$f"; done > SHA256SUMS
+    }
+  )
+  build_manifest "$(date -u +%s)" /nonexistent
+  run_install 10 "" > "$work/out10" 2>&1
+  report $? "icns-less archive installs"
+  [ -x "$work/home10/Applications/Grove.app/Contents/MacOS/launcher" ]
+  report $? "icns-less archive still yields a launcher"
+  [ ! -e "$work/home10/Applications/Grove.app/Contents/Resources" ] && grep -q "keeps the default icon" "$work/out10"
+  report $? "icns-less archive skips the icon with a notice"
+fi
+
 if [ "$fail" -gt 0 ]; then
   echo "=== captured installer outputs ==="
   for f in "$work"/out*; do

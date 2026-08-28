@@ -214,6 +214,8 @@ EOF
 <dict>
   <key>CFBundleExecutable</key>
   <string>launcher</string>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon</string>
   <key>CFBundleIdentifier</key>
   <string>com.grove.desktop</string>
   <key>CFBundleName</key>
@@ -223,11 +225,18 @@ EOF
 </dict>
 </plist>
 EOF
+      if [ -f "$prefix/grove-desktop/icon.icns" ]; then
+        mkdir -p "$appdir/Contents/Resources"
+        cp "$prefix/grove-desktop/icon.icns" "$appdir/Contents/Resources/AppIcon.icns"
+      else
+        info "desktop archive has no icon.icns; $appdir keeps the default icon"
+      fi
       cat > "$appdir/Contents/MacOS/launcher" <<EOF
 #!/bin/sh
 exec "$prefix/grove-desktop/grove-desktop" "\$@"
 EOF
       chmod +x "$appdir/Contents/MacOS/launcher"
+      touch "$appdir"
       info "created launcher app $appdir"
       ;;
   esac
