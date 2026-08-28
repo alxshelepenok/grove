@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 23 | validated B 1 · answered Q 2 · accepted D 10 · active Discovery 10 |
+| C (content) | 25 | validated B 1 · answered Q 3 · accepted D 10 · active Discovery 11 |
 | V (uncertainty) | 10 | open Q 2 · pending B 5 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
@@ -71,6 +71,7 @@
 | D-13 | Bun toolchain and project code style for the dsh plugin | accepted |  |
 | D-14 | macOS launcher icon ships as an icns in the portable archive | accepted |  |
 | D-15 | macOS PATH lines land in zsh startup files created on demand | accepted |  |
+| D-16 | Neo4j integrates as a read-only Cypher projection of state.lock | proposed |  |
 
 ## Open questions
 
@@ -80,6 +81,7 @@
 | Q-04 | What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)? | complicated |  | open |
 | Q-05 | What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1? | complicated | W-103 | answered |
 | Q-06 | How to verify macOS installer fixes without a local Mac | complicated | W-110 | answered |
+| Q-07 | How Neo4j integrates into Grove: role, pattern, and boundaries | complicated |  | answered |
 
 ## Assumptions
 
@@ -115,6 +117,7 @@
 | Y-10 | A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately | bundle | active |
 | Y-11 | bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it | dsh | active |
 | Y-12 | Per-OS installer branches run under a uname shim and the CI OS matrix | uname shim | active |
+| Y-13 | Neo4j is a read-only projection of state.lock, never its storage backend | Neo4j | active |
 
 ## Dependency graph
 
@@ -154,10 +157,12 @@ graph TD
   D_13["D-13: Bun toolchain and project code style for the dsh plugin"]:::decision
   D_14["D-14: macOS launcher icon ships as an icns in the portable archive"]:::decision
   D_15["D-15: macOS PATH lines land in zsh startup files created on demand"]:::decision
+  D_16["D-16: Neo4j integrates as a read-only Cypher projection of state.lock"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_05["Q-05: What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1?"]:::question
   Q_06["Q-06: How to verify macOS installer fixes without a local Mac"]:::question
+  Q_07["Q-07: How Neo4j integrates into Grove: role, pattern, and boundaries"]:::question
   B_01["B-01: Surprise rate declines as C grows"]:::assumption
   B_02["B-02: Rework proxies are lower on covered surfaces than uncovered"]:::assumption
   B_03["B-03: Distill yield stays above noise at archive gates"]:::assumption
@@ -178,6 +183,7 @@ graph TD
   Y_10["Y-10: A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately"]:::discovery
   Y_11["Y-11: bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it"]:::discovery
   Y_12["Y-12: Per-OS installer branches run under a uname shim and the CI OS matrix"]:::discovery
+  Y_13["Y-13: Neo4j is a read-only projection of state.lock, never its storage backend"]:::discovery
   A_01["A-01: Evals"]:::area
   A_02["A-02: API"]:::area
   A_03["A-03: Rust core"]:::area
@@ -252,6 +258,8 @@ graph TD
   Y_10 -->|distills| D_12
   Y_11 -->|distills| D_13
   Y_12 -->|distills| Q_06
+  Y_13 -->|distills| D_16
+  Y_13 -->|distills| Q_07
   class W_04 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff

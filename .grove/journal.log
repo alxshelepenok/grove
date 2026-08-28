@@ -2198,3 +2198,32 @@
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-08-28T00:38:34Z","inv":{"line":"Cross-platform install scripts exercise every per-OS branch locally via a uname shim that reports the foreign OS, while native behaviour stays covered by the CI OS matrix; a native-only run never proves foreign branches.","id":"Y-09","field":"invariant","op":"field_insert_line","index":1}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-08-28T00:38:34Z","inv":{"id":"Y-12","field":"invariant","op":"field_pop_last"}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-08-28T00:38:34Z","inv":{"old_status":"proposed","id":"Y-12","op":"set_status_plain"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"add","ts":"2026-08-28T21:48:57Z","inv":{"id":"Q-07","op":"rm_node"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:49:17Z","inv":{"id":"Q-07","field":"exit","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:49:27Z","inv":{"id":"Q-07","field":"outcome","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:49:27Z","inv":{"id":"Q-07","field":"outcome","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:49:27Z","inv":{"id":"Q-07","field":"outcome","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:49:27Z","inv":{"id":"Q-07","field":"outcome","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:49:34Z","inv":{"id":"Q-07","field":"outcome","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:49:34Z","inv":{"id":"Q-07","field":"outcome","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:49:34Z","inv":{"id":"Q-07","field":"outcome","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"set","ts":"2026-08-28T21:49:47Z","inv":{"old_status":"open","id":"Q-07","op":"set_status_plain"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"add","ts":"2026-08-28T21:49:47Z","inv":{"id":"D-16","op":"rm_node"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:49:54Z","inv":{"id":"D-16","field":"context","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:49:54Z","inv":{"id":"D-16","field":"options","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:49:54Z","inv":{"id":"D-16","field":"options","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:49:54Z","inv":{"id":"D-16","field":"options","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:50:01Z","inv":{"id":"D-16","field":"decision","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:50:01Z","inv":{"id":"D-16","field":"consequences","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:50:01Z","inv":{"id":"D-16","field":"consequences","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:50:01Z","inv":{"id":"D-16","field":"consequences","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:50:01Z","inv":{"id":"D-16","field":"validation","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"add","ts":"2026-08-28T21:50:11Z","inv":{"id":"Y-13","op":"rm_node"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"set","ts":"2026-08-28T21:50:19Z","inv":{"old_status":"proposed","id":"Y-13","op":"set_status_plain"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:59:35Z","inv":{"line":"Scale verdict: Grove graphs sit at hundreds to low thousands of nodes, far below any Neo4j performance need; the value is ad-hoc Cypher analytics and cross-project federation of many locks, not speed.","id":"Q-07","field":"outcome","op":"field_insert_line","index":7}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:59:35Z","inv":{"line":"Cross-project federation becomes possible by mirroring several locks into one instance, which the locks themselves never allow.","id":"D-16","field":"consequences","op":"field_insert_line","index":3}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:59:42Z","inv":{"id":"Q-07","field":"outcome","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:59:42Z","inv":{"id":"Q-07","field":"outcome","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:59:42Z","inv":{"id":"Q-07","field":"outcome","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:59:42Z","inv":{"id":"Q-07","field":"outcome","op":"field_pop_last"}}
+{"v":1,"session":"mcp-23908-89019022","cmd":"field","ts":"2026-08-28T21:59:48Z","inv":{"id":"D-16","field":"consequences","op":"field_pop_last"}}
