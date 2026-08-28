@@ -33,7 +33,7 @@ bash install.sh
 
 Useful options: `--only grove-mcp` (or `grove` / `grove-desktop`) installs a single component, `--version X.Y.Z` pins a specific release, `--self-test` exercises the verification logic against a local fixture. Updating uses the same command; the installer refuses manifests older than what is already installed (anti-rollback state in `~/.grove/.sequence`).
 
-When `grove` or `grove-mcp` is installed, the bin directory is added to PATH automatically: an idempotent line in `~/.profile` (plus `~/.bashrc` / `~/.zshrc` when present) on Linux/macOS, and the per-user registry PATH on Windows. Open a new shell or terminal to pick it up.
+When `grove` or `grove-mcp` is installed, the bin directory is added to PATH automatically: an idempotent line in `~/.profile` (plus `~/.bashrc` / `~/.zshrc` when present) on Linux, in `~/.profile`, `~/.zshrc`, and `~/.zprofile` on macOS (the zsh files are created when missing, because a fresh Mac runs zsh without them and never reads `.profile`), and the per-user registry PATH on Windows. Open a new shell or terminal to pick it up.
 
 When `grove-desktop` is installed, the installer also creates a launcher entry: a desktop and Start Menu shortcut on Windows, `~/Applications/Grove.app` with the Grove icon on macOS, and `~/.local/share/applications/grove.desktop` on Linux. All entries point at the installed binary under `~/.local/grove` and are rewritten on every install.
 

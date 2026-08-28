@@ -171,11 +171,21 @@ install_archive() {
 }
 
 update_path_rc() {
+  target="$1"
   mkdir -p "$HOME"
   line="export PATH=\"$prefix/bin:\$PATH\""
   rcs="$HOME/.profile"
   [ -f "$HOME/.bashrc" ] && rcs="$rcs $HOME/.bashrc"
-  [ -f "$HOME/.zshrc" ] && rcs="$rcs $HOME/.zshrc"
+  case $target in
+    macos_*)
+      # default macOS zsh ignores .profile and ships without .zshrc;
+      # login shells read .zprofile, interactive shells read .zshrc
+      rcs="$rcs $HOME/.zshrc $HOME/.zprofile"
+      ;;
+    *)
+      [ -f "$HOME/.zshrc" ] && rcs="$rcs $HOME/.zshrc"
+      ;;
+  esac
   for rc in $rcs; do
     if [ -f "$rc" ] && grep -qF "$line" "$rc"; then
       continue
@@ -416,7 +426,7 @@ main_install() {
     *" grove-desktop "*) install_launcher "$target" ;;
   esac
   case " $only " in
-    *" grove "* | *" grove-mcp "*) update_path_rc ;;
+    *" grove "* | *" grove-mcp "*) update_path_rc "$target" ;;
   esac
 
   write_sequence "$channel" "$m_sequence"
