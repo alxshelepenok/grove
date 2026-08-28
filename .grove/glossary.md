@@ -11,3 +11,4 @@
 | Cordis | The plugin microkernel under dsh; a plugin is a TS module exporting apply(ctx) whose registrations roll back on unload | D-12 |
 | bundle | The dsh distribution format: an npm package with a dsh.bundle.patch entry pointing at a cordis.patch.yml that mounts the plugin into a profile | D-12 |
 | url-plain asset | An embedded asset filename kept free of characters that need URL percent-encoding, because webviews decode such paths inconsistently across platforms | Y-08 |
+| uname shim | A fake `uname` executable prepended to PATH that reports a foreign OS and architecture, so cross-platform shell code takes the target branch during a local run | Q-06 |
