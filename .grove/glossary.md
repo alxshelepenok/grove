@@ -13,3 +13,4 @@
 | url-plain asset | An embedded asset filename kept free of characters that need URL percent-encoding, because webviews decode such paths inconsistently across platforms | Y-08 |
 | uname shim | A fake `uname` executable prepended to PATH that reports a foreign OS and architecture, so cross-platform shell code takes the target branch during a local run | Q-06 |
 | Neo4j | A graph database Grove can mirror into as a read-only Cypher projection for ad-hoc analytics and cross-project federation; never the authoritative store | Q-07 |
+| DOM-free module | A JS module with no DOM, WebGL, or global dependency that carries pure interaction math, so a plain test runner can exercise it outside a browser | D-17 |

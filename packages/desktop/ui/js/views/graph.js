@@ -1,18 +1,21 @@
 import { SearchableSelect } from "../utils/searchable-select.js";
 import { wireFilterTabsFades } from "../utils/filter-tabs.js";
+import { pickSearchRadius, screenHitRadius } from "../utils/graph-math.js";
+import { KIND_INFO, statusVariant } from "../utils/graph-status.js";
+import { parseCssColor } from "../utils/css-color.js";
 
 const CLUSTER_HUES = [
-  [262, 70, 60], // violet-500
-  [184, 96, 53], // blue-500
-  [166, 50, 44], // green-500
-  [43, 68, 62], // yellow-400
-  [342, 50, 62], // red-500
-  [280, 65, 68], // purple-400
-  [191, 55, 35], // steel-700
-  [262, 45, 66], // violet-450
-  [166, 95, 40], // green-600
-  [43, 42, 52], // yellow-500
-  [342, 63, 55], // red-700
+  [262, 70, 60],
+  [184, 96, 53],
+  [166, 50, 44],
+  [43, 68, 62],
+  [342, 50, 62],
+  [280, 65, 68],
+  [191, 55, 35],
+  [262, 45, 66],
+  [166, 95, 40],
+  [43, 42, 52],
+  [342, 63, 55],
 ];
 const ROOT_CLUSTER = "root";
 const ROOT_CLUSTER_RGB = [0.45, 0.45, 0.48];
@@ -30,34 +33,6 @@ const LABEL_MIN_SCALE = 0.4;
 const LABEL_MAX_NODES = 200;
 const MIN_ZOOM = 0.15;
 const MAX_ZOOM = 4;
-
-const KIND_INFO = {
-  w: "Work",
-  g: "Goal",
-  q: "Question",
-  b: "Assumption",
-  d: "Decision",
-  y: "Discovery",
-  t: "Theme",
-  a: "Area",
-  root: "Project",
-};
-
-const STATUS_VARIANTS = {
-  g: { unverified: "warning", partial: "info", verified: "success" },
-  w: { ready: "info", progress: "accent", done: "success", rejected: "danger" },
-  q: { open: "warning", answered: "success" },
-  b: {
-    testing: "info",
-    validated: "success",
-    invalidated_acceptable: "warning",
-    invalidated_blocking: "danger",
-  },
-  t: { done: "success" },
-  y: { proposed: "warning", active: "success", stale: "danger" },
-};
-
-const KIND_DEFAULT_VARIANT = { t: "info" };
 
 const metaBadge = (text, variant = "neutral") => {
   const chip = document.createElement("span");
@@ -127,13 +102,6 @@ const hexToRgb = (hex) => {
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
 };
 
-const cssToRgb = (value, fallback) => {
-  const m = /rgba?\(([^)]+)\)/.exec(value || "");
-  if (!m) return fallback;
-  const parts = m[1].split(",").map((v) => parseFloat(v));
-  return [parts[0] / 255, parts[1] / 255, parts[2] / 255];
-};
-
 const hslToRgb = (h, s, l) => {
   s /= 100;
   l /= 100;
@@ -188,7 +156,7 @@ export function initGraph(root, { navigate } = {}) {
   const dataEl = root.querySelector("#graph-data");
   const reheatBtn = root.querySelector("#graph-reheat");
   const archivedBox = root.querySelector("#graph-archived");
-  if (!stage || !canvas || !dataEl) return null;
+  if (!stage || !canvas || !labelsEl || !tooltip || !info || !dataEl) return null;
 
   let model;
   try {
@@ -201,7 +169,7 @@ export function initGraph(root, { navigate } = {}) {
     return null;
   }
 
-  const gl = canvas.getContext("webgl", { antialias: true, alpha: true });
+  const gl = canvas.getContext("webgl", { antialias: true, alpha: false });
   if (!gl) {
     stage.insertAdjacentHTML(
       "beforeend",
@@ -255,11 +223,22 @@ export function initGraph(root, { navigate } = {}) {
   let offsetX = 0;
   let offsetY = 0;
   let placed = false;
+  let userCamera = false;
   let hovered = null;
   let quadtree = null;
 
-  const edgeProg = link(gl, EDGE_VS, EDGE_FS);
-  const nodeProg = link(gl, NODE_VS, NODE_FS);
+  let edgeProg;
+  let nodeProg;
+  try {
+    edgeProg = link(gl, EDGE_VS, EDGE_FS);
+    nodeProg = link(gl, NODE_VS, NODE_FS);
+  } catch (e) {
+    stage.insertAdjacentHTML(
+      "beforeend",
+      '<div class="alert alert-danger" role="alert"><div class="alert-content"><p class="alert-title">Graph shaders unavailable</p></div></div>',
+    );
+    return null;
+  }
   const edgeBuffer = gl.createBuffer();
   const nodeBuffer = gl.createBuffer();
   const u = (prog, name) => gl.getUniformLocation(prog, name);
@@ -282,7 +261,8 @@ export function initGraph(root, { navigate } = {}) {
     scale: u(nodeProg, "u_scale"),
     offset: u(nodeProg, "u_offset"),
   };
-  const bg = cssToRgb(getComputedStyle(stage).backgroundColor, [0.09, 0.1, 0.12]);
+  const parsedBg = parseCssColor(getComputedStyle(stage).backgroundColor);
+  const bg = parsedBg && parsedBg[3] > 0 ? parsedBg : [0.09, 0.1, 0.12];
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
@@ -309,7 +289,7 @@ export function initGraph(root, { navigate } = {}) {
     });
 
   const fit = () => {
-    if (destroyed || !nodes.length) return;
+    if (destroyed || userCamera || !nodes.length) return;
     const rect = stage.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     let x0 = Infinity;
@@ -349,11 +329,11 @@ export function initGraph(root, { navigate } = {}) {
         .addAll(nodes);
     }
     const [wx, wy] = toWorld(mx, my);
-    const found = quadtree.find(wx, wy, (ROOT_RADIUS + 4) / zoom);
+    const found = quadtree.find(wx, wy, pickSearchRadius(ROOT_RADIUS, zoom));
     if (!found) return null;
     const sx = (found.x * zoom * dpr + offsetX) / dpr;
     const sy = (found.y * zoom * dpr + offsetY) / dpr;
-    return Math.hypot(sx - mx, sy - my) <= nodeRadius(found) + 4 ? found : null;
+    return Math.hypot(sx - mx, sy - my) <= screenHitRadius(nodeRadius(found), zoom) ? found : null;
   };
 
   const updateLabels = () => {
@@ -370,12 +350,14 @@ export function initGraph(root, { navigate } = {}) {
 
   const realLinks = links.filter((l) => !l.virtual);
   const virtualLinks = links.filter((l) => l.virtual);
+  const virtualEdgeData = new Float32Array(virtualLinks.length * 4);
+  const realEdgeData = new Float32Array(realLinks.length * 4);
+  const nodeData = new Float32Array(nodes.length * 6 * FLOATS_PER_VERTEX);
 
-  const drawEdgeBatch = (batch, rgb, alpha) => {
+  const drawEdgeBatch = (batch, edgeData, rgb, alpha) => {
     if (!batch.length) return;
     gl.uniform3fv(edgeLoc.color, rgb);
     gl.uniform1f(edgeLoc.alpha, alpha);
-    const edgeData = new Float32Array(batch.length * 4);
     for (let i = 0; i < batch.length; i++) {
       const l = batch[i];
       edgeData[i * 4] = l.source.x;
@@ -404,14 +386,13 @@ export function initGraph(root, { navigate } = {}) {
     gl.uniform2f(edgeLoc.resolution, w, h);
     gl.uniform1f(edgeLoc.scale, scale);
     gl.uniform2f(edgeLoc.offset, offsetX, offsetY);
-    drawEdgeBatch(virtualLinks, CONTAINS_RGB, CONTAINS_ALPHA);
-    drawEdgeBatch(realLinks, EDGE_RGB, EDGE_ALPHA);
+    drawEdgeBatch(virtualLinks, virtualEdgeData, CONTAINS_RGB, CONTAINS_ALPHA);
+    drawEdgeBatch(realLinks, realEdgeData, EDGE_RGB, EDGE_ALPHA);
 
     gl.useProgram(nodeProg);
     gl.uniform2f(nodeLoc.resolution, w, h);
     gl.uniform1f(nodeLoc.scale, scale);
     gl.uniform2f(nodeLoc.offset, offsetX, offsetY);
-    const data = new Float32Array(nodes.length * 6 * FLOATS_PER_VERTEX);
     let o = 0;
     for (const n of nodes) {
       const fill = n._fill ?? (n._fill = nodeFill(n));
@@ -419,22 +400,22 @@ export function initGraph(root, { navigate } = {}) {
       const alpha = n._alpha ?? (n._alpha = nodeAlpha(n));
       const radius = nodeRadius(n) * dpr * (n === hovered ? 1.25 : 1);
       for (let c = 0; c < 6; c++) {
-        data[o++] = n.x;
-        data[o++] = n.y;
-        data[o++] = CORNERS[c * 2];
-        data[o++] = CORNERS[c * 2 + 1];
-        data[o++] = radius;
-        data[o++] = fill[0];
-        data[o++] = fill[1];
-        data[o++] = fill[2];
-        data[o++] = border[0];
-        data[o++] = border[1];
-        data[o++] = border[2];
-        data[o++] = alpha;
+        nodeData[o++] = n.x;
+        nodeData[o++] = n.y;
+        nodeData[o++] = CORNERS[c * 2];
+        nodeData[o++] = CORNERS[c * 2 + 1];
+        nodeData[o++] = radius;
+        nodeData[o++] = fill[0];
+        nodeData[o++] = fill[1];
+        nodeData[o++] = fill[2];
+        nodeData[o++] = border[0];
+        nodeData[o++] = border[1];
+        nodeData[o++] = border[2];
+        nodeData[o++] = alpha;
       }
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, nodeBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, nodeData, gl.DYNAMIC_DRAW);
     const stride = FLOATS_PER_VERTEX * 4;
     const attrib = (loc, size, offset) => {
       gl.enableVertexAttribArray(loc);
@@ -450,6 +431,15 @@ export function initGraph(root, { navigate } = {}) {
 
     updateLabels();
   }
+
+  let rafId = 0;
+  const scheduleDraw = () => {
+    if (destroyed || rafId) return;
+    rafId = requestAnimationFrame(() => {
+      rafId = 0;
+      draw();
+    });
+  };
 
   const resize = () => {
     const rect = stage.getBoundingClientRect();
@@ -467,14 +457,30 @@ export function initGraph(root, { navigate } = {}) {
   observer.observe(stage);
   resize();
 
+  let dprQuery = null;
+  const onDprChange = () => {
+    resize();
+    watchDpr();
+  };
+  const watchDpr = () => {
+    dprQuery?.removeEventListener("change", onDprChange);
+    dprQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+    dprQuery.addEventListener("change", onDprChange);
+  };
+  watchDpr();
+
   const hideTooltip = () => {
     tooltip.hidden = true;
   };
   const showTooltip = (n, mx, my) => {
     tooltip.textContent = `${n.id} (${kindStatus(n)})${n.title ? `: ${n.title}` : ""}`;
-    tooltip.style.left = `${Math.round(mx + 14)}px`;
-    tooltip.style.top = `${Math.round(my + 16)}px`;
     tooltip.hidden = false;
+    const maxX = stage.clientWidth - tooltip.offsetWidth - 8;
+    const maxY = stage.clientHeight - tooltip.offsetHeight - 8;
+    const left = Math.max(8, Math.min(mx + 14, maxX));
+    const top = Math.max(8, Math.min(my + 16, maxY));
+    tooltip.style.left = `${Math.round(left)}px`;
+    tooltip.style.top = `${Math.round(top)}px`;
   };
   const hideInfo = () => {
     info.hidden = true;
@@ -485,11 +491,7 @@ export function initGraph(root, { navigate } = {}) {
     const meta = root.querySelector("#graph-info-meta");
     const chips = [metaBadge(KIND_INFO[n.kind] ?? n.kind)];
     if (n.status) {
-      const variant =
-        STATUS_VARIANTS[n.kind]?.[n.status] ??
-        KIND_DEFAULT_VARIANT[n.kind] ??
-        "neutral";
-      chips.push(metaBadge(n.status, variant));
+      chips.push(metaBadge(n.status, statusVariant(n)));
     }
     if (n.wtype) chips.push(metaBadge(n.wtype));
     if (n.archived) chips.push(metaBadge("archived", "warning"));
@@ -500,6 +502,15 @@ export function initGraph(root, { navigate } = {}) {
   let panning = false;
   let downAt = null;
   let downNode = null;
+  let lastPos = null;
+
+  const resetPointerState = () => {
+    downAt = null;
+    downNode = null;
+    lastPos = null;
+    panning = false;
+    canvas.style.cursor = "default";
+  };
 
   canvas.addEventListener("pointerdown", (e) => {
     canvas.setPointerCapture(e.pointerId);
@@ -510,16 +521,19 @@ export function initGraph(root, { navigate } = {}) {
   });
   canvas.addEventListener("pointermove", (e) => {
     if (downAt && panning) {
-      offsetX += e.movementX * dpr;
-      offsetY += e.movementY * dpr;
-      draw();
+      const [lx, ly] = lastPos ?? downAt;
+      offsetX += (e.offsetX - lx) * dpr;
+      offsetY += (e.offsetY - ly) * dpr;
+      lastPos = [e.offsetX, e.offsetY];
+      userCamera = true;
+      scheduleDraw();
       return;
     }
     if (downAt) return;
     const n = pick(e.offsetX, e.offsetY);
     if (n !== hovered) {
       hovered = n;
-      draw();
+      scheduleDraw();
     }
     canvas.style.cursor = n ? "pointer" : "default";
     if (n) showTooltip(n, e.offsetX, e.offsetY);
@@ -527,13 +541,13 @@ export function initGraph(root, { navigate } = {}) {
   });
   canvas.addEventListener("pointerup", (e) => {
     const wasPan = panning;
-    panning = false;
-    canvas.style.cursor = "default";
-    if (!downAt) return;
-    const moved = Math.hypot(e.offsetX - downAt[0], e.offsetY - downAt[1]);
-    downAt = null;
+    const down = downAt;
+    const hit = downNode;
+    resetPointerState();
+    if (!down) return;
+    const moved = Math.hypot(e.offsetX - down[0], e.offsetY - down[1]);
     if (wasPan || moved > 4) return;
-    const n = downNode && pick(e.offsetX, e.offsetY);
+    const n = hit && pick(e.offsetX, e.offsetY);
     if (!n) {
       hideInfo();
       return;
@@ -544,6 +558,8 @@ export function initGraph(root, { navigate } = {}) {
       showInfo(n);
     }
   });
+  canvas.addEventListener("pointercancel", resetPointerState);
+  canvas.addEventListener("lostpointercapture", resetPointerState);
   canvas.addEventListener("pointerleave", () => {
     hideTooltip();
     if (hovered) {
@@ -562,11 +578,13 @@ export function initGraph(root, { navigate } = {}) {
       offsetX = px - ((px - offsetX) / zoom) * next;
       offsetY = py - ((py - offsetY) / zoom) * next;
       zoom = next;
-      draw();
+      userCamera = true;
+      scheduleDraw();
     },
     { passive: false },
   );
   reheatBtn?.addEventListener("click", () => {
+    userCamera = false;
     simulation.alpha(0.6).restart();
   });
   const section = root.querySelector(".view-graph");
@@ -608,9 +626,11 @@ export function initGraph(root, { navigate } = {}) {
 
   return () => {
     destroyed = true;
+    if (rafId) cancelAnimationFrame(rafId);
     cleanupFades();
     simulation.stop();
     observer.disconnect();
+    dprQuery?.removeEventListener("change", onDprChange);
     focusSelect?.destroy();
     gl.getExtension("WEBGL_lose_context")?.loseContext();
   };
