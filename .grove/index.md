@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 25 | validated B 1 · answered Q 3 · accepted D 10 · active Discovery 11 |
+| C (content) | 28 | validated B 1 · answered Q 4 · accepted D 11 · active Discovery 12 |
 | V (uncertainty) | 10 | open Q 2 · pending B 5 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
@@ -17,7 +17,7 @@
 | A-02 | API | 0 | 3 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-05 | Desktop | 3 | 0 | C: validated B 0 · answered Q 1 · accepted D 1 · active Discovery 1; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 5 | 1 | C: validated B 0 · answered Q 1 · accepted D 2 · active Discovery 2; V: open Q 0 · pending B 1 · W below DoR 0 |
 | A-07 | Agent integrations | 4 | 0 | C: validated B 0 · answered Q 1 · accepted D 1 · active Discovery 2; V: open Q 0 · pending B 0 · W below DoR 0 |
 
@@ -34,6 +34,7 @@
 | G-24 | Area card headers wrap ids as units | count; current=1 target=1 | verified |
 | G-25 | DeepSeek Harness plugin exposes the Grove CLI as agent tools | count; current=7 target=7 | verified |
 | G-26 | macOS install fixes the launcher icon and PATH setup | count; current=4 target=4 | verified |
+| G-27 | Graph view defects stay fixed (interactions, render loop, badges, environment) | count; current=7 target=7 | verified |
 
 ## Work items
 
@@ -55,6 +56,13 @@
 | W-111 | bug | Ship icon.icns inside the portable desktop archive | G-26 | clear | ⊤ | done |  |
 | W-112 | bug | Install the Grove.app icon in install.sh | G-26 | clear | ⊤ | done |  |
 | W-113 | bug | Write the PATH line to zsh startup files on macOS | G-26 | clear | ⊤ | done |  |
+| W-114 | bug | Fix graph node hit testing at non-unit zoom | G-27 | clear | ⊤ | done |  |
+| W-115 | bug | Reset graph pan state on lost pointer capture | G-27 | clear | ⊤ | done |  |
+| W-116 | bug | Keep manual camera changes when simulation settles | G-27 | clear | ⊤ | done |  |
+| W-117 | refactor | Reuse frame buffers in the graph render loop | G-27 | clear | ⊤ | done |  |
+| W-118 | bug | Cover all core statuses in graph badges | G-27 | clear | ⊤ | done |  |
+| W-119 | bug | Harden graph environment handling (colors, guards, shaders) | G-27 | clear | ⊤ | done |  |
+| W-120 | bug | Clamp tooltips and stabilize camera inputs (pan deltas, dpr) | G-27 | clear | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -72,6 +80,7 @@
 | D-14 | macOS launcher icon ships as an icns in the portable archive | accepted |  |
 | D-15 | macOS PATH lines land in zsh startup files created on demand | accepted |  |
 | D-16 | Neo4j integrates as a read-only Cypher projection of state.lock | proposed |  |
+| D-17 | Graph view geometry lives in a DOM-free module | accepted |  |
 
 ## Open questions
 
@@ -82,6 +91,7 @@
 | Q-05 | What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1? | complicated | W-103 | answered |
 | Q-06 | How to verify macOS installer fixes without a local Mac | complicated | W-110 | answered |
 | Q-07 | How Neo4j integrates into Grove: role, pattern, and boundaries | complicated |  | answered |
+| Q-08 | Verify graph view JS fixes without a runner | complicated | W-114, W-115, W-116 | answered |
 
 ## Assumptions
 
@@ -100,6 +110,7 @@
 | --- | --- | --- | --- | --- |
 | T-01 | Scaling performance | open | – | W-04, W-05 |
 | T-04 | Plugin toolchain restyle | open | W-107, W-108, W-109 | – |
+| T-05 | Graph view render loop and robustness debt | done | W-117 | W-117, W-118, W-119, W-120 |
 
 ## Discoveries
 
@@ -118,6 +129,7 @@
 | Y-11 | bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it | dsh | active |
 | Y-12 | Per-OS installer branches run under a uname shim and the CI OS matrix | uname shim | active |
 | Y-13 | Neo4j is a read-only projection of state.lock, never its storage backend | Neo4j | active |
+| Y-14 | bun test runs plain-ESM unit tests without package.json | DOM-free module | active |
 
 ## Dependency graph
 
@@ -130,6 +142,7 @@ graph TD
   G_24["G-24: Area card headers wrap ids as units"]:::goal
   G_25["G-25: DeepSeek Harness plugin exposes the Grove CLI as agent tools"]:::goal
   G_26["G-26: macOS install fixes the launcher icon and PATH setup"]:::goal
+  G_27["G-27: Graph view defects stay fixed (interactions, render loop, badges, environment)"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
@@ -146,6 +159,13 @@ graph TD
   W_111["W-111: Ship icon.icns inside the portable desktop archive"]:::done
   W_112["W-112: Install the Grove.app icon in install.sh"]:::done
   W_113["W-113: Write the PATH line to zsh startup files on macOS"]:::done
+  W_114["W-114: Fix graph node hit testing at non-unit zoom"]:::done
+  W_115["W-115: Reset graph pan state on lost pointer capture"]:::done
+  W_116["W-116: Keep manual camera changes when simulation settles"]:::done
+  W_117["W-117: Reuse frame buffers in the graph render loop"]:::done
+  W_118["W-118: Cover all core statuses in graph badges"]:::done
+  W_119["W-119: Harden graph environment handling (colors, guards, shaders)"]:::done
+  W_120["W-120: Clamp tooltips and stabilize camera inputs (pan deltas, dpr)"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -158,11 +178,13 @@ graph TD
   D_14["D-14: macOS launcher icon ships as an icns in the portable archive"]:::decision
   D_15["D-15: macOS PATH lines land in zsh startup files created on demand"]:::decision
   D_16["D-16: Neo4j integrates as a read-only Cypher projection of state.lock"]:::decision
+  D_17["D-17: Graph view geometry lives in a DOM-free module"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_05["Q-05: What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1?"]:::question
   Q_06["Q-06: How to verify macOS installer fixes without a local Mac"]:::question
   Q_07["Q-07: How Neo4j integrates into Grove: role, pattern, and boundaries"]:::question
+  Q_08["Q-08: Verify graph view JS fixes without a runner"]:::question
   B_01["B-01: Surprise rate declines as C grows"]:::assumption
   B_02["B-02: Rework proxies are lower on covered surfaces than uncovered"]:::assumption
   B_03["B-03: Distill yield stays above noise at archive gates"]:::assumption
@@ -171,6 +193,7 @@ graph TD
   B_06["B-06: CFBundleIconFile wiring renders the Grove icon in Finder"]:::assumption
   T_01["T-01: Scaling performance"]:::theme
   T_04["T-04: Plugin toolchain restyle"]:::theme
+  T_05["T-05: Graph view render loop and robustness debt"]:::theme
   Y_01["Y-01: Normalize at capture, never inject test clocks"]:::discovery
   Y_02["Y-02: Never gate a validation task on the hypotheses it validates"]:::discovery
   Y_03["Y-03: Integration surfaces are thin adapters over the core CLI contract"]:::discovery
@@ -184,6 +207,7 @@ graph TD
   Y_11["Y-11: bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it"]:::discovery
   Y_12["Y-12: Per-OS installer branches run under a uname shim and the CI OS matrix"]:::discovery
   Y_13["Y-13: Neo4j is a read-only projection of state.lock, never its storage backend"]:::discovery
+  Y_14["Y-14: bun test runs plain-ESM unit tests without package.json"]:::discovery
   A_01["A-01: Evals"]:::area
   A_02["A-02: API"]:::area
   A_03["A-03: Rust core"]:::area
@@ -197,12 +221,16 @@ graph TD
   Q_02 -->|asks| W_09
   Q_05 -->|asks| W_103
   Q_06 -->|asks| W_110
+  Q_08 -->|asks| W_114
+  Q_08 -->|asks| W_115
+  Q_08 -->|asks| W_116
   T_02 -->|causes| W_17
   T_02 -->|causes| W_85
   T_03 -->|causes| W_85
   T_04 -->|causes| W_107
   T_04 -->|causes| W_108
   T_04 -->|causes| W_109
+  T_05 -->|causes| W_117
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
   W_03 -->|produces| D_11
@@ -228,6 +256,9 @@ graph TD
   W_110 ==>|blocks| W_113
   W_112 -->|implements| D_14
   W_113 -->|implements| D_15
+  W_114 -->|implements| D_17
+  W_118 -->|implements| D_17
+  W_119 -->|implements| D_17
   W_14 ==>|blocks| W_17
   W_17 ==>|blocks| W_18
   W_17 ==>|blocks| W_19
@@ -260,6 +291,8 @@ graph TD
   Y_12 -->|distills| Q_06
   Y_13 -->|distills| D_16
   Y_13 -->|distills| Q_07
+  Y_14 -->|distills| D_17
+  Y_14 -->|distills| Q_08
   class W_04 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff

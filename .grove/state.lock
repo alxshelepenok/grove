@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:416483ef684837e05a31d8ad9a8261bea8c4a5fa60c2ae9f079f95e4dfec8d97
+# checksum: sha256:1074008ee39763853bfbff3a65654baab7afcca1ef0ecb6ce1b3668219657ed1
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -34,6 +34,13 @@ g G-26 status=verified fitness_kind=count t_created=2026-08-28T00:17:40Z t_updat
   area: A-06
   fitness_target: 4
   fitness_current: 4
+
+g G-27 status=verified fitness_kind=count t_created=2026-08-28T22:24:48Z t_updated=2026-08-28T22:48:51Z "Graph view defects stay fixed (interactions, render loop, badges, environment)"
+  area: A-05
+  fitness_target: 7
+  fitness_current: 7
+  notes:
+    | Extended to carry the remaining graph view defect sweep from the 2026-08-29 review after the pointer fixes verified; scope broadened and target raised 3 to 7.
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -272,6 +279,124 @@ w W-113 type=bug status=done cynefin=clear t_created=2026-08-28T00:17:58Z t_upda
   evidence:
     | Darwin shim suite 34 passed, 0 failed (.zshrc, .zprofile, idempotency green); native windows run 25 passed, 0 failed; Linux shim run 27 passed, 0 failed; commit b013771
 
+w W-114 type=bug status=done cynefin=clear t_created=2026-08-28T22:25:00Z t_updated=2026-08-28T22:28:51Z "Fix graph node hit testing at non-unit zoom"
+  goals: G-27
+  fitness: G-27=+1
+  surface: packages/desktop/ui/js/views/graph.js
+  ac:
+    | screenHitRadius(worldRadius, zoom) equals worldRadius * zoom + 4 for zoom 0.15, 1, and 4 (bun test).
+    | pickSearchRadius(maxWorldRadius, zoom) equals maxWorldRadius + 4 / zoom for zoom 0.15, 1, and 4 (bun test).
+    | graph.js pick() uses the graph-math helpers with no inline radius arithmetic (grep finds screenHitRadius and pickSearchRadius call sites).
+  repro:
+    | In the graph view, zoom to 4x and hover a node: the pointer reacts only within about 13px of the centre although the node renders with a 36px radius; at 0.5x a hover triggers up to 13px away from a 4.5px node.
+  evidence_strategy:
+    | Port the current formulas into graph-math.js, add graph-math.test.js asserting the AC, record the failing run, then fix the formulas and graph.js and record the green run; cargo test --workspace for the desktop suite.
+  evidence:
+    | red: bun test ui/js/utils/graph-math.test.js 2 fail 0 pass (pickSearchRadius(15,4) received 4.75 expected 16; screenHitRadius unscaled at zoom 4 and 0.15).
+    | green: bun test 2 pass 0 fail 6 expects; graph.js pick() delegates to pickSearchRadius (graph.js:353) and screenHitRadius (graph.js:357) with no inline radius arithmetic.
+    | regression: cargo test -p grove-desktop --locked --tests 134 passed 0 failed (bin target skipped: debug grove-desktop.exe is running).
+
+w W-115 type=bug status=done cynefin=clear t_created=2026-08-28T22:25:05Z t_updated=2026-08-28T22:30:15Z "Reset graph pan state on lost pointer capture"
+  goals: G-27
+  fitness: G-27=+1
+  surface: packages/desktop/ui/js/views/graph.js
+  ac:
+    | graph.js clears downAt, downNode and panning on pointercancel and lostpointercapture and restores the default cursor (grep shows both handlers reset state).
+    | cargo test --workspace stays green.
+  repro:
+    | Start a pan drag on the graph canvas and lose pointer capture (alt-tab during the drag): with no button held, the next pointermove keeps panning the camera.
+  evidence_strategy:
+    | Handler diff listing the reset path; cargo test --workspace output.
+  evidence:
+    | handler trace: resetPointerState (graph.js:505) clears downAt, downNode, panning and restores the default cursor; wired to pointercancel (graph.js:555) and lostpointercapture (graph.js:556); pointerup captures down/hit before reset (graph.js:534-537).
+    | no repro test: event wiring needs a DOM harness the repo lacks (D-17); parse check via bun import ok.
+    | regression: cargo test -p grove-desktop --locked --tests 134 passed 0 failed.
+
+w W-116 type=bug status=done cynefin=clear t_created=2026-08-28T22:25:10Z t_updated=2026-08-28T22:31:30Z "Keep manual camera changes when simulation settles"
+  goals: G-27
+  fitness: G-27=+1
+  surface: packages/desktop/ui/js/views/graph.js
+  ac:
+    | Manual pan or wheel zoom sets a userCamera flag and the end-of-simulation fit is skipped while the flag is set (grep).
+    | Reheat clears the flag so the settle after a reheat can refit (code trace).
+    | cargo test --workspace stays green.
+  repro:
+    | Load the graph view and pan or zoom while the force simulation still runs: on simulation end the camera snaps back to the fitted bounds.
+  evidence_strategy:
+    | Diff of the flag path; cargo test --workspace output; no DOM harness exists for closure camera state so the no-repro reason lands in the evidence line (see D-17).
+  evidence:
+    | code trace: userCamera declared graph.js:259; manual pan sets it (graph.js:524) and wheel zoom sets it (graph.js:577); fit() returns early while set (graph.js:314); reheat clears it (graph.js:583) so the settle after reheat can refit; bun import parse ok.
+    | no repro test: closure camera state needs a DOM harness the repo lacks (D-17).
+    | regression: cargo test -p grove-desktop --locked --tests 134 passed 0 failed; bun test 2 pass 0 fail.
+
+w W-117 type=refactor status=done cynefin=clear t_created=2026-08-28T22:38:48Z t_updated=2026-08-28T22:42:50Z "Reuse frame buffers in the graph render loop"
+  goals: G-27
+  theme: T-05
+  fitness: G-27=+1
+  surface: packages/desktop/ui/js/views/graph.js
+  ac:
+    | graph.js allocates typed arrays for nodes and both edge batches once at init only (grep shows new Float32Array outside the draw path).
+    | pointermove and wheel schedule draws through one requestAnimationFrame coalescer with a pending guard (grep).
+    | pending frames are cancelled on destroy (grep cancelAnimationFrame).
+  evidence_strategy:
+    | Refactor evidence: bun test and cargo desktop tests green before and after (both runs recorded); export diff of graph.js empty; grep counts for allocations and the coalescer.
+  evidence:
+    | behaviour preserved: before run cargo desktop suites 134 passed 0 failed (recorded at W-116 close), after run 134 passed 0 failed (lib 18, projects 14, triggers 14, views 80, write 8); bun test 2 pass 0 fail; git diff export lines: 0 changed.
+    | allocations hoisted to init: new Float32Array only at graph.js:375-377 (virtualEdgeData, realEdgeData, nodeData), none in drawEdgeBatch or draw; drawEdgeBatch takes a preallocated buffer.
+    | rAF coalescer: scheduleDraw with pending guard at graph.js:458-463; wired to pan (graph.js:535), hover (graph.js:542) and wheel (graph.js:588); cancelAnimationFrame on destroy (graph.js:635); bin test target skipped in cargo runs (running debug app holds the exe; lib and integration targets cover the change).
+
+w W-118 type=bug status=done cynefin=clear t_created=2026-08-28T22:38:54Z t_updated=2026-08-28T22:47:21Z "Cover all core statuses in graph badges"
+  goals: G-27
+  theme: T-05
+  fitness: G-27=+1
+  surface: packages/desktop/ui/js/views/graph.js, packages/desktop/ui/js/utils/graph-status.js
+  ac:
+    | every status in the core status sets for kinds g, w, q, b, t, y, d maps to a defined badge variant (bun test enumerates the full table).
+    | graph.js resolves badge variants through graph-status.js (grep import and call site).
+  repro:
+    | Open the graph view info card for an accepted decision: the status badge renders neutral grey instead of the success variant; the same neutral fallback hits deferred or dropped questions, declined goals, superseded discoveries and proposed work items.
+  evidence_strategy:
+    | Port the current STATUS_VARIANTS into graph-status.js, write graph-status.test.js enumerating the core status sets, record the red run, then complete the mapping and wire graph.js, record the green run; cargo desktop tests.
+  evidence:
+    | red: bun test graph-status.test.js 1 fail (first draft asserting only definedness passed vacuously through the neutral fallback; tightened to an exact variant table, then the ported mapping failed with mismatched variants for d, g/declined, w/proposed, q/deferred, q/dropped, t/open, y/superseded).
+    | green: bun test 5 pass 0 fail 18 expects (graph-math 2, graph-status 3); graph.js imports KIND_INFO and statusVariant from graph-status.js (graph.js:4) and resolves badges via statusVariant(n) (graph.js:473); parse ok.
+
+w W-119 type=bug status=done cynefin=clear t_created=2026-08-28T22:39:08Z t_updated=2026-08-28T22:48:33Z "Harden graph environment handling (colors, guards, shaders)"
+  goals: G-27
+  theme: T-05
+  fitness: G-27=+1
+  surface: packages/desktop/ui/js/views/graph.js, packages/desktop/ui/js/utils/css-color.js
+  ac:
+    | parseCssColor resolves rgb(1 2 3), rgba(1, 2, 3, 0.5) and rgb(1 2 3 / 0.5) and returns the fallback for transparent or unparsable input (bun test).
+    | graph.js requests an opaque WebGL context and falls back to the dark constant when the stage background is transparent or unparsable (grep).
+    | initGraph renders the alert pattern and returns null when the shader program fails to compile or link (code trace).
+    | required DOM elements (labels, tooltip, info) are null-guarded at init alongside stage, canvas and data (grep).
+  repro:
+    | With a stage background serialized as rgb(9 10 12) or transparent, cssToRgb returns NaN parts or clears to black; a missing graph-labels element throws at init; a shader compile failure escapes as an uncaught error with no user-facing alert.
+  evidence_strategy:
+    | Port the current cssToRgb into css-color.js, write css-color.test.js, record the red run, fix the parser and wire graph.js, record the green run; code trace for guards and the shader fallback; cargo desktop tests.
+  evidence:
+    | red: css-color.test.js 5 fail against the ported comma-only parser (no alpha channel, NaN parts for space syntax and truncated input, no fallback on malformed values).
+    | green: bun test 10 pass 0 fail 27 expects; graph.js wiring: parseCssColor import (graph.js:5), element guard includes labels, tooltip, info (graph.js:159), opaque context alpha:false (graph.js:172), shader failure alert with null return (graph.js:234-240), background fallback when parsed alpha is zero (graph.js:263-265); parse ok.
+
+w W-120 type=bug status=done cynefin=clear t_created=2026-08-28T22:39:13Z t_updated=2026-08-28T22:48:51Z "Clamp tooltips and stabilize camera inputs (pan deltas, dpr)"
+  goals: G-27
+  theme: T-05
+  fitness: G-27=+1
+  surface: packages/desktop/ui/js/views/graph.js
+  ac:
+    | tooltip coordinates clamp inside the stage rect accounting for tooltip size (code trace).
+    | pan deltas derive from the previous pointer position instead of movementX (grep).
+    | a resolution matchMedia listener re-runs resize on dpr change and is removed on destroy (grep).
+  repro:
+    | Hover a node at the right stage edge: the tooltip is clipped by overflow hidden; spiky movementX values from some pointer drivers jump the camera; a window moved across monitors with a different dpr renders a stale canvas.
+  evidence_strategy:
+    | Code trace for the clamp, delta and listener paths; bun import parse check; cargo desktop tests; no DOM harness exists so the no-repro reason lands in the evidence line (see D-17).
+  evidence:
+    | code trace: tooltip clamps into the stage rect with an 8px margin using tooltip offset size (graph.js:477-482); pan deltas derive from lastPos, the previous pointer position, instead of movementX (graph.js:505, 524-527) and reset with pointer state (graph.js:510); a resolution matchMedia listener re-arms on change and re-runs resize (graph.js:460-469) with removal on destroy (graph.js:633).
+    | no repro test: closure camera state and DOM tooltip layout need a browser harness the repo lacks (D-17); verified by code trace plus suites.
+    | regression: bun test 10 pass 0 fail 27 expects, import parse ok; isolated cargo run (CARGO_TARGET_DIR=target/desktop-tests, running app holds the debug exe) 134 passed 0 failed (lib 18, projects 14, triggers 14, views 80, write 8).
+
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
   fitness: G-21=+1
@@ -427,6 +552,18 @@ d D-16 status=proposed t_created=2026-08-28T21:49:47Z t_updated=2026-08-28T21:59
   validation:
     | A prototype export loads a real lock into Neo4j 5.x Community via cypher-shell and round-trips node and edge counts.
 
+d D-17 status=accepted t_created=2026-08-28T22:24:55Z t_updated=2026-08-28T22:39:45Z "Graph view geometry lives in a DOM-free module"
+  context:
+    | The desktop UI ships plain ES modules with no JS test runner; CI covers only the Rust view layer. The graph view interaction fixes need regression protection.
+  options:
+    | A: no tests, record why_no_repro_test on each bug. B: extract a DOM-free geometry module with adjacent bun tests run locally. C: full browser harness (playwright) in CI.
+  decision:
+    | Option B: interaction geometry lives in packages/desktop/ui/js/utils/graph-math.js, DOM-free, tested by an adjacent graph-math.test.js run with bun test; DOM event wiring stays uncovered until a browser-harness goal exists.
+  consequences:
+    | Pointer math regressions are caught locally by bun test; event wiring and rendering stay unverified in CI; a later goal may wire bun test into CI.
+  validation:
+    | bun test green on the extracted module inside the ui tree.
+
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
     | attestations already give a GitHub-backed second path; cosign keyless would add a Sigstore-anchored one without storing another key, at the cost of another tool in the sign job; deferred from v1, revisit after the first releases
@@ -469,6 +606,10 @@ q Q-07 status=answered cynefin=complicated t_created=2026-08-28T21:48:57Z t_upda
     | Federation needs no mirror: the projects.toml registry already enumerates projects, locks are self-contained, and the federated graph is a disjoint union with no cross-lock edges (promote origin attrs aside), so portfolio questions are plain aggregation over locks.
     | Closing verdict: no obligating trigger for Neo4j exists today, neither performance nor federation; the mirror stays an optional downstream convenience.
 
+q Q-08 status=answered cynefin=complicated t_created=2026-08-28T22:24:50Z t_updated=2026-08-28T22:32:29Z "Verify graph view JS fixes without a runner"
+  outcome:
+    | bun 1.3.11 runs plain-ESM tests with no package.json (scratch run verified); CI (rust-tests.yml) has no JS step. Extract DOM-free geometry into packages/desktop/ui/js/utils/graph-math.js with adjacent graph-math.test.js, run locally via bun test; CI wiring is out of scope for these fixes.
+
 b B-01 status=testing cynefin=complicated t_created=2026-07-19T01:19:39Z t_updated=2026-07-27T18:00:12Z "Surprise rate declines as C grows"
   vm:
     | grove stats: surprise signals per done W against the C/V curve over the dogfood period
@@ -510,6 +651,8 @@ b B-06 status=proposed cynefin=clear t_created=2026-08-28T00:17:41Z t_updated=20
 t T-01 status=open t_created=2026-07-19T01:14:31Z t_updated=2026-07-19T01:14:31Z "Scaling performance"
 
 t T-04 status=open t_created=2026-08-17T11:44:27Z t_updated=2026-08-17T11:44:38Z "Plugin toolchain restyle"
+
+t T-05 status=done t_created=2026-08-28T22:38:42Z t_updated=2026-08-28T22:48:51Z "Graph view render loop and robustness debt"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-07-27T14:44:48Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -598,6 +741,10 @@ y Y-13 status=active t_created=2026-08-28T21:50:11Z t_updated=2026-08-28T21:50:1
   why:
     | Grove's guarantees (SHA-256 checksum, git merge protocol, executable undo, offline single-writer) live in the lock file; a graph database only adds value downstream as a query and federation mirror, reachable through a thin Cypher export.
 
+y Y-14 status=active t_created=2026-08-28T22:32:29Z t_updated=2026-08-28T22:32:41Z "bun test runs plain-ESM unit tests without package.json"
+  tags: DOM-free module
+  surface: packages/desktop/ui/js/utils/graph-math.js, packages/desktop/ui/js/utils/graph-math.test.js
+
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"
   surface: packages/grove/src/stats.jl, packages/grove/test/test_stats.jl
 
@@ -620,12 +767,16 @@ e Q-01 asks W-06 t_created=2026-07-19T01:19:10Z
 e Q-02 asks W-09 t_created=2026-07-19T01:19:17Z
 e Q-05 asks W-103 t_created=2026-08-17T10:53:14Z
 e Q-06 asks W-110 t_created=2026-08-28T00:20:27Z
+e Q-08 asks W-114 t_created=2026-08-28T22:26:17Z
+e Q-08 asks W-115 t_created=2026-08-28T22:26:17Z
+e Q-08 asks W-116 t_created=2026-08-28T22:26:17Z
 e T-02 causes W-17 t_created=2026-07-28T02:40:29Z
 e T-02 causes W-85 t_created=2026-08-05T18:45:04Z
 e T-03 causes W-85 t_created=2026-08-05T18:45:33Z
 e T-04 causes W-107 t_created=2026-08-17T11:44:38Z
 e T-04 causes W-108 t_created=2026-08-17T11:44:38Z
 e T-04 causes W-109 t_created=2026-08-17T11:44:38Z
+e T-05 causes W-117 t_created=2026-08-28T22:39:45Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z
@@ -651,6 +802,9 @@ e W-110 blocks W-112 t_created=2026-08-28T00:20:28Z
 e W-110 blocks W-113 t_created=2026-08-28T00:20:28Z
 e W-112 implements D-14 t_created=2026-08-28T00:20:27Z
 e W-113 implements D-15 t_created=2026-08-28T00:20:28Z
+e W-114 implements D-17 t_created=2026-08-28T22:26:17Z
+e W-118 implements D-17 t_created=2026-08-28T22:39:45Z
+e W-119 implements D-17 t_created=2026-08-28T22:39:45Z
 e W-14 blocks W-17 t_created=2026-07-27T23:47:28Z
 e W-17 blocks W-18 t_created=2026-07-27T23:47:41Z
 e W-17 blocks W-19 t_created=2026-07-27T23:47:55Z
@@ -683,6 +837,8 @@ e Y-11 distills D-13 t_created=2026-08-17T11:59:20Z
 e Y-12 distills Q-06 t_created=2026-08-28T00:38:09Z
 e Y-13 distills D-16 t_created=2026-08-28T21:50:11Z
 e Y-13 distills Q-07 t_created=2026-08-28T21:50:11Z
+e Y-14 distills D-17 t_created=2026-08-28T22:32:29Z
+e Y-14 distills Q-08 t_created=2026-08-28T22:32:29Z
 
 :archive
 g G-01 status=verified fitness_kind=boolean t_created=2026-07-19T01:13:53Z t_updated=2026-08-10T18:45:36Z "Effectiveness report v1 on dogfood telemetry"
