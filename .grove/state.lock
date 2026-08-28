@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:36877da26840602112d8e6bfac32ed1c3a38d4488076793447e6875203a9b48d
+# checksum: sha256:ff86482b3d8822f7803a3d7d8cedaa8255074bacd09943e67f6cbba69a868d53
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -29,6 +29,11 @@ g G-25 status=verified fitness_kind=count t_created=2026-08-17T10:50:14Z t_updat
   area: A-07
   fitness_target: 7
   fitness_current: 7
+
+g G-26 status=verified fitness_kind=count t_created=2026-08-28T00:17:40Z t_updated=2026-08-28T00:37:24Z "macOS install fixes the launcher icon and PATH setup"
+  area: A-06
+  fitness_target: 4
+  fitness_current: 4
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -203,6 +208,70 @@ w W-109 type=refactor status=done cynefin=clear t_created=2026-08-17T11:43:09Z t
     | bun test: 28 pass / 0 fail; tsc --noEmit clean; bun build (multi-entry, --external=@deepseek-ai/*) emits target/{index,grove-cli,tools/*}.js with aliases resolved plus tsc --emitDeclarationOnly d.ts files.
     | Post-restyle validation: scripts/round-trip.mjs against bundled target/ output reaches done (ROUND_TRIP_OK); headless dsh run with the smoke overlay exits 0 and returns the grove status report through the rebuilt bundle.
 
+w W-110 type=bug status=done cynefin=clear t_created=2026-08-28T00:17:57Z t_updated=2026-08-28T00:24:10Z "Cover the macOS icon and zsh PATH fixes in the installer suite"
+  goals: G-26
+  fitness: G-26=+1
+  surface: tests/install/test-install.sh, install.sh
+  ac:
+    | The fake desktop archive in the installer suite includes a placeholder icon.icns.
+    | The macos branch asserts Grove.app installs Contents/Resources/AppIcon.icns.
+    | The macos branch asserts Info.plist maps CFBundleIconFile to AppIcon and passes plutil lint when plutil exists.
+    | The macos branch asserts a fresh HOME receives the PATH line in .zshrc and .zprofile, idempotently on reinstall.
+    | The install.sh self-test ships and asserts a placeholder icon.icns.
+  repro:
+    | The macos branch of tests/install/test-install.sh asserts only launcher and Info.plist presence, and PATH checks cover .profile alone.
+  evidence_strategy:
+    | Run the suite natively on Git Bash and under a uname shim reporting Darwin arm64, then let the CI macos-latest job run the macos branch on real macOS.
+  evidence:
+    | red run under Darwin uname shim: 26 passed, 5 failed (shipped icon, CFBundleIconFile, .zshrc, .zprofile, zsh idempotency); commit fe0b0f4
+
+w W-111 type=bug status=done cynefin=clear t_created=2026-08-28T00:17:57Z t_updated=2026-08-28T00:25:26Z "Ship icon.icns inside the portable desktop archive"
+  goals: G-26
+  fitness: G-26=+1
+  surface: .github/workflows/release.yml
+  ac:
+    | The package step in release.yml copies packages/desktop/src-tauri/icons/icon.icns into the staging area.
+    | The portable grove-desktop tarball lists icon.icns next to icon.png and ui.
+  repro:
+    | The package step stages only icon.png, so no icns reaches the portable archive that install.sh consumes.
+  evidence_strategy:
+    | Structural check of the workflow step plus a local replication of the staging tar listing; a release dry-run artifact closes the loop later.
+  evidence:
+    | release.yml lines 151+154 stage icon.icns into the portable tar; replicated staging tar lists grove-desktop, icon.icns, icon.png, ui; icns magic bytes verified; no repro test because the workflow needs the full build matrix, dry-run closes the loop; commit b13fbc1
+
+w W-112 type=bug status=done cynefin=clear t_created=2026-08-28T00:17:58Z t_updated=2026-08-28T00:34:11Z "Install the Grove.app icon in install.sh"
+  goals: G-26
+  fitness: G-26=+1
+  surface: install.sh, docs/install.md
+  ac:
+    | The macos branch of install_launcher copies the shipped icns to Contents/Resources/AppIcon.icns when the archive carries one.
+    | Info.plist maps CFBundleIconFile to AppIcon.
+    | The installer touches the bundle after creation so LaunchServices re-reads the icon.
+    | An archive without an icns still yields a working launcher and prints a notice.
+    | docs/install.md documents the macOS launcher icon.
+  repro:
+    | install.sh creates Grove.app with no Resources directory and no CFBundleIconFile key, so Finder shows the generic app icon.
+  evidence_strategy:
+    | Suite macos branch plus the Darwin shim run locally; CI macos-latest for real macOS.
+  evidence:
+    | Darwin shim suite: macos launcher installs shipped icon, plist maps CFBundleIconFile to AppIcon, icns-less archive falls back with notice (31 passed, 3 failed remaining are W-113 PATH asserts); commit 41fec27
+
+w W-113 type=bug status=done cynefin=clear t_created=2026-08-28T00:17:58Z t_updated=2026-08-28T00:37:24Z "Write the PATH line to zsh startup files on macOS"
+  goals: G-26
+  fitness: G-26=+1
+  surface: install.sh, docs/install.md
+  ac:
+    | On macOS the installer appends the PATH line to .zshrc and .zprofile, creating either file when missing.
+    | Reinstall keeps exactly one PATH line per startup file.
+    | Linux and Windows PATH behaviour is unchanged.
+    | docs/install.md documents the zsh startup files.
+  repro:
+    | update_path_rc writes .profile unconditionally but touches .zshrc only when it already exists; a fresh Mac runs zsh without .zshrc, so the line lands in a file zsh never reads.
+  evidence_strategy:
+    | Suite fresh-HOME macos assertions plus reinstall idempotency counts; CI macos-latest for real zsh.
+  evidence:
+    | Darwin shim suite 34 passed, 0 failed (.zshrc, .zprofile, idempotency green); native windows run 25 passed, 0 failed; Linux shim run 27 passed, 0 failed; commit b013771
+
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
   fitness: G-21=+1
@@ -314,6 +383,34 @@ d D-13 status=accepted t_created=2026-08-17T11:42:38Z t_updated=2026-08-17T11:59
   validation:
     | bun test and bun build pass, and the headless dsh smoke run still completes after re-linking the profile.
 
+d D-14 status=accepted t_created=2026-08-28T00:17:40Z t_updated=2026-08-28T00:20:29Z "macOS launcher icon ships as an icns in the portable archive"
+  context:
+    | The portable desktop archive ships only a 128px PNG, while Finder needs an icns inside the app bundle plus a CFBundleIconFile key.
+  options:
+    | OC1: ship the existing Tauri icon.icns in the archive and copy it during install.
+    | OC2: convert icon.png to an icns at install time with iconutil.
+    | OC3: point CFBundleIconFile at the shipped PNG.
+  decision:
+    | OC1: the repo already carries icon.icns and the installer stays free of iconutil dependencies.
+  consequences:
+    | Every platform archive grows by the icns size; archives without an icns fall back to a notice instead of failing.
+  validation:
+    | The installer suite macos branch asserts Resources/AppIcon.icns and the plist key; CI macos-latest runs it on real macOS.
+
+d D-15 status=accepted t_created=2026-08-28T00:17:40Z t_updated=2026-08-28T00:20:29Z "macOS PATH lines land in zsh startup files created on demand"
+  context:
+    | Fresh macOS runs zsh with no .zshrc and never reads .profile; Terminal shells load .zprofile and .zshrc.
+  options:
+    | OC1: append to .zshrc and .zprofile, creating either on demand.
+    | OC2: append to .zshenv so every zsh invocation picks the line up.
+    | OC3: keep the current .profile plus existing-file convention.
+  decision:
+    | OC1: login and interactive macOS shells both load these files and creating them surprises no other tool.
+  consequences:
+    | A fresh Mac gains two small startup files; Linux and Windows behaviour is untouched.
+  validation:
+    | The installer suite asserts fresh-HOME .zshrc and .zprofile lines plus reinstall idempotency on CI macos-latest.
+
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
     | attestations already give a GitHub-backed second path; cosign keyless would add a Sigstore-anchored one without storing another key, at the cost of another tool in the sign job; deferred from v1, revisit after the first releases
@@ -330,6 +427,16 @@ q Q-05 status=answered cynefin=complicated t_created=2026-08-17T10:50:14Z t_upda
     | parameters is a ParameterSchemaSpec: a per-key object { type, required, description, enum?, items?, properties?, additionalProperties? } that defineTool compiles to JSON Schema (packages/core/tools/src/schema.ts:545).
     | output is { schema: ValueSchemaSpec, render(args, value) -> ContentBlock[] }; execute(args, exec) returns the value (Promise allowed) and a thrown error surfaces as the tool error.
     | First-party process spawning goes through the ctx.terminals service (tool-terminal), not raw child_process, so B-05 stays open until the smoke test.
+
+q Q-06 status=answered cynefin=complicated t_created=2026-08-28T00:17:40Z t_updated=2026-08-28T00:38:09Z "How to verify macOS installer fixes without a local Mac"
+  why:
+    | The fixes target default macOS behaviour and no Mac is at hand for manual verification.
+  exit:
+    | A concrete verification path exists for every acceptance criterion of G-26 using local Windows tooling and the existing CI matrix.
+  log:
+    | A uname shim reporting Darwin arm64 makes both the suite and install.sh take the macos branches on Git Bash; baseline run 26 passed, 0 failed.
+  outcome:
+    | Three layers: a local uname shim reporting Darwin arm64 exercises the macos code paths in Git Bash; the shell-tests CI matrix already runs tests/install/test-install.sh on macos-latest for real macOS; only the visual Finder check needs a physical Mac.
 
 b B-01 status=testing cynefin=complicated t_created=2026-07-19T01:19:39Z t_updated=2026-07-27T18:00:12Z "Surprise rate declines as C grows"
   vm:
@@ -362,6 +469,12 @@ b B-05 status=validated cynefin=complicated t_created=2026-08-17T10:50:14Z t_upd
     | Validated iff the probe returns the version string from inside a live dsh profile; invalidated_blocking iff the runtime denies spawning or PATH lookup.
   result:
     | Validated 2026-08-17: in a real headless dsh run (profile headless + dsh-grove layer, mock model), grove_status spawned the grove binary resolved from PATH and returned the full status report (session 55bae3b3, tool/result seq 20, isError=false); grove_next equally dispatched (seq 30).
+
+b B-06 status=proposed cynefin=clear t_created=2026-08-28T00:17:41Z t_updated=2026-08-28T00:20:28Z "CFBundleIconFile wiring renders the Grove icon in Finder"
+  vm:
+    | CI macos-latest asserts the bundle layout and plutil lint; the user confirms the Finder icon on a real Mac.
+  threshold:
+    | Resources/AppIcon.icns present, CFBundleIconFile maps to AppIcon, plutil lint clean, Finder shows the Grove icon after install.
 
 t T-01 status=open t_created=2026-07-19T01:14:31Z t_updated=2026-07-19T01:14:31Z "Scaling performance"
 
@@ -431,7 +544,7 @@ y Y-08 status=active t_created=2026-08-10T20:12:04Z t_updated=2026-08-10T20:13:3
   tags: url-plain asset
   surface: packages/desktop/ui/css/fonts.css, packages/desktop/src-tauri/tauri.conf.json
 
-y Y-09 status=active t_created=2026-08-17T11:31:47Z t_updated=2026-08-17T11:59:56Z "A dsh agent runs keyless by overriding the agent-default-model row with a scripted mock provider, so tool plugins can be smoke-tested through the real Loader without API keys"
+y Y-09 status=active t_created=2026-08-17T11:31:47Z t_updated=2026-08-28T00:38:34Z "A dsh agent runs keyless by overriding the agent-default-model row with a scripted mock provider, so tool plugins can be smoke-tested through the real Loader without API keys"
   tags: dsh
   surface: packages/dsh/test/fixtures/mock-grove-llm.mjs, packages/dsh/test/fixtures/headless-smoke.patch.yml
 
@@ -442,6 +555,12 @@ y Y-10 status=active t_created=2026-08-17T11:31:56Z t_updated=2026-08-17T11:59:5
 y Y-11 status=active t_created=2026-08-17T11:59:20Z t_updated=2026-08-17T11:59:28Z "bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it"
   tags: dsh
   surface: packages/dsh/package.json, packages/dsh/test/stubs/dsh-type-meta/package.json
+
+y Y-12 status=active t_created=2026-08-28T00:38:09Z t_updated=2026-08-28T00:38:34Z "Per-OS installer branches run under a uname shim and the CI OS matrix"
+  tags: uname shim
+  surface: tests/install/test-install.sh
+  invariant:
+    | Cross-platform install scripts exercise every per-OS branch locally via a uname shim that reports the foreign OS, while native behaviour stays covered by the CI OS matrix; a native-only run never proves foreign branches.
 
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"
   surface: packages/grove/src/stats.jl, packages/grove/test/test_stats.jl
@@ -459,10 +578,12 @@ a A-06 status=present t_created=2026-08-04T19:44:12Z t_updated=2026-08-04T19:44:
 
 a A-07 status=present t_created=2026-08-17T10:50:04Z t_updated=2026-08-17T10:50:04Z "Agent integrations"
 
+e B-06 targets W-112 t_created=2026-08-28T00:20:28Z
 e D-10 supersedes D-08 t_created=2026-08-07T13:50:42Z
 e Q-01 asks W-06 t_created=2026-07-19T01:19:10Z
 e Q-02 asks W-09 t_created=2026-07-19T01:19:17Z
 e Q-05 asks W-103 t_created=2026-08-17T10:53:14Z
+e Q-06 asks W-110 t_created=2026-08-28T00:20:27Z
 e T-02 causes W-17 t_created=2026-07-28T02:40:29Z
 e T-02 causes W-85 t_created=2026-08-05T18:45:04Z
 e T-03 causes W-85 t_created=2026-08-05T18:45:33Z
@@ -489,6 +610,11 @@ e W-105 implements D-12 t_created=2026-08-17T10:53:14Z
 e W-106 implements D-12 t_created=2026-08-17T10:53:14Z
 e W-107 blocks W-108 t_created=2026-08-17T11:44:06Z
 e W-108 blocks W-109 t_created=2026-08-17T11:44:06Z
+e W-110 blocks W-111 t_created=2026-08-28T00:20:28Z
+e W-110 blocks W-112 t_created=2026-08-28T00:20:28Z
+e W-110 blocks W-113 t_created=2026-08-28T00:20:28Z
+e W-112 implements D-14 t_created=2026-08-28T00:20:27Z
+e W-113 implements D-15 t_created=2026-08-28T00:20:28Z
 e W-14 blocks W-17 t_created=2026-07-27T23:47:28Z
 e W-17 blocks W-18 t_created=2026-07-27T23:47:41Z
 e W-17 blocks W-19 t_created=2026-07-27T23:47:55Z
@@ -518,6 +644,7 @@ e Y-07 distills D-04 t_created=2026-08-08T23:08:01Z
 e Y-09 distills Q-05 t_created=2026-08-17T11:31:47Z
 e Y-10 distills D-12 t_created=2026-08-17T11:31:56Z
 e Y-11 distills D-13 t_created=2026-08-17T11:59:20Z
+e Y-12 distills Q-06 t_created=2026-08-28T00:38:09Z
 
 :archive
 g G-01 status=verified fitness_kind=boolean t_created=2026-07-19T01:13:53Z t_updated=2026-08-10T18:45:36Z "Effectiveness report v1 on dogfood telemetry"

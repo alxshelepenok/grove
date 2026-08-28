@@ -171,11 +171,21 @@ install_archive() {
 }
 
 update_path_rc() {
+  target="$1"
   mkdir -p "$HOME"
   line="export PATH=\"$prefix/bin:\$PATH\""
   rcs="$HOME/.profile"
   [ -f "$HOME/.bashrc" ] && rcs="$rcs $HOME/.bashrc"
-  [ -f "$HOME/.zshrc" ] && rcs="$rcs $HOME/.zshrc"
+  case $target in
+    macos_*)
+      # default macOS zsh ignores .profile and ships without .zshrc;
+      # login shells read .zprofile, interactive shells read .zshrc
+      rcs="$rcs $HOME/.zshrc $HOME/.zprofile"
+      ;;
+    *)
+      [ -f "$HOME/.zshrc" ] && rcs="$rcs $HOME/.zshrc"
+      ;;
+  esac
   for rc in $rcs; do
     if [ -f "$rc" ] && grep -qF "$line" "$rc"; then
       continue
@@ -214,6 +224,8 @@ EOF
 <dict>
   <key>CFBundleExecutable</key>
   <string>launcher</string>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon</string>
   <key>CFBundleIdentifier</key>
   <string>com.grove.desktop</string>
   <key>CFBundleName</key>
@@ -223,11 +235,18 @@ EOF
 </dict>
 </plist>
 EOF
+      if [ -f "$prefix/grove-desktop/icon.icns" ]; then
+        mkdir -p "$appdir/Contents/Resources"
+        cp "$prefix/grove-desktop/icon.icns" "$appdir/Contents/Resources/AppIcon.icns"
+      else
+        info "desktop archive has no icon.icns; $appdir keeps the default icon"
+      fi
       cat > "$appdir/Contents/MacOS/launcher" <<EOF
 #!/bin/sh
 exec "$prefix/grove-desktop/grove-desktop" "\$@"
 EOF
       chmod +x "$appdir/Contents/MacOS/launcher"
+      touch "$appdir"
       info "created launcher app $appdir"
       ;;
   esac
@@ -260,9 +279,10 @@ run_self_test() {
   printf '#!/usr/bin/env bash\necho fake grove-desktop\n' > "$work/fake-desktop/grove-desktop"
   printf 'placeholder\n' > "$work/fake-desktop/ui/views/placeholder.hbs"
   printf 'fake png\n' > "$work/fake-desktop/icon.png"
+  printf 'fake icns\n' > "$work/fake-desktop/icon.icns"
   tar -czf "$work/server/grove-v9.9.9-selftest.tar.gz" -C "$work/fake-bin" grove
   tar -czf "$work/server/grove-mcp-v9.9.9-selftest.tar.gz" -C "$work/fake-bin" grove-mcp
-  tar -czf "$work/server/grove-desktop-v9.9.9-selftest.tar.gz" -C "$work/fake-desktop" grove-desktop icon.png ui
+  tar -czf "$work/server/grove-desktop-v9.9.9-selftest.tar.gz" -C "$work/fake-desktop" grove-desktop icon.png icon.icns ui
 
   make_manifest() {
     expires_iso=$(date -u -d "@$2" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "$2" +%Y-%m-%dT%H:%M:%SZ)
@@ -324,6 +344,8 @@ EOF
   st_report $? "desktop app installed with ui templates"
   [ -f "$work/inst1/grove-desktop/icon.png" ]
   st_report $? "desktop archive ships the launcher icon"
+  [ -f "$work/inst1/grove-desktop/icon.icns" ]
+  st_report $? "desktop archive ships the launcher icns"
 
   make_manifest 7 $((now + 86400)) "$good_base"
   printf 'tampered' >> "$work/server/manifest.json"
@@ -404,7 +426,7 @@ main_install() {
     *" grove-desktop "*) install_launcher "$target" ;;
   esac
   case " $only " in
-    *" grove "* | *" grove-mcp "*) update_path_rc ;;
+    *" grove "* | *" grove-mcp "*) update_path_rc "$target" ;;
   esac
 
   write_sequence "$channel" "$m_sequence"

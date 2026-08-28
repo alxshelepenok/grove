@@ -32,12 +32,13 @@ mkdir -p "$server/dt/ui/views"
 printf '#!/usr/bin/env bash\necho fake grove-desktop\n' > "$server/dt/grove-desktop$ext"
 printf 'placeholder\n' > "$server/dt/ui/views/placeholder.hbs"
 printf 'fake png\n' > "$server/dt/icon.png"
+printf 'fake icns\n' > "$server/dt/icon.icns"
 chmod +x "$server/grove$ext" "$server/grove-mcp$ext" "$server/dt/grove-desktop$ext"
 (
   cd "$server"
   tar -czf "grove-v0.3.0-$target.tar.gz" "grove$ext"
   tar -czf "grove-mcp-v0.3.0-$target.tar.gz" "grove-mcp$ext"
-  tar -czf "grove-desktop-v0.3.0-$target.tar.gz" -C dt "grove-desktop$ext" icon.png ui
+  tar -czf "grove-desktop-v0.3.0-$target.tar.gz" -C dt "grove-desktop$ext" icon.png icon.icns ui
   rm "grove$ext" "grove-mcp$ext"
   rm -rf dt
   sha256sum *.tar.gz > "$server/SHA256SUMS" 2>/dev/null || {
@@ -81,8 +82,17 @@ case $os_part in
     report $? "linux launcher entry references the shipped icon"
     ;;
   macos)
-    [ -x "$work/home1/Applications/Grove.app/Contents/MacOS/launcher" ] && [ -f "$work/home1/Applications/Grove.app/Contents/Info.plist" ]
+    app="$work/home1/Applications/Grove.app"
+    [ -x "$app/Contents/MacOS/launcher" ] && [ -f "$app/Contents/Info.plist" ]
     report $? "macos launcher app created"
+    [ -f "$app/Contents/Resources/AppIcon.icns" ]
+    report $? "macos launcher app installs the shipped icon"
+    grep -q "<key>CFBundleIconFile</key>" "$app/Contents/Info.plist" && grep -q "<string>AppIcon</string>" "$app/Contents/Info.plist"
+    report $? "macos launcher plist maps CFBundleIconFile to AppIcon"
+    if command -v plutil >/dev/null 2>&1; then
+      plutil -lint "$app/Contents/Info.plist" >/dev/null
+      report $? "macos launcher plist passes plutil lint"
+    fi
     ;;
 esac
 
@@ -91,6 +101,15 @@ report $? "sequence file written"
 
 grep -qF "export PATH=\"$work/inst1/bin:\$PATH\"" "$work/home1/.profile"
 report $? "PATH line added to .profile"
+
+case $os_part in
+  macos)
+    grep -qF "export PATH=\"$work/inst1/bin:\$PATH\"" "$work/home1/.zshrc"
+    report $? "PATH line added to .zshrc"
+    grep -qF "export PATH=\"$work/inst1/bin:\$PATH\"" "$work/home1/.zprofile"
+    report $? "PATH line added to .zprofile"
+    ;;
+esac
 
 run_install 2 "--only grove-mcp" > "$work/out2" 2>&1
 report $? "--only grove-mcp installs"
@@ -136,6 +155,13 @@ report $? "same-sequence reinstall allowed"
 [ "$(grep -cF "export PATH=\"$work/inst1/bin" "$work/home1/.profile")" -eq 1 ]
 report $? "PATH line idempotent on reinstall"
 
+case $os_part in
+  macos)
+    [ "$(grep -cF "export PATH=\"$work/inst1/bin" "$work/home1/.zshrc")" -eq 1 ] && [ "$(grep -cF "export PATH=\"$work/inst1/bin" "$work/home1/.zprofile")" -eq 1 ]
+    report $? "zsh PATH lines idempotent on reinstall"
+    ;;
+esac
+
 sed 's|https://github.com/alxshelepenok/grove/releases/download|https://evil.example.com/dl|' "$work/manifest.bak" > "$server/manifest.json"
 bin/sign.sh "$work/testkey.pem" "$server/manifest.json" "$server/manifest.json.sig"
 if run_install 6 "" > "$work/out6" 2>&1; then r=1; else r=0; fi
@@ -158,6 +184,29 @@ report $? "break-glass does not touch anti-rollback state"
 
 bash install.sh --self-test > "$work/out9" 2>&1
 report $? "install.sh --self-test passes"
+
+if [ "$os_part" = macos ]; then
+  mkdir -p "$work/dt2/ui/views"
+  printf '#!/usr/bin/env bash\necho fake grove\n' > "$work/dt2/grove"
+  printf '#!/usr/bin/env bash\necho fake grove-desktop\n' > "$work/dt2/grove-desktop"
+  printf 'placeholder\n' > "$work/dt2/ui/views/placeholder.hbs"
+  printf 'fake png\n' > "$work/dt2/icon.png"
+  tar -czf "$server/grove-v0.3.0-$target.tar.gz" -C "$work/dt2" grove
+  tar -czf "$server/grove-desktop-v0.3.0-$target.tar.gz" -C "$work/dt2" grove-desktop icon.png ui
+  (
+    cd "$server"
+    sha256sum *.tar.gz > SHA256SUMS 2>/dev/null || {
+      for f in *.tar.gz; do printf '%s  %s\n' "$(shasum -a 256 "$f" | cut -d' ' -f1)" "$f"; done > SHA256SUMS
+    }
+  )
+  build_manifest "$(date -u +%s)" /nonexistent
+  run_install 10 "" > "$work/out10" 2>&1
+  report $? "icns-less archive installs"
+  [ -x "$work/home10/Applications/Grove.app/Contents/MacOS/launcher" ]
+  report $? "icns-less archive still yields a launcher"
+  [ ! -e "$work/home10/Applications/Grove.app/Contents/Resources" ] && grep -q "keeps the default icon" "$work/out10"
+  report $? "icns-less archive skips the icon with a notice"
+fi
 
 if [ "$fail" -gt 0 ]; then
   echo "=== captured installer outputs ==="

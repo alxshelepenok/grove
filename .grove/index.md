@@ -6,8 +6,8 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 19 | validated B 1 · answered Q 1 · accepted D 8 · active Discovery 9 |
-| V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
+| C (content) | 23 | validated B 1 · answered Q 2 · accepted D 10 · active Discovery 10 |
+| V (uncertainty) | 10 | open Q 2 · pending B 5 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
 
@@ -18,7 +18,7 @@
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-06 | Release | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-06 | Release | 5 | 1 | C: validated B 0 · answered Q 1 · accepted D 2 · active Discovery 2; V: open Q 0 · pending B 1 · W below DoR 0 |
 | A-07 | Agent integrations | 4 | 0 | C: validated B 0 · answered Q 1 · accepted D 1 · active Discovery 2; V: open Q 0 · pending B 0 · W below DoR 0 |
 
 > Relevance view, not a partition: a node touching two areas counts in both; a W without goals counts in none. The Content health totals above are primary.
@@ -33,6 +33,7 @@
 | G-23 | Count badges switch style above ninety-nine | count; current=1 target=1 | verified |
 | G-24 | Area card headers wrap ids as units | count; current=1 target=1 | verified |
 | G-25 | DeepSeek Harness plugin exposes the Grove CLI as agent tools | count; current=7 target=7 | verified |
+| G-26 | macOS install fixes the launcher icon and PATH setup | count; current=4 target=4 | verified |
 
 ## Work items
 
@@ -50,6 +51,10 @@
 | W-107 | refactor | Restructure the plugin as packages/dsh on the Bun toolchain | G-25 | complicated | ⊤ | done |  |
 | W-108 | refactor | Migrate the plugin tests to bun test | G-25 | clear | ⊤ | done |  |
 | W-109 | refactor | Apply project code style (comments, quotes, semicolons, aliases) | G-25 | clear | ⊤ | done |  |
+| W-110 | bug | Cover the macOS icon and zsh PATH fixes in the installer suite | G-26 | clear | ⊤ | done |  |
+| W-111 | bug | Ship icon.icns inside the portable desktop archive | G-26 | clear | ⊤ | done |  |
+| W-112 | bug | Install the Grove.app icon in install.sh | G-26 | clear | ⊤ | done |  |
+| W-113 | bug | Write the PATH line to zsh startup files on macOS | G-26 | clear | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -64,6 +69,8 @@
 | D-10 | License changed from MIT to AGPL-3.0-only before the first release | accepted | D-08 |
 | D-12 | dsh plugin as a thin CLI wrapper bundle | accepted |  |
 | D-13 | Bun toolchain and project code style for the dsh plugin | accepted |  |
+| D-14 | macOS launcher icon ships as an icns in the portable archive | accepted |  |
+| D-15 | macOS PATH lines land in zsh startup files created on demand | accepted |  |
 
 ## Open questions
 
@@ -72,6 +79,7 @@
 | Q-03 | Add cosign keyless as an additional, no-stored-key verification path alongside attestations? | complicated |  | open |
 | Q-04 | What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)? | complicated |  | open |
 | Q-05 | What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1? | complicated | W-103 | answered |
+| Q-06 | How to verify macOS installer fixes without a local Mac | complicated | W-110 | answered |
 
 ## Assumptions
 
@@ -82,6 +90,7 @@
 | B-03 | Distill yield stays above noise at archive gates |  |  | testing |
 | B-04 | DoR refusals followed by discovery raise first-pass evidence acceptance |  |  | testing |
 | B-05 | The dsh plugin runtime permits spawning the grove CLI as a child process |  |  | validated |
+| B-06 | CFBundleIconFile wiring renders the Grove icon in Finder |  | W-112 | proposed |
 
 ## Themes
 
@@ -105,6 +114,7 @@
 | Y-09 | A dsh agent runs keyless by overriding the agent-default-model row with a scripted mock provider, so tool plugins can be smoke-tested through the real Loader without API keys | dsh | active |
 | Y-10 | A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately | bundle | active |
 | Y-11 | bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it | dsh | active |
+| Y-12 | Per-OS installer branches run under a uname shim and the CI OS matrix | uname shim | active |
 
 ## Dependency graph
 
@@ -116,6 +126,7 @@ graph TD
   G_23["G-23: Count badges switch style above ninety-nine"]:::goal
   G_24["G-24: Area card headers wrap ids as units"]:::goal
   G_25["G-25: DeepSeek Harness plugin exposes the Grove CLI as agent tools"]:::goal
+  G_26["G-26: macOS install fixes the launcher icon and PATH setup"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
@@ -128,6 +139,10 @@ graph TD
   W_107["W-107: Restructure the plugin as packages/dsh on the Bun toolchain"]:::done
   W_108["W-108: Migrate the plugin tests to bun test"]:::done
   W_109["W-109: Apply project code style (comments, quotes, semicolons, aliases)"]:::done
+  W_110["W-110: Cover the macOS icon and zsh PATH fixes in the installer suite"]:::done
+  W_111["W-111: Ship icon.icns inside the portable desktop archive"]:::done
+  W_112["W-112: Install the Grove.app icon in install.sh"]:::done
+  W_113["W-113: Write the PATH line to zsh startup files on macOS"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -137,14 +152,18 @@ graph TD
   D_10["D-10: License changed from MIT to AGPL-3.0-only before the first release"]:::decision
   D_12["D-12: dsh plugin as a thin CLI wrapper bundle"]:::decision
   D_13["D-13: Bun toolchain and project code style for the dsh plugin"]:::decision
+  D_14["D-14: macOS launcher icon ships as an icns in the portable archive"]:::decision
+  D_15["D-15: macOS PATH lines land in zsh startup files created on demand"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_05["Q-05: What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1?"]:::question
+  Q_06["Q-06: How to verify macOS installer fixes without a local Mac"]:::question
   B_01["B-01: Surprise rate declines as C grows"]:::assumption
   B_02["B-02: Rework proxies are lower on covered surfaces than uncovered"]:::assumption
   B_03["B-03: Distill yield stays above noise at archive gates"]:::assumption
   B_04["B-04: DoR refusals followed by discovery raise first-pass evidence acceptance"]:::assumption
   B_05["B-05: The dsh plugin runtime permits spawning the grove CLI as a child process"]:::assumption
+  B_06["B-06: CFBundleIconFile wiring renders the Grove icon in Finder"]:::assumption
   T_01["T-01: Scaling performance"]:::theme
   T_04["T-04: Plugin toolchain restyle"]:::theme
   Y_01["Y-01: Normalize at capture, never inject test clocks"]:::discovery
@@ -158,6 +177,7 @@ graph TD
   Y_09["Y-09: A dsh agent runs keyless by overriding the agent-default-model row with a scripted mock provider, so tool plugins can be smoke-tested through the real Loader without API keys"]:::discovery
   Y_10["Y-10: A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately"]:::discovery
   Y_11["Y-11: bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it"]:::discovery
+  Y_12["Y-12: Per-OS installer branches run under a uname shim and the CI OS matrix"]:::discovery
   A_01["A-01: Evals"]:::area
   A_02["A-02: API"]:::area
   A_03["A-03: Rust core"]:::area
@@ -165,10 +185,12 @@ graph TD
   A_05["A-05: Desktop"]:::area
   A_06["A-06: Release"]:::area
   A_07["A-07: Agent integrations"]:::area
+  B_06 -.->|targets| W_112
   D_10 -->|supersedes| D_08
   Q_01 -->|asks| W_06
   Q_02 -->|asks| W_09
   Q_05 -->|asks| W_103
+  Q_06 -->|asks| W_110
   T_02 -->|causes| W_17
   T_02 -->|causes| W_85
   T_03 -->|causes| W_85
@@ -195,6 +217,11 @@ graph TD
   W_106 -->|implements| D_12
   W_107 ==>|blocks| W_108
   W_108 ==>|blocks| W_109
+  W_110 ==>|blocks| W_111
+  W_110 ==>|blocks| W_112
+  W_110 ==>|blocks| W_113
+  W_112 -->|implements| D_14
+  W_113 -->|implements| D_15
   W_14 ==>|blocks| W_17
   W_17 ==>|blocks| W_18
   W_17 ==>|blocks| W_19
@@ -224,6 +251,7 @@ graph TD
   Y_09 -->|distills| Q_05
   Y_10 -->|distills| D_12
   Y_11 -->|distills| D_13
+  Y_12 -->|distills| Q_06
   class W_04 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff

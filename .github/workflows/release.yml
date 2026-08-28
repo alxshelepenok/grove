@@ -148,9 +148,10 @@ jobs:
           mkdir -p stage/ui out
           cp "target/release/grove-desktop${{ matrix.ext }}" stage/
           cp packages/desktop/src-tauri/icons/128x128.png stage/icon.png
+          cp packages/desktop/src-tauri/icons/icon.icns stage/icon.icns
           cp -r packages/desktop/ui/views stage/ui/views
           cp -r packages/desktop/ui/icons stage/ui/icons
-          tar -czf "out/grove-desktop-v$VERSION-${{ matrix.target }}.tar.gz" -C stage "grove-desktop${{ matrix.ext }}" icon.png ui
+          tar -czf "out/grove-desktop-v$VERSION-${{ matrix.target }}.tar.gz" -C stage "grove-desktop${{ matrix.ext }}" icon.png icon.icns ui
           cd target/release/bundle
           case "${{ matrix.target }}" in
             linux-x64)
