@@ -18,7 +18,7 @@ jobs:
         with:
           version: "1.12"
 
-      - uses: julia-actions/cache@b7788abd52452d5bc033d69796e110d9906af4ab
+      - uses: julia-actions/cache@a7bed9df697e5d7309d68afe7542a87621a8b6c8
 
       - name: Unit tests with coverage
         run: julia --project=packages/grove -e "using Pkg; Pkg.test(; coverage=true)"
