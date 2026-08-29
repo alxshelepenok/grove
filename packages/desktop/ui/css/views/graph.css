@@ -33,7 +33,8 @@
   overflow: hidden;
 }
 
-#graph-canvas {
+#graph-canvas,
+#graph-canvas-3d {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -94,4 +95,41 @@
   flex-wrap: wrap;
   gap: var(--wv-space-1);
   margin-top: var(--wv-space-1);
+}
+
+.graph-options {
+  position: relative;
+}
+
+.graph-options-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-2);
+  min-width: 210px;
+  padding: var(--wv-space-3);
+  background: var(--wv-color-bg-base);
+  border: 1px solid var(--wv-color-border-subtle);
+  border-radius: var(--wv-radius-md);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+.graph-options-menu .graph-toggle {
+  white-space: nowrap;
+}
+
+.graph-options-menu .graph-toggle:has(input:disabled) {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.graph-options-menu[hidden] {
+  display: none;
+}
+
+.graph-tooltip[hidden] {
+  display: none;
 }

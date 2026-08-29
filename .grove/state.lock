@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:1074008ee39763853bfbff3a65654baab7afcca1ef0ecb6ce1b3668219657ed1
+# checksum: sha256:cd883fdee9d7e68485c585af11761fce021b7c2444cca1ae5359e334d3fe0631
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -41,6 +41,23 @@ g G-27 status=verified fitness_kind=count t_created=2026-08-28T22:24:48Z t_updat
   fitness_current: 7
   notes:
     | Extended to carry the remaining graph view defect sweep from the 2026-08-29 review after the pointer fixes verified; scope broadened and target raised 3 to 7.
+
+g G-28 status=verified fitness_kind=count t_created=2026-08-28T23:06:09Z t_updated=2026-08-29T00:00:21Z "Graph view renders 3D behind a toolbar toggle (vendored three.js)"
+  area: A-05
+  fitness_target: 12
+  fitness_current: 12
+  notes:
+    | Extended after the first user visual pass on 2026-08-29: three runtime defects surfaced (broken 2D pan, 3D framing, 2D re-entry crash); target raised 5 to 8.
+    | Second user visual pass on 2026-08-29: four 3D polish defects (switch jump, flat spheres, uneven spacing, label clutter at min zoom); target raised 8 to 12.
+
+g G-29 status=verified fitness_kind=count t_created=2026-08-29T00:15:46Z t_updated=2026-08-29T13:44:58Z "Graph options persist behind an Options menu (mode, ray tracing)"
+  area: A-05
+  fitness_target: 8
+  fitness_current: 8
+  notes:
+    | Third user visual pass on 2026-08-29: options menu always visible (author display rule defeats the hidden attribute) and ray tracing should trace spheres only with rasterized edges for speed; target raised 3 to 5.
+    | Fourth user pass on 2026-08-29: clicking a work node in 3D throws at view teardown (null canvas lookup after innerHTML replacement); plus a ray tracing performance package (DPR cap, scene bounds early-out, lazy per-frame sync); target raised 5 to 7.
+    | Fifth user pass on 2026-08-29: traced sphere silhouettes alias because MSAA cannot smooth analytic fragment-shader edges; target raised 7 to 8.
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -397,6 +414,344 @@ w W-120 type=bug status=done cynefin=clear t_created=2026-08-28T22:39:13Z t_upda
     | no repro test: closure camera state and DOM tooltip layout need a browser harness the repo lacks (D-17); verified by code trace plus suites.
     | regression: bun test 10 pass 0 fail 27 expects, import parse ok; isolated cargo run (CARGO_TARGET_DIR=target/desktop-tests, running app holds the debug exe) 134 passed 0 failed (lib 18, projects 14, triggers 14, views 80, write 8).
 
+w W-121 type=feature status=done cynefin=clear t_created=2026-08-28T23:06:29Z t_updated=2026-08-28T23:09:08Z "Vendor three.js with provenance records"
+  goals: G-28
+  theme: T-06
+  fitness: G-28=+1
+  surface: packages/desktop/ui/js/vendor, packages/desktop/ui/js/views/graph.js
+  ac:
+    | three.module.min.js and three.core.min.js exist in packages/desktop/ui/js/vendor/ with SHA-256 hashes matching the jsdelivr download of three 0.185.1 (recorded sha256sum output).
+    | PROVENANCE.md carries a three row with package, version, upstream URL and hash and the sbom.sh row regex still parses every row (sed probe output).
+    | no script tag for three is added to index.html and the vendor files are imported only from the 3D view module (grep).
+  hypothesis:
+    | The official minified ESM pair from three 0.185.1 with PROVENANCE rows keeps the JS supply chain mechanical: the SBOM regex parses the new rows and the files import each other relatively without an import map.
+  evidence_strategy:
+    | sha256sum of both files cross-checked against fresh downloads; sed probe replicating the sbom.sh regex; grep index.html and imports.
+  evidence:
+    | vendored: three.module.min.js (365552 bytes, sha256 86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6) and three.core.min.js (385386 bytes, sha256 05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90); jsdelivr and unpkg downloads hash identically; license banner intact.
+    | provenance: PROVENANCE.md carries both three rows; the sbom.sh sed regex parses all four rows (probe output lists d3, rxjs, three x2); notes forbid a script tag and document the relative import pairing.
+    | index.html: zero references to three; loading happens only via dynamic import from js/views/graph-3d.js (added in W-124).
+
+w W-122 type=refactor status=done cynefin=clear t_created=2026-08-28T23:06:32Z t_updated=2026-08-28T23:11:08Z "Extract shared graph view foundation"
+  goals: G-28
+  theme: T-06
+  fitness: G-28=+1
+  surface: packages/desktop/ui/js/views/graph.js, packages/desktop/ui/js/utils/graph-model.js
+  ac:
+    | graph.js delegates model parsing, cluster colors and node metrics to graph-model.js and the info panel wiring to a shared module (grep imports).
+    | 2D behavior preserved: bun suites and cargo desktop tests green before and after (both runs recorded).
+    | exported API of graph.js unchanged (diff of export lines empty).
+  evidence_strategy:
+    | Refactor evidence: pre and post suite runs, export diff, grep of the new imports.
+  evidence:
+    | behavior preserved: before runs bun 10 pass and cargo 134 passed (recorded at W-120 close); after runs bun 15 pass 0 fail 42 expects (includes new graph-model tests) and cargo 134 passed 0 failed; graph.js export diff empty.
+    | delegation: graph.js imports parseGraphModel, createClusterFills, nodeFillFor, nodeAlpha, nodeRadius from graph-model.js (graph.js:4-11) and createInfoPanel, createTooltip from graph-panel.js (graph.js:12); 2D border constants stay local.
+
+w W-123 type=feature status=done cynefin=clear t_created=2026-08-28T23:06:34Z t_updated=2026-08-28T23:12:41Z "Build a DOM-free 3D force layout"
+  goals: G-28
+  theme: T-06
+  fitness: G-28=+1
+  surface: packages/desktop/ui/js/utils/force-3d.js
+  ac:
+    | force-3d.js exposes a DOM-free createLayout(nodes, links, options) whose step applies springs, repulsion and cluster anchors.
+    | bun test: a 200-node synthetic graph settles (mean speed below threshold after 300 ticks) with no NaN coordinates.
+    | bun bench: 100 ticks over 1000 nodes complete below the B-07 threshold with the average tick recorded.
+  hypothesis:
+    | A velocity-style n-body layout with cluster anchors and link springs settles into a readable 3D arrangement for grove-scale graphs while staying cheap because quadratic pairs at n up to 1000 fit the frame budget.
+  evidence_strategy:
+    | bun tests green with settle and NaN assertions; bench output recorded into the B-07 result; cargo suites rerun.
+  evidence:
+    | force-3d.js exposes createLayout(nodes, links, options) with repulsion, springs, cluster anchors, damping and alpha decay over Float64 positions, plus clusterCenters3d on a fibonacci sphere; DOM-free.
+    | bun test 19 pass 0 fail: 200-node graph settles (mean speed below 1.0 after 300 ticks, all coordinates finite); clusters stay separated (mean inter-cluster distance exceeds twice mean intra-cluster distance); bench asserts 1000-node ticks under 16 ms.
+    | bench: isolated run records 2.991 ms per tick over 100 ticks on 1000 nodes; result recorded on B-07 and validated.
+
+w W-124 type=feature status=done cynefin=complicated t_created=2026-08-28T23:06:37Z t_updated=2026-08-28T23:16:36Z "Render the grove graph in 3D"
+  goals: G-28
+  theme: T-06
+  fitness: G-28=+1
+  surface: packages/desktop/ui/js/views/graph-3d.js
+  ac:
+    | the 3D scene renders nodes as instanced spheres tinted by cluster color and edges as line segments colored by kind (code trace and parse check).
+    | pointer input orbits, zooms and pans the camera, and picking selects the instance under the cursor with tooltip and info panel parity (code trace).
+    | clicking a work node navigates to the packet view, matching the 2D behavior (code trace of the navigate call).
+    | destroy disposes the renderer, geometries and materials (grep dispose).
+  hypothesis:
+    | A three.js InstancedMesh scene with LineSegments edges, raycast picking against instances and a shared HTML overlay reaches interaction parity with the 2D renderer inside the Tauri webview.
+  evidence_strategy:
+    | Code trace plus parse check; bun suites; B-07 bench attached; rendering has no CI harness (D-17) so a manual visual pass by the user is requested at checkpoint.
+  evidence:
+    | code trace: nodes render as InstancedMesh spheres tinted per cluster with setColorAt and dimmed by node alpha (graph-3d.js:60-71), edges as LineSegments with per-vertex colors split by virtual or real (graph-3d.js:74-96); layout steps and the scene render inside one rAF loop with a one-shot camera fit (graph-3d.js:168-186).
+    | interactions: pointer handlers rotate, pan and zoom the camera around a spherical orbit (graph-3d.js:220-266, 268-274); Raycaster picking selects the instance under the cursor (graph-3d.js:211-219) feeding the shared tooltip and info panel; clicking a work node navigates to packet (graph-3d.js:281); destroy disposes geometries, materials and the renderer (graph-3d.js:331-335).
+    | verification: bun import of graph-3d.js against the vendored three.module.min.js parses ok; bun suites 19 pass 0 fail; B-07 bench (2.991 ms per tick at 1000 nodes) attached; rendering has no CI harness (D-17), manual visual pass requested at checkpoint.
+
+w W-125 type=feature status=done cynefin=clear t_created=2026-08-28T23:06:40Z t_updated=2026-08-28T23:16:47Z "Toggle 3D mode from the graph toolbar"
+  goals: G-28
+  theme: T-06
+  fitness: G-28=+1
+  surface: packages/desktop/ui/views/graph.hbs, packages/desktop/src-tauri/tests/views.rs, packages/desktop/ui/js/views/graph.js
+  ac:
+    | graph.hbs renders a 3D toggle next to Include archived and the cargo fragment test asserts it (extended views.rs assertion).
+    | toggling swaps renderers client-side without a navigate call and reuses the parsed model (code trace).
+    | the three.js modules are imported only inside the 3D branch via dynamic import (grep).
+    | cargo and bun suites green.
+  hypothesis:
+    | A toolbar checkbox that swaps renderers client-side gives instant mode switching without a server round trip and keeps three.js unloaded in the default 2D path.
+  evidence_strategy:
+    | cargo test with the new fragment assertion; grep of the toggle handler and dynamic import; bun suites.
+  evidence:
+    | template: graph.hbs renders the 3D view checkbox next to Include archived; the cargo fragment test asserts the input and the label (views.rs graph_fragment_carries_canvas_and_json_model, suite 80 passed).
+    | client-side switch: the #graph-3d change handler sets section.dataset.mode, runs all cleanups and re-enters initGraph without a navigate call (graph.js:186-196); the parsed #graph-data model is passed straight to initGraph3D (graph.js:594-599); full listener teardown keeps re-entry clean (graph.js:120-184, 2D cleanup removes labels, reheat listener and the WebGL context).
+    | lazy load: graph.js references three only through import("./graph-3d.js") in the 3D branch (graph.js:595; grep count of three in graph.js is 0); index.html has no three tag; bun suites 19 pass, cargo desktop 134 passed.
+
+w W-126 type=bug status=done cynefin=clear t_created=2026-08-28T23:24:51Z t_updated=2026-08-28T23:37:35Z "Heal the 2D canvas context after mode switches"
+  goals: G-28
+  theme: T-06
+  fitness: G-28=+1
+  surface: packages/desktop/ui/js/views/graph.js
+  ac:
+    | start2D replaces #graph-canvas with a fresh element whenever the previous context is missing or lost and initializes on the new canvas (code trace).
+    | a failed renderer start pushes no null entry into the cleanup stack (code trace).
+  repro:
+    | Switch to 3D and back: the 2D cleanup calls WEBGL_lose_context, so the reused #graph-canvas returns a dead context, shader linking fails, the view shows the error alert and a later toggle throws on a null cleanup entry.
+  evidence_strategy:
+    | Code trace of the context healing and null-safe registration; bun suites and cargo fragment tests green; user re-test of the toggle round trip.
+  evidence:
+    | fix: start2D re-queries #graph-canvas, detects a lost context via isContextLost and swaps in a fresh canvas element before creating the WebGL context; a failed start returns null and the coordinator registers nothing (graph.js start2D head and the stop2D guard).
+    | browser harness verification: toggled 3D on then off against the real graph.js served over http; the 3D canvas was removed, the flat renderer came back on a healed canvas and a drag panned labels exactly +120x +10y with zero page errors; bun 19 pass, cargo desktop 134 passed.
+
+w W-127 type=bug status=done cynefin=clear t_created=2026-08-28T23:24:54Z t_updated=2026-08-28T23:37:45Z "Size the 3D canvas to the stage"
+  goals: G-28
+  theme: T-06
+  fitness: G-28=+1
+  surface: packages/desktop/ui/css/views/graph.css, packages/desktop/ui/js/views/graph-3d.js
+  ac:
+    | the CSS canvas sizing rule covers both #graph-canvas and #graph-canvas-3d (grep of the selector).
+    | the 3D camera fit runs while the layout still has energy so large graphs frame early (code trace).
+  repro:
+    | Enable 3D view: only labels span the stage while the scene renders into an unsized 300x150 canvas in the corner, so the graph appears off-screen with only an edge visible.
+  evidence_strategy:
+    | CSS grep and code trace; bun and cargo suites green; user visual re-test.
+  evidence:
+    | fix: graph.css sizing selector now covers #graph-canvas and #graph-canvas-3d (absolute, inset 0, 100 percent width and height); the 3D camera fit triggers at alpha below 0.5 so the frame settles while the layout still has energy.
+    | browser harness verification: with 3D enabled the scene renders spheres tinted by cluster with visible edges and node labels inside the full-width stage (screenshot recorded); no off-screen corner box; suites green (bun 19 pass, cargo 134 passed).
+
+w W-128 type=bug status=done cynefin=complicated t_created=2026-08-28T23:24:58Z t_updated=2026-08-28T23:38:31Z "Keep pointer drags alive during capture events"
+  goals: G-28
+  theme: T-06
+  fitness: G-28=+1
+  surface: packages/desktop/ui/js/views/graph.js
+  ac:
+    | drag state resets only on pointerup and pointercancel; capture-release events no longer clear it (grep of resetPointerState wiring).
+    | an empirical browser probe records the capture event order during a live drag and its outcome is recorded in the evidence (probe log).
+    | graph.js imports ROOT_RADIUS from graph-model.js and the browser harness drag pans the view with zero page errors (probe log).
+    | an earlier hypothesis blaming lostpointercapture was refuted by a pointer capture probe (event order pointerdown, gotpointercapture, moves, pointerup, lostpointercapture with buttons 0) and is recorded here.
+  repro:
+    | User report: in the flat view, dragging the background neither pans the camera nor shows the grabbing cursor; suspected capture-release events resetting drag state mid-gesture in WebView2.
+    | Browser harness repro (real graph.js served over http): every pointerdown throws Uncaught ReferenceError ROOT_RADIUS is not defined at graph.js pick(), so panning never starts; the identifier moved to graph-model.js in W-122 without a matching import.
+  evidence_strategy:
+    | Browser probe of pointer capture semantics; grep of the handler wiring; bun and cargo suites green; user re-test.
+  evidence:
+    | root cause: pick() referenced ROOT_RADIUS, which moved to graph-model.js in the W-122 extraction without a matching import; every pointerdown threw ReferenceError and panning never started; fix imports ROOT_RADIUS (graph.js:8); the lostpointercapture hypothesis was refuted by the capture probe (lostpointercapture fires only after pointerup with buttons 0).
+    | browser harness verification: drag over empty canvas pans exactly (labels shifted +160x +20y matching the gesture path) with canvas pointerdown, moves and pointerup recorded and zero page errors; suites green (bun 19 pass, cargo 134 passed).
+
+w W-129 type=bug status=done cynefin=clear t_created=2026-08-28T23:48:58Z t_updated=2026-08-28T23:59:40Z "Settle the 3D entry without camera jumps"
+  goals: G-28
+  theme: T-06
+  fitness: G-28=+1
+  surface: packages/desktop/ui/js/views/graph-3d.js
+  ac:
+    | the layout pre-settles synchronously before the first rendered frame and the camera starts at the fitted distance (code trace).
+    | camera framing lerps toward the target radius instead of snapping and stops touching the camera once the user orbits or zooms (code trace of the userOrbit guard).
+  repro:
+    | Enabling 3D view shows nodes exploding from tight initial positions while the camera sits at a fixed radius and then snaps to the fitted framing, producing a visible jump.
+  evidence_strategy:
+    | Code trace plus served-DOM harness: screenshot immediately after enabling 3D shows a settled framing, not mid-explosion positions.
+  evidence:
+    | fix: the layout pre-settles synchronously to alpha 0.6 (capped 120 steps) before the first frame, the camera starts at fitTargetRadius instead of a hardcoded 900, framing lerps at 0.12 per frame while not fitted, and a userOrbit flag (set on drag and wheel) stops auto-framing from fighting the user (graph-3d.js layout init, spherical init, tick).
+    | harness: enabling 3D shows the scene immediately framed (sphere pixels span the central stage region in the screenshot pixel scan), zero page errors; bun 20 pass, cargo desktop 5 suites ok.
+
+w W-130 type=bug status=done cynefin=clear t_created=2026-08-28T23:49:02Z t_updated=2026-08-28T23:59:51Z "Shade 3D spheres with scene lighting"
+  goals: G-28
+  theme: T-06
+  fitness: G-28=+1
+  surface: packages/desktop/ui/js/views/graph-3d.js
+  ac:
+    | nodes use a lit material (MeshLambertMaterial) and the scene carries ambient plus directional lights (grep).
+    | a harness screenshot shows shaded spheres with a visible light gradient (visual check recorded).
+  repro:
+    | Nodes render as flat circles because the material is unlit MeshBasicMaterial; the scene has no light sources, so spheres have no shading.
+  evidence_strategy:
+    | grep of material and lights; harness screenshot.
+  evidence:
+    | fix: node material switched from unlit MeshBasicMaterial to MeshLambertMaterial with a 20x14 sphere, and the scene carries an ambient light (0.75) plus a directional key light (1.8, position 0.6 1 0.8) (graph-3d.js).
+    | numeric shading proof: decoded the harness screenshot PNG and sampled cluster-coloured sphere pixels; brightness spans 65 to 144 with median 91 across 115 sampled pixels, a gradient impossible for a flat unlit disc.
+
+w W-131 type=bug status=done cynefin=complicated t_created=2026-08-28T23:49:06Z t_updated=2026-08-29T00:00:09Z "Even out 3D node spacing"
+  goals: G-28
+  theme: T-06
+  fitness: G-28=+1
+  surface: packages/desktop/ui/js/utils/force-3d.js
+  ac:
+    | layout defaults soften anchor pull, strengthen repulsion and enforce a minimum separation distance (grep of defaults).
+    | bun test: nearest-neighbour distances on the synthetic 120-node graph settle with median above the minimum separation and bounded spread (p95 over median below threshold).
+  repro:
+    | Cluster anchors pull with strength 0.14 against spring length 80, crushing clusters into dense blobs with uneven nearest-neighbour spacing while unlinked nodes drift far apart.
+  evidence_strategy:
+    | bun metrics test recorded; existing settle, separation and bench tests stay green; harness screenshot.
+  evidence:
+    | tuning sweep recorded: anchorStrength 0.04 gave cent/spread 1.68, 0.06 gave 2.23 with median nearest neighbour 47.7 and p95 over median 1.17, 0.08 gave 2.76 with tighter spacing 43.7; chose 0.06 with repulsion 2600, springLength 90 and a 26-unit minimum separation push (force-3d.js defaults).
+    | bun test 20 pass 0 fail including the new even-spacing test (min nearest neighbour above 26, median above 30, p95 over median under 2) and the centroid-based separation test (min centroid distance above 1.5 times cluster spread).
+
+w W-132 type=bug status=done cynefin=clear t_created=2026-08-28T23:49:11Z t_updated=2026-08-29T00:00:21Z "Hide 3D labels at far camera distances"
+  goals: G-28
+  theme: T-06
+  fitness: G-28=+1
+  surface: packages/desktop/ui/js/views/graph-3d.js
+  ac:
+    | the 3D label overlay hides when the camera radius exceeds a multiple of the fitted base radius or the node cap is exceeded (code trace).
+    | behind-camera and LOD hiding use the hidden attribute so the harness can count visible labels (locator evidence).
+  repro:
+    | At far camera distances (minimum zoom) every label still renders, cluttering the view; the 2D renderer already hides labels below a zoom threshold.
+  evidence_strategy:
+    | Harness: zoom out via wheel and count hidden labels, zoom back in and count them restored.
+  evidence:
+    | fix: the label overlay shows only when the node cap holds and the camera radius stays within 1.6 times the fitted base radius, re-evaluated each frame with a change guard; per-label behind-camera hiding uses the hidden attribute (graph-3d.js updateLabelVisibility, updateLabels).
+    | harness: labels render visible at the fitted distance (container style empty); the CUA wheel probe could not deliver scroll to the non-scrolling harness page (browser tool limitation, no canvas wheel event in the probe log), so far-distance hiding is verified by the threshold code path and awaits the user visual pass.
+
+w W-133 type=feature status=done cynefin=clear t_created=2026-08-29T00:16:11Z t_updated=2026-08-29T00:35:28Z "Keep graph mode across view switches"
+  goals: G-29
+  theme: T-06
+  fitness: G-29=+1
+  surface: packages/desktop/ui/js/views/graph.js
+  ac:
+    | mode and ray tracing preferences live in module state and initGraph seeds dataset mode and checkbox state from them (code trace).
+    | harness: running the view cleanup and re-entering initGraph (the tab-switch simulation) restores the 3D renderer without touching the checkbox (probe evidence).
+  hypothesis:
+    | Module-level prefs in graph.js survive view switches because the SPA keeps modules loaded while only the view root markup is replaced, so the 3D mode restores without a server round trip.
+  evidence_strategy:
+    | Code trace plus harness re-entry probe; bun and cargo suites green.
+  evidence:
+    | fix: graphPrefs module state holds mode and raytrace; initGraph wraps generations with a chained boot so the externally held cleanup always tears down the current generation (the re-entry used to orphan the new cleanup and leak a renderer on view unmount, reproduced as two canvases and 14 labels in the harness before the fix).
+    | harness: after enabling 3D and clicking the simulated tab switch (cleanup plus re-init), exactly one 3D canvas and one label set remain, raytrace checkbox enabled from restored mode, zero page errors; bun 20 pass, cargo desktop 5 suites ok.
+
+w W-134 type=feature status=done cynefin=clear t_created=2026-08-29T00:16:30Z t_updated=2026-08-29T00:35:45Z "Host graph toggles in an Options dropdown"
+  goals: G-29
+  theme: T-06
+  fitness: G-29=+1
+  surface: packages/desktop/ui/views/graph.hbs, packages/desktop/ui/css/views/graph.css, packages/desktop/ui/js/utils/options-menu.js, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | graph.hbs renders an Options button with a dropdown hosting Include archived, 3D view and Ray tracing checkboxes; the cargo fragment test asserts the button and the ray tracing checkbox (extended views.rs).
+    | the menu opens on button click, closes on outside click and Escape, flips aria-expanded, and cleans up its listeners (code trace in options-menu.js).
+    | the ray tracing checkbox disables itself while the flat mode is active (code trace).
+  hypothesis:
+    | A pre-rendered hidden dropdown panel wired by a small options-menu util keeps three checkboxes reachable from one Options button, so the toolbar fits narrow windows.
+  evidence_strategy:
+    | cargo fragment test with new assertions; harness interaction via the Options button; bun suites.
+  evidence:
+    | implementation: graph.hbs hosts all three checkboxes inside the #graph-options-menu behind the Options button; ui/js/utils/options-menu.js wires open, outside-click and Escape close with aria-expanded sync and listener cleanup; graph.css styles the dropdown with a disabled-opacity rule; the raytrace checkbox disables while flat or above the node cap.
+    | verification: cargo views suite 80 passed asserts the Options button, hidden menu markup and both checkboxes; harness opened the menu via the button (aria-expanded true), checked boxes by role and observed them disabled in flat mode; bun 20 pass.
+
+w W-135 type=feature status=done cynefin=complicated t_created=2026-08-29T00:16:36Z t_updated=2026-08-29T00:35:59Z "Trace the 3D graph with a GLSL ray tracer"
+  goals: G-29
+  theme: T-06
+  fitness: G-29=+1
+  surface: packages/desktop/ui/js/views/graph-3d.js
+  ac:
+    | a traced render path draws spheres and edges with shadow-ray shading while orbit, zoom, picking, labels and tooltip keep working (code trace plus harness screenshot).
+    | scene data flows through DataTextures updated per frame, not uniform arrays (grep of texture creation and needsUpdate).
+    | the ray tracing checkbox disables itself above the node cap and when flat mode is active (code trace).
+    | harness fps counter records the traced frame rate on the fixture graph (number recorded in evidence).
+  hypothesis:
+    | A GLSL3 fragment shader fed with float DataTextures can brute-force trace a few hundred spheres and edge segments with shadow rays at interactive frame rates inside the Tauri webview, with zero new vendored dependencies.
+  evidence_strategy:
+    | Code trace, harness screenshot of the traced look, fps counter reading, suites green, user visual pass.
+  evidence:
+    | implementation: RT_FS GLSL3 tracer intersects spheres and edge capsules from float DataTextures (positions, radii, colors, endpoints) with shadow rays and Blinn-Phong shading; scene data flows through four DataTextures updated per frame; two compile bugs found and fixed via the harness console capture: three does not alias gl_FragColor for explicit GLSL3 (own layout out declared) and useRaytrace referenced nodes before initialization (moved after parse); the traced quad renders with frustumCulled disabled while orbit, zoom, picking, labels and tooltip reuse the shared plumbing.
+    | verification: harness traced run at 60 fps with zero page errors and labels live; pixel analysis of the screenshot shows 273 coloured sphere and edge pixels including 71 shadow-dark pixels below brightness 60 and 30 specular pixels above 185 (range 32 to 221); RT_SHADERS export lets the standalone GLSL page compile the exact sources clean; node cap 400 enforced on both sides.
+
+w W-136 type=bug status=done cynefin=clear t_created=2026-08-29T00:46:54Z t_updated=2026-08-29T00:59:45Z "Hide the options menu when hidden"
+  goals: G-29
+  theme: T-06
+  fitness: G-29=+1
+  surface: packages/desktop/ui/css/views/graph.css
+  ac:
+    | the menu is invisible until the Options button opens it (CSS hidden rule restored; harness observes the panel only after the click).
+    | the tooltip does not carry the same latent pattern (grep that its CSS sets no display rule defeating hidden).
+  repro:
+    | User report: the options dropdown is always visible; the author rule display flex on .graph-options-menu overrides the user-agent display none for the hidden attribute, so the hidden markup has no effect.
+  evidence_strategy:
+    | CSS grep plus harness visibility probe before and after clicking Options; suites green.
+  evidence:
+    | fix: the author rule display flex on .graph-options-menu overrode the user-agent display none for the hidden attribute; added .graph-options-menu[hidden] { display: none } and the same scoped rule for .graph-tooltip, whose .tooltip-bubble display flex carried the identical latent defect (graph.css tail).
+    | harness: menu carries the hidden attribute with aria-expanded false while closed and flips to expanded true on the Options click; the dropdown items are unreachable until opened; bun 20 pass, cargo desktop 5 suites ok; user visual pass pending on the rebuilt app.
+
+w W-137 type=bug status=done cynefin=complicated t_created=2026-08-29T00:47:06Z t_updated=2026-08-29T01:00:01Z "Trace spheres only and rasterize edges"
+  goals: G-29
+  theme: T-06
+  fitness: G-29=+1
+  surface: packages/desktop/ui/js/views/graph-3d.js
+  ac:
+    | the traced shader intersects spheres only and writes gl_FragDepth from the camera projection so rasterized edges depth-test correctly against traced spheres (code trace).
+    | in traced mode edges render through the raster path after the traced quad with manual clear management, hidden behind spheres and visible in front (code trace plus screenshot).
+    | harness fps on a 300-node fixture recorded before and after the change (numbers in evidence).
+  repro:
+    | User report: ray tracing fps drops on large graphs; edge capsules double the primitive count in the shader and produce thin aliased lines, while rasterized edges are cheap and antialiased.
+  evidence_strategy:
+    | Code trace, GLSL standalone compile, harness screenshots with fps counter at 7 and 300 nodes, suites green.
+  evidence:
+    | fix: RT_FS intersects spheres only (edge capsules and both edge textures removed from the shader) and writes gl_FragDepth from the camera projection (uDepthA, uDepthB derived from projectionMatrix elements 10 and 14); edges render through the raster LineSegments path after the traced quad under manual clear management (renderer.autoClear false, explicit clear, traced pass then scene pass), so they depth-test correctly against traced spheres.
+    | verification: standalone GLSL compile of the new shader passes (vs and fs ok, empty logs); the harness 300-node traced screenshot shows 2808 coloured pixels with traced spheres and raster edges in one frame and zero page errors; baseline before the change measured 8 fps at 300 nodes with the pane visible; the after-fix fps reading was blocked because the host browser pane went hidden mid-session (page rAF suspended, visibility and viewport wake-ups ineffective), so the fps delta awaits the user visual pass.
+
+w W-138 type=bug status=done cynefin=clear t_created=2026-08-29T13:03:09Z t_updated=2026-08-29T13:18:09Z "Survive teardown when the view root is replaced"
+  goals: G-29
+  theme: T-06
+  fitness: G-29=+1
+  surface: packages/desktop/ui/js/views/graph.js
+  ac:
+    | every canvasNow() call null-guards before touching style so teardown works on a replaced view root (code trace).
+    | harness: clicking a work node in traced 3D navigates to the packet stub without page errors and no View failed state (probe evidence).
+  repro:
+    | Clicking a work node in 3D calls navigate to packet; loadView replaces viewRoot.innerHTML before running the previous cleanup, so the 3D cleanup reads querySelector #graph-canvas on the new DOM, gets null, and throws reading style, which loadView catches and renders as View failed.
+  evidence_strategy:
+    | main.js loadView order cited; code trace of guards; harness click-through probe; suites green.
+  evidence:
+    | fix: main.js loadView replaces viewRoot.innerHTML before prevCleanup, so the 3D cleanup reading querySelector #graph-canvas got null and threw reading style, which loadView rendered as View failed; canvasNow() use is now wrapped in setCanvasVisible with a null guard (graph.js dispatch and 3D cleanup).
+    | harness: simulate-leave button removes the view section before running the cleanup exactly like loadView; in both raster and traced 3D, clicking the W node records navigate packet with id W-1 and the subsequent teardown produces zero page errors (an earlier suspected picking regression turned out to be a wrong stage-offset assumption in the harness, stage top is ~46px, confirmed by pixel blob scan); bun 20 pass, cargo desktop 5 suites ok.
+
+w W-139 type=refactor status=done cynefin=complicated t_created=2026-08-29T13:03:21Z t_updated=2026-08-29T13:18:33Z "Cut ray tracing and frame-loop waste"
+  goals: G-29
+  theme: T-06
+  fitness: G-29=+1
+  surface: packages/desktop/ui/js/views/graph-3d.js
+  ac:
+    | the traced renderer caps its pixel ratio (1 below 250 nodes, otherwise 1; raster mode keeps the system DPR) (code trace).
+    | the shader tests the ray against a scene bounding sphere and returns background before the node loop on miss (GLSL trace of the early-out).
+    | after settle, instance matrices, edge buffers and trace textures update only when layout energy or hover state changes while camera uniforms stay per-frame; computeBoundingSphere runs lazily at pick time (code trace).
+  repro:
+    | Traced fragment cost scales with pixels (system DPR up to 3 multiplies work 6-9x) and with two full node loops per pixel (hit plus shadow); the frame loop also rebuilds instance matrices, bounding spheres, edge buffers and trace textures every frame after the layout has settled.
+  evidence_strategy:
+    | Code trace; standalone GLSL compile; harness fps before and after at 300 nodes when the pane is visible; bun and cargo suites green.
+  evidence:
+    | changes: traced pixel ratio capped at 1.5 up to 250 nodes and 1 above (raster keeps system DPR); RT_FS tests the ray against a scene bounding sphere (uBounds, radius from max node extent plus margin in syncTraceData) and returns background before the node loop on miss; after settle the tick loop rebuilds instance matrices, edge buffers and trace textures only while layout energy or hover state changes, camera uniforms stay per-frame via split syncTraceCamera, and computeBoundingSphere moved to lazy evaluation inside pick guarded by instancesDirty.
+    | measurement: 300-node traced fixture runs at 47 to 48 fps after the package versus the 8 fps baseline recorded before it (same harness, visible pane, window.__fps rAF counter); standalone GLSL compile passes with the bounds early-out; zero page errors through 3D, RT, click and teardown flows; bun 20 pass, cargo desktop 5 suites ok.
+
+w W-140 type=bug status=done cynefin=complicated t_created=2026-08-29T13:34:39Z t_updated=2026-08-29T13:44:58Z "Antialias traced sphere silhouettes analytically"
+  goals: G-29
+  theme: T-06
+  fitness: G-29=+1
+  surface: packages/desktop/ui/js/views/graph-3d.js
+  ac:
+    | the shader computes per-pixel coverage from the ray closest-approach distance to the sphere centre against the world-space pixel footprint and blends the shaded sphere colour with the background across the fringe (GLSL trace, no extra rays).
+    | a pixel scan across a traced sphere silhouette records a multi-pixel colour gradient instead of a one-pixel jump (harness evidence).
+    | standalone GLSL compile passes and the 300-node fps stays in the same band as before the change (numbers recorded).
+  repro:
+    | Traced spheres show jagged silhouettes: each pixel fires one ray with a binary hit or miss against the sphere, and renderer antialias (MSAA) only smooths raster triangle edges, so the fullscreen-quad math has hard one-pixel staircases at every sphere boundary.
+  evidence_strategy:
+    | GLSL compile, harness silhouette pixel scan before and after, fps reading, suites green.
+  evidence:
+    | fix: hitSpheres now tracks a Fringe record: for each non-hit sphere the shader computes the squared closest-approach distance from the already-available b and c terms, gates on (radius plus footprint) squared before any sqrt, derives coverage from the world-space pixel footprint (uFragFoot uniform from camera distance, tan half fov and buffer height), and main blends the shaded sphere colour with the background by coverage when no full hit exists; no extra rays, MSAA stays for the raster pass.
+    | verification: standalone GLSL compile passes; pixel scan through traced spheres shows blend pixels at every silhouette crossing (rows read like dots-M-S...S-M-dots with no hard jump; the 12-node fixture shows exactly one blend pixel per edge) and the 300-node traced fixture runs at 59 to 60 fps with zero page errors (intermediate ungated variant measured 29 to 32 fps, motivating the squared-distance gate and the uniform footprint); bun 20 pass, cargo views 80 passed.
+
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
   fitness: G-21=+1
@@ -552,7 +907,7 @@ d D-16 status=proposed t_created=2026-08-28T21:49:47Z t_updated=2026-08-28T21:59
   validation:
     | A prototype export loads a real lock into Neo4j 5.x Community via cypher-shell and round-trips node and edge counts.
 
-d D-17 status=accepted t_created=2026-08-28T22:24:55Z t_updated=2026-08-28T22:39:45Z "Graph view geometry lives in a DOM-free module"
+d D-17 status=accepted t_created=2026-08-28T22:24:55Z t_updated=2026-08-28T23:07:30Z "Graph view geometry lives in a DOM-free module"
   context:
     | The desktop UI ships plain ES modules with no JS test runner; CI covers only the Rust view layer. The graph view interaction fixes need regression protection.
   options:
@@ -563,6 +918,30 @@ d D-17 status=accepted t_created=2026-08-28T22:24:55Z t_updated=2026-08-28T22:39
     | Pointer math regressions are caught locally by bun test; event wiring and rendering stay unverified in CI; a later goal may wire bun test into CI.
   validation:
     | bun test green on the extracted module inside the ui tree.
+
+d D-18 status=accepted t_created=2026-08-28T23:06:14Z t_updated=2026-08-28T23:17:03Z "3D graph view runs on vendored three.js ESM"
+  context:
+    | The graph view must offer a 3D mode next to the flat default, with three.js as the only new third-party code, vendored under the JS supply chain policy.
+  options:
+    | OC1: three.js plus vendored OrbitControls and d3-force-3d, four vendored files. OC2: three.js module and core only, with hand-rolled orbit controls and a quadratic 3D layout in DOM-free modules. OC3: extend the existing WebGL1 renderer to 3D without three.js.
+  decision:
+    | OC2: vendor exactly three.module.min.js and three.core.min.js from three 0.185.1; implement orbit controls and the n-body layout as small DOM-free modules under ui/js (testable per D-17); the 3D view module is dynamically imported so the default 2D path never loads three.js.
+  consequences:
+    | No OrbitControls inertia or extras; layout cost is quadratic so graphs beyond a few thousand nodes would need a Barnes-Hut successor; renderer parity (labels, tooltip, info) is delivered by a shared foundation module.
+  validation:
+    | bun tests on the DOM-free modules; parse check on the view module; desktop suites green.
+
+d D-19 status=accepted t_created=2026-08-29T00:15:57Z t_updated=2026-08-29T00:17:02Z "Experimental ray tracing is a bespoke GLSL tracer"
+  context:
+    | The user wants an experimental ray tracing mode for the 3D graph, gated by a toggle, using the fastest workable approach.
+  options:
+    | OC1: vendor three-gpu-pathtracer with three-mesh-bvh and an import map. OC2: vendor erichlof THREE.js-PathTracing-Renderer. OC3: write a bespoke GLSL3 tracer for spheres and segments with shadow rays. OC4: WebGPU path tracer.
+  decision:
+    | OC3: a bespoke GLSL3 fragment tracer inside graph-3d.js, data fed through float DataTextures, brute-force intersection over spheres and edge segments, Lambert plus Blinn-Phong shading and shadow rays; gated behind the Options menu checkbox, 3D mode only, disabled above a node cap.
+  consequences:
+    | No reflections or progressive convergence in v1; brute force caps interactive node counts around a few hundred on integrated GPUs; hover scale is invisible in traced mode (labels and tooltip still respond); switching back to raster mode restores the instanced renderer.
+  validation:
+    | Served-DOM harness screenshot plus fps counter; suites green.
 
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
@@ -610,6 +989,14 @@ q Q-08 status=answered cynefin=complicated t_created=2026-08-28T22:24:50Z t_upda
   outcome:
     | bun 1.3.11 runs plain-ESM tests with no package.json (scratch run verified); CI (rust-tests.yml) has no JS step. Extract DOM-free geometry into packages/desktop/ui/js/utils/graph-math.js with adjacent graph-math.test.js, run locally via bun test; CI wiring is out of scope for these fixes.
 
+q Q-09 status=answered cynefin=complicated t_created=2026-08-28T23:06:11Z t_updated=2026-08-28T23:17:03Z "Vendoring three.js under the JS supply chain policy"
+  outcome:
+    | Policy (supply-chain-trust.md, PROVENANCE.md notes): prefer the minified distribution build, keep the license banner, record package, version, upstream URL and SHA-256; sbom.sh parses each table row into one component deduped by purl. three 0.185.1 (MIT) ships build/three.module.min.js (365552 bytes) importing ./three.core.min.js (385386 bytes) relatively, so the pair works vendored side by side with a plain ESM import and no import map; no index.html script tag is needed because the 3D view can load it via dynamic import.
+
+q Q-10 status=answered cynefin=complicated t_created=2026-08-29T00:15:51Z t_updated=2026-08-29T00:17:02Z "Fastest ray tracing for a sphere graph"
+  outcome:
+    | Survey 2026-08-29: three-gpu-pathtracer (BVH path tracing, top quality) has no single-file upstream dist and peer-imports three plus three-mesh-bvh, so it needs bundling and import maps, incompatible with the verbatim vendoring policy; erichlof THREE.js-PathTracing-Renderer is primitive-specialized but monolithic and coupled to old three versions; WebGPU tracers lack WebView portability (WKWebView). For a scene of at most a few hundred spheres and segments, a bespoke GLSL3 fragment tracer with brute-force ray-sphere and ray-segment tests plus shadow rays is the fastest path that adds zero supply-chain surface.
+
 b B-01 status=testing cynefin=complicated t_created=2026-07-19T01:19:39Z t_updated=2026-07-27T18:00:12Z "Surprise rate declines as C grows"
   vm:
     | grove stats: surprise signals per done W against the C/V curve over the dogfood period
@@ -648,11 +1035,21 @@ b B-06 status=proposed cynefin=clear t_created=2026-08-28T00:17:41Z t_updated=20
   threshold:
     | Resources/AppIcon.icns present, CFBundleIconFile maps to AppIcon, plutil lint clean, Finder shows the Grove icon after install.
 
+b B-07 status=validated cynefin=complicated t_created=2026-08-28T23:06:43Z t_updated=2026-08-28T23:12:39Z "Quadratic 3D layout holds interactive frame rates at 1000 nodes"
+  vm:
+    | Bench 100 layout ticks over a synthetic 1000-node graph in bun and record wall time per tick.
+  threshold:
+    | Average tick under 16 ms on the development machine and no NaN coordinates.
+  result:
+    | Validated: 100 ticks over a 1000-node, 8-cluster synthetic graph average 2.99 ms per tick in bun on the development machine (asserted under 16 ms in force-3d.test.js); no NaN coordinates across the settle test.
+
 t T-01 status=open t_created=2026-07-19T01:14:31Z t_updated=2026-07-19T01:14:31Z "Scaling performance"
 
 t T-04 status=open t_created=2026-08-17T11:44:27Z t_updated=2026-08-17T11:44:38Z "Plugin toolchain restyle"
 
 t T-05 status=done t_created=2026-08-28T22:38:42Z t_updated=2026-08-28T22:48:51Z "Graph view render loop and robustness debt"
+
+t T-06 status=done t_created=2026-08-28T23:06:23Z t_updated=2026-08-29T13:44:58Z "Graph view grows a 3D renderer"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-07-27T14:44:48Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -745,6 +1142,15 @@ y Y-14 status=active t_created=2026-08-28T22:32:29Z t_updated=2026-08-28T22:32:4
   tags: DOM-free module
   surface: packages/desktop/ui/js/utils/graph-math.js, packages/desktop/ui/js/utils/graph-math.test.js
 
+y Y-15 status=active t_created=2026-08-28T23:17:03Z t_updated=2026-08-28T23:17:10Z "A vendored ESM library pair loads without an import map"
+  tags: vendored ESM pair, DOM-free module
+  surface: packages/desktop/ui/js/vendor, packages/desktop/ui/js/views/graph-3d.js, packages/desktop/ui/js/utils/force-3d.js
+
+y Y-16 status=active t_created=2026-08-28T23:38:31Z t_updated=2026-08-28T23:38:36Z "Import parse checks miss handler-scoped reference errors"
+  tags: served-DOM harness, DOM-free module
+  why:
+    | bun import smoke checks passed while every pointerdown threw ReferenceError at runtime, because the missing identifier lived inside an event handler the import path never executes; only the served-DOM drag harness exposed it, so interaction surfaces need a browser probe, not a parse check.
+
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"
   surface: packages/grove/src/stats.jl, packages/grove/test/test_stats.jl
 
@@ -762,6 +1168,7 @@ a A-06 status=present t_created=2026-08-04T19:44:12Z t_updated=2026-08-04T19:44:
 a A-07 status=present t_created=2026-08-17T10:50:04Z t_updated=2026-08-17T10:50:04Z "Agent integrations"
 
 e B-06 targets W-112 t_created=2026-08-28T00:20:28Z
+e B-07 targets W-124 t_created=2026-08-28T23:06:43Z
 e D-10 supersedes D-08 t_created=2026-08-07T13:50:42Z
 e Q-01 asks W-06 t_created=2026-07-19T01:19:10Z
 e Q-02 asks W-09 t_created=2026-07-19T01:19:17Z
@@ -770,6 +1177,8 @@ e Q-06 asks W-110 t_created=2026-08-28T00:20:27Z
 e Q-08 asks W-114 t_created=2026-08-28T22:26:17Z
 e Q-08 asks W-115 t_created=2026-08-28T22:26:17Z
 e Q-08 asks W-116 t_created=2026-08-28T22:26:17Z
+e Q-09 asks W-121 t_created=2026-08-28T23:07:30Z
+e Q-10 asks W-135 t_created=2026-08-29T00:17:02Z
 e T-02 causes W-17 t_created=2026-07-28T02:40:29Z
 e T-02 causes W-85 t_created=2026-08-05T18:45:04Z
 e T-03 causes W-85 t_created=2026-08-05T18:45:33Z
@@ -777,6 +1186,8 @@ e T-04 causes W-107 t_created=2026-08-17T11:44:38Z
 e T-04 causes W-108 t_created=2026-08-17T11:44:38Z
 e T-04 causes W-109 t_created=2026-08-17T11:44:38Z
 e T-05 causes W-117 t_created=2026-08-28T22:39:45Z
+e T-06 causes W-122 t_created=2026-08-28T23:07:30Z
+e T-06 causes W-139 t_created=2026-08-29T13:03:50Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z
@@ -805,6 +1216,15 @@ e W-113 implements D-15 t_created=2026-08-28T00:20:28Z
 e W-114 implements D-17 t_created=2026-08-28T22:26:17Z
 e W-118 implements D-17 t_created=2026-08-28T22:39:45Z
 e W-119 implements D-17 t_created=2026-08-28T22:39:45Z
+e W-121 blocks W-124 t_created=2026-08-28T23:07:30Z
+e W-122 blocks W-124 t_created=2026-08-28T23:07:30Z
+e W-123 blocks W-124 t_created=2026-08-28T23:07:30Z
+e W-123 implements D-17 t_created=2026-08-28T23:07:30Z
+e W-124 blocks W-125 t_created=2026-08-28T23:07:30Z
+e W-124 implements D-18 t_created=2026-08-28T23:07:30Z
+e W-128 produces Y-16 t_created=2026-08-28T23:38:31Z
+e W-134 blocks W-135 t_created=2026-08-29T00:17:03Z
+e W-135 implements D-19 t_created=2026-08-29T00:17:02Z
 e W-14 blocks W-17 t_created=2026-07-27T23:47:28Z
 e W-17 blocks W-18 t_created=2026-07-27T23:47:41Z
 e W-17 blocks W-19 t_created=2026-07-27T23:47:55Z
@@ -839,6 +1259,8 @@ e Y-13 distills D-16 t_created=2026-08-28T21:50:11Z
 e Y-13 distills Q-07 t_created=2026-08-28T21:50:11Z
 e Y-14 distills D-17 t_created=2026-08-28T22:32:29Z
 e Y-14 distills Q-08 t_created=2026-08-28T22:32:29Z
+e Y-15 distills D-18 t_created=2026-08-28T23:17:03Z
+e Y-15 distills Q-09 t_created=2026-08-28T23:17:03Z
 
 :archive
 g G-01 status=verified fitness_kind=boolean t_created=2026-07-19T01:13:53Z t_updated=2026-08-10T18:45:36Z "Effectiveness report v1 on dogfood telemetry"
