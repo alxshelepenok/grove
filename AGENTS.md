@@ -37,3 +37,13 @@ Each skill document contains:
 - Usage scenarios and recommendations.
 
 Agents should reference these documents when working on related tasks to ensure consistency and follow established patterns.
+
+## Assertion grounding
+
+Agents state plausible-sounding but ungrounded claims about repository content with high fluency and no internal uncertainty signal, including about code they just wrote. Recall is not evidence. The rules below are binding for any statement produced in this repository:
+
+- Every factual claim about a specific artifact (identifier behavior, semantics, values, colors, statuses, markup) requires a fresh read or grep of that artifact in the current session before the claim is written. If the artifact was not just read, read it first.
+- Deliverable prose that describes the system (posts, docs, README sections, release notes) carries a claims ledger while drafting: each claim mapped to the source that proves it. Unmapped claims get verified or cut.
+- Descriptions of code prefer file:line pointers over paraphrase. A pointer is checkable in one click, a paraphrase is trust.
+- A green parse, import, or unit suite over pure modules is not verification for runtime paths (event handlers, shaders, DOM teardown). Execute the path or label the statement as unverified.
+- Claims about the repo that cannot be grounded this way are labeled as guesses in the same sentence.
