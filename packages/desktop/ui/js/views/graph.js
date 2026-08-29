@@ -1,45 +1,31 @@
 import { SearchableSelect } from "../utils/searchable-select.js";
 import { wireFilterTabsFades } from "../utils/filter-tabs.js";
 import { pickSearchRadius, screenHitRadius } from "../utils/graph-math.js";
-import { KIND_INFO, statusVariant } from "../utils/graph-status.js";
 import { parseCssColor } from "../utils/css-color.js";
+import {
+  RAYTRACE_MAX_NODES,
+  ROOT_CLUSTER,
+  ROOT_RADIUS,
+  createClusterFills,
+  nodeAlpha,
+  nodeFillFor,
+  nodeRadius,
+  parseGraphModel,
+} from "../utils/graph-model.js";
+import { wireOptionsMenu } from "../utils/options-menu.js";
+import { createInfoPanel, createTooltip } from "./graph-panel.js";
 
-const CLUSTER_HUES = [
-  [262, 70, 60],
-  [184, 96, 53],
-  [166, 50, 44],
-  [43, 68, 62],
-  [342, 50, 62],
-  [280, 65, 68],
-  [191, 55, 35],
-  [262, 45, 66],
-  [166, 95, 40],
-  [43, 42, 52],
-  [342, 63, 55],
-];
-const ROOT_CLUSTER = "root";
-const ROOT_CLUSTER_RGB = [0.45, 0.45, 0.48];
-
-const FALLBACK_COLOR = "#5a5a5a";
 const EDGE_RGB = [0.55, 0.57, 0.62];
 const EDGE_ALPHA = 0.55;
 const CONTAINS_RGB = [0.42, 0.72, 0.62];
 const CONTAINS_ALPHA = 0.7;
 const BORDER_LIVE = [1, 1, 1];
 const BORDER_SOFT = [0.85, 0.87, 0.92];
-const NODE_RADIUS = 9;
-const ROOT_RADIUS = 15;
+const nodeBorder = (n) => (n.status === "progress" ? BORDER_LIVE : BORDER_SOFT);
 const LABEL_MIN_SCALE = 0.4;
 const LABEL_MAX_NODES = 200;
 const MIN_ZOOM = 0.15;
 const MAX_ZOOM = 4;
-
-const metaBadge = (text, variant = "neutral") => {
-  const chip = document.createElement("span");
-  chip.className = `badge badge-${variant} capitalize`;
-  chip.textContent = text;
-  return chip;
-};
 
 const NODE_VS = `
 attribute vec2 a_center;
@@ -97,32 +83,6 @@ void main() {
   gl_FragColor = vec4(u_color, u_alpha);
 }`;
 
-const hexToRgb = (hex) => {
-  const n = parseInt(hex.slice(1), 16);
-  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
-};
-
-const hslToRgb = (h, s, l) => {
-  s /= 100;
-  l /= 100;
-  const k = (n) => (n + h / 30) % 12;
-  const a = s * Math.min(l, 1 - l);
-  const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-  return [f(0), f(8), f(4)];
-};
-
-const nodeAlpha = (n) => {
-  if (n.archived) return 0.3;
-  if (n.kind === "w" && (n.status === "done" || n.status === "rejected")) return 0.45;
-  return 1.0;
-};
-
-const nodeBorder = (n) => (n.status === "progress" ? BORDER_LIVE : BORDER_SOFT);
-
-const nodeRadius = (n) => (n.kind === "root" ? ROOT_RADIUS : NODE_RADIUS);
-
-const kindStatus = (n) => (n.status ? `${n.kind}/${n.status}` : n.kind);
-
 const compile = (gl, type, src) => {
   const shader = gl.createShader(type);
   gl.shaderSource(shader, src);
@@ -147,7 +107,22 @@ const link = (gl, vs, fs) => {
 const CORNERS = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1];
 const FLOATS_PER_VERTEX = 12;
 
-export function initGraph(root, { navigate } = {}) {
+const graphPrefs = { mode: "2d", raytrace: false };
+
+export function initGraph(root, opts = {}) {
+  let stop = null;
+  const boot = () => {
+    stop?.();
+    stop = startGraphView(root, opts, boot);
+  };
+  boot();
+  return () => {
+    stop?.();
+    stop = null;
+  };
+}
+
+function startGraphView(root, { navigate } = {}, reenter = () => {}) {
   const stage = root.querySelector("#graph-stage");
   const canvas = root.querySelector("#graph-canvas");
   const labelsEl = root.querySelector("#graph-labels");
@@ -169,7 +144,103 @@ export function initGraph(root, { navigate } = {}) {
     return null;
   }
 
-  const gl = canvas.getContext("webgl", { antialias: true, alpha: false });
+  const section = root.querySelector(".view-graph");
+  const mode3d = graphPrefs.mode === "3d";
+  if (section) section.dataset.mode = graphPrefs.mode;
+  const currentKind = section?.dataset.kind || "all";
+  const currentFocus = section?.dataset.focus || "";
+  const currentArchived = () => archivedBox?.checked ?? false;
+  const cleanups = [];
+  const addCleanup = (fn) => cleanups.push(fn);
+  const runCleanups = () => {
+    while (cleanups.length) cleanups.pop()();
+  };
+
+  addCleanup(wireFilterTabsFades(root));
+  const chipHandlers = [];
+  for (const chip of root.querySelectorAll('[data-action="filter"]')) {
+    const onChip = () =>
+      navigate?.("graph", { kind: chip.dataset.status, archived: currentArchived() });
+    chip.addEventListener("click", onChip);
+    chipHandlers.push([chip, onChip]);
+  }
+  addCleanup(() => {
+    for (const [chip, onChip] of chipHandlers) chip.removeEventListener("click", onChip);
+  });
+
+  const focusWrap = root.querySelector("#graph-focus");
+  let focusSelect = null;
+  if (focusWrap) {
+    focusSelect = new SearchableSelect({
+      container: focusWrap,
+      placeholder: "Focus a node...",
+      emptyText: "No nodes",
+      renderOption: (item) => item.label,
+      onSelect: (item) =>
+        navigate?.("graph", {
+          kind: currentKind,
+          focus: item.id,
+          archived: currentArchived(),
+        }),
+    });
+  }
+  addCleanup(() => focusSelect?.destroy());
+
+  const focusClearBtn = root.querySelector("#graph-focus-clear");
+  const onFocusClear = () =>
+    navigate?.("graph", { kind: currentKind, archived: currentArchived() });
+  focusClearBtn?.addEventListener("click", onFocusClear);
+  addCleanup(() => focusClearBtn?.removeEventListener("click", onFocusClear));
+
+  const onArchived = () => {
+    navigate?.("graph", {
+      kind: currentKind,
+      focus: currentFocus,
+      archived: archivedBox.checked,
+    });
+  };
+  archivedBox?.addEventListener("change", onArchived);
+  addCleanup(() => archivedBox?.removeEventListener("change", onArchived));
+
+  addCleanup(wireOptionsMenu(root));
+
+  const modeToggle = root.querySelector("#graph-3d");
+  const raytraceToggle = root.querySelector("#graph-raytrace");
+  const raytraceAllowed = (model.nodes ?? []).length <= RAYTRACE_MAX_NODES;
+  if (modeToggle) modeToggle.checked = mode3d;
+  if (raytraceToggle) {
+    raytraceToggle.checked = mode3d && graphPrefs.raytrace && raytraceAllowed;
+    raytraceToggle.disabled = !mode3d || !raytraceAllowed;
+  }
+  const reenterView = () => reenter();
+  const onModeToggle = () => {
+    if (modeToggle.checked === mode3d) return;
+    graphPrefs.mode = modeToggle.checked ? "3d" : "2d";
+    section.dataset.mode = graphPrefs.mode;
+    reenterView();
+  };
+  modeToggle?.addEventListener("change", onModeToggle);
+  addCleanup(() => modeToggle?.removeEventListener("change", onModeToggle));
+
+  const onRaytraceToggle = () => {
+    if (!mode3d || !raytraceAllowed) return;
+    if (raytraceToggle.checked === graphPrefs.raytrace) return;
+    graphPrefs.raytrace = raytraceToggle.checked;
+    reenterView();
+  };
+  raytraceToggle?.addEventListener("change", onRaytraceToggle);
+  addCleanup(() => raytraceToggle?.removeEventListener("change", onRaytraceToggle));
+
+  const start2D = () => {
+  let canvas = root.querySelector("#graph-canvas");
+  let gl = canvas.getContext("webgl", { antialias: true, alpha: false });
+  if (gl?.isContextLost()) {
+    const fresh = document.createElement("canvas");
+    fresh.id = "graph-canvas";
+    canvas.replaceWith(fresh);
+    canvas = fresh;
+    gl = canvas.getContext("webgl", { antialias: true, alpha: false });
+  }
   if (!gl) {
     stage.insertAdjacentHTML(
       "beforeend",
@@ -178,24 +249,11 @@ export function initGraph(root, { navigate } = {}) {
     return null;
   }
 
-  const nodes = (model.nodes ?? []).map((n) => ({ ...n }));
-  const links = (model.edges ?? []).map((e) => ({
-    source: e.from,
-    target: e.to,
-    label: e.label,
-    virtual: e.virtual === true,
-  }));
+  const { nodes, links } = parseGraphModel(model);
   canvas.graphNodes = nodes;
 
   const clusterIds = [...new Set(nodes.map((n) => n.cluster ?? ROOT_CLUSTER))].sort();
-  const clusterFills = new Map([[ROOT_CLUSTER, ROOT_CLUSTER_RGB]]);
-  clusterIds
-    .filter((id) => id !== ROOT_CLUSTER)
-    .forEach((id, i) => {
-      const [h, s, l] = CLUSTER_HUES[i % CLUSTER_HUES.length];
-      clusterFills.set(id, hslToRgb(h, s, l));
-    });
-  const nodeFill = (n) => clusterFills.get(n.cluster) ?? hexToRgb(FALLBACK_COLOR);
+  const nodeFill = nodeFillFor(createClusterFills(nodes));
 
   const clusterCenters = new Map([[ROOT_CLUSTER, [0, 0]]]);
   const ringRadius = Math.max(240, 45 * Math.sqrt(nodes.length));
@@ -469,35 +527,8 @@ export function initGraph(root, { navigate } = {}) {
   };
   watchDpr();
 
-  const hideTooltip = () => {
-    tooltip.hidden = true;
-  };
-  const showTooltip = (n, mx, my) => {
-    tooltip.textContent = `${n.id} (${kindStatus(n)})${n.title ? `: ${n.title}` : ""}`;
-    tooltip.hidden = false;
-    const maxX = stage.clientWidth - tooltip.offsetWidth - 8;
-    const maxY = stage.clientHeight - tooltip.offsetHeight - 8;
-    const left = Math.max(8, Math.min(mx + 14, maxX));
-    const top = Math.max(8, Math.min(my + 16, maxY));
-    tooltip.style.left = `${Math.round(left)}px`;
-    tooltip.style.top = `${Math.round(top)}px`;
-  };
-  const hideInfo = () => {
-    info.hidden = true;
-  };
-  const showInfo = (n) => {
-    root.querySelector("#graph-info-id").textContent = n.id;
-    root.querySelector("#graph-info-title").textContent = n.title || "(untitled)";
-    const meta = root.querySelector("#graph-info-meta");
-    const chips = [metaBadge(KIND_INFO[n.kind] ?? n.kind)];
-    if (n.status) {
-      chips.push(metaBadge(n.status, statusVariant(n)));
-    }
-    if (n.wtype) chips.push(metaBadge(n.wtype));
-    if (n.archived) chips.push(metaBadge("archived", "warning"));
-    meta.replaceChildren(...chips);
-    info.hidden = false;
-  };
+  const tooltipPanel = createTooltip(root, stage);
+  const infoPanel = createInfoPanel(root);
 
   let panning = false;
   let downAt = null;
@@ -536,8 +567,8 @@ export function initGraph(root, { navigate } = {}) {
       scheduleDraw();
     }
     canvas.style.cursor = n ? "pointer" : "default";
-    if (n) showTooltip(n, e.offsetX, e.offsetY);
-    else hideTooltip();
+    if (n) tooltipPanel.show(n, e.offsetX, e.offsetY);
+    else tooltipPanel.hide();
   });
   canvas.addEventListener("pointerup", (e) => {
     const wasPan = panning;
@@ -549,19 +580,19 @@ export function initGraph(root, { navigate } = {}) {
     if (wasPan || moved > 4) return;
     const n = hit && pick(e.offsetX, e.offsetY);
     if (!n) {
-      hideInfo();
+      infoPanel.hide();
       return;
     }
     if (n.kind === "w" && navigate) {
       navigate("packet", { id: n.id });
     } else {
-      showInfo(n);
+      infoPanel.show(n);
     }
   });
   canvas.addEventListener("pointercancel", resetPointerState);
   canvas.addEventListener("lostpointercapture", resetPointerState);
   canvas.addEventListener("pointerleave", () => {
-    hideTooltip();
+    tooltipPanel.hide();
     if (hovered) {
       hovered = null;
       draw();
@@ -583,55 +614,50 @@ export function initGraph(root, { navigate } = {}) {
     },
     { passive: false },
   );
-  reheatBtn?.addEventListener("click", () => {
+  const onReheat = () => {
     userCamera = false;
     simulation.alpha(0.6).restart();
-  });
-  const section = root.querySelector(".view-graph");
-  const currentKind = section?.dataset.kind || "all";
-  const currentFocus = section?.dataset.focus || "";
-  const currentArchived = () => archivedBox?.checked ?? false;
-  const cleanupFades = wireFilterTabsFades(root);
-  for (const chip of root.querySelectorAll('[data-action="filter"]')) {
-    chip.addEventListener("click", () =>
-      navigate?.("graph", { kind: chip.dataset.status, archived: currentArchived() }),
-    );
-  }
-  const focusWrap = root.querySelector("#graph-focus");
-  let focusSelect = null;
-  if (focusWrap) {
-    focusSelect = new SearchableSelect({
-      container: focusWrap,
-      placeholder: "Focus a node...",
-      emptyText: "No nodes",
-      renderOption: (item) => item.label,
-      onSelect: (item) =>
-        navigate?.("graph", {
-          kind: currentKind,
-          focus: item.id,
-          archived: currentArchived(),
-        }),
-    });
-  }
-  root.querySelector("#graph-focus-clear")?.addEventListener("click", () =>
-    navigate?.("graph", { kind: currentKind, archived: currentArchived() }),
-  );
-  archivedBox?.addEventListener("change", () => {
-    navigate?.("graph", {
-      kind: currentKind,
-      focus: currentFocus,
-      archived: archivedBox.checked,
-    });
-  });
+  };
+  reheatBtn?.addEventListener("click", onReheat);
 
   return () => {
     destroyed = true;
     if (rafId) cancelAnimationFrame(rafId);
-    cleanupFades();
     simulation.stop();
     observer.disconnect();
     dprQuery?.removeEventListener("change", onDprChange);
-    focusSelect?.destroy();
+    reheatBtn?.removeEventListener("click", onReheat);
+    for (const el of labelEls) el.remove();
+    labelsEl.style.display = "";
     gl.getExtension("WEBGL_lose_context")?.loseContext();
   };
+  };
+
+  const canvasNow = () => root.querySelector("#graph-canvas");
+  const setCanvasVisible = (visible) => {
+    const el = canvasNow();
+    if (el) el.style.display = visible ? "" : "none";
+  };
+  setCanvasVisible(!mode3d);
+  if (mode3d) {
+    let disposed = false;
+    let destroy3D = null;
+    import("./graph-3d.js").then((m) => {
+      if (disposed) return;
+      destroy3D = m.initGraph3D(root, {
+        navigate,
+        model,
+        raytrace: graphPrefs.raytrace && raytraceAllowed,
+      });
+    });
+    addCleanup(() => {
+      disposed = true;
+      destroy3D?.();
+      setCanvasVisible(true);
+    });
+  } else {
+    const stop2D = start2D();
+    if (stop2D) addCleanup(stop2D);
+  }
+  return runCleanups;
 }

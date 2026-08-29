@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 28 | validated B 1 · answered Q 4 · accepted D 11 · active Discovery 12 |
+| C (content) | 35 | validated B 2 · answered Q 6 · accepted D 13 · active Discovery 14 |
 | V (uncertainty) | 10 | open Q 2 · pending B 5 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
@@ -17,7 +17,7 @@
 | A-02 | API | 0 | 3 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-05 | Desktop | 3 | 0 | C: validated B 0 · answered Q 1 · accepted D 1 · active Discovery 1; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-05 | Desktop | 10 | 0 | C: validated B 1 · answered Q 3 · accepted D 3 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 5 | 1 | C: validated B 0 · answered Q 1 · accepted D 2 · active Discovery 2; V: open Q 0 · pending B 1 · W below DoR 0 |
 | A-07 | Agent integrations | 4 | 0 | C: validated B 0 · answered Q 1 · accepted D 1 · active Discovery 2; V: open Q 0 · pending B 0 · W below DoR 0 |
 
@@ -35,6 +35,8 @@
 | G-25 | DeepSeek Harness plugin exposes the Grove CLI as agent tools | count; current=7 target=7 | verified |
 | G-26 | macOS install fixes the launcher icon and PATH setup | count; current=4 target=4 | verified |
 | G-27 | Graph view defects stay fixed (interactions, render loop, badges, environment) | count; current=7 target=7 | verified |
+| G-28 | Graph view renders 3D behind a toolbar toggle (vendored three.js) | count; current=12 target=12 | verified |
+| G-29 | Graph options persist behind an Options menu (mode, ray tracing) | count; current=8 target=8 | verified |
 
 ## Work items
 
@@ -63,6 +65,26 @@
 | W-118 | bug | Cover all core statuses in graph badges | G-27 | clear | ⊤ | done |  |
 | W-119 | bug | Harden graph environment handling (colors, guards, shaders) | G-27 | clear | ⊤ | done |  |
 | W-120 | bug | Clamp tooltips and stabilize camera inputs (pan deltas, dpr) | G-27 | clear | ⊤ | done |  |
+| W-121 | feature | Vendor three.js with provenance records | G-28 | clear | ⊤ | done |  |
+| W-122 | refactor | Extract shared graph view foundation | G-28 | clear | ⊤ | done |  |
+| W-123 | feature | Build a DOM-free 3D force layout | G-28 | clear | ⊤ | done |  |
+| W-124 | feature | Render the grove graph in 3D | G-28 | complicated | ⊤ | done |  |
+| W-125 | feature | Toggle 3D mode from the graph toolbar | G-28 | clear | ⊤ | done |  |
+| W-126 | bug | Heal the 2D canvas context after mode switches | G-28 | clear | ⊤ | done |  |
+| W-127 | bug | Size the 3D canvas to the stage | G-28 | clear | ⊤ | done |  |
+| W-128 | bug | Keep pointer drags alive during capture events | G-28 | complicated | ⊤ | done |  |
+| W-129 | bug | Settle the 3D entry without camera jumps | G-28 | clear | ⊤ | done |  |
+| W-130 | bug | Shade 3D spheres with scene lighting | G-28 | clear | ⊤ | done |  |
+| W-131 | bug | Even out 3D node spacing | G-28 | complicated | ⊤ | done |  |
+| W-132 | bug | Hide 3D labels at far camera distances | G-28 | clear | ⊤ | done |  |
+| W-133 | feature | Keep graph mode across view switches | G-29 | clear | ⊤ | done |  |
+| W-134 | feature | Host graph toggles in an Options dropdown | G-29 | clear | ⊤ | done |  |
+| W-135 | feature | Trace the 3D graph with a GLSL ray tracer | G-29 | complicated | ⊤ | done |  |
+| W-136 | bug | Hide the options menu when hidden | G-29 | clear | ⊤ | done |  |
+| W-137 | bug | Trace spheres only and rasterize edges | G-29 | complicated | ⊤ | done |  |
+| W-138 | bug | Survive teardown when the view root is replaced | G-29 | clear | ⊤ | done |  |
+| W-139 | refactor | Cut ray tracing and frame-loop waste | G-29 | complicated | ⊤ | done |  |
+| W-140 | bug | Antialias traced sphere silhouettes analytically | G-29 | complicated | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -81,6 +103,8 @@
 | D-15 | macOS PATH lines land in zsh startup files created on demand | accepted |  |
 | D-16 | Neo4j integrates as a read-only Cypher projection of state.lock | proposed |  |
 | D-17 | Graph view geometry lives in a DOM-free module | accepted |  |
+| D-18 | 3D graph view runs on vendored three.js ESM | accepted |  |
+| D-19 | Experimental ray tracing is a bespoke GLSL tracer | accepted |  |
 
 ## Open questions
 
@@ -92,6 +116,8 @@
 | Q-06 | How to verify macOS installer fixes without a local Mac | complicated | W-110 | answered |
 | Q-07 | How Neo4j integrates into Grove: role, pattern, and boundaries | complicated |  | answered |
 | Q-08 | Verify graph view JS fixes without a runner | complicated | W-114, W-115, W-116 | answered |
+| Q-09 | Vendoring three.js under the JS supply chain policy | complicated | W-121 | answered |
+| Q-10 | Fastest ray tracing for a sphere graph | complicated | W-135 | answered |
 
 ## Assumptions
 
@@ -103,6 +129,7 @@
 | B-04 | DoR refusals followed by discovery raise first-pass evidence acceptance |  |  | testing |
 | B-05 | The dsh plugin runtime permits spawning the grove CLI as a child process |  |  | validated |
 | B-06 | CFBundleIconFile wiring renders the Grove icon in Finder |  | W-112 | proposed |
+| B-07 | Quadratic 3D layout holds interactive frame rates at 1000 nodes |  | W-124 | validated |
 
 ## Themes
 
@@ -111,6 +138,7 @@
 | T-01 | Scaling performance | open | – | W-04, W-05 |
 | T-04 | Plugin toolchain restyle | open | W-107, W-108, W-109 | – |
 | T-05 | Graph view render loop and robustness debt | done | W-117 | W-117, W-118, W-119, W-120 |
+| T-06 | Graph view grows a 3D renderer | done | W-122, W-139 | W-121, W-122, W-123, W-124, W-125, W-126, W-127, W-128, W-129, W-130, W-131, W-132, W-133, W-134, W-135, W-136, W-137, W-138, W-139, W-140 |
 
 ## Discoveries
 
@@ -130,6 +158,8 @@
 | Y-12 | Per-OS installer branches run under a uname shim and the CI OS matrix | uname shim | active |
 | Y-13 | Neo4j is a read-only projection of state.lock, never its storage backend | Neo4j | active |
 | Y-14 | bun test runs plain-ESM unit tests without package.json | DOM-free module | active |
+| Y-15 | A vendored ESM library pair loads without an import map | DOM-free module, vendored ESM pair | active |
+| Y-16 | Import parse checks miss handler-scoped reference errors | DOM-free module, served-DOM harness | active |
 
 ## Dependency graph
 
@@ -143,6 +173,8 @@ graph TD
   G_25["G-25: DeepSeek Harness plugin exposes the Grove CLI as agent tools"]:::goal
   G_26["G-26: macOS install fixes the launcher icon and PATH setup"]:::goal
   G_27["G-27: Graph view defects stay fixed (interactions, render loop, badges, environment)"]:::goal
+  G_28["G-28: Graph view renders 3D behind a toolbar toggle (vendored three.js)"]:::goal
+  G_29["G-29: Graph options persist behind an Options menu (mode, ray tracing)"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
@@ -166,6 +198,26 @@ graph TD
   W_118["W-118: Cover all core statuses in graph badges"]:::done
   W_119["W-119: Harden graph environment handling (colors, guards, shaders)"]:::done
   W_120["W-120: Clamp tooltips and stabilize camera inputs (pan deltas, dpr)"]:::done
+  W_121["W-121: Vendor three.js with provenance records"]:::done
+  W_122["W-122: Extract shared graph view foundation"]:::done
+  W_123["W-123: Build a DOM-free 3D force layout"]:::done
+  W_124["W-124: Render the grove graph in 3D"]:::done
+  W_125["W-125: Toggle 3D mode from the graph toolbar"]:::done
+  W_126["W-126: Heal the 2D canvas context after mode switches"]:::done
+  W_127["W-127: Size the 3D canvas to the stage"]:::done
+  W_128["W-128: Keep pointer drags alive during capture events"]:::done
+  W_129["W-129: Settle the 3D entry without camera jumps"]:::done
+  W_130["W-130: Shade 3D spheres with scene lighting"]:::done
+  W_131["W-131: Even out 3D node spacing"]:::done
+  W_132["W-132: Hide 3D labels at far camera distances"]:::done
+  W_133["W-133: Keep graph mode across view switches"]:::done
+  W_134["W-134: Host graph toggles in an Options dropdown"]:::done
+  W_135["W-135: Trace the 3D graph with a GLSL ray tracer"]:::done
+  W_136["W-136: Hide the options menu when hidden"]:::done
+  W_137["W-137: Trace spheres only and rasterize edges"]:::done
+  W_138["W-138: Survive teardown when the view root is replaced"]:::done
+  W_139["W-139: Cut ray tracing and frame-loop waste"]:::done
+  W_140["W-140: Antialias traced sphere silhouettes analytically"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -179,21 +231,27 @@ graph TD
   D_15["D-15: macOS PATH lines land in zsh startup files created on demand"]:::decision
   D_16["D-16: Neo4j integrates as a read-only Cypher projection of state.lock"]:::decision
   D_17["D-17: Graph view geometry lives in a DOM-free module"]:::decision
+  D_18["D-18: 3D graph view runs on vendored three.js ESM"]:::decision
+  D_19["D-19: Experimental ray tracing is a bespoke GLSL tracer"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_05["Q-05: What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1?"]:::question
   Q_06["Q-06: How to verify macOS installer fixes without a local Mac"]:::question
   Q_07["Q-07: How Neo4j integrates into Grove: role, pattern, and boundaries"]:::question
   Q_08["Q-08: Verify graph view JS fixes without a runner"]:::question
+  Q_09["Q-09: Vendoring three.js under the JS supply chain policy"]:::question
+  Q_10["Q-10: Fastest ray tracing for a sphere graph"]:::question
   B_01["B-01: Surprise rate declines as C grows"]:::assumption
   B_02["B-02: Rework proxies are lower on covered surfaces than uncovered"]:::assumption
   B_03["B-03: Distill yield stays above noise at archive gates"]:::assumption
   B_04["B-04: DoR refusals followed by discovery raise first-pass evidence acceptance"]:::assumption
   B_05["B-05: The dsh plugin runtime permits spawning the grove CLI as a child process"]:::assumption
   B_06["B-06: CFBundleIconFile wiring renders the Grove icon in Finder"]:::assumption
+  B_07["B-07: Quadratic 3D layout holds interactive frame rates at 1000 nodes"]:::assumption
   T_01["T-01: Scaling performance"]:::theme
   T_04["T-04: Plugin toolchain restyle"]:::theme
   T_05["T-05: Graph view render loop and robustness debt"]:::theme
+  T_06["T-06: Graph view grows a 3D renderer"]:::theme
   Y_01["Y-01: Normalize at capture, never inject test clocks"]:::discovery
   Y_02["Y-02: Never gate a validation task on the hypotheses it validates"]:::discovery
   Y_03["Y-03: Integration surfaces are thin adapters over the core CLI contract"]:::discovery
@@ -208,6 +266,8 @@ graph TD
   Y_12["Y-12: Per-OS installer branches run under a uname shim and the CI OS matrix"]:::discovery
   Y_13["Y-13: Neo4j is a read-only projection of state.lock, never its storage backend"]:::discovery
   Y_14["Y-14: bun test runs plain-ESM unit tests without package.json"]:::discovery
+  Y_15["Y-15: A vendored ESM library pair loads without an import map"]:::discovery
+  Y_16["Y-16: Import parse checks miss handler-scoped reference errors"]:::discovery
   A_01["A-01: Evals"]:::area
   A_02["A-02: API"]:::area
   A_03["A-03: Rust core"]:::area
@@ -216,6 +276,7 @@ graph TD
   A_06["A-06: Release"]:::area
   A_07["A-07: Agent integrations"]:::area
   B_06 -.->|targets| W_112
+  B_07 -.->|targets| W_124
   D_10 -->|supersedes| D_08
   Q_01 -->|asks| W_06
   Q_02 -->|asks| W_09
@@ -224,6 +285,8 @@ graph TD
   Q_08 -->|asks| W_114
   Q_08 -->|asks| W_115
   Q_08 -->|asks| W_116
+  Q_09 -->|asks| W_121
+  Q_10 -->|asks| W_135
   T_02 -->|causes| W_17
   T_02 -->|causes| W_85
   T_03 -->|causes| W_85
@@ -231,6 +294,8 @@ graph TD
   T_04 -->|causes| W_108
   T_04 -->|causes| W_109
   T_05 -->|causes| W_117
+  T_06 -->|causes| W_122
+  T_06 -->|causes| W_139
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
   W_03 -->|produces| D_11
@@ -259,6 +324,15 @@ graph TD
   W_114 -->|implements| D_17
   W_118 -->|implements| D_17
   W_119 -->|implements| D_17
+  W_121 ==>|blocks| W_124
+  W_122 ==>|blocks| W_124
+  W_123 ==>|blocks| W_124
+  W_123 -->|implements| D_17
+  W_124 ==>|blocks| W_125
+  W_124 -->|implements| D_18
+  W_128 -->|produces| Y_16
+  W_134 ==>|blocks| W_135
+  W_135 -->|implements| D_19
   W_14 ==>|blocks| W_17
   W_17 ==>|blocks| W_18
   W_17 ==>|blocks| W_19
@@ -293,6 +367,8 @@ graph TD
   Y_13 -->|distills| Q_07
   Y_14 -->|distills| D_17
   Y_14 -->|distills| Q_08
+  Y_15 -->|distills| D_18
+  Y_15 -->|distills| Q_09
   class W_04 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff

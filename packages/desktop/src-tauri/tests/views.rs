@@ -903,7 +903,12 @@ fn graph_fragment_carries_canvas_and_json_model() {
     assert!(html.contains(r#"type="application/json" id="graph-data""#));
     assert!(html.contains("W-01"));
     assert!(html.contains("Reheat"));
-    assert!(html.contains("Include archived"));
+    assert!(html.contains(r#"<button type="button" id="graph-options-btn""#));
+    assert!(html.contains(r#"id="graph-options-menu" hidden"#));
+    assert!(html.contains(r#"<input type="checkbox" id="graph-3d" />"#));
+    assert!(html.contains(r#"<input type="checkbox" id="graph-raytrace" />"#));
+    assert!(html.contains("3D view"));
+    assert!(html.contains("Ray tracing"));
     assert!(html.contains("Explore nodes and edges as an interactive graph."));
     assert!(
         !html.contains("15 of 16 nodes"),

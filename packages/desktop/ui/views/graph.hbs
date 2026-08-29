@@ -5,7 +5,14 @@
       <p class="page-description">Explore nodes and edges as an interactive graph.</p>
     </div>
     <div class="page-actions graph-toolbar">
-      <label class="graph-toggle" for="graph-archived"><input type="checkbox" id="graph-archived"{{#if include_archived}} checked{{/if}} /> Include archived</label>
+      <div class="graph-options">
+        <button type="button" id="graph-options-btn" aria-haspopup="true" aria-expanded="false">Options</button>
+        <div class="graph-options-menu" id="graph-options-menu" hidden>
+          <label class="graph-toggle" for="graph-archived"><input type="checkbox" id="graph-archived"{{#if include_archived}} checked{{/if}} /> Include archived</label>
+          <label class="graph-toggle" for="graph-3d"><input type="checkbox" id="graph-3d" /> 3D view</label>
+          <label class="graph-toggle" for="graph-raytrace"><input type="checkbox" id="graph-raytrace" /> Ray tracing (experimental)</label>
+        </div>
+      </div>
       <div class="graph-focus">
         {{> searchable-select id="graph-focus" placeholder="Focus a node..." emptyText="No nodes" initialItems=focus_items selectedText=focus_label}}
         {{#if focus}}<button type="button" id="graph-focus-clear">Clear</button>{{/if}}

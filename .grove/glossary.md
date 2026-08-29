@@ -14,3 +14,5 @@
 | uname shim | A fake `uname` executable prepended to PATH that reports a foreign OS and architecture, so cross-platform shell code takes the target branch during a local run | Q-06 |
 | Neo4j | A graph database Grove can mirror into as a read-only Cypher projection for ad-hoc analytics and cross-project federation; never the authoritative store | Q-07 |
 | DOM-free module | A JS module with no DOM, WebGL, or global dependency that carries pure interaction math, so a plain test runner can exercise it outside a browser | D-17 |
+| vendored ESM pair | Two vendored files where the module entry imports its sibling by a relative specifier, keeping a library loadable without an import map; each file carries its own provenance row and the SBOM deduplicates them by purl | D-18 |
+| served-DOM harness | A throwaway HTTP server that mounts the real ui tree behind a minimal DOM skeleton, so the actual view module runs in a real browser and interaction bugs surface as page errors and observable DOM state | W-128 |
