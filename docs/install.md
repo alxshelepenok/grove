@@ -46,6 +46,13 @@ When `grove-desktop` is installed, the installer also creates a launcher entry: 
 
 ## From source (developers)
 
+Rust binaries (the release artifacts):
+
+```bash
+git clone https://github.com/alxshelepenok/grove.git && cd grove
+cargo build --release -p grove-core -p grove-mcp
+```
+
 The Julia implementation of the CLI needs Julia 1.10+:
 
 ```bash
@@ -72,7 +79,7 @@ grove set W-01 status=done  # atomic close: deltas applied, goal re-derived, che
 cargo build --release
 ```
 
-The server takes `--root=<dir>` (the project whose `.grove/` lock it serves) and an optional `--session=<token>` (defaults to a per-process token).
+The server serves the project containing the current directory (walking up to the nearest `.grove/state.lock`); `--root=<dir>` retargets it to a different project, and `--session=<token>` overrides the default per-process token.
 
 Kimi Code CLI (`~/.kimi-code/mcp.json`):
 

@@ -91,7 +91,7 @@ Add to `.git/hooks/pre-commit`:
 
 ```bash
 #!/usr/bin/env bash
-julia --project=path/to/grove/packages/grove path/to/grove/bin/grove.jl check || exit 1
+grove check || exit 1
 ```
 
 This blocks commits with broken invariants or stale `index.md`.

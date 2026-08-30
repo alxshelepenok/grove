@@ -1958,7 +1958,7 @@ Mutate:
   handoff <W-NN> --to=<token>      transfer ownership (holder only)
   revert  <W-NN>                   `progress` -> `ready`, clear session (holder or stale claim)
   revalidate <Y-NN> --surface=…|--from=ID   `stale` Discovery -> `active`, paid with a fresh anchor
-  promote <Y-NN> --to=<project>     copy a Discovery into another project with origin provenance (D13); copy starts `proposed`
+  promote <Y-NN> --to=<project>     copy a Discovery into another project with origin provenance; copy starts `proposed`
   glossary rename <old> <new>      rewrite glossary.md term + Discovery tags atomically
   render                          regenerate index.md
   repair --confirm                accept current lock contents (recompute checksum)

@@ -28,13 +28,11 @@ Per-node `w-NN.md`, `d-NN.md`, `q-NN.md`, `b-NN.md` files do NOT exist in this s
 
 ## User-level store
 
-`~/.grove/` (overridable via `GROVE_HOME`) holds the project registry `projects.toml` (name, path, created, last_opened; human-editable, not checksummed) and, by convention, one independent subdirectory per project, each a normal grove project with its own lock. Locks never intersect: there are no live cross-lock references. Discoveries move between projects only by copy-with-provenance via `grove promote Y-NN --to=<project>` (D13); each copy starts its own staleness lifecycle in the target. Target a project with `--project=<dir|name>` or the `GROVE_PROJECT` environment variable; list the registry with `grove projects`.
+`~/.grove/` (overridable via `GROVE_HOME`) holds the project registry `projects.toml` (name, path, created, last_opened; human-editable, not checksummed) and, by convention, one independent subdirectory per project, each a normal grove project with its own lock. Locks never intersect: there are no live cross-lock references. Discoveries move between projects only by copy-with-provenance via `grove promote Y-NN --to=<project>`; each copy starts its own staleness lifecycle in the target. Target a project with `--project=<dir|name>` or the `GROVE_PROJECT` environment variable; list the registry with `grove projects`.
 
 ## All access is through the `grove` CLI
 
-```bash
-alias grove='julia --project=/path/to/grove/packages/grove /path/to/grove/bin/grove.jl'
-```
+Use the `grove` CLI, or the MCP server `grove-mcp` over stdio, which exposes the same commands one-to-one as `mcp__grove__*` tools. The server serves the project containing the current directory (nearest ancestor with `.grove/state.lock`); pass `--root=<dir>` only to serve a different project. The cheat sheet below assumes the CLI.
 
 ### Cheat sheet
 
