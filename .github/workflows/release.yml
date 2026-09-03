@@ -454,7 +454,7 @@ jobs:
         run: |
           set -euo pipefail
           git config user.name "grove-compass[bot]"
-          git config user.email "4816812+grove-compass[bot]@users.noreply.github.com"
+          git config user.email "324460858+grove-compass[bot]@users.noreply.github.com"
           git add manifest.json manifest.json.sig docs/security/artifacts/ install.sh.sig install.ps1.sig
           if git diff --cached --quiet; then
             echo "nothing to commit"
