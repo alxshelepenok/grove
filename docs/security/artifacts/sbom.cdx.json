@@ -2,19 +2,19 @@
   "dependencies": [
     {
       "dependsOn": [
-        "b1bc665e-603c-48f5-b946-b0d2a1227f5c"
-      ],
-      "ref": "7eb7a73a-bce4-4f8b-b4b8-36104f98eb1f"
-    },
-    {
-      "dependsOn": [
         "pkg:julia/Dates@1.11.0?uuid=ade2ca70-3891-5945-98fb-dc099432e06a",
         "pkg:julia/JSON@0.21.4?uuid=682c06a0-de6a-54ab-a142-c8b1cf79cde6",
         "pkg:julia/Printf@1.11.0?uuid=de0858da-6303-5e67-8744-51eddeeeb8d7",
         "pkg:julia/SHA@0.7.0?uuid=ea8e919c-243c-51af-8825-aaa63cd721ce",
         "pkg:julia/TOML@1.0.3?uuid=fa267f1f-6049-4f14-aa54-33bafae1ed76"
       ],
-      "ref": "b1bc665e-603c-48f5-b946-b0d2a1227f5c"
+      "ref": "1ffbb6e0-66d4-4f77-9cd5-389a81b404bf"
+    },
+    {
+      "dependsOn": [
+        "1ffbb6e0-66d4-4f77-9cd5-389a81b404bf"
+      ],
+      "ref": "b49b869d-606f-4232-941a-21b9cfebe2a8"
     },
     {
       "dependsOn": [
@@ -26,7 +26,7 @@
     {
       "dependsOn": [
         "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.1.6",
-        "registry+https://github.com/rust-lang/crates.io-index#handlebars@6.4.3",
+        "registry+https://github.com/rust-lang/crates.io-index#handlebars@6.4.4",
         "registry+https://github.com/rust-lang/crates.io-index#serde@1.0.229",
         "registry+https://github.com/rust-lang/crates.io-index#serde_json@1.0.150",
         "registry+https://github.com/rust-lang/crates.io-index#tauri@2.11.5",
@@ -1064,7 +1064,7 @@
         "registry+https://github.com/rust-lang/crates.io-index#serde_json@1.0.150",
         "registry+https://github.com/rust-lang/crates.io-index#thiserror@2.0.19"
       ],
-      "ref": "registry+https://github.com/rust-lang/crates.io-index#handlebars@6.4.3"
+      "ref": "registry+https://github.com/rust-lang/crates.io-index#handlebars@6.4.4"
     },
     {
       "dependsOn": [],
@@ -1805,7 +1805,6 @@
     },
     {
       "dependsOn": [
-        "registry+https://github.com/rust-lang/crates.io-index#indexmap@2.14.0",
         "registry+https://github.com/rust-lang/crates.io-index#itoa@1.0.18",
         "registry+https://github.com/rust-lang/crates.io-index#memchr@2.8.3",
         "registry+https://github.com/rust-lang/crates.io-index#serde_core@1.0.229",
@@ -2810,7 +2809,7 @@
       "ref": "registry+https://github.com/rust-lang/crates.io-index#zvariant_utils@3.5.0"
     }
   ],
-  "serialNumber": "urn:uuid:35dbb5d8-39bd-4244-b0b0-ba7d67c73045",
+  "serialNumber": "urn:uuid:a191aafd-dbc9-405c-96b1-24c75fa4bfd4",
   "specVersion": "1.6",
   "metadata": {
     "tools": [
@@ -2826,14 +2825,14 @@
       "bom-ref": "pkg:generic/grove",
       "type": "application"
     },
-    "timestamp": "2026-08-17T08:43:05Z"
+    "timestamp": "2026-09-03T10:34:51Z"
   },
   "bomFormat": "CycloneDX",
   "version": 1,
   "components": [
     {
       "name": "packages/grove",
-      "bom-ref": "7eb7a73a-bce4-4f8b-b4b8-36104f98eb1f",
+      "bom-ref": "b49b869d-606f-4232-941a-21b9cfebe2a8",
       "properties": [
         {
           "name": "aquasecurity:trivy:SchemaVersion",
@@ -6811,10 +6810,10 @@
       "type": "library"
     },
     {
-      "bom-ref": "registry+https://github.com/rust-lang/crates.io-index#handlebars@6.4.3",
+      "bom-ref": "registry+https://github.com/rust-lang/crates.io-index#handlebars@6.4.4",
       "hashes": [
         {
-          "content": "4633d16a2350341713c379d6d06a4b9e1845329386026a49ce4fd09c2f3b16f6",
+          "content": "75c54236f9045c8004a77942bebc52145b4844639db934a5c70fe08617fbe61a",
           "alg": "SHA-256"
         }
       ],
@@ -6825,8 +6824,8 @@
           "expression": "MIT"
         }
       ],
-      "purl": "pkg:cargo/handlebars@6.4.3",
-      "version": "6.4.3",
+      "purl": "pkg:cargo/handlebars@6.4.4",
+      "version": "6.4.4",
       "description": "Handlebars templating implemented in Rust.",
       "scope": "required",
       "externalReferences": [
@@ -13664,6 +13663,25 @@
       ],
       "type": "library",
       "version": "7.8.2"
+    },
+    {
+      "name": "three",
+      "bom-ref": "pkg:npm/three@0.185.1",
+      "purl": "pkg:npm/three@0.185.1",
+      "properties": [
+        {
+          "name": "grove:vendored_file",
+          "value": "js/vendor/three.core.min.js"
+        }
+      ],
+      "hashes": [
+        {
+          "content": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90",
+          "alg": "SHA-256"
+        }
+      ],
+      "type": "library",
+      "version": "0.185.1"
     }
   ]
 }
