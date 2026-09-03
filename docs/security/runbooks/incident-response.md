@@ -56,7 +56,7 @@ A false-alarm review can follow; do NOT postpone the 1-hour actions pending inve
    gh release list --limit 30
    gh release view vX.Y.Z --json tagName,assets,createdAt
    ```
-   Diff each `manifest.json` revision against its predecessor: unexpected sequence jumps, changed artifact hashes or URLs, and commits outside the `grove-release[bot]` commit-back flow mark the compromised window.
+   Diff each `manifest.json` revision against its predecessor: unexpected sequence jumps, changed artifact hashes or URLs, and commits outside the `grove-compass[bot]` commit-back flow mark the compromised window.
 2. For every release inside that window, re-verify the published manifest and artifacts with `bin/verify.sh` and the checks in `release-security-checks.md`; flag any release whose assets fail verification for deletion.
 3. Notify users via a GitHub Security Advisory on the repository, following the disclosure process in `SECURITY.md`: describe the compromise window, the new key fingerprint, the new `MINIMUM_SEQUENCE`, and instruct users to reinstall with the current `install.sh`/`install.ps1`.
 

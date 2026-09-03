@@ -72,8 +72,8 @@ jobs:
           TOTAL: ${{ steps.count.outputs.total }}
           CORPUS: ${{ steps.count.outputs.corpus }}
         run: |
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
+          git config user.email "4816812+grove-compass[bot]@users.noreply.github.com"
+          git config user.name "grove-compass[bot]"
           git fetch origin badges 2>/dev/null || true
           if git rev-parse --verify origin/badges >/dev/null 2>&1; then
             git checkout -B badges origin/badges

@@ -90,7 +90,7 @@ The signature covers the exact bytes of `manifest.json`; installers verify befor
 
 Releases are tag-driven: the maintainer pushes `vX.Y.Z`, then dispatches `release` mode with that version. Version tags are the only source of release numbering; the workflow never creates tags.
 
-After publishing, the `Commit transparency log` step (skipped for dry-run) stages `manifest.json`, `manifest.json.sig`, `install.sh.sig`, `install.ps1.sig`, and `docs/security/artifacts/`, commits as `grove-release[bot]`, and pushes to `main`. When branch protection rejects the direct push, the step pushes to `release/v<version>` (or `release/<mode>-<timestamp>` when no version applies) and opens a PR to `main` titled `release: transparency artifacts (...)`. This keeps the root manifest that installers fetch from `raw.githubusercontent.com/.../main` in sync with the latest release.
+After publishing, the `Commit transparency log` step (skipped for dry-run) stages `manifest.json`, `manifest.json.sig`, `install.sh.sig`, `install.ps1.sig`, and `docs/security/artifacts/`, commits as `grove-compass[bot]`, and pushes to `main`. When branch protection rejects the direct push, the step pushes to `release/v<version>` (or `release/<mode>-<timestamp>` when no version applies) and opens a PR to `main` titled `release: transparency artifacts (...)`. This keeps the root manifest that installers fetch from `raw.githubusercontent.com/.../main` in sync with the latest release.
 
 ## Post-release smoke test
 
