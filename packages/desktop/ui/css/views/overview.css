@@ -61,6 +61,11 @@
   mask-image: url("/icons/list-view.svg");
 }
 
+.nav-icon-cone {
+  -webkit-mask-image: url("/icons/cone.svg");
+  mask-image: url("/icons/cone.svg");
+}
+
 .nav-icon-tree {
   -webkit-mask-image: url("/icons/tree.svg");
   mask-image: url("/icons/tree.svg");

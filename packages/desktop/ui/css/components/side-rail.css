@@ -122,6 +122,8 @@
   min-width: 16px;
   justify-content: center;
   padding: 0 var(--wv-space-1);
+  color: var(--wv-color-count-tag-text);
+  background: var(--wv-color-count-tag-bg);
   pointer-events: none;
 }
 

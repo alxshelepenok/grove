@@ -52,6 +52,7 @@ const ROUTES = new Set([
   "work",
   "themes",
   "graph",
+  "cone",
   "packet",
 ]);
 
@@ -118,6 +119,10 @@ const wireView = async (level) => {
   if (level === "graph") {
     const mod = await import("./views/graph.js");
     cleanups.push(mod.initGraph(viewRoot, { navigate: loadView }) ?? null);
+  }
+  if (level === "cone") {
+    const mod = await import("./views/cone.js");
+    cleanups.push(mod.initCone(viewRoot, { navigate: loadView }) ?? null);
   }
   const addMod = await import("./views/add-node.js");
   cleanups.push(addMod.wireAddModal(viewRoot, { reload: reloadCurrentView }));

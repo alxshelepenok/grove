@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 35 | validated B 2 · answered Q 6 · accepted D 13 · active Discovery 14 |
+| C (content) | 52 | validated B 3 · answered Q 6 · accepted D 26 · active Discovery 17 |
 | V (uncertainty) | 10 | open Q 2 · pending B 5 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
@@ -17,7 +17,7 @@
 | A-02 | API | 0 | 3 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-05 | Desktop | 10 | 0 | C: validated B 1 · answered Q 3 · accepted D 3 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-05 | Desktop | 25 | 0 | C: validated B 2 · answered Q 3 · accepted D 14 · active Discovery 6; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 5 | 1 | C: validated B 0 · answered Q 1 · accepted D 2 · active Discovery 2; V: open Q 0 · pending B 1 · W below DoR 0 |
 | A-07 | Agent integrations | 4 | 0 | C: validated B 0 · answered Q 1 · accepted D 1 · active Discovery 2; V: open Q 0 · pending B 0 · W below DoR 0 |
 
@@ -37,6 +37,10 @@
 | G-27 | Graph view defects stay fixed (interactions, render loop, badges, environment) | count; current=7 target=7 | verified |
 | G-28 | Graph view renders 3D behind a toolbar toggle (vendored three.js) | count; current=12 target=12 | verified |
 | G-29 | Graph options persist behind an Options menu (mode, ray tracing) | count; current=8 target=8 | verified |
+| G-30 | Causality cone view exposes dependency risk | count; current=16 target=13 | verified |
+| G-31 | Cone critical path renders as a thick line | count; current=1 target=1 | verified |
+| G-32 | Cone entities float above their lattices | count; current=1 target=1 | verified |
+| G-33 | Cone text fades out with zoom like Obsidian | count; current=1 target=1 | verified |
 
 ## Work items
 
@@ -85,6 +89,36 @@
 | W-138 | bug | Survive teardown when the view root is replaced | G-29 | clear | ⊤ | done |  |
 | W-139 | refactor | Cut ray tracing and frame-loop waste | G-29 | complicated | ⊤ | done |  |
 | W-140 | bug | Antialias traced sphere silhouettes analytically | G-29 | complicated | ⊤ | done |  |
+| W-141 | feature | Scaffold the causality cone view | G-30 | clear | ⊤ | done |  |
+| W-142 | feature | Compute the cone walk in-process | G-30 | complicated | ⊤ | done |  |
+| W-143 | feature | Render the cone as a 3D matrix | G-30 | complicated | ⊤ | done |  |
+| W-144 | feature | Map cone surfaces onto files | G-30 | complicated | ⊤ | done |  |
+| W-145 | feature | Highlight brittle goal chains | G-30 | complicated | ⊤ | done |  |
+| W-146 | feature | List relevant discoveries under the cone | G-30 | complicated | ⊤ | done |  |
+| W-147 | feature | Link cone nodes to packets | G-30 | clear | ⊤ | done |  |
+| W-148 | feature | Mark the critical path in the cone | G-30 | clear | ⊤ | done |  |
+| W-149 | feature | Stack cone layers as voxel matrices | G-30 | clear | ⊤ | done |  |
+| W-150 | feature | Draw visible table grids in cone slices | G-30 | clear | ⊤ | done |  |
+| W-151 | bug | Fix the cone scene crash on load | G-30 | clear | ⊤ | done |  |
+| W-152 | feature | Stack the cone as strata planes | G-30 | clear | ⊤ | done |  |
+| W-153 | bug | Fix cone legibility defects from review | G-30 | clear | ⊤ | rejected |  |
+| W-154 | bug | Rebuild the cone scene as a zoned column lattice | G-30 | complicated | ⊤ | done |  |
+| W-155 | bug | Apply the cone review: shapes, in-scene axis labels, full-height stage | G-30 | complicated | ⊤ | done |  |
+| W-156 | bug | Apply the second cone review: typed labels, file zone colors, zoom-stable ids, standard discovery rows | G-30 | clear | ⊤ | done |  |
+| W-157 | bug | Apply the third cone review: screen-space labels, member rows, per-card scroll | G-30 | clear | ⊤ | done |  |
+| W-158 | bug | Apply the fourth cone review: exact identifier type, legend colors, identifier zoom gate, row layout | G-30 | clear | ⊤ | done |  |
+| W-159 | bug | Fix the sprite glyph size to land at the probed identifier pixel height | G-30 | clear | ⊤ | done |  |
+| W-160 | bug | Unify the cone sidebar: one scroll, one row anatomy, badges everywhere | G-30 | clear | ⊤ | done |  |
+| W-161 | bug | Stack the cone controls on two rows with full-width fields | G-30 | clear | ⊤ | done |  |
+| W-162 | bug | Apply the fifth cone review: count modifier badges, sidebar scroll, cursor, control widths, chip accent | G-30 | clear | ⊤ | done |  |
+| W-163 | bug | Fix the count badge circle and stretch the control rows | G-30 | clear | ⊤ | done |  |
+| W-164 | bug | Match badge-count to the filter-tab count metrics and the original goals red | G-30 | clear | ⊤ | done |  |
+| W-165 | bug | Center the count badges, keep zero counts as counts, pad the sidebar edge | G-30 | clear | ⊤ | done |  |
+| W-166 | refactor | Cut source-string assertions down to rendered contracts | G-30 | clear | ⊤ | done |  |
+| W-167 | refactor | Split the cone scene into focused modules | G-30 | clear | ⊤ | done |  |
+| W-168 | feature | Render the cone critical path as thick beams | G-31 | clear | ⊤ | done |  |
+| W-169 | feature | Lift cone entities above the lattice planes | G-32 | clear | ⊤ | done |  |
+| W-170 | feature | Fade cone text with zoom through a shared label-fade util | G-33 | complicated | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -105,6 +139,19 @@
 | D-17 | Graph view geometry lives in a DOM-free module | accepted |  |
 | D-18 | 3D graph view runs on vendored three.js ESM | accepted |  |
 | D-19 | Experimental ray tracing is a bespoke GLSL tracer | accepted |  |
+| D-20 | Causality view computes cones in-process | accepted |  |
+| D-21 | Cone renders through d3 force layout | accepted |  |
+| D-22 | Cone renders as a 3D instanced scene | accepted | D-21 |
+| D-23 | Cone renders as a voxel matrix | accepted | D-22 |
+| D-24 | Matrix slices draw visible table grids | accepted | D-23 |
+| D-25 | Cone renders as a wireframe cell volume | accepted | D-24 |
+| D-26 | Cone renders as a semantic strata cube | accepted | D-25 |
+| D-27 | Cone renders as a zoned column lattice | accepted | D-26 |
+| D-28 | Cone encodes kind by shape and labels its axes in-scene | accepted |  |
+| D-29 | Cone marks zones through file colors and a typed label axis | accepted | D-28 |
+| D-30 | Cone labels ride screen space and side cards carry their members | accepted | D-29 |
+| D-31 | Cone labels copy the identifier type exactly and the zoom gate governs identifiers | accepted | D-30 |
+| D-32 | Cone sidebar scrolls as one stack with one row anatomy | accepted | D-31 |
 
 ## Open questions
 
@@ -130,6 +177,7 @@
 | B-05 | The dsh plugin runtime permits spawning the grove CLI as a child process |  |  | validated |
 | B-06 | CFBundleIconFile wiring renders the Grove icon in Finder |  | W-112 | proposed |
 | B-07 | Quadratic 3D layout holds interactive frame rates at 1000 nodes |  | W-124 | validated |
+| B-08 | Fragility renders inside the interaction budget |  | W-145 | validated |
 
 ## Themes
 
@@ -139,6 +187,7 @@
 | T-04 | Plugin toolchain restyle | open | W-107, W-108, W-109 | – |
 | T-05 | Graph view render loop and robustness debt | done | W-117 | W-117, W-118, W-119, W-120 |
 | T-06 | Graph view grows a 3D renderer | done | W-122, W-139 | W-121, W-122, W-123, W-124, W-125, W-126, W-127, W-128, W-129, W-130, W-131, W-132, W-133, W-134, W-135, W-136, W-137, W-138, W-139, W-140 |
+| T-07 | Desktop grows a causality cone view | done | W-166, W-167 | W-141, W-142, W-143, W-144, W-145, W-146, W-147, W-148, W-149, W-150, W-151, W-152, W-153, W-154, W-155, W-156, W-157, W-158, W-159, W-160, W-161, W-162, W-163, W-164, W-165, W-166, W-167 |
 
 ## Discoveries
 
@@ -160,6 +209,9 @@
 | Y-14 | bun test runs plain-ESM unit tests without package.json | DOM-free module | active |
 | Y-15 | A vendored ESM library pair loads without an import map | DOM-free module, vendored ESM pair | active |
 | Y-16 | Import parse checks miss handler-scoped reference errors | DOM-free module, served-DOM harness | active |
+| Y-17 | One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate | causality cone | active |
+| Y-18 | Thick 3D edges need beam geometry, not linewidth | beam geometry, causality cone | active |
+| Y-19 | Zoom text fade is one shared curve, not per-view thresholds | causality cone, label fade | active |
 
 ## Dependency graph
 
@@ -175,6 +227,10 @@ graph TD
   G_27["G-27: Graph view defects stay fixed (interactions, render loop, badges, environment)"]:::goal
   G_28["G-28: Graph view renders 3D behind a toolbar toggle (vendored three.js)"]:::goal
   G_29["G-29: Graph options persist behind an Options menu (mode, ray tracing)"]:::goal
+  G_30["G-30: Causality cone view exposes dependency risk"]:::goal
+  G_31["G-31: Cone critical path renders as a thick line"]:::goal
+  G_32["G-32: Cone entities float above their lattices"]:::goal
+  G_33["G-33: Cone text fades out with zoom like Obsidian"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
@@ -218,6 +274,36 @@ graph TD
   W_138["W-138: Survive teardown when the view root is replaced"]:::done
   W_139["W-139: Cut ray tracing and frame-loop waste"]:::done
   W_140["W-140: Antialias traced sphere silhouettes analytically"]:::done
+  W_141["W-141: Scaffold the causality cone view"]:::done
+  W_142["W-142: Compute the cone walk in-process"]:::done
+  W_143["W-143: Render the cone as a 3D matrix"]:::done
+  W_144["W-144: Map cone surfaces onto files"]:::done
+  W_145["W-145: Highlight brittle goal chains"]:::done
+  W_146["W-146: List relevant discoveries under the cone"]:::done
+  W_147["W-147: Link cone nodes to packets"]:::done
+  W_148["W-148: Mark the critical path in the cone"]:::done
+  W_149["W-149: Stack cone layers as voxel matrices"]:::done
+  W_150["W-150: Draw visible table grids in cone slices"]:::done
+  W_151["W-151: Fix the cone scene crash on load"]:::done
+  W_152["W-152: Stack the cone as strata planes"]:::done
+  W_153["W-153: Fix cone legibility defects from review"]:::rejected
+  W_154["W-154: Rebuild the cone scene as a zoned column lattice"]:::done
+  W_155["W-155: Apply the cone review: shapes, in-scene axis labels, full-height stage"]:::done
+  W_156["W-156: Apply the second cone review: typed labels, file zone colors, zoom-stable ids, standard discovery rows"]:::done
+  W_157["W-157: Apply the third cone review: screen-space labels, member rows, per-card scroll"]:::done
+  W_158["W-158: Apply the fourth cone review: exact identifier type, legend colors, identifier zoom gate, row layout"]:::done
+  W_159["W-159: Fix the sprite glyph size to land at the probed identifier pixel height"]:::done
+  W_160["W-160: Unify the cone sidebar: one scroll, one row anatomy, badges everywhere"]:::done
+  W_161["W-161: Stack the cone controls on two rows with full-width fields"]:::done
+  W_162["W-162: Apply the fifth cone review: count modifier badges, sidebar scroll, cursor, control widths, chip accent"]:::done
+  W_163["W-163: Fix the count badge circle and stretch the control rows"]:::done
+  W_164["W-164: Match badge-count to the filter-tab count metrics and the original goals red"]:::done
+  W_165["W-165: Center the count badges, keep zero counts as counts, pad the sidebar edge"]:::done
+  W_166["W-166: Cut source-string assertions down to rendered contracts"]:::done
+  W_167["W-167: Split the cone scene into focused modules"]:::done
+  W_168["W-168: Render the cone critical path as thick beams"]:::done
+  W_169["W-169: Lift cone entities above the lattice planes"]:::done
+  W_170["W-170: Fade cone text with zoom through a shared label-fade util"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -233,6 +319,19 @@ graph TD
   D_17["D-17: Graph view geometry lives in a DOM-free module"]:::decision
   D_18["D-18: 3D graph view runs on vendored three.js ESM"]:::decision
   D_19["D-19: Experimental ray tracing is a bespoke GLSL tracer"]:::decision
+  D_20["D-20: Causality view computes cones in-process"]:::decision
+  D_21["D-21: Cone renders through d3 force layout"]:::decision
+  D_22["D-22: Cone renders as a 3D instanced scene"]:::decision
+  D_23["D-23: Cone renders as a voxel matrix"]:::decision
+  D_24["D-24: Matrix slices draw visible table grids"]:::decision
+  D_25["D-25: Cone renders as a wireframe cell volume"]:::decision
+  D_26["D-26: Cone renders as a semantic strata cube"]:::decision
+  D_27["D-27: Cone renders as a zoned column lattice"]:::decision
+  D_28["D-28: Cone encodes kind by shape and labels its axes in-scene"]:::decision
+  D_29["D-29: Cone marks zones through file colors and a typed label axis"]:::decision
+  D_30["D-30: Cone labels ride screen space and side cards carry their members"]:::decision
+  D_31["D-31: Cone labels copy the identifier type exactly and the zoom gate governs identifiers"]:::decision
+  D_32["D-32: Cone sidebar scrolls as one stack with one row anatomy"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_05["Q-05: What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1?"]:::question
@@ -248,10 +347,12 @@ graph TD
   B_05["B-05: The dsh plugin runtime permits spawning the grove CLI as a child process"]:::assumption
   B_06["B-06: CFBundleIconFile wiring renders the Grove icon in Finder"]:::assumption
   B_07["B-07: Quadratic 3D layout holds interactive frame rates at 1000 nodes"]:::assumption
+  B_08["B-08: Fragility renders inside the interaction budget"]:::assumption
   T_01["T-01: Scaling performance"]:::theme
   T_04["T-04: Plugin toolchain restyle"]:::theme
   T_05["T-05: Graph view render loop and robustness debt"]:::theme
   T_06["T-06: Graph view grows a 3D renderer"]:::theme
+  T_07["T-07: Desktop grows a causality cone view"]:::theme
   Y_01["Y-01: Normalize at capture, never inject test clocks"]:::discovery
   Y_02["Y-02: Never gate a validation task on the hypotheses it validates"]:::discovery
   Y_03["Y-03: Integration surfaces are thin adapters over the core CLI contract"]:::discovery
@@ -268,6 +369,9 @@ graph TD
   Y_14["Y-14: bun test runs plain-ESM unit tests without package.json"]:::discovery
   Y_15["Y-15: A vendored ESM library pair loads without an import map"]:::discovery
   Y_16["Y-16: Import parse checks miss handler-scoped reference errors"]:::discovery
+  Y_17["Y-17: One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate"]:::discovery
+  Y_18["Y-18: Thick 3D edges need beam geometry, not linewidth"]:::discovery
+  Y_19["Y-19: Zoom text fade is one shared curve, not per-view thresholds"]:::discovery
   A_01["A-01: Evals"]:::area
   A_02["A-02: API"]:::area
   A_03["A-03: Rust core"]:::area
@@ -277,7 +381,18 @@ graph TD
   A_07["A-07: Agent integrations"]:::area
   B_06 -.->|targets| W_112
   B_07 -.->|targets| W_124
+  B_08 -.->|targets| W_145
   D_10 -->|supersedes| D_08
+  D_22 -->|supersedes| D_21
+  D_23 -->|supersedes| D_22
+  D_24 -->|supersedes| D_23
+  D_25 -->|supersedes| D_24
+  D_26 -->|supersedes| D_25
+  D_27 -->|supersedes| D_26
+  D_29 -->|supersedes| D_28
+  D_30 -->|supersedes| D_29
+  D_31 -->|supersedes| D_30
+  D_32 -->|supersedes| D_31
   Q_01 -->|asks| W_06
   Q_02 -->|asks| W_09
   Q_05 -->|asks| W_103
@@ -296,6 +411,8 @@ graph TD
   T_05 -->|causes| W_117
   T_06 -->|causes| W_122
   T_06 -->|causes| W_139
+  T_07 -->|causes| W_166
+  T_07 -->|causes| W_167
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
   W_03 -->|produces| D_11
@@ -334,9 +451,29 @@ graph TD
   W_134 ==>|blocks| W_135
   W_135 -->|implements| D_19
   W_14 ==>|blocks| W_17
+  W_141 ==>|blocks| W_142
+  W_142 ==>|blocks| W_143
+  W_142 ==>|blocks| W_144
+  W_142 ==>|blocks| W_146
+  W_142 -->|implements| D_20
+  W_143 ==>|blocks| W_145
+  W_143 ==>|blocks| W_147
+  W_143 ==>|blocks| W_148
+  W_143 -->|implements| D_22
+  W_149 -->|implements| D_23
+  W_150 -->|implements| D_24
+  W_152 -->|implements| D_25
+  W_154 -->|implements| D_27
+  W_155 -->|implements| D_28
+  W_156 -->|implements| D_29
+  W_157 -->|implements| D_30
+  W_158 -->|implements| D_31
+  W_160 -->|implements| D_32
+  W_168 -->|produces| Y_18
   W_17 ==>|blocks| W_18
   W_17 ==>|blocks| W_19
   W_17 ==>|blocks| W_20
+  W_170 -->|produces| Y_19
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78
@@ -369,6 +506,8 @@ graph TD
   Y_14 -->|distills| Q_08
   Y_15 -->|distills| D_18
   Y_15 -->|distills| Q_09
+  Y_17 -->|distills| D_27
+  Y_17 -->|distills| D_30
   class W_04 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff

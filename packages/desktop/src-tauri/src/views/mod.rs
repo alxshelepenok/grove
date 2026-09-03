@@ -1,4 +1,5 @@
 pub mod areas;
+pub mod cone;
 pub mod discovery;
 pub mod goals;
 pub mod graph;
@@ -11,7 +12,7 @@ pub mod work;
 use crate::templates::Templates;
 use grove_core::{load, CliCtx, Kind, State};
 
-pub const LEVELS: [&str; 8] = [
+pub const LEVELS: [&str; 9] = [
     "overview",
     "areas",
     "discovery",
@@ -19,6 +20,7 @@ pub const LEVELS: [&str; 8] = [
     "work",
     "themes",
     "graph",
+    "cone",
     "packet",
 ];
 
@@ -44,6 +46,7 @@ pub fn render_view(
         "work" => work::render(tpl, root, params),
         "themes" => themes::render(tpl, root),
         "graph" => graph::render(tpl, root, params),
+        "cone" => cone::render(tpl, root, params),
         "packet" => packet::render(tpl, root, params),
         other => Err(format!(
             "unknown view level: {other} (expected one of {})",
