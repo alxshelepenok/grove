@@ -5,12 +5,6 @@
   </picture>
 </p>
 
-<h3 align="center">
-  Code grows. Context windows don't. Plant a <i>Grove</i> 🌳
-</h3>
-
-***G**raph-driven **R**easoning **O**ver **V**erified **E**vidence. A formal workflow protocol that keeps AI coding agents on track through machine-enforced invariants, verified evidence, and structured context. Designed to keep deep, long-running projects coherent across sessions, agents, and months.*
-
 <p align="center">
   <a href="https://notebook.google.com/notebook/434f3efc-c199-4b7e-ac61-92fbd85d655e"><img src="https://img.shields.io/badge/Notebook-q/a-8A2BE2?style=for-the-badge" alt="Notebook" /></a>
   <a href="docs/install.md#verify-before-you-run"><img src="https://img.shields.io/badge/signing-RSA--PSS-8A2BE2?style=for-the-badge" alt="Release signing" /></a>
@@ -19,8 +13,15 @@
   <a href="packages/grove/conformance"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Falxshelepenok%2Fgrove%2Fbadges%2F.github%2Fbadges%2Fconformance.json&style=for-the-badge" alt="Conformance" /></a>
 </p>
 
-> **We no longer just write code.**   
-> **We hold the reins of a train running at 20 commits a day, making sure it doesn't derail.**
+<h3 align="center">
+  Code grows. Context windows don't. Plant a <i>Grove</i> 🌳
+</h3>
+
+<p align="center"><i><b>G</b>raph-driven <b>R</b>easoning <b>O</b>ver <b>V</b>erified <b>E</b>vidence. A formal workflow protocol designed to keep deep, long-running projects coherent across sessions, agents, and months.</i></p>
+
+Long-running agent work fails in a predictable way: decisions and assumptions drift out of view as sessions grow, agents report work done that is not done, and after a few months the codebase no longer matches what anyone believes about it, so nobody can say why a given line exists.
+
+Grove fits reasoning-heavy work that outlives a single session: long refactors, multi-session features, security and compliance work where every conclusion needs an audit trail. The protocol picks the next step, so you stop re-explaining the project to every new session.
 
 **What this gives you:**
 - **Atomic progress:** every task is mechanically proven, not just claimed.
@@ -29,9 +30,7 @@
 - **Continuity across agents:** if an agent stops mid-goal, another agent on another client or model resumes from verified state.
 - **Total ownership:** every goal, decision, task, question, and assumption is stored in a persistent historical graph that belongs entirely to you.
 
-Grove enforces rules as deterministic invariants stored in a single checksummed lockfile. The agent cannot declare work done without falsifiable evidence, start unready tasks, or hallucinate progress.
-
-Instead of lossy prompt compression or summarization, Grove structures project state into a typed reasoning graph with machine-checkable edges. It routes exactly the execution packet needed for the current step, and nothing more.
+Grove enforces its rules as deterministic invariants stored in a single checksummed lockfile: the agent cannot declare work done without falsifiable evidence, start unready tasks, or hallucinate progress. Instead of lossy prompt compression or summarization, project state lives in a typed reasoning graph with machine-checkable edges, and each step receives exactly the execution packet it needs, and nothing more.
 
 Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, Cline, GitHub Copilot, and any other agent. **Grove includes a CLI, a built-in MCP server, and a drop-in agent skill bundle** so you can integrate it into your workspace immediately.
 
