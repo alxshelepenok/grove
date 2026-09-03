@@ -41,6 +41,7 @@
 | G-31 | Cone critical path renders as a thick line | count; current=1 target=1 | verified |
 | G-32 | Cone entities float above their lattices | count; current=1 target=1 | verified |
 | G-33 | Cone text fades out with zoom like Obsidian | count; current=1 target=1 | verified |
+| G-34 | Graph labels fade with zoom through the shared curve | count; current=1 target=1 | verified |
 
 ## Work items
 
@@ -119,6 +120,7 @@
 | W-168 | feature | Render the cone critical path as thick beams | G-31 | clear | ⊤ | done |  |
 | W-169 | feature | Lift cone entities above the lattice planes | G-32 | clear | ⊤ | done |  |
 | W-170 | feature | Fade cone text with zoom through a shared label-fade util | G-33 | complicated | ⊤ | done |  |
+| W-171 | feature | Fade graph labels with zoom via labelFadeOpacity in both views | G-34 | complicated | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -231,6 +233,7 @@ graph TD
   G_31["G-31: Cone critical path renders as a thick line"]:::goal
   G_32["G-32: Cone entities float above their lattices"]:::goal
   G_33["G-33: Cone text fades out with zoom like Obsidian"]:::goal
+  G_34["G-34: Graph labels fade with zoom through the shared curve"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
@@ -304,6 +307,7 @@ graph TD
   W_168["W-168: Render the cone critical path as thick beams"]:::done
   W_169["W-169: Lift cone entities above the lattice planes"]:::done
   W_170["W-170: Fade cone text with zoom through a shared label-fade util"]:::done
+  W_171["W-171: Fade graph labels with zoom via labelFadeOpacity in both views"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision

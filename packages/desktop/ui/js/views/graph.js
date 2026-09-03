@@ -14,6 +14,7 @@ import {
 } from "../utils/graph-model.js";
 import { wireOptionsMenu } from "../utils/options-menu.js";
 import { createInfoPanel, createTooltip } from "./graph-panel.js";
+import { labelFadeOpacity } from "../utils/label-fade.js";
 
 const EDGE_RGB = [0.55, 0.57, 0.62];
 const EDGE_ALPHA = 0.55;
@@ -22,7 +23,6 @@ const CONTAINS_ALPHA = 0.7;
 const BORDER_LIVE = [1, 1, 1];
 const BORDER_SOFT = [0.85, 0.87, 0.92];
 const nodeBorder = (n) => (n.status === "progress" ? BORDER_LIVE : BORDER_SOFT);
-const LABEL_MIN_SCALE = 0.4;
 const LABEL_MAX_NODES = 200;
 const MIN_ZOOM = 0.15;
 const MAX_ZOOM = 4;
@@ -278,6 +278,7 @@ function startGraphView(root, { navigate } = {}, reenter = () => {}) {
   let destroyed = false;
   let dpr = window.devicePixelRatio || 1;
   let zoom = 1;
+  let fitScale = 1;
   let offsetX = 0;
   let offsetY = 0;
   let placed = false;
@@ -367,6 +368,7 @@ function startGraphView(root, { navigate } = {}, reenter = () => {}) {
       MAX_ZOOM,
       Math.max(MIN_ZOOM, Math.min((rect.width - pad * 2) / w, (rect.height - pad * 2) / h, 1.2)),
     );
+    fitScale = zoom;
     offsetX = dpr * (rect.width / 2 - ((x0 + x1) / 2) * zoom);
     offsetY = dpr * (rect.height / 2 - ((y0 + y1) / 2) * zoom);
     draw();
@@ -395,13 +397,14 @@ function startGraphView(root, { navigate } = {}, reenter = () => {}) {
   };
 
   const updateLabels = () => {
-    const show = nodes.length <= LABEL_MAX_NODES && zoom >= LABEL_MIN_SCALE;
-    labelsEl.style.display = show ? "" : "none";
-    if (!show) return;
+    const fade = nodes.length <= LABEL_MAX_NODES ? labelFadeOpacity(fitScale / zoom) : 0;
+    labelsEl.style.display = fade > 0 ? "" : "none";
+    if (fade <= 0) return;
     for (let i = 0; i < nodes.length; i++) {
       const n = nodes[i];
       const x = (n.x * zoom * dpr + offsetX) / dpr;
       const y = (n.y * zoom * dpr + offsetY) / dpr;
+      labelEls[i].style.opacity = fade.toFixed(3);
       labelEls[i].style.transform = `translate(${x.toFixed(1)}px, ${(y - nodeRadius(n) - 3).toFixed(1)}px) translate(-50%, -100%)`;
     }
   };
