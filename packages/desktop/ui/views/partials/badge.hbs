@@ -1,1 +1,1 @@
-<span class="badge badge-{{#if variant}}{{variant}}{{else}}neutral{{/if}}{{#if class}} {{class}}{{/if}}"{{#if id}} id="{{id}}"{{/if}}>{{text}}</span>
+<span class="badge{{#if (or count (eq count 0))}} badge-count{{#if (gt count 99)}} badge-count-wide{{/if}}{{/if}} badge-{{#if variant}}{{variant}}{{else}}neutral{{/if}}{{#if class}} {{class}}{{/if}}"{{#if id}} id="{{id}}"{{/if}}>{{text}}</span>

@@ -1,0 +1,125 @@
+<section class="view view-cone" data-seed="{{selected}}">
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Causality cone</h1>
+      <p class="page-description">Trace how a work item depends on the past and impacts the future.</p>
+    </div>
+    <div class="page-actions">
+      {{> searchable-select id="cone-select" placeholder="Select a work item..." emptyText="No work items" initialItems=works selectedText=selectedText}}
+    </div>
+  </div>
+  {{#if seed}}
+    {{#if seed_empty}}
+      {{> empty-state icon="ghost" description="This work item has no blocks edges yet, so its cone is empty."}}
+    {{else}}
+      <div class="cone-layout">
+        <div class="cone-sidebar">
+          <div class="filter-bar cone-controls">
+            <label class="cone-control">
+              <span class="cone-control-label">Depth:</span>
+              <input type="number" id="cone-depth" min="1" max="10" value="{{cone.depth}}" />
+            </label>
+            <label class="cone-control">
+              <span class="cone-control-label">Max nodes:</span>
+              <input type="number" id="cone-max" min="1" value="{{cone.max}}" />
+            </label>
+          </div>
+          {{#if cone.critical}}
+            <p class="cone-critical-note"><span class="cone-critical-swatch" aria-hidden="true"></span>Critical path inside the cone.</p>
+          {{/if}}
+          <div class="cone-sides">
+            <div class="card cone-side">
+              <div class="card-title">Dependencies {{> badge text=cone.backward_count variant="neutral" count=cone.backward_count class="badge-count-lg"}}</div>
+              {{#if cone.backward_count}}
+                <ul class="overview-rows">
+                  {{#each dependencies}}
+                    <li class="overview-row">
+                      <span class="overview-row-id text-mono">{{id}}</span>
+                      <span class="overview-row-content cone-row-content"><span class="overview-row-title">{{title}}</span></span>
+                    </li>
+                  {{/each}}
+                </ul>
+              {{else}}
+                {{> empty-state icon="ghost" compact=true description="No dependencies inside the cone."}}
+              {{/if}}
+            </div>
+            <div class="card cone-side">
+              <div class="card-title">Impact
+                {{> badge class="badge-count-lg" text=cone.forward_count variant="neutral" count=cone.forward_count}}
+              </div>
+              {{#if cone.forward_count}}
+                <ul class="overview-rows">
+                  {{#each impact}}
+                    <li class="overview-row">
+                      <span class="overview-row-id text-mono">{{id}}</span>
+                      <span class="overview-row-content cone-row-content"><span class="overview-row-title">{{title}}</span></span>
+                    </li>
+                  {{/each}}
+                </ul>
+              {{else}}
+                {{> empty-state icon="ghost" compact=true description="Nothing blocks on this work item."}}
+              {{/if}}
+            </div>
+            {{#if surface}}
+              <div class="card cone-side">
+                <div class="card-title">Surface {{> badge class="badge-count-lg" text=surface_count variant="neutral" count=surface_count}}</div>
+                <ul class="overview-rows">
+                  {{#each surface}}
+                    <li class="overview-row cone-surface-row" data-surface-file="{{path}}">
+                      <span class="overview-row-content cone-row-content">
+                        <span class="area-chips">
+                          <span class="badge badge-neutral area-chip-mono" title="{{path}}">{{name}}</span>
+                        </span>
+                      </span>
+                      {{> badge class="badge-count-lg" text=count variant="neutral" count=count}}
+                    </li>
+                  {{/each}}
+                </ul>
+              </div>
+            {{/if}}
+            {{#if fragility}}
+              <div class="card cone-side">
+                <div class="card-title">Fragility {{> badge class="badge-count-lg" text=fragility_count variant="neutral" count=fragility_count}}</div>
+                <ul class="cone-fragility">
+                  {{#each fragility}}
+                    <li class="overview-row cone-fragility-row">
+                      <span class="overview-row-id text-mono">{{id}}</span>
+                      <span class="overview-row-content cone-row-content">
+                        <span class="overview-row-title">{{title}}</span>
+                      </span>
+                      {{> badge text=label variant=variant}}
+                    </li>
+                  {{/each}}
+                </ul>
+              </div>
+            {{/if}}
+            {{#if discoveries}}
+              <div class="card cone-side">
+                <div class="card-title">Relevant discoveries {{> badge class="badge-count-lg" text=discoveries_count variant="neutral" count=discoveries_count}}</div>
+                <ul class="overview-rows">
+                  {{#each discoveries}}
+                    <li class="overview-row cone-discovery-row" data-navigate="discovery">
+                      <span class="overview-row-id text-mono">{{id}}</span>
+                      <span class="overview-row-content cone-row-content">
+                        <span class="overview-row-title">{{title}}</span>
+                        <span class="text-muted overview-row-note cone-row-note">({{reason}})</span>
+                      </span>
+                    </li>
+                  {{/each}}
+                </ul>
+              </div>
+            {{/if}}
+          </div>
+        </div>
+        <div class="cone-stage" id="cone-stage" data-seed="{{seed.id}}">
+          <div class="graph-labels" id="cone-labels" aria-hidden="true"></div>
+          <div class="tooltip-bubble graph-tooltip" id="graph-tooltip" role="tooltip" hidden></div>
+        </div>
+      </div>
+    {{/if}}
+    <script type="application/json" id="cone-data">{{{json cone}}}</script>
+  {{else}}
+    {{> empty-state icon="ghost" description="Pick a work item to trace its causality cone."}}
+  {{/if}}
+  {{> add-modal}}
+</section>

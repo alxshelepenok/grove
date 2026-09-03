@@ -13,11 +13,18 @@
 }
 
 .badge-count {
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
   width: 16px;
   height: 16px;
-  font-size: var(--wv-font-size-xxs);
-  color: var(--wv-color-count-tag-text);
-  background: var(--wv-color-count-tag-bg);
+  font-size: var(--wv-font-size-xs);
+}
+
+.badge-count-lg {
+  width: 20px;
+  height: 20px;
+  font-size: var(--wv-font-size-sm);
 }
 
 .badge-count-wide {

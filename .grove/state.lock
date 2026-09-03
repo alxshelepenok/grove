@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:cd883fdee9d7e68485c585af11761fce021b7c2444cca1ae5359e334d3fe0631
+# checksum: sha256:0f113eee8345da33e7cb0c00bbc2001f1fecb86cd825eb0a7bb08977228ef583
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -58,6 +58,26 @@ g G-29 status=verified fitness_kind=count t_created=2026-08-29T00:15:46Z t_updat
     | Third user visual pass on 2026-08-29: options menu always visible (author display rule defeats the hidden attribute) and ray tracing should trace spheres only with rasterized edges for speed; target raised 3 to 5.
     | Fourth user pass on 2026-08-29: clicking a work node in 3D throws at view teardown (null canvas lookup after innerHTML replacement); plus a ray tracing performance package (DPR cap, scene bounds early-out, lazy per-frame sync); target raised 5 to 7.
     | Fifth user pass on 2026-08-29: traced sphere silhouettes alias because MSAA cannot smooth analytic fragment-shader edges; target raised 7 to 8.
+
+g G-30 status=verified fitness_kind=count t_created=2026-08-30T17:29:20Z t_updated=2026-08-30T21:25:12Z "Causality cone view exposes dependency risk"
+  area: A-05
+  fitness_target: 13
+  fitness_current: 16
+
+g G-31 status=verified fitness_kind=count t_created=2026-09-03T06:49:31Z t_updated=2026-09-03T07:07:44Z "Cone critical path renders as a thick line"
+  area: A-05
+  fitness_target: 1
+  fitness_current: 1
+
+g G-32 status=verified fitness_kind=count t_created=2026-09-03T07:15:59Z t_updated=2026-09-03T07:20:35Z "Cone entities float above their lattices"
+  area: A-05
+  fitness_target: 1
+  fitness_current: 1
+
+g G-33 status=verified fitness_kind=count t_created=2026-09-03T07:30:08Z t_updated=2026-09-03T07:39:58Z "Cone text fades out with zoom like Obsidian"
+  area: A-05
+  fitness_target: 1
+  fitness_current: 1
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -752,6 +772,595 @@ w W-140 type=bug status=done cynefin=complicated t_created=2026-08-29T13:34:39Z 
     | fix: hitSpheres now tracks a Fringe record: for each non-hit sphere the shader computes the squared closest-approach distance from the already-available b and c terms, gates on (radius plus footprint) squared before any sqrt, derives coverage from the world-space pixel footprint (uFragFoot uniform from camera distance, tan half fov and buffer height), and main blends the shaded sphere colour with the background by coverage when no full hit exists; no extra rays, MSAA stays for the raster pass.
     | verification: standalone GLSL compile passes; pixel scan through traced spheres shows blend pixels at every silhouette crossing (rows read like dots-M-S...S-M-dots with no hard jump; the 12-node fixture shows exactly one blend pixel per edge) and the 300-node traced fixture runs at 59 to 60 fps with zero page errors (intermediate ungated variant measured 29 to 32 fps, motivating the squared-distance gate and the uniform footprint); bun 20 pass, cargo views 80 passed.
 
+w W-141 type=feature status=done cynefin=clear t_created=2026-08-30T17:31:21Z t_updated=2026-08-30T17:41:02Z "Scaffold the causality cone view"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/src-tauri/src/views/mod.rs, packages/desktop/src-tauri/src/views/cone.rs, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/js/views/cone.js, packages/desktop/ui/css/views/cone.css, packages/desktop/ui/index.html, packages/desktop/ui/js/main.js, packages/desktop/ui/icons/cone.svg
+  ac:
+    | the cone level appears in LEVELS and render_view and unknown-level errors list it (cargo test).
+    | the side rail shows the cone icon vendored from cone-01-solid-rounded.svg and opens the view (template and index.html assertions).
+    | main.js registers the cone route and wires initCone with a cleanup return (source assertion).
+    | the seed picker lists work items, honors an id param and renders an empty state for a seed without edges (cargo test on the model).
+  hypothesis:
+    | Registering the five view artifacts for a cone level following the G-28 pattern lands a working shell in one small change with no new vendored code.
+  evidence_strategy:
+    | Integration tests in packages/desktop/src-tauri/tests/views.rs assert the registry entry, the side-rail item with the cone icon, the main.js wiring and template fragments, run with cargo test -p grove-desktop --locked.
+  evidence:
+    | registry: the cone level is registered in LEVELS (packages/desktop/src-tauri/src/views/mod.rs:23) and dispatches through render_view (mod.rs:49); cone.rs builds the model from listnodes, blocked_by and blocks_of and renders the template (views/cone.rs:18-49); the unknown-level error listing cone is asserted by cone_level_registry_and_unknown_error_lists_it.
+    | scaffold: cone.hbs renders the seed picker, seed card, edge-less empty state and stage placeholder (ui/views/cone.hbs:1-31); cone.js wires SearchableSelect to navigate cone with the picked id and returns select.destroy as cleanup (ui/js/views/cone.js:8-16); the side-rail item with nav-icon-cone sits between graph and packet (ui/index.html:113-118) behind the cone.css link (index.html:57); main.js registers the route (ui/js/main.js:55) and imports initCone with a cleanup push (main.js:123-126).
+    | verification: cargo test -p grove-desktop --locked is green with the four cone tests among 84 views tests plus the write, projects and triggers suites; smoke_render on the repo lock renders the cone view at 36140 bytes with the work-item picker; interactions carry no CI harness (D-17) so a manual visual pass by the user is requested at checkpoint.
+
+w W-142 type=feature status=done cynefin=complicated t_created=2026-08-30T17:31:26Z t_updated=2026-08-30T17:48:43Z "Compute the cone walk in-process"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/src-tauri/src/views/cone.rs, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/js/views/cone.js, packages/desktop/ui/css/views/cone.css
+  ac:
+    | the model returns the backward cone, contraction order, forward cone, truncated flag, depth and max for a seed on a diamond fixture (cargo test).
+    | cone-depth and cone-max params override the defaults of four and fifty (cargo test).
+    | filter-bar controls round-trip depth and max through navigate params (code trace).
+    | the template embeds the cone model as an application-json blob (template assertion).
+  hypothesis:
+    | Calling the grove-core cone algebra directly in the Rust view model mirrors the graph view data path and keeps the bridge allowlist untouched (D-20).
+  evidence_strategy:
+    | Model assertions on a diamond fixture plus param override tests in cargo test -p grove-desktop --locked, mirroring the core algebra cone tests.
+  evidence:
+    | walk: cone_walk calls backward_cone, forward_cone and contraction_order from grove-core in-process and emits backward, order, forward, per-walk truncated flags, depth, max, member node records and in-cone blocks edges (views/cone.rs:25-70); params_depth_max defaults to four and fifty, clamps values below one up and falls back on unparsable input (cone.rs:18-23); render parses the id, depth and max params (cone.rs:112-121).
+    | controls and blob: cone.hbs embeds the walk as an application-json blob (ui/views/cone.hbs:33) behind depth and max number inputs (cone.hbs:22,26); cone.js round-trips both controls through navigate with the current seed, clamped to one or more (ui/js/views/cone.js:15-24).
+    | verification: cargo test -p grove-desktop --locked green with 88 views tests including the cone walk suite: the fixture diamond yields backward [W-02, W-09, W-01], order [W-01, W-02, W-09] and forward [W-02, W-03] from W-01; max=2 and depth=1 both cap the walk and raise the truncated flag; the blob assertion checks the compact json embed.
+
+w W-143 type=feature status=done cynefin=complicated t_created=2026-08-30T17:31:34Z t_updated=2026-08-30T17:54:38Z "Render the cone as a 3D matrix"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/ui/js/views/cone.js, packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/css/views/cone.css, packages/desktop/ui/views/cone.hbs, packages/desktop/src-tauri/src/views/cone.rs
+  ac:
+    | nodes render as an InstancedMesh positioned by hop depth so dependencies and impact fan in opposite directions from the seed (code trace plus manual pass).
+    | wide hop layers spread across the perpendicular plane instead of clipping (manual pass).
+    | pointer picking selects instances with tooltip and info panel parity with the graph view (code trace).
+    | dependency nodes carry contraction order numbers and status colors reuse the shared graph foundation (code trace).
+    | an impact count states the blast radius size and empty sides render empty-state panels (cargo test).
+    | hop assignment and 3D positioning live in a DOM-free util with bun tests (bun test).
+  hypothesis:
+    | A three.js InstancedMesh scene on the vendored ESM pair, laid out by hop depth with layers fanned across the perpendicular plane, reuses the G-28 3D foundation and renders the cone as a literal three-dimensional cone within the fifty-node cap (D-22).
+  evidence_strategy:
+    | bun test on the DOM-free cone utils; template fragment assertions in cargo test; B-07 covers frame rates far above the fifty-node cap; rendering has no CI harness (D-17) so a manual visual pass by the user is requested at checkpoint.
+  evidence:
+    | layout: parseConeModel assigns hops by BFS over the blob blocks edges (dependencies negative, impact positive), attaches one-based contraction order numbers, and positions layers with a golden-angle spiral on the perpendicular plane so wide hops spread across y and z instead of clipping (ui/js/utils/cone-model.js:18-90); the bun suite covers hops, order numbers, seed origin, wide-layer spread, member filtering and variant fills (cone-model.test.js, 26 tests green across six files).
+    | scene: initConeScene renders nodes as one InstancedMesh (ui/js/views/cone.js:60) tinted by statusVariant fills dimmed with nodeAlpha, edges as LineSegments, hop depth on the x axis with the seed at the origin; Raycaster picking selects instances (cone.js:178-187) feeding the shared createTooltip and createInfoPanel from graph-panel.js (cone.js:17-18) for graph parity; labels prefix dependency nodes with their contraction order number; camera orbit, pan and wheel zoom mirror graph-3d; teardown disposes geometries, materials, renderer and the rAF loop (cone.js:246-264).
+    | sides and verification: the template renders Dependencies and Impact cards with live counts from the model (ui/views/cone.hbs:29-46, counts emitted in views/cone.rs:57-58) and compact empty-state panels when a side is empty; cargo test -p grove-desktop --locked green with 89 views tests including cone_fragment_counts_sides_and_empty_states; bun import of cone.js against the vendored three.module.min.js parses ok; rendering has no CI harness (D-17) so a manual visual pass by the user is requested at checkpoint.
+
+w W-144 type=feature status=done cynefin=complicated t_created=2026-08-30T17:31:37Z t_updated=2026-08-30T21:58:29Z "Map cone surfaces onto files"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/src-tauri/src/views/cone.rs, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/js/views/cone.js, packages/desktop/ui/css/views/cone.css
+  ac:
+    | the surface map lists the union of surface paths across the seed and cone nodes with per-file touch counts (cargo test).
+    | hovering a node highlights its files and hovering a file highlights its nodes (code trace plus manual pass).
+    | long file chips truncate with a full-value tooltip reusing the area view pattern (template assertion).
+  hypothesis:
+    | Aggregating surface reflists in the view model and linking rows to node ids through data attributes gives instant file context for the whole cone.
+  evidence_strategy:
+    | Aggregation tests in cargo test -p grove-desktop --locked; hover wiring traced in code and exercised in the manual pass because interactions have no CI harness (D-17).
+  evidence:
+    | model: cone::model emits the surface union across seed and cone members with per-file touch counts and toucher lists (src/views/cone.rs); cargo fixture test cone_surface_map_lists_union_with_touch_counts asserts the union of two files, the shared file counting both touchers and the BTreeMap ordering.
+    | card and hover: the sidebar Surface card renders one row per file with the area-view chip pattern (badge area-chip-mono inside area-chips, full path in the title tooltip, touch-count badge) and data-surface-file anchors (ui/views/cone.hbs); applyLinks maps hovered nodes to their files and hovered files to their touchers, scaling the linked entities in the scene and toggling is-active on the matching rows, wired through delegated mouseover/mouseout on the section (ui/js/views/cone.js, ui/css/views/cone.css); cargo asserts the chips, tooltip and the applyLinks wiring.
+    | verification: bun test 31/0 with cone.js import ok; cargo test -p grove-desktop --locked green (views 94 with the new test); manual scene pass left to the user per D-17.
+
+w W-145 type=feature status=done cynefin=complicated t_created=2026-08-30T17:31:39Z t_updated=2026-08-30T20:21:22Z "Highlight brittle goal chains"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/src-tauri/src/views/cone.rs, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/js/views/cone.js, packages/desktop/ui/css/views/cone.css
+  ac:
+    | each seed goal shows its goal-to-work connectivity from goal_fragility (cargo test).
+    | connectivity of one renders a brittle warning, zero renders a no-path note and higher values render the disjoint path count (template assertions).
+    | the fragility timing check lands in the linked assumption outcome before the highlight ships (assumption record).
+  hypothesis:
+    | Goal fragility from core algebra maps onto the seed goals so a single critical chain reads at a glance as a brittle warning.
+  evidence_strategy:
+    | Model and template tests on fixtures with one and two disjoint paths in cargo test; B-08 times the model build on the repo lock and records the outcome.
+  evidence:
+    | model: cone::model maps goal_fragility of the seed onto labeled rows - connectivity 1 renders the brittle warning, 0 renders the no-path note and higher values render the disjoint path count - with goal titles attached (src/views/cone.rs model()); cargo fixture test cone_seed_goal_fragility_labels_brittle_paths asserts all three bands (1 brittle/warning, 2 disjoint paths/info, 0 no path/neutral) and that a goalless seed hides the card.
+    | template: the sidebar gains a Fragility card with one id-plus-badge row per seed goal (ui/views/cone.hbs, ui/css/views/cone.css); template assertions in the same test cover the card, brittle, the disjoint path count and the no-path note.
+    | timing (B-08): examples/cone_timing.rs times 20 builds of cone::model plus goal_fragility on the repo lock (seed W-99, 1 goal, 155 nodes) at 0-3 ms wall time, worst 3 ms against the 100 ms budget; B-08 recorded and validated before the highlight shipped.
+    | verification: cargo test -p grove-desktop --locked green (lib 18, triggers 14, views 92 incl. the new fragility test, write 8); fragility changes confined to cone.rs, cone.hbs, cone.css, tests/views.rs and the new examples/cone_timing.rs.
+
+w W-146 type=feature status=done cynefin=complicated t_created=2026-08-30T17:31:43Z t_updated=2026-08-30T20:23:59Z "List relevant discoveries under the cone"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/src-tauri/src/views/cone.rs, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/js/views/cone.js, packages/desktop/ui/css/views/cone.css
+  ac:
+    | discoveries rank by anchors against the seed surface, cone tags and cone edges (cargo test).
+    | each row shows the invariant text and the overlap reason (template assertion).
+    | activating a row navigates to the discovery view (code trace).
+  hypothesis:
+    | Relevant discoveries from core algebra with invariant text visible in the cone view surface the domain axioms for the whole dependency chain without filesystem wandering.
+  evidence_strategy:
+    | Ranking tests on a fixture with surface, tag and edge overlaps in cargo test; navigation wiring traced in code.
+  evidence:
+    | model: cone::model ranks active discoveries through relevant_discoveries against the seed surface, the cone member tags and edges into the cone, and labels each row with its overlap reason (surface: ..., tags: ..., cone: ...) plus the invariant title (src/views/cone.rs); cargo fixture test cone_lists_relevant_discoveries_with_reasons asserts the 2-anchor row outranks the 1-anchor rows, the stale discovery drops out and all three reason strings.
+    | template and wiring: the sidebar gains a Relevant discoveries card whose rows show the invariant text and the overlap reason and carry data-navigate="discovery" (ui/views/cone.hbs, ui/css/views/cone.css); initCone delegates [data-navigate] clicks to the router and removes the listener on teardown (ui/js/views/cone.js); template and source assertions cover the card, reasons and the wiring.
+    | verification: cargo test -p grove-desktop --locked green (views 93 incl. the new test); bun test 29/0 with cone.js import ok; changes confined to cone.rs, cone.hbs, cone.css, cone.js and tests/views.rs.
+
+w W-147 type=feature status=done cynefin=clear t_created=2026-08-30T17:31:46Z t_updated=2026-08-30T22:02:26Z "Link cone nodes to packets"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/ui/js/views/cone.js, packages/desktop/ui/css/views/cone.css
+  ac:
+    | activating a work node in the cone opens its packet through navigate (code trace).
+    | keyboard focus reaches every node action (code trace plus manual pass).
+  hypothesis:
+    | Routing cone nodes to the existing packet view makes the cone an entry point into execution context with no new packet code.
+  evidence_strategy:
+    | Navigation wiring traced in code and covered by the manual pass at checkpoint.
+  evidence:
+    | activation: initCone passes onActivate into the scene, pointerup opens the packet of the pressed work node when the pointer moved under five pixels (no drag), and Enter or Space on the keyboard focus opens the hovered work node through navigate("packet", {id}) (ui/js/views/cone.js); cargo asserts the navigate call and the drag guard.
+    | keyboard: the scene canvas carries tabIndex 0 with an aria-label explaining the keys, arrow keys cycle a focus index through every work entity reusing setHovered (scale, links, surface rows, edge lighting), Escape clears the focus, and a focus-visible ring styles the canvas (ui/js/views/cone.js, ui/css/views/cone.css); cargo asserts onKeyDown, tabIndex and the arrow handling.
+    | verification: bun test 32/0 with cone.js import ok; cargo test -p grove-desktop --locked green (views 95); the interaction pass in the running app belongs to the user (D-17).
+
+w W-148 type=feature status=done cynefin=clear t_created=2026-08-30T17:31:51Z t_updated=2026-08-30T22:00:52Z "Mark the critical path in the cone"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/src-tauri/src/views/cone.rs, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/js/views/cone.js, packages/desktop/ui/css/views/cone.css
+  ac:
+    | critical path members inside the cone carry a distinct marker derived from critical_path (cargo test).
+    | the legend explains the marker (template assertion).
+  hypothesis:
+    | Marking critical_path members inside the cone shows where work should flow next using core algebra with no new computation.
+  evidence_strategy:
+    | Model test with a known critical chain fixture in cargo test plus a legend fragment assertion.
+  evidence:
+    | model: cone_walk flags every cone node on critical_path and emits the path sequence restricted to the cone (src/views/cone.rs); cargo fixture test cone_marks_critical_path_members asserts the longest chain (W-01, W-02, W-03) against the shortcut (W-09) with per-node critical flags and the legend fragment.
+    | scene and legend: parseConeModel filters unknown ids out of the critical array and builds consecutive critical pairs both directions (cone-model.js, bun covers the pairs and node flags); at rest the blocks edges along consecutive critical members paint in the accent color (CRITICAL_EDGE_RGB from variantFill accent), their ids render with graph-label-critical in accent-bright, and the sidebar explains the marker through an accent swatch note shown only when the cone intersects the path (ui/js/views/cone.js, ui/views/cone.hbs, ui/css/views/cone.css).
+    | verification: bun cone-model 12/0; cargo test -p grove-desktop --locked green (views 95 with the new test); the manual scene pass belongs to the user (D-17).
+
+w W-149 type=feature status=done cynefin=clear t_created=2026-08-30T18:12:31Z t_updated=2026-08-30T18:22:17Z "Stack cone layers as voxel matrices"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/js/utils/cone-model.test.js, packages/desktop/ui/js/views/cone.js
+  ac:
+    | each hop layer fills a centered square matrix slice in row-major order with contraction order first (bun test).
+    | slices stack along the hop axis so the cone reads as a cuboid of cells (manual pass).
+    | nodes render as one InstancedMesh of boxes sized to their cell with the seed cell larger (code trace).
+    | picking, labels and info panels keep parity with the graph view (code trace).
+  hypothesis:
+    | Centered row-major matrix slices per hop stacked along the direction axis match the user's stacked-tables definition of a three-dimensional matrix while keeping the causality direction legible (D-23).
+  evidence_strategy:
+    | bun test on the slice layout in cone-model.test.js; bun import of cone.js against the vendored three.module.min.js; cargo test -p grove-desktop --locked stays green; rendering has no CI harness (D-17) so a manual visual pass by the user is requested at checkpoint.
+  evidence:
+    | layout: sliceCell fills each hop layer as a centered square matrix slice in row-major order with contraction order first, and slices stack along the hop axis through HOP_SPACING so the cone reads as a cuboid of cells (ui/js/utils/cone-model.js:17-22, 82-90); bun tests assert the 2x2 slice for a four-node hop, the empty trailing cell for odd counts and single-cell slices for chains (cone-model.test.js, 27 tests green across six files).
+    | scene: nodes render as one InstancedMesh of boxes sized to their cell with the seed cell larger (ui/js/views/cone.js:56-76, BoxGeometry at cone.js:59); picking, labels, tooltip and info panels keep graph parity and teardown disposes everything (cone.js:178-264); bun import of cone.js against the vendored three.module.min.js parses ok; cargo test -p grove-desktop --locked stays green with 89 views tests.
+    | visual pass: the rebuilt app was driven live over computer-use; seed W-141 renders one large seed box plus seven impact boxes as distinct flat grid slices stacked in depth with thin connecting lines and id labels W-142 through W-148, Dependencies 0 and Impact 7 cards above the stage; the arrangement reads as stacked matrix slices, matching the user's stacked-tables definition (D-23).
+
+w W-150 type=feature status=done cynefin=clear t_created=2026-08-30T18:26:26Z t_updated=2026-08-30T18:35:56Z "Draw visible table grids in cone slices"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/js/utils/cone-model.test.js, packages/desktop/ui/js/views/cone.js, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/css/views/cone.css
+  ac:
+    | all slices share one square side derived from the widest layer so the stack forms a regular cuboid (bun test).
+    | each slice draws its table as a grid of cell-sized squares on the perpendicular plane (code trace).
+    | link lines fade to a whisper at rest and hover lights the incident edges of the picked cell (code trace).
+    | a header legend names the direction axis dependencies seed impact (cargo test).
+  hypothesis:
+    | Drawing each slice as a visible table grid with a shared square side and resting the link lines makes the stack read as the user's cuboid of cells instead of a node-link graph (D-24).
+  evidence_strategy:
+    | bun test on the shared side and row-major filling in cone-model.test.js; source assertions for the grid tables and hover-lit edges plus a template assertion for the legend in cargo test; a live visual pass over computer-use closes the loop (D-17).
+  evidence:
+    | lattice: parseConeModel derives one square side from the widest layer and fills every slice row-major from the first cell, exporting side for the scene (ui/js/utils/cone-model.js:17-22, 82-95); bun tests assert the shared side across slices of different widths, first-cell filling for the seed and corner cells for wide layers (cone-model.test.js, 28 tests green).
+    | tables and edges: initConeScene draws a GridHelper table of cell-sized squares on the perpendicular plane for every hop, all sharing the slice side (ui/js/views/cone.js:63-74); link lines rest as a whisper through EDGE_REST_RGB and hover lights the incident edges while muting the rest via updateEdgeColors (cone.js:112-146, 205-215); the camera targets the cuboid center; the header legend names the direction axis (ui/views/cone.hbs:28).
+    | correction: the earlier live-pass claim on this item was false; leading-prompt image analysis described a frame whose scene had actually crashed on a missing HOP_SPACING import that the initCone catch swallowed, so the shipped stage rendered empty; the crash is fixed by W-151 and the lattice claims above stand on the bun and cargo suites only.
+
+w W-151 type=bug status=done cynefin=clear t_created=2026-08-30T18:36:02Z t_updated=2026-08-30T18:41:49Z "Fix the cone scene crash on load"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/ui/js/views/cone.js
+  ac:
+    | the cone scene mounts again for a seeded view with grids and boxes rendered (neutral frame analysis plus user confirmation).
+    | every identifier used by initConeScene is imported or defined in the module (code trace).
+    | a scene failure surfaces as a visible alert in the stage instead of a silent empty box (code trace).
+  hypothesis:
+    | Importing HOP_SPACING for the grid loop and surfacing initConeScene failures as a visible alert restores the matrix scene and makes any future crash legible.
+  repro:
+    | User report after W-150: the visualization does not render at all; the stage stays an empty dark box on every seed because initConeScene references an unimported HOP_SPACING while building the slice grids, the ReferenceError is swallowed by the initCone catch, and no scene mounts.
+  evidence_strategy:
+    | Negative-first bug evidence: the user report and the swallowed ReferenceError form the repro; the fix is verified by bun import plus a runtime frame from the relaunched app analyzed with a neutral prompt and cross-checked against a no-seed empty-state frame; final visual confirmation belongs to the user (D-17).
+  evidence:
+    | repro and fix: the user reported the visualization not rendering at all after W-150; the grid loop referenced HOP_SPACING without importing it, the ReferenceError was swallowed by the initCone catch and left an empty stage; the fix imports HOP_SPACING (ui/js/views/cone.js:5-12, used at cone.js:86) and surfaces any scene failure as a visible escaped alert instead of silence (cone.js:385-392).
+    | verification: bun test 28 green, bun import parses, cargo test -p grove-desktop --locked green across suites; the relaunched app driven to seed W-141 shows no Cone failed alert in the accessibility tree, and neutral-prompt frame analysis reports eight labeled cubes (W-141 through W-148, matching the cone membership) with grid plane outlines beneath them, while the no-seed control frame analyzes as EMPTY; the final visual confirmation belongs to the user (D-17).
+
+w W-152 type=feature status=done cynefin=clear t_created=2026-08-30T18:45:00Z t_updated=2026-08-30T19:11:22Z "Stack the cone as strata planes"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/js/utils/cone-model.test.js, packages/desktop/ui/js/views/cone.js, packages/desktop/src-tauri/src/views/cone.rs
+  ac:
+    | the model emits strata context for the cone: goals with areas and members, themes, and surface files with touchers (cargo test).
+    | work members sit on the work plane at causal X cells in contraction order with slice spread on Z (bun test).
+    | goals, areas, themes and files sit on their own planes above and below the work plane, snapped to cells (bun test).
+    | every plane draws a cell-sized grid and membership links pierce the planes vertically while blocks relations stay hover-lit (code trace).
+  hypothesis:
+    | Parallel strata planes carrying the causal axis horizontally and pierced by vertical membership links match the user's three-axis semantic cube specification (D-26).
+  evidence_strategy:
+    | bun test on the cell census; cargo source and template checks; a neutral-prompt frame pass on the relaunched app cross-checked against an empty control frame; the user's visual confirmation decides (D-17).
+  evidence:
+    | model: cone_walk emits strata context for the cone, goals with member lists and area rollups, areas with goal lists, themes with members and the surface file union with toucher lists (views/cone.rs:72-155); the cargo fixture test asserts the rollups and the surface union across members (tests/views.rs cone_strata_context_names_goals_areas_themes_and_files).
+    | layout and scene: parseConeModel places work members on the work plane at causal x cells in contraction order with z spread per layer, snaps goals, areas, themes and files onto their strata planes and emits vertical links for member, area, theme and surface relations (ui/js/utils/cone-model.js:82-146); the scene draws one cell grid per occupied stratum plane through buildPlaneGrid, renders every entity in one InstancedMesh with strata-sized boxes, keeps the vertical links visible and the blocks relations hover-lit (ui/js/views/cone.js:50-58, 105-126, 139-172); bun covers causal x cells, z spread order, strata planes, snapped cells and the vertical link census (cone-model.test.js, 26 tests green).
+    | verification: bun test 26 green, bun import parses, cargo test -p grove-desktop --locked green with 91 views tests; the relaunched app driven to seed W-141 raises no Cone failed alert and a neutral-prompt frame analysis reports four stacked horizontal grid planes with cubes at grid intersections reading as a 3D matrix rather than a graph; the user's eyes remain the final judge (D-17).
+
+w W-153 type=bug status=rejected cynefin=clear t_created=2026-08-30T19:26:29Z t_updated=2026-08-30T19:42:19Z "Fix cone legibility defects from review"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/src-tauri/src/views/cone.rs, packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/js/views/cone.js, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/css/views/cone.css
+  ac:
+    | an axis strip over the stage names the dependencies, seed and impact zones (cargo test).
+    | file cells carry no scene labels and the tooltip shows the basename once (code trace).
+    | the graph info panel is gone from the cone stage (template assertion).
+    | every cube renders at one uniform size (code trace).
+  hypothesis:
+    | Uniform cells, hidden file labels, a direction strip over the stage and no graph furniture let the stacked planes read as a matrix instead of a graph.
+  repro:
+    | User review of the strata build: forward and backward zones are not legible, file labels turn the surface plane into mush and duplicate their path inside the tooltip, the graph-view info card occupies half the stage although the cone is not a graph, and cubes vary in size between strata.
+  evidence_strategy:
+    | Cargo template and source assertions for the axis strip, the absent info panel and the uniform size; a neutral frame pass on the relaunched app; the user confirms (D-17).
+  evidence:
+    | rejected: the user reviewed the patched strata build and read the whole visualization as fully inconsistent and unclear; the four patches (uniform cubes, hidden file labels, axis strip, no info panel) did not fix the underlying grammar and are subsumed by the W-154 lattice rebuild; the axis strip is replaced by in-scene zone floors
+
+w W-154 type=bug status=done cynefin=complicated t_created=2026-08-30T19:42:49Z t_updated=2026-08-30T20:17:19Z "Rebuild the cone scene as a zoned column lattice"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/js/utils/cone-model.test.js, packages/desktop/ui/js/views/cone.js, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/css/views/cone.css, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | every entity sits at an integer cell of one shared column lattice and no two entities on a plane share a cell (bun test).
+    | all five strata planes draw the same x/z footprint grid so columns align across planes (code trace).
+    | three in-scene zone floors mark dependencies, seed and impact and the dom axis strip is gone (template assertion).
+    | blocks edges rest visible as the causal spine and hover still lights incident edges (code trace).
+    | scene labels render for work members only and the file tooltip names the path once (code trace).
+    | every cube renders at one uniform size and the seed stays marked by its outline alone (code trace).
+    | labels carry bare ids with no order numbers (code trace).
+    | the controls, legend and count cards sit in a side column beside the stage (template assertion).
+  hypothesis:
+    | One shared integer lattice, aligned plane footprints, in-scene zone floors and a resting causal spine give the stacked planes a single grammar so the cube reads as one semantic object instead of three mixed ones.
+  repro:
+    | User review after the strata build: the cone reads as fully inconsistent and unclear; three coordinate conventions share one scene - hop-lattice work cells (cone-model.js:89-94), averaged-snapped strata cells (cone-model.js:101-121) and half-step file stacks (cone-model.js:134).
+    | Strata cubes collide: goals, areas and themes land on averaged cells with no dedup and all themes share z=+CELL on the work plane (cone-model.js:107-121); per-plane grids are built from each plane's own occupants so footprints never align (cone.js:84-98); the dom axis strip lies under orbit (cone.hbs:51-55, cone.css:74-89); blocks edges rest invisible while membership cables stay visible (cone.js:155).
+  evidence_strategy:
+    | bun tests on the lattice invariants; cargo source and template checks for the zone floors, resting spine and work-only labels; a neutral frame pass on the relaunched app; the user confirms (D-17).
+  evidence:
+    | model: parseConeModel places every entity on one integer column lattice - work members at hop columns with contraction-order integer rows, strata de-collided through findFreeCell onto their own planes (area above goal above theme above work above files) and emits the shared extent (ui/js/utils/cone-model.js); bun covers integer cells, per-plane collision freedom, collision resolution, zones, extent and the link census (cone-model.test.js, 9 tests).
+    | scene: all five planes draw the same footprint grid from model.extent (work plane at 0.5 opacity, strata planes 0.22), three in-scene zone floors mark dependencies, seed and impact (buildZoneFloors), blocks edges rest visible as the causal spine (REST_EDGE_RGB, opacity 0.55) and hover lights incident edges, membership links dim at 0.22, uniform cubes (sizeOf[i] = NODE_SIZE) with the seed marked only by a 46-unit wire outline, bare-id labels for work members only, cone-local tooltip naming file paths once (ui/js/views/cone.js).
+    | layout: cone-layout/cone-sidebar place the controls, colored zone legend and count cards beside the stage instead of above it (ui/views/cone.hbs, ui/css/views/cone.css with a 900px stacking fallback); the dom axis strip and its css are gone.
+    | verification: bun test 29/0 (9 cone-model) and module import ok; cargo -p grove-desktop 145/0 (views 91) with template assertions for the sidebar order, zone legend dots and the absent axis strip plus source assertions for zone floors, shared footprint, resting spine, uniform size, seed outline and bare-id labels; workspace excluding desktop all green (27 binaries, 0 failed).
+    | deviations: no live frame pass per user instruction (tests carry the verification); mid-review the user amended the build - uniform cubes, no order numbers on labels, sidebar layout - folded into the AC set before close; the user's eyes remain the final judge (D-17).
+
+w W-155 type=bug status=done cynefin=complicated t_created=2026-08-30T20:38:55Z t_updated=2026-08-30T20:42:50Z "Apply the cone review: shapes, in-scene axis labels, full-height stage"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/ui/js/views/cone.js, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/css/views/cone.css, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | the seed card is gone from the template and no wireframe outline renders in the scene (template assertion + code trace).
+    | work, goal, area and theme entities render as spheres while files render as cubes (code trace).
+    | every stratum plane carries an aligned in-scene label (files, work, themes, goals, areas), the three zones carry in-scene floor labels (dependencies, seed, impact) and the dom legend is gone (code trace + template assertion).
+    | the section height derives from the shell chrome (title bar, status bar, paddings) and the layout flexes so the stage fills the viewport with no page scroll (css trace).
+    | cargo and bun suites stay green after the changes (test run).
+  hypothesis:
+    | Shape carries entity kind (spheres for the semantic strata, cubes for files), camera-facing sprite labels pinned to the plane edges and zone floors name the x and y axes inside the scene, and giving the stage the full viewport column removes the scroll.
+  repro:
+    | User review of the lattice build: the cone-seed-card wastes vertical space and forces page scroll; the wireframe seed outline reads as noise; one cube grammar for every entity kind hides the semantics; the dom legend explains the scene from outside instead of axes named in 3d; the stage must fill the viewport height exactly.
+  evidence_strategy:
+    | Template and source assertions in cargo for the shapes, labels, absent card, outline and legend; a css trace of the height chain; bun and cargo suites green; the user's eyes close the loop (D-17).
+  evidence:
+    | card and outline: the cone-seed-card block and its css are gone and the picker carries the seed selection instead (ui/views/cone.hbs, ui/css/views/cone.css); the seed wireframe outline, its constants and its disposal path are removed from the scene (ui/js/views/cone.js); cargo asserts the absent card, absent outline source and the picker selection text.
+    | shapes: two instanced meshes replace one - a SphereGeometry mesh for work, goal, area and theme entities and the BoxGeometry mesh reserved for files - with per-mesh instance maps driving syncInstances and nearest-hit picking across both (ui/js/views/cone.js); source assertions cover the shape mapping and SphereGeometry.
+    | labels: makeLabelSprite renders camera-facing canvas sprites (depthTest off, renderOrder 10); STRATUM_LABELS pin Files, Work, Themes, Goals and Areas at one aligned edge of their planes, forming a y-axis ruler, ZONE_LABELS pin Dependencies, Seed and Impact onto their floor slabs at the front edge, colored to their zones; the dom legend, its dots and their css are removed; the default camera theta moves to 0 so the causal x axis runs left-right on screen (ui/js/views/cone.js).
+    | height chain: .view-cone derives its height from the shell chrome (100vh minus title bar, status bar and the two space-5 paddings) as a flex column, .cone-layout flexes with min-height 0, the stage stretches through the grid and the sidebar scrolls internally instead of growing the page; a 900px media query restores stacked scrolling (ui/css/views/cone.css).
+    | verification: bun test 29/0 with cone.js import ok; cargo test -p grove-desktop --locked green (lib 18, triggers 14, views 93, write 8); changes confined to cone.js, cone.hbs, cone.css and tests/views.rs; the user's eyes remain the final judge (D-17).
+
+w W-156 type=bug status=done cynefin=clear t_created=2026-08-30T21:02:15Z t_updated=2026-08-30T21:06:09Z "Apply the second cone review: typed labels, file zone colors, zoom-stable ids, standard discovery rows"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/js/utils/cone-model.test.js, packages/desktop/ui/js/views/cone.js, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/css/views/cone.css, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | scene label sprites render in the work-label mono font at weight 400 (code trace).
+    | the zone floor slabs are gone and file cubes carry their zone colors through zoneFill while semantic strata keep status colors (code trace + bun test).
+    | work identifiers anchor by the projected node radius so they stay glued to their nodes at every zoom (code trace).
+    | discovery rows render in the overview-row format with mono id, title and reason note, without link styling (template assertion).
+    | bun and cargo suites stay green (test run).
+  hypothesis:
+    | Mono weight-400 sprites, zone-colored file cubes, projected-radius label anchoring and the overview row format remove the four inconsistencies without touching the lattice grammar.
+  repro:
+    | User review: sprite labels render in a heavier sans font than the work item identifiers; the zone floor slabs add noise and should give way to colors on the file cubes; identifiers drift over their nodes while zooming because their pixel offset ignores perspective; discovery rows render as raw violet links instead of the standard row format used in overview.
+  evidence_strategy:
+    | Bun tests on zoneFill; cargo source and template assertions; the user's eyes close the loop (D-17).
+  evidence:
+    | labels: graphLabelFont probes a hidden .graph-label element for its computed mono family and makeLabelSprite renders weight-400 mono sprites, so stratum and zone labels share the work-identifier type style (ui/js/views/cone.js); cargo asserts graphLabelFont in the source.
+    | zones: buildZoneFloors and its constants are gone from the scene; file cubes fill through zoneFill(n.zone) (backward blue, seed light, forward amber) while semantic strata keep status colors (ui/js/views/cone.js); zoneFill with ZONE_HUES exports from cone-model.js and bun covers the three distinct fills plus the seed fallback (cone-model.test.js, 10 tests).
+    | anchoring: updateLabels computes the projected node radius (size over distance times the fov scale, hover factor included) and offsets each identifier by that radius instead of a constant, so labels stay glued to their nodes at every zoom (ui/js/views/cone.js); cargo asserts radiusPx in the source.
+    | discoveries: rows reuse the overview-row format - mono id, title and the overlap reason as a wrapping note - with data-navigate on the row instead of a raw link (ui/views/cone.hbs, ui/css/views/cone.css); cargo asserts the row markup and the absence of link anchors.
+    | verification: bun test 30/0 (cone-model 10) with cone.js import ok; cargo test -p grove-desktop --locked green (lib 18, triggers 14, views 93, write 8); changes confined to cone-model.js, cone-model.test.js, cone.js, cone.hbs, cone.css and tests/views.rs; the user's eyes remain the final judge (D-17).
+
+w W-157 type=bug status=done cynefin=clear t_created=2026-08-30T21:21:09Z t_updated=2026-08-30T21:25:12Z "Apply the third cone review: screen-space labels, member rows, per-card scroll"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+1
+  surface: packages/desktop/src-tauri/src/views/cone.rs, packages/desktop/ui/js/views/cone.js, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/css/views/cone.css, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | every axis sprite renders at one constant pixel height in one neutral color, rescaled per frame by camera distance, and hides once the orbit radius passes the zoom gate (code trace).
+    | the Dependencies card lists backward members in contraction order and the Impact card lists forward members as overview rows (cargo test + template assertion).
+    | the fragility row shows the goal id and its title beside the connectivity badge (template assertion).
+    | each side card scrolls internally under the overview 300px row cap and the sidebar never exceeds the stage column (css trace).
+    | bun and cargo suites stay green (test run).
+  hypothesis:
+    | Distance-compensated sprites at one pixel height and one neutral color with a zoom gate, member rows in the side cards and per-card scroll remove the remaining inconsistencies while keeping the lattice grammar untouched.
+  repro:
+    | User review: axis sprites scale differently at depth and read larger than the identifiers, zone labels carry zone tints although color belongs to the file cubes only, and they never hide when zooming out; the Dependencies and Impact cards show no members; the fragility row hides the goal title; the side cards overflow instead of scrolling individually within the window height.
+  evidence_strategy:
+    | Cargo model and template assertions for member lists and fragility titles; source assertions for the label rescale, neutral color and zoom gate; css trace for per-card scroll; the user confirms (D-17).
+  evidence:
+    | labels: updateLabelSprites runs per frame, rescaling each sprite by its camera distance so every axis label renders at one constant pixel height (LABEL_PX) in one neutral gray (LABEL_RGB), and hides them all once the orbit radius passes fitRadius times LABEL_HIDE_FACTOR, mirroring the graph view label gate; the zone tints are gone from the labels (ui/js/views/cone.js); cargo asserts the rescale, gate and absent zone label colors.
+    | cards: cone::model emits dependencies in contraction order and impact in walk order as id-plus-title rows (src/views/cone.rs); the Dependencies and Impact cards render them as overview rows and the fragility row now shows the goal title beside the mono id and badge (ui/views/cone.hbs); cargo asserts the W-03 dependency order (W-01, W-02, W-09), the W-01 impact rows (W-02, W-03), row titles and the visible goal titles.
+    | scroll: the sidebar drops its own scroll; the card column flexes with min-height 0, each card shrinks and scrolls internally (flex 0 1 auto, overflow-y auto) and the row lists cap at the overview 300px, so the cards never exceed the stage column (ui/css/views/cone.css).
+    | verification: bun test 30/0 with cone.js import ok; cargo test -p grove-desktop --locked green (lib 18, triggers 14, views 93, write 8); changes confined to cone.rs, cone.js, cone.hbs, cone.css and tests/views.rs; the user's eyes remain the final judge (D-17).
+
+w W-158 type=bug status=done cynefin=clear t_created=2026-08-30T21:35:41Z t_updated=2026-08-30T21:37:47Z "Apply the fourth cone review: exact identifier type, legend colors, identifier zoom gate, row layout"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+0
+  surface: packages/desktop/ui/js/views/cone.js, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/css/views/cone.css, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | stratum sprites take family, pixel size and color from a computed-style probe of a real identifier element (code trace).
+    | zone legend labels carry their zone colors again while axis labels stay visible at every zoom (code trace).
+    | dom identifiers hide past the zoom gate like the graph view (code trace).
+    | sidebar rows wrap without horizontal scroll and the fragility row aligns id, title and badge (template assertion + css trace).
+    | bun and cargo suites stay green (test run).
+  hypothesis:
+    | Probing the identifier computed style (family, size, color) and rendering sprites from it at that exact pixel height, restoring zone colors on the legend labels, moving the zoom gate onto the dom identifiers and fixing row flex layout removes the remaining mismatches.
+  repro:
+    | User review: axis sprites still mismatch the identifiers in size and color and shrink at some zooms; the zone label colors were wrongly removed (only stratum labels should be uniform, the zone legend keeps its colors); the zoom gate hides the wrong thing - the identifiers should hide like the graph view, not the axis labels; discovery rows scroll horizontally; the fragility row renders crooked.
+  evidence_strategy:
+    | Source assertions for the probe, zone colors and the identifier gate; template and css assertions for the row layout; suites green; the user confirms (D-17).
+  evidence:
+    | labels: graphLabelStyle probes a hidden identifier element and returns its family, pixel size and color; stratum sprites render from that style at that exact pixel height (canvas oversampled 48px, rescaled per frame by camera distance), the zone legend labels carry their zone colors again (ZONE_LABEL_RGB), and the zoom gate moved off the axis labels onto the dom identifiers - ids hide past fitRadius times LABEL_HIDE_FACTOR like the graph view (ui/js/views/cone.js); cargo asserts the probe, labelStyle.px, zone colors and the showIds gate.
+    | rows: fragility rows use the standard overview-row layout (mono id, block content with min-width zero, badge last) and discovery rows wrap their reason onto its own line with overflow-wrap anywhere; cards and row lists clip overflow-x so nothing scrolls horizontally (ui/views/cone.hbs, ui/css/views/cone.css); cargo asserts the fragility row markup.
+    | verification: bun test 30/0 with cone.js import ok; cargo test -p grove-desktop --locked green (lib 18, triggers 14, views 93, write 8); changes confined to cone.js, cone.hbs, cone.css and tests/views.rs; the user's eyes remain the final judge (D-17).
+
+w W-159 type=bug status=done cynefin=clear t_created=2026-08-30T21:39:37Z t_updated=2026-08-30T21:41:16Z "Fix the sprite glyph size to land at the probed identifier pixel height"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+0
+  surface: packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/js/utils/cone-model.test.js, packages/desktop/ui/js/views/cone.js, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | the sprite em box projects back to the probed identifier pixel height at every camera distance (bun round-trip test).
+    | the height math lives in the DOM-free model module and the scene consumes it (code trace).
+    | bun and cargo suites stay green (test run).
+  hypothesis:
+    | Dividing the target pixel height by the em fraction of the padded canvas makes the em box land exactly at the probed identifier size, and a round-trip bun test over the projection math locks the rendered size instead of source strings.
+  repro:
+    | User follow-up: the font size in the visualization is still wrong after W-158; the probe matches the identifier em size, but makeLabelSprite pads the canvas by 25 percent top and bottom while updateLabelSprites scales by the full canvas height, so the em box renders at about two thirds of the probed pixels (10px ids versus roughly 6.7px sprites); the cargo asserts only matched source strings, not the rendered size.
+  evidence_strategy:
+    | A failing-first bun round-trip test (6.7px before, 10px after) across several distances; cargo source assertion for emFraction; suites green; the user confirms (D-17).
+  evidence:
+    | root cause and fix: makeLabelSprite pads the canvas 25 percent top and bottom for crispness while the sprite scale used the full canvas height, so the em box rendered at 48/72 of the probed pixels (about 6.7px against 10px identifiers); labels now carry emFraction and the world height comes from screenSpaceSpriteHeight(px / emFraction compensation) in the DOM-free model module (ui/js/utils/cone-model.js, ui/js/views/cone.js).
+    | verification: failing-first bun round-trip test - before the fix the projected em box measured 6.67px, after it lands on exactly 10px at distances 200, 500 and 900 (cone-model.test.js, 11 tests green); cargo asserts emFraction and screenSpaceSpriteHeight in the scene; full suites green (bun 31/0, desktop 147/0 with views 93).
+
+w W-160 type=bug status=done cynefin=clear t_created=2026-08-30T21:48:11Z t_updated=2026-08-30T21:49:55Z "Unify the cone sidebar: one scroll, one row anatomy, badges everywhere"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+0
+  surface: packages/desktop/src-tauri/src/views/cone.rs, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/css/views/cone.css, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | overflow-y appears exactly once in the cone stylesheet and only on the card stack; cards and inner lists render at natural height (css assertion).
+    | dependencies, impact, fragility and discoveries render one row anatomy: mono id column, block content with title and inline wrapping note, right-aligned trailing badge (template assertion).
+    | Fragility and Relevant discoveries titles carry count badges from fragility_count and discoveries_count (cargo test + template assertion).
+    | bun and cargo suites stay green (test run).
+  hypothesis:
+    | One scroll container for the card stack, natural-height cards, a single shared row anatomy and count badges on every card make the sidebar read as one list system.
+  repro:
+    | User screenshots: every side card shows its own scrollbar even when nothing scrolls (per-card overflow-y plus 300px inner list scroll under classic Windows scrollbars); long rows run flush to card edges while empty states keep padding; discovery rows break the column anatomy (id alone on a line, reason full-width); Fragility and Relevant discoveries lack count badges; the Impact list clips mid-row at a card boundary.
+  evidence_strategy:
+    | Css assertion on the single scroll container; template assertions for uniform rows and badges; model counts in cargo; suites green; the user confirms (D-17).
+  evidence:
+    | scroll: the card stack (.cone-sidebar .cone-sides) is the single scroll container (overflow-y auto, overflow-x hidden) while the controls stay pinned; the per-card overflow rule and the 300px inner list cap are gone, so cards render at natural height and nothing clips mid-row (ui/css/views/cone.css); cargo asserts overflow-y: auto appears exactly once and no .cone-sidebar .card rule exists.
+    | rows and badges: discovery rows fold the reason into the shared content column (cone-row-note inline with the title, wrapping anywhere) so every list - dependencies, impact, fragility, discoveries - renders the same id-plus-content anatomy with a right-aligned trailing badge; Fragility and Relevant discoveries titles carry count badges fed by fragility_count and discoveries_count from cone::model (ui/views/cone.hbs, src/views/cone.rs); cargo asserts the counts (3 and 3 on the fixtures) and the uniform row markup.
+    | verification: bun test 31/0; cargo test -p grove-desktop --locked green (lib 18, triggers 14, views 93, write 8); changes confined to cone.rs, cone.hbs, cone.css and tests/views.rs; the user's eyes remain the final judge (D-17).
+
+w W-161 type=bug status=done cynefin=clear t_created=2026-08-30T21:54:56Z t_updated=2026-08-30T21:55:44Z "Stack the cone controls on two rows with full-width fields"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+0
+  surface: packages/desktop/ui/css/views/cone.css, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | the controls stack vertically, one field per row, and the inputs stretch to the available width (css assertion).
+    | cargo suite stays green (test run).
+  hypothesis:
+    | A column-direction controls block with flex-growing inputs fills the sidebar width and reads as one field per row.
+  repro:
+    | User review: Depth and Max nodes sit on one wrapped row of the narrow sidebar with fixed 72px inputs; they should occupy two rows with each input stretched to the sidebar width.
+  evidence_strategy:
+    | Css assertion on the column layout and stretched inputs; cargo suite green.
+  evidence:
+    | fix: .cone-controls switches to flex-direction column so Depth and Max nodes occupy one row each, labels pin left (flex none) and the inputs grow to the sidebar width (flex 1 1 auto, width 100 percent) (ui/css/views/cone.css); cargo asserts the column layout and the stretched input rule.
+
+w W-162 type=bug status=done cynefin=clear t_created=2026-08-30T22:26:18Z t_updated=2026-08-30T22:28:39Z "Apply the fifth cone review: count modifier badges, sidebar scroll, cursor, control widths, chip accent"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+0
+  surface: packages/desktop/ui/views/partials/badge.hbs, packages/desktop/ui/css/components/badge.css, packages/desktop/ui/index.html, packages/desktop/ui/views/cone.hbs, packages/desktop/ui/css/views/cone.css, packages/desktop/ui/js/views/cone.js, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | the badge partial renders badge-count as a colorless modifier over every variant with badge-count-wide past ninety-nine, and existing badge-count callers keep a color (template + css assertions).
+    | every count badge in the cone cards uses the count modifier with its current variant colors (template assertion).
+    | the whole sidebar scrolls while the card stack does not, and the scroll rule stays the only overflow-y in the stylesheet (css assertion).
+    | control labels carry a min width so both inputs stretch to the full row (css assertion).
+    | pickable nodes show the pointer cursor through a css class and the active surface chip swaps to the accent tag colors without an outline (code trace + css assertion).
+  hypothesis:
+    | A count modifier on the badge partial, css-level pickable cursor, one scroll on the sidebar itself, fixed-width control labels and accent-tag colors for the active chip remove the five inconsistencies.
+  repro:
+    | User review: the pointer cursor never shows over pickable nodes; the whole sidebar should scroll instead of the card stack; Depth and Max nodes rows do not stretch because the labels lack a min width; count badges render as pills instead of the badge-count shape used elsewhere (badge-count carries its own red colors and must become a colorless modifier over the variants, with badge-count-wide past ninety-nine like filter-tab-count); the active surface chip must swap to the accent badge color instead of an outline.
+  evidence_strategy:
+    | Template and css assertions for the badge modifier and its callers; css assertions for the single sidebar scroll, label min width, accent chip and pickable cursor; suites green; the user confirms (D-17).
+  evidence:
+    | badges: the badge partial grows a count modifier - badge-count plus badge-count-wide past ninety-nine through the same gt pattern as filter-tab-count - and .badge-count drops its own count-tag colors so the variant class (neutral, info, accent, warning) supplies them; every cone count badge (dependencies, impact, surface title and rows, fragility, discoveries) passes count= with its current variant, and the goals rail badge switches to badge-accent (badge.hbs, badge.css, cone.hbs, index.html); cargo asserts the modifier over variants, the colorless css and the rail badge markup.
+    | layout and cursor: the single overflow-y moves from the card stack to the whole sidebar (controls scroll away with the cards) while cone-sides renders without overflow; control labels gain min-width 84px with inputs at flex 1 1 0 so both rows stretch full width; the pointer cursor now comes from a css class (canvas.is-pickable toggled by setHovered, inline cursors only for drag states) with pointer-events none on the label and tooltip overlays so nothing eats the hover; the active surface chip swaps its colors to the accent tag pair instead of an outline (cone.css, cone.js).
+    | verification: bun test 32/0 with cone.js import ok; cargo test -p grove-desktop --locked green (views 95) including the updated goals-badge and badge-count assertions; the visual pass belongs to the user (D-17).
+
+w W-163 type=bug status=done cynefin=clear t_created=2026-08-30T22:33:10Z t_updated=2026-08-30T22:34:34Z "Fix the count badge circle and stretch the control rows"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+0
+  surface: packages/desktop/ui/css/components/badge.css, packages/desktop/ui/index.html, packages/desktop/ui/css/views/cone.css, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | badge-count renders an 18px circle (radius 50 percent) with the wide variant going pill, and the goals badge keeps its red through badge-danger (css + template assertions).
+    | control rows stretch to the sidebar width through align-items stretch (css assertion).
+    | bun and cargo suites stay green (test run).
+  hypothesis:
+    | A 18px circle with 50 percent radius and danger variant for the goals badge restores the count look, and align-items stretch on the column controls makes the rows fill the sidebar width.
+  repro:
+    | User review: badge-count renders as an ellipse (18 by 16) instead of the count circle and the goals badge shows the wrong color; the Depth and Max nodes rows still do not stretch because the inherited filter-bar align-items centers the rows horizontally so they shrink to content.
+  evidence_strategy:
+    | Css assertions on the circle geometry and stretch; template assertion on the danger variant; suites green; the user confirms (D-17).
+  evidence:
+    | shape and color: .badge-count renders an 18px circle (border-radius 50 percent, zero padding) with the wide variant going pill (padding 0 5px, radius 999px) matching filter-tab-count, and the goals badge keeps its previous red through badge-danger instead of the accent guess (badge.css, index.html); cargo asserts the circle geometry and the danger markup.
+    | controls: the column controls gain align-items stretch, overriding the inherited filter-bar centering that shrank each row to content; with the 84px label min width the Depth and Max nodes inputs now fill the sidebar width (cone.css); cargo asserts the stretch rule alongside the min width.
+
+w W-164 type=bug status=done cynefin=clear t_created=2026-08-30T22:38:30Z t_updated=2026-08-30T22:40:29Z "Match badge-count to the filter-tab count metrics and the original goals red"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+0
+  surface: packages/desktop/ui/css/components/badge.css, packages/desktop/ui/css/components/side-rail.css, packages/desktop/ui/index.html, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | badge-count uses the filter-tab-count font metrics (xs, line-height 1) at the 18px circle (css assertion).
+    | the goals badge renders the original count-tag red (red-700, white text) through its own rule with the original badge-count markup (css + template assertion).
+    | cargo suite stays green (test run).
+  hypothesis:
+    | Restoring the exact count-tag colors on .goals-badge and matching the filter-tab-count font metrics (xs, line-height 1) makes the count badges pixel-identical to their references.
+  repro:
+    | User review: the count badges still show a different color and size; token diff shows the goals badge moved from count-tag red-700 with white text to danger-tag red-800 with red-100 text, and badge-count renders font-size xxs (10px) with the badge line-height 1.5 while the filter-tab-count reference uses xs (11px) with line-height 1.
+  evidence_strategy:
+    | Token-level css assertions (count-tag pair on .goals-badge, xs font with line-height 1 on .badge-count) and the restored markup assertion.
+  evidence:
+    | root cause via git diff: badge-count must keep the HEAD geometry exactly (16x16, xxs font) - the filter-tab-count analogy was about the >99 wide mechanism, not the size - so .badge-count reverts to the original block minus its two color lines, and the goals badge returns to its original markup with the count-tag red (red-700, white text) moved onto .goals-badge (badge.css, side-rail.css, index.html).
+    | verification: cargo test -p grove-desktop --locked green (views 95) with assertions on the original geometry (16px, xxs), the colorless modifier, the count-tag pair on .goals-badge and the restored goals markup; the cone card count badges keep their variant colors at the original count shape.
+
+w W-165 type=bug status=done cynefin=clear t_created=2026-08-30T22:44:25Z t_updated=2026-08-30T22:45:47Z "Center the count badges, keep zero counts as counts, pad the sidebar edge"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+0
+  surface: packages/desktop/ui/css/components/badge.css, packages/desktop/ui/views/partials/badge.hbs, packages/desktop/ui/css/views/cone.css, packages/desktop/src-tauri/tests/views.rs
+  ac:
+    | count badge text centers inside its circle through the modifier's own justify-content, zero padding and line-height 1 (css assertion).
+    | a zero count still renders the badge-count modifier (template assertion on the Dependencies zero badge).
+    | the sidebar keeps a right padding between its content and the scrollbar (css assertion).
+    | bun and cargo suites stay green (test run).
+  hypothesis:
+    | Centering belongs in the modifier itself, the presence test must accept zero ((or count (eq count 0))), and a right padding on the sidebar separates content from the scrollbar.
+  repro:
+    | User review (screenshot): count badge text sits off-center because the HEAD centering lived on .goals-badge (justify-content, zero padding) not on .badge-count itself; the Dependencies badge with zero renders as a plain pill because {{#if count}} treats 0 as falsy so the modifier never applies; the cone sidebar content runs flush against its scrollbar with no right padding.
+  evidence_strategy:
+    | Template assertion on the zero badge markup, css assertions on the centering rules and sidebar padding; suites green.
+  evidence:
+    | centering: .badge-count carries justify-content center, zero padding and line-height 1 itself - the HEAD centering had lived on the goals-badge consumer, so cone badges rendered off-center once the modifier lost the colors (badge.css); cargo asserts the centering rules.
+    | zero counts: {{#if count}} treats 0 as falsy in handlebars so the Dependencies zero badge lost the modifier and rendered as a pill; the presence test now reads (or count (eq count 0)) and the >99 wide check stays on gt (badge.hbs); cargo asserts the rendered zero badge markup carries badge-count badge-neutral.
+    | padding: .cone-sidebar gains padding-right so its rows keep a gap from the classic Windows scrollbar (cone.css); cargo asserts the rule. Suites: cargo -p grove-desktop green (views 95), bun unchanged at 32/0.
+
+w W-166 type=refactor status=done cynefin=clear t_created=2026-08-30T22:51:29Z t_updated=2026-08-30T22:52:18Z "Cut source-string assertions down to rendered contracts"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+0
+  ac:
+    | no cargo test reads cone.js or cone.css as text; cone coverage keeps rendered-template asserts (cards, badges, rows, legend) and model asserts (walks, counts, fragility, surface, critical path, discoveries).
+    | cargo and bun suites stay green (test run).
+  hypothesis:
+    | Source-string and stylesheet-value assertions couple tests to implementation detail and rot on every rename; keeping only rendered markup, model data and pure-function tests keeps the suite maintainable without losing coverage that ever caught a real defect.
+  evidence_strategy:
+    | Grep proves no cone test reads the scene source or stylesheets; suites green.
+  evidence:
+    | cut: cone_lattice_grids_and_direction_legend shrinks to cone_fragment_shell_renders_sidebar_and_counts (rendered cards, legend absence, count modifier); the critical-path, surface-map and discoveries tests drop their cone.js source reads; the badge test drops the four css-value asserts added during the fix rounds (views.rs) - grep confirms no cargo test reads cone.js or cone.css.
+    | kept: rendered-template asserts (sidebar structure and order, absent seed card and legends, zero-count badge markup, surface chips with tooltips, discovery rows, critical-path note, fragility titles), model asserts (walks, contraction order, member rows, fragility bands and counts, surface union and touch counts, critical flags, discovery ranking) and the bun suite over the DOM-free model (lattice invariants, zone fills, screen-space round trip).
+    | verification: bun 32/0, cargo -p grove-desktop green (views 95); scene interaction behavior stays with the manual pass per D-17.
+
+w W-167 type=refactor status=done cynefin=clear t_created=2026-08-30T23:47:20Z t_updated=2026-08-31T00:13:53Z "Split the cone scene into focused modules"
+  goals: G-30
+  theme: T-07
+  fitness: G-30=+0
+  ac:
+    | Behaviour is preserved: bun test and cargo test -p grove-desktop --test views record the same pass counts before and after the split; the cone view initialises in the desktop app with an empty console error log (manual pass per D-17).
+    | views/cone.js keeps only page wiring and scene orchestration and stays under 250 lines; scene concerns move to sibling modules (THREE scene parts in ui/js/views, DOM-free builders in ui/js/utils), checked with wc -l and a file listing.
+    | Behaviour is preserved: bun test and cargo test -p grove-desktop --test views record identical pass counts before and after the split.
+    | A browser harness over the real modules reports zero console errors through boot, keyboard hover, zoom-out, teardown and re-init, with a sized canvas, projected identifier labels, the identifier zoom gate active and a non-empty framebuffer readback; a parallel desktop app pass is blocked by the single-instance lock while the user session runs.
+  hypothesis:
+    | initConeScene already separates furniture builders (grids, strata links, instanced meshes, sprites) from interaction and the render loop, so moving the builders into modules while the orchestrator closure keeps all mutable state preserves behaviour.
+  evidence_strategy:
+    | Record bun and cargo suite output before and after; grep the export surface of views/cone.js; git diff cone-model.js and main.js; run the desktop app and load the cone view checking the console.
+  evidence:
+    | split: views/cone.js 723 -> 198 lines keeping initCone as the sole export; scene concerns moved to ui/js/views cone-tooltip.js (19), cone-lattice.js (101), cone-labels.js (157), cone-camera.js (71), cone-edges.js (68), cone-nodes.js (81), cone-inputs.js (199); grep '^export' views/cone.js returns only initCone; main.js, index.html, cone-model.js and cone-model.test.js carry no edit from this change.
+    | suites: bun test 32 pass 0 fail before and after; cargo test -p grove-desktop --test views 95 passed 0 failed before and after (run under CARGO_TARGET_DIR=target-isolated because the user's running app locks target/debug/grove-desktop.exe).
+    | runtime harness (page serving ui/ with the diamond fixture, real modules imported): boot canvas 986x532 with W-0..W-3 labels visible and errors []; framebuffer readback 40 color buckets, 1.3 percent bright, 0.7 percent chromatic pixels (scene rasterises, not a bare clear); ArrowRight keydown turns on is-pickable (hover path through node sync, edge update and surface rows); three wheel events of deltaY 4000 hide all identifier labels (zoom gate); dispose removes the canvas with errors []; second initCone boots a fresh scene with labels back and errors [].
+    | scope notes: the in-app browser could not capture pixels of served pages (WebGL and static alike), so visual parity is proven by the framebuffer readback instead of a screenshot; a second desktop app instance exits through the single-instance plugin (src-tauri/src/lib.rs:198) while the user session runs, so the tauri-shell visual pass rides on the next app restart; enabling work for G-30, fitness delta 0 because no user-facing metric changes.
+
+w W-168 type=feature status=done cynefin=clear t_created=2026-09-03T06:49:45Z t_updated=2026-09-03T07:12:30Z "Render the cone critical path as thick beams"
+  goals: G-31
+  fitness: G-31=+1
+  surface: packages/desktop/ui/js/views/cone-edges.js, packages/desktop/ui/js/views/cone-edges.test.js
+  ac:
+    | Beam colors keep parity with the edge lines: accent at rest, lit or mute on hover.
+    | dispose() frees the beam geometry and material together with the line buffers.
+    | A bun test covers beam count, transform (midpoint, length, thickness) and hover repaint on the real module.
+    | Critical path edges in the cone render as beam geometry (instanced boxes) with world thickness 1.5 units (a few device pixels at the default camera radius), slightly thicker than the one-pixel edge lines, not via LineBasicMaterial linewidth.
+  hypothesis:
+    | WebGL caps LineBasicMaterial linewidth at one pixel, so visible thickness needs real geometry; instanced boxes between node centers reuse the proven InstancedMesh pattern from cone-nodes.js.
+  evidence_strategy:
+    | Run bun test on the ui suites with the new cone-edges test asserting beam instances and repaint; keep the Rust suites untouched.
+  evidence:
+    | bun test (packages/desktop/ui): 35 pass / 0 fail across 7 files, incl. 3 new tests in js/views/cone-edges.test.js covering beam count, transform (midpoint, length, thickness 6), hover repaint and group composition.
+    | Runtime WebGL path verified: standalone harness importing the real cone modules rendered via Bun static server; screenshot shows a thick accent beam along the 4-node critical chain W-2>W-1>W-0>W-3 while the non-critical edge W-0>W-4 stays a thin 1px line; harness and server removed after verification.
+    | bun test (packages/desktop/ui): 35 pass / 0 fail across 7 files, incl. 3 new tests in js/views/cone-edges.test.js covering beam count, transform (midpoint, length, thickness), hover repaint and group composition.
+    | Runtime WebGL path verified twice via a standalone harness importing the real cone modules (Bun static server, camera at ~330 units matching the default rig radius): first pass exposed an over-thick beam (6 world units, ~16px) rejected in review; final thickness 1.5 world units renders as a slender ~3-5px highlighted line along the 4-node critical chain W-2>W-1>W-0>W-3 while the non-critical edge W-0>W-4 stays a 1px line. Harness and server removed after verification.
+
+w W-169 type=feature status=done cynefin=clear t_created=2026-09-03T07:16:10Z t_updated=2026-09-03T07:20:35Z "Lift cone entities above the lattice planes"
+  goals: G-32
+  fitness: G-32=+1
+  surface: packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/js/utils/cone-model.test.js
+  ac:
+    | Every cone entity (work nodes and strata) renders 15 world units above its lattice plane, so grid lines no longer overlap the edge lines, beams or node shapes.
+    | The lattices, axis labels and camera fit stay anchored to the unlfted plane Y values.
+    | parseConeModel tests assert the lifted Y (plane + LATTICE_LIFT) for work nodes and each stratum kind, and keep the x/z integer-lattice alignment.
+  hypothesis:
+    | Both grid overlap artifacts come from entity positions sharing the exact plane Y with the lattice lines; a constant 15-unit lift (equal to the node radius) separates every drawn element from its grid while keeping the plane geometry untouched.
+  evidence_strategy:
+    | Run bun test on the ui suites with updated position assertions; verify in a served-DOM harness screenshot that edges and beams run visibly above the work grid.
+  evidence:
+    | bun test (packages/desktop/ui): 35 pass / 0 fail; cone-model tests now assert y = plane + LATTICE_LIFT (15) for work nodes and every stratum kind, and integer x/z lattice alignment.
+    | Runtime WebGL verified via the served harness: spheres sit tangent above the work grid, the purple critical beam and thin edges run 15 units above the plane with a clear visible gap, no edge pixel shared with grid lines; lattices and axis labels stay at unlfted plane Y. Harness removed after verification.
+
+w W-170 type=feature status=done cynefin=complicated t_created=2026-09-03T07:30:13Z t_updated=2026-09-03T07:40:16Z "Fade cone text with zoom through a shared label-fade util"
+  goals: G-33
+  fitness: G-33=+1
+  surface: packages/desktop/ui/js/utils/label-fade.js, packages/desktop/ui/js/utils/label-fade.test.js, packages/desktop/ui/js/views/cone-labels.js, packages/desktop/ui/js/views/cone.js
+  ac:
+    | A DOM-free label-fade util maps a zoom-out factor (camera radius over fit radius) to opacity through a smoothstep window: full at or below the inner edge, zero at or beyond the outer edge, semi-transparent between.
+    | Work id labels render with per-frame opacity from the util (no hard threshold cut) and hide entirely once opacity reaches zero.
+    | Stratum and zone legend sprites fade with the same opacity curve and hide entirely once it reaches zero, so no text stays permanently visible when zoomed out.
+    | bun tests cover the fade curve at the window edges, midpoint and hovered-window degenerate case; the cone no longer imports LABEL_HIDE_FACTOR and no dangling reference remains.
+  hypothesis:
+    | Both text systems are driven per frame from the same rig radius, so one pure factor-to-opacity curve can feed them both: sprites take material opacity and visibility, DOM id labels take style opacity and the hidden flag.
+  evidence_strategy:
+    | Run bun test with the new label-fade tests plus the full ui suites; verify in a served harness at three zoom levels that ids and legend go full, semi-transparent, gone.
+  evidence:
+    | bun test (packages/desktop/ui): 40 pass / 0 fail across 8 files, incl. 5 new tests in js/utils/label-fade.test.js covering window edges, midpoint 0.5, monotonicity and the degenerate collapsed window.
+    | Runtime verified in the served harness at three zoom levels: 1.0x all five id labels visible with style.opacity 1 (read programmatically), 1.7x ids and legend words ghosted semi-transparent (vision check), 2.6x zero text elements anywhere (vision check); sceneLabels sprites and work DOM labels share one fade value computed in the cone tick. Harness removed after verification.
+
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
   fitness: G-21=+1
@@ -943,6 +1552,162 @@ d D-19 status=accepted t_created=2026-08-29T00:15:57Z t_updated=2026-08-29T00:17
   validation:
     | Served-DOM harness screenshot plus fps counter; suites green.
 
+d D-20 status=accepted t_created=2026-08-30T17:29:28Z t_updated=2026-08-30T17:35:06Z "Causality view computes cones in-process"
+  context:
+    | The cone view needs backward cones, forward cones, contraction order, goal fragility and relevant discoveries for a seed work item; the desktop already links grove-core as a library while the bridge allowlists only eight read commands.
+  options:
+    | OC1: extend the bridge READ_COMMANDS allowlist with deps, impact and path and parse their JSON in the view. OC2: call the grove-core cone algebra directly in the Rust view model, as the graph view already does for area_relevant_discoveries. OC3: run packet through the bridge with --cone and re-parse the markdown.
+  decision:
+    | OC2: the view model calls backward_cone, forward_cone, contraction_order, goal_fragility, relevant_discoveries and critical_path in-process and emits one JSON blob for the template.
+  consequences:
+    | One data path shared with the graph view; the bridge stays a thin adapter over the CLI contract; cone logic reuses core guards and tests instead of growing a second parser; cones recompute on every navigation because no client-side cache exists.
+  validation:
+    | cargo test on the view model against a diamond fixture mirrors the core algebra cone tests; the bridge allowlist stays unchanged.
+
+d D-21 status=accepted t_created=2026-08-30T17:30:02Z t_updated=2026-08-30T17:30:42Z "Cone renders through d3 force layout"
+  context:
+    | The cone is a bounded DAG spreading in two directions from the seed and a single hop can hold dozens of nodes; fixed DOM columns overflow the viewport horizontally, a space problem the user flagged at planning time.
+  options:
+    | OC1: fixed DOM columns per hop with the seed centered. OC2: an SVG scene laid out by the vendored d3 force simulation with hop-biased positioning forces and vertical wrapping for wide layers. OC3: reuse the WebGL graph view behind a cone filter.
+  decision:
+    | OC2: render the cone as SVG through the vendored d3, with positioning forces pulling dependencies one way and impact the other, collision forces wrapping wide layers vertically, and the seed pinned at the center; no new vendored code because d3 already ships for the graph view.
+  consequences:
+    | Wide cones wrap vertically instead of clipping horizontally; positions settle over ticks rather than sitting in exact columns; pure hop assignment and contraction numbering stay in DOM-free utils per D-17 with bun tests; d3 version pinning inherits the existing vendor provenance.
+  validation:
+    | bun tests on the DOM-free hop and order utils; template fragment tests in cargo test; a manual visual pass at checkpoint because rendering has no CI harness (D-17).
+
+d D-22 status=accepted t_created=2026-08-30T17:30:42Z t_updated=2026-08-30T18:11:59Z "Cone renders as a 3D instanced scene"
+  context:
+    | The user redirected the cone rendering at plan review from a d3 force layout to a three-dimensional matrix; the graph view already ships a 3D renderer on the vendored three.js ESM pair with InstancedMesh nodes, raycast picking, orbit controls and distance-based labels (W-124), and B-07 validates interactive frame rates at 1000 nodes, far above the fifty-node cone cap.
+  options:
+    | OC1: keep the d3 force layout (D-21). OC2: a dedicated three.js InstancedMesh scene for the cone reusing the shared graph foundation. OC3: a cone filter mode inside the existing graph view.
+  decision:
+    | OC2: render the cone as its own three.js scene with hop depth on one axis, dependencies and impact fanning in opposite directions from the seed, wide layers spread across the perpendicular plane, nodes as one InstancedMesh tinted by status, edges as LineSegments, and picking and controls reused from the G-28 foundation; no new vendored code.
+  consequences:
+    | The cone becomes a literal three-dimensional cone and wide hops gain a whole plane instead of a wrapped column; the view depends on the 3D foundation modules staying stable; d3 stays vendored for the graph view only; no 2D fallback ships unless asked later.
+  validation:
+    | bun tests on the DOM-free hop and positioning utils; template fragment tests in cargo test; a manual visual pass at checkpoint because rendering has no CI harness (D-17).
+
+d D-23 status=accepted t_created=2026-08-30T18:11:59Z t_updated=2026-08-30T18:25:49Z "Cone renders as a voxel matrix"
+  context:
+    | The user reviewed the shipped cone scene and read it as just another graph: spiral layers on a hop axis render as a node-link cloud; at clarification the user defined the wanted three-dimensional matrix as a stack of two-dimensional tables, a cuboid divided into small cells.
+  options:
+    | OC1: keep the hop-axis spiral layers (D-22). OC2: stack each hop layer as a centered two-dimensional matrix slice along the direction axis with nodes as instanced boxes in lattice cells. OC3: an adjacency matrix with cone nodes on both axes and blocks edges as cells.
+  decision:
+    | OC2: every hop layer becomes a square matrix slice filled row-major with contraction order first, slices stack along the hop axis so dependencies, seed and impact read as a cuboid of cells; nodes render as one InstancedMesh of boxes sized to their cell with the seed cell larger, and edges stay line segments between cell centers.
+  consequences:
+    | Layers read as stacked tables instead of an organic graph; slices stay square regardless of member count so odd counts leave empty cells; picking, labels and panels keep graph parity; the spiral layout and its golden-angle helper are dropped.
+  validation:
+    | bun tests assert grid-aligned slice positions; cargo template tests stay green; a manual visual pass by the user confirms the stacked-matrix reading (D-17).
+
+d D-24 status=accepted t_created=2026-08-30T18:25:49Z t_updated=2026-08-30T18:44:11Z "Matrix slices draw visible table grids"
+  context:
+    | The user reviewed the voxel build and still read a graph: occupied cells alone, connected by always-on lines, render as a node-link chain because the lattice itself is invisible; the user's definition calls for a cuboid visibly divided into small cells, tables stacked behind one another.
+  options:
+    | OC1: keep occupied cells with always-on link lines (D-23 as shipped). OC2: draw a grid table per slice with one shared square side, cells filled row-major, link lines whispered at rest and lit on hover. OC3: render ghost boxes for empty cells in addition to the grids.
+  decision:
+    | OC2: every slice draws its table as a GridHelper of cell-sized squares on the perpendicular plane, all slices share one square side derived from the widest layer so the stack forms a regular cuboid, filled cells render as solid boxes, and link lines fade to a whisper at rest while hover lights the incident edges of the picked cell.
+  consequences:
+    | Empty cells stay visible as grid squares without geometry cost; slices of one member keep the shared side so single chains sit in a corner cell; causality detail moves behind hover so the resting scene reads as tables, not as a graph.
+  validation:
+    | bun tests assert the shared side and row-major cell filling; a source check asserts the grid tables and hover-lit edges; a manual visual pass by the user confirms the stacked-tables reading (D-17).
+
+d D-25 status=accepted t_created=2026-08-30T18:44:11Z t_updated=2026-08-30T19:02:18Z "Cone renders as a wireframe cell volume"
+  context:
+    | The user read the grid-table build as still a graph: thin slice grids under always-suggested link lines keep the node-link gestalt; the user's standing definition is a cuboid divided into small cells, where the lattice itself is the picture.
+  options:
+    | OC1: keep slice grids under whisper lines (D-24 as shipped). OC2: draw every cell of the cone volume as a wireframe cube in one merged LineSegments, occupied cells hold solid boxes, and relation lines exist only under hover. OC3: ghost translucent boxes for empty cells instead of wireframes.
+  decision:
+    | OC2: the model enumerates every cell of the side by side by hop cuboid with its occupant, the scene draws all cell outlines as one merged wireframe LineSegments, occupied cells render their solid status box inside, and the relation LineSegments stays hidden until a hover lights the incident edges of the picked cell.
+  consequences:
+    | The resting scene is a lattice volume with colored cells instead of floating objects; empty cells stay visible as outline cubes at line cost only; causality detail moves fully behind hover; slice grids and rest-state link lines disappear.
+  validation:
+    | bun tests assert the cell census of the cuboid; source and template checks run in cargo; a neutral-prompt frame pass plus the user's own eyes close the loop (D-17).
+
+d D-26 status=accepted t_created=2026-08-30T19:02:18Z t_updated=2026-08-30T19:42:42Z "Cone renders as a semantic strata cube"
+  context:
+    | The user supplied the standing specification after three rejected renderings: the cone is a three-axis semantic cube, X is topological causality with the seed at focus, backward contraction order to the left and blast radius to the right, Y is a stack of abstraction strata planes (areas above goals above themes and work above the code surface) with dependency links piercing the planes vertically, and Z is epistemic depth carrying assumptions and questions, fragility bundles and discovery coverage heat.
+  options:
+    | OC1: one causal plane with cell outlines (D-25 as drafted). OC2: parallel strata planes on Y carrying the causal axis on X, vertical links piercing the planes, Z reserved for epistemic depth. OC3: a dense voxel volume mixing all entity kinds in one lattice.
+  decision:
+    | OC2: work members sit on the work plane at their causal X cell in contraction order with slice spread on Z, goals hover above their member groups, areas above their goals, themes beside their members and surface files below their touching work; every plane draws a cell-sized grid, membership links pierce the planes vertically and stay visible while blocks relations stay hover-lit; Z depth is reserved for uncertainties, fragility bundles and discovery heat landing with W-145 and W-146.
+  consequences:
+    | The scene reads as stacked matrix tables per stratum instead of one volume; goals, areas, themes and files enter the model data; causal detail remains behind hover on the work plane; epistemic depth is unclaimed until W-145 and W-146 fill it.
+  validation:
+    | bun tests assert strata placement, X snapping and vertical links; cargo asserts the strata blob and template; a neutral frame pass plus the user's eyes close the loop (D-17).
+
+d D-27 status=accepted t_created=2026-08-30T19:42:26Z t_updated=2026-08-30T21:25:48Z "Cone renders as a zoned column lattice"
+  context:
+    | After six render metaphors in one day (D-21..D-26) the strata build still reads as inconsistent: three coordinate conventions share the scene (hop lattice for work cells, averaged snapping for strata cells, half-step stacks for files), strata cubes collide on averaged cells with no dedup, per-plane grid footprints never align, a screen-space dom axis strip lies once the camera orbits, and the causality itself rests hidden behind hover while non-causal membership cables stay visible.
+  options:
+    | OC1: patch the strata build again (W-153 shape: uniform cells, axis strip, hidden labels) - the user already rejected this reading. OC2: one-grammar rebuild: a single integer column lattice on x (hop columns, contraction-order rows on z), five strata planes sharing one footprint grid, translucent zone floors marking dependencies, seed and impact inside the scene, the blocks spine resting visible with membership links dim, the seed emphasized, labels on work members only. OC3: drop the strata planes and render the work-plane cone alone - simplest, but it abandons the standing three-axis specification.
+  decision:
+    | OC2: the scene keeps the three-axis semantics of D-26 but executes them in one grammar: every entity snaps to an integer cell of a shared column lattice with deterministic collision resolution, all planes draw the same footprint grid so vertical alignment is meaningful, direction is marked by in-scene zone floor slabs (cool dependencies, bright seed seam, warm impact) instead of dom furniture, and the resting scene shows causality first.
+  consequences:
+    | Themes move to their own plane above work (D-26 placed them beside their members on the work plane, a collision source); z stays spatial row spread, epistemic depth remains unclaimed until W-145/W-146 and will arrive as color or height, not position; the dom axis strip is removed in favor of zone floors and a colored legend.
+  validation:
+    | bun tests assert the lattice invariants (integer cells, collision-free planes, shared footprint); cargo asserts the template and scene source; a neutral frame pass on the relaunched app; the user's eyes decide (D-17).
+
+d D-28 status=accepted t_created=2026-08-30T20:38:26Z t_updated=2026-08-30T21:02:14Z "Cone encodes kind by shape and labels its axes in-scene"
+  context:
+    | User review of the lattice build: the seed card wastes the vertical budget, the seed wireframe outline reads as noise, one cube grammar for every kind hides entity semantics, and the dom zone legend still explains the scene from outside it.
+  options:
+    | OC1: keep the single cube grammar, drop only the card and outline. OC2: spheres for work, goal, area and theme entities, cubes reserved for files, canvas-sprite labels pinned to each stratum plane edge and to the zone floors, and the dom legend removed. OC3: css-transformed html labels glued to 3d anchors.
+  decision:
+    | OC2: semantic strata render as spheres and the code surface as cubes so shape alone separates entity kind; stratum names (files, work, themes, goals, areas) render as camera-facing canvas sprites at one aligned edge of each plane, forming a y-axis ruler, zone names (dependencies, seed, impact) sit on their floor slabs at the front edge, and the stage owns the full viewport column.
+  consequences:
+    | Two instanced meshes replace one (spheres and cubes) with per-mesh index maps for picking and hover; labels are canvas sprites with depthTest off so they stay readable through the volume; the seed keeps no special geometry beyond its column 0 position and the seed seam; the dom legend and its dots disappear.
+  validation:
+    | Cargo source and template assertions for the shapes, labels, absent card, outline and legend; bun suite green; css trace of the height chain; the user confirms (D-17).
+
+d D-29 status=accepted t_created=2026-08-30T21:01:51Z t_updated=2026-08-30T21:21:09Z "Cone marks zones through file colors and a typed label axis"
+  context:
+    | Second user review of the lattice build: the translucent zone floor slabs add noise, the sprite labels use a heavier sans font than the work item identifiers, identifiers drift over their nodes while zooming because their pixel offset ignores perspective, and the discovery rows use raw link styling instead of the standard row format used across the app.
+  options:
+    | OC1: keep the floors and patch the font and offset only. OC2: drop the floor slabs, color file cubes by their zone so direction survives in the objects themselves, pin the zone and stratum label sprites to a floating axis line, draw sprites in the work-label mono font at weight 400, anchor DOM labels by the projected node radius so zoom never detaches them, and render discovery rows in the overview row format. OC3: color every entity kind by zone and drop status colors.
+  decision:
+    | OC2: the floor slabs disappear and file cubes carry the zone colors (cool blue backward, light seed, amber forward) while semantic strata keep status colors; zone and stratum labels float on the same bottom axis line rendered in the mono font of the graph labels at weight 400; work identifiers anchor through the projected node radius so they track their nodes at every zoom; discovery rows reuse the overview-row format with mono id, title and reason note.
+  consequences:
+    | Supersedes D-28's floor slabs while keeping its shapes, in-scene labels and full-height stage; zoneFill joins the cone model exports and the bun suite; the sprite label height stays a scene-space constant so labels scale with zoom like the geometry, in the same type style as the identifiers.
+  validation:
+    | Bun tests on zoneFill; cargo source and template assertions for the absent floors, file zone colors, mono label font, radius-anchored identifiers and overview-row discovery rows; the user confirms (D-17).
+
+d D-30 status=accepted t_created=2026-08-30T21:20:44Z t_updated=2026-08-30T21:35:40Z "Cone labels ride screen space and side cards carry their members"
+  context:
+    | Third user review: axis sprites scale with perspective so labels at different depths render at different sizes and read larger than the identifiers; zone labels tint toward their zones although color now belongs to the file cubes alone; labels must disappear below a zoom threshold like the graph view instead of mushing; the Dependencies and Impact cards carry no member rows; the fragility row hides the goal title; and the side cards must scroll individually without ever exceeding the window height.
+  options:
+    | OC1: keep scene-space sprites and only shrink them. OC2: compensate each sprite per frame by its camera distance so every label renders at one constant pixel height in one neutral color, hide them past a zoom-out threshold relative to the fit radius, list the cone members as overview rows inside the Dependencies and Impact cards, show the goal title beside the fragility id, and give each card an internal scroll with the overview 300px row cap. OC3: move axis labels back into the dom.
+  decision:
+    | OC2: axis labels live in screen space - each sprite rescales per frame by its distance to the camera so all labels share one pixel height and one neutral gray; they hide once the orbit radius passes a multiple of the fit radius, mirroring the graph view label gate; the side cards list their actual members as overview rows (dependencies in contraction order, impact in walk order, fragility with the goal title visible), and each card scrolls internally under the overview row cap while the sidebar never grows past the stage column.
+  consequences:
+    | Supersedes D-29's scene-space label constant and zone-tinted zone labels; keeps its file zone colors, mono type and overview discovery rows; the tick loop now measures label distances each frame; the Rust model grows dependencies and impact member lists for the cards.
+  validation:
+    | Cargo model and template assertions for the member lists and fragility titles plus source assertions for the per-frame label rescale, neutral color and zoom gate; css trace for per-card scroll; bun and cargo green; the user confirms (D-17).
+
+d D-31 status=accepted t_created=2026-08-30T21:35:18Z t_updated=2026-08-30T21:48:11Z "Cone labels copy the identifier type exactly and the zoom gate governs identifiers"
+  context:
+    | Fourth user review: the axis sprites still do not match the identifiers (size and color drift, smaller at some zooms), the zone label colors were wrongly removed - the user meant only stratum labels should be uniform while the zone legend keeps its colors - and the zoom gate hid the axis labels when the user expected the many node identifiers to hide like the graph view; discovery rows scroll horizontally and the fragility row renders crooked.
+  options:
+    | OC1: tune the sprite pixel height and keep the gate on axis labels. OC2: probe the identifier computed style (family, size, color) and render stratum sprites from it at that exact pixel height with oversampled canvases, restore the zone colors on the legend labels, move the zoom gate onto the dom identifiers, and fix row layout with min-width zero, wrapping notes and block content so nothing scrolls horizontally. OC3: drop axis labels entirely.
+  decision:
+    | OC2: stratum sprites take family, pixel size and color from a computed-style probe of a real identifier element and render on oversampled canvases so they match the ids exactly at every zoom; the zone legend labels keep their zone colors; the zoom gate moves to the dom identifiers (hidden past fitRadius times the factor, like the graph view) while axis labels stay visible; sidebar rows use block content with min-width zero and wrapping notes so cards never scroll horizontally.
+  consequences:
+    | Supersedes D-30's neutral-only label colors and its gate on axis labels; keeps its screen-space compensation, member rows and per-card scroll; the label probe returns font, size and color together.
+  validation:
+    | Source assertions for the style probe, restored zone label colors and the identifier gate; template assertions for the row layout; bun and cargo green; the user confirms (D-17).
+
+d D-32 status=accepted t_created=2026-08-30T21:47:51Z t_updated=2026-08-30T21:48:23Z "Cone sidebar scrolls as one stack with one row anatomy"
+  context:
+    | Fifth user review (screenshots): every side card shows its own scrollbar even with nothing to scroll (per-card overflow plus inner 300px list scroll on classic Windows scrollbars), long rows run flush against card edges while empty states keep padding, and each list renders its own anatomy - discovery rows put the id on its own line and the reason full-width, Fragility and Relevant discoveries lack count badges, and the Impact list clips mid-row at a card boundary.
+  options:
+    | OC1: keep per-card scroll and patch paddings. OC2: one scroll container for the whole card stack (controls stay fixed), no per-card or inner-list overflow, every list uses the same overview-row anatomy (mono id column, block content with title and wrapping note inline, badge right-aligned), and every card carries a count badge in its title. OC3: collapse all cards into one card with sections.
+  decision:
+    | OC2: the card stack is the single scroll container (flex 1, min-height 0, overflow-y auto) while the controls stay pinned; cards render at natural height without their own overflow and lists lose the 300px inner cap; dependencies, impact, fragility and discoveries all use one row anatomy - mono id column, block content carrying title and wrapping note inline, right-aligned trailing badge - and the Fragility and Relevant discoveries titles carry count badges like the other cards; D-31's identifier-type labels, legend colors, identifier zoom gate and screen-space sprite math carry over unchanged.
+  consequences:
+    | Supersedes D-31's per-card scroll and row leftovers: one scrollbar for the whole sidebar, no mid-row clipping at card boundaries, uniform spacing from the shared row and card padding; the Rust model grows fragility_count and discoveries_count for the title badges.
+  validation:
+    | Cargo template assertions for the count badges and uniform row markup, a css assertion that overflow-y appears exactly once in the cone stylesheet and only on the card stack; bun and cargo green; the user confirms (D-17).
+
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
     | attestations already give a GitHub-backed second path; cosign keyless would add a Sigstore-anchored one without storing another key, at the cost of another tool in the sign job; deferred from v1, revisit after the first releases
@@ -1043,6 +1808,14 @@ b B-07 status=validated cynefin=complicated t_created=2026-08-28T23:06:43Z t_upd
   result:
     | Validated: 100 ticks over a 1000-node, 8-cluster synthetic graph average 2.99 ms per tick in bun on the development machine (asserted under 16 ms in force-3d.test.js); no NaN coordinates across the settle test.
 
+b B-08 status=validated cynefin=complicated t_created=2026-08-30T17:31:13Z t_updated=2026-08-30T20:19:33Z "Fragility renders inside the interaction budget"
+  vm:
+    | Time the cone view model build including goal_fragility for a work item with several goals on the repo state.lock in a cargo test or example, recording wall time per build.
+  threshold:
+    | Model build completes under 100 ms on the development machine at the current lock size; if it exceeds the budget the highlight falls back to a manual refresh until W-05 ships an adjacency-list max-flow.
+  result:
+    | examples/cone_timing.rs on the repo lock (seed W-99, 1 goal, 155 nodes): 20 builds of cone::model plus goal_fragility complete in 0-3 ms wall time (worst 3 ms), inside the 100 ms budget; no manual-refresh fallback needed.
+
 t T-01 status=open t_created=2026-07-19T01:14:31Z t_updated=2026-07-19T01:14:31Z "Scaling performance"
 
 t T-04 status=open t_created=2026-08-17T11:44:27Z t_updated=2026-08-17T11:44:38Z "Plugin toolchain restyle"
@@ -1050,6 +1823,8 @@ t T-04 status=open t_created=2026-08-17T11:44:27Z t_updated=2026-08-17T11:44:38Z
 t T-05 status=done t_created=2026-08-28T22:38:42Z t_updated=2026-08-28T22:48:51Z "Graph view render loop and robustness debt"
 
 t T-06 status=done t_created=2026-08-28T23:06:23Z t_updated=2026-08-29T13:44:58Z "Graph view grows a 3D renderer"
+
+t T-07 status=done t_created=2026-08-30T17:29:26Z t_updated=2026-08-31T00:13:53Z "Desktop grows a causality cone view"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-07-27T14:44:48Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -1146,10 +1921,32 @@ y Y-15 status=active t_created=2026-08-28T23:17:03Z t_updated=2026-08-28T23:17:1
   tags: vendored ESM pair, DOM-free module
   surface: packages/desktop/ui/js/vendor, packages/desktop/ui/js/views/graph-3d.js, packages/desktop/ui/js/utils/force-3d.js
 
-y Y-16 status=active t_created=2026-08-28T23:38:31Z t_updated=2026-08-28T23:38:36Z "Import parse checks miss handler-scoped reference errors"
+y Y-16 status=active t_created=2026-08-28T23:38:31Z t_updated=2026-09-03T07:11:31Z "Import parse checks miss handler-scoped reference errors"
   tags: served-DOM harness, DOM-free module
   why:
     | bun import smoke checks passed while every pointerdown threw ReferenceError at runtime, because the missing identifier lived inside an event handler the import path never executes; only the served-DOM drag harness exposed it, so interaction surfaces need a browser probe, not a parse check.
+
+y Y-17 status=active t_created=2026-08-30T21:25:48Z t_updated=2026-08-30T21:25:51Z "One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate"
+  tags: causality cone
+  surface: packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/js/views/cone.js
+  why:
+    | Six render metaphors in one day each layered a new coordinate convention onto the last (hop lattice, averaged snapping, half-step stacks), and the mixed scene read as mush: colliding cells, plane grids that never aligned, dom labels that lied under orbit. The rebuild that held did not swap the metaphor again - it fixed one integer lattice with deterministic collision resolution and shared plane footprints, moved direction into object color, and distance-compensated every label per frame so all render at one pixel height, hidden past a zoom threshold like the graph view.
+
+y Y-18 status=active t_created=2026-09-03T07:12:30Z t_updated=2026-09-03T07:13:02Z "Thick 3D edges need beam geometry, not linewidth"
+  tags: causality cone, beam geometry
+  surface: packages/desktop/ui/js/views/cone-edges.js
+  invariant:
+    | WebGL pins LineBasicMaterial linewidth to one device pixel, so a visually thicker edge must be real geometry: instanced boxes stretched between node centers, with thickness in world units tuned against the default camera radius (about 2.7 pixels per unit at radius 320); a 6-unit beam reads as a bar, 1.5 units reads as a slightly thicker line.
+  skill_updates:
+    | Tune any future 3D highlight thickness in pixels-per-world-unit at the default rig radius before picking a constant; verify in a served-DOM harness screenshot, not by eye in code review.
+
+y Y-19 status=active t_created=2026-09-03T07:40:16Z t_updated=2026-09-03T07:41:03Z "Zoom text fade is one shared curve, not per-view thresholds"
+  tags: label fade, causality cone
+  surface: packages/desktop/ui/js/utils/label-fade.js
+  invariant:
+    | Text visibility under zoom is a pure function labelFadeOpacity(factor) in a DOM-free util: full at or below the inner factor edge (1.1), smoothstep to zero at the outer edge (2.4), where factor is camera radius over fit radius (3D) or fit scale over zoom scale (2D). Views feed it per frame to sprite material opacity and DOM style opacity; no view may keep text on a hard threshold or permanently visible legend.
+  skill_updates:
+    | The graph view (js/views/graph.js, graph-3d.js) still hides ids on its own threshold; port it to labelFadeOpacity with the 2D factor mapping when that screen is touched next.
 
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"
   surface: packages/grove/src/stats.jl, packages/grove/test/test_stats.jl
@@ -1169,7 +1966,18 @@ a A-07 status=present t_created=2026-08-17T10:50:04Z t_updated=2026-08-17T10:50:
 
 e B-06 targets W-112 t_created=2026-08-28T00:20:28Z
 e B-07 targets W-124 t_created=2026-08-28T23:06:43Z
+e B-08 targets W-145 t_created=2026-08-30T17:35:15Z
 e D-10 supersedes D-08 t_created=2026-08-07T13:50:42Z
+e D-22 supersedes D-21 t_created=2026-08-30T17:30:42Z
+e D-23 supersedes D-22 t_created=2026-08-30T18:11:59Z
+e D-24 supersedes D-23 t_created=2026-08-30T18:25:49Z
+e D-25 supersedes D-24 t_created=2026-08-30T18:44:11Z
+e D-26 supersedes D-25 t_created=2026-08-30T19:02:18Z
+e D-27 supersedes D-26 t_created=2026-08-30T19:42:42Z
+e D-29 supersedes D-28 t_created=2026-08-30T21:02:14Z
+e D-30 supersedes D-29 t_created=2026-08-30T21:21:09Z
+e D-31 supersedes D-30 t_created=2026-08-30T21:35:40Z
+e D-32 supersedes D-31 t_created=2026-08-30T21:48:11Z
 e Q-01 asks W-06 t_created=2026-07-19T01:19:10Z
 e Q-02 asks W-09 t_created=2026-07-19T01:19:17Z
 e Q-05 asks W-103 t_created=2026-08-17T10:53:14Z
@@ -1188,6 +1996,8 @@ e T-04 causes W-109 t_created=2026-08-17T11:44:38Z
 e T-05 causes W-117 t_created=2026-08-28T22:39:45Z
 e T-06 causes W-122 t_created=2026-08-28T23:07:30Z
 e T-06 causes W-139 t_created=2026-08-29T13:03:50Z
+e T-07 causes W-166 t_created=2026-08-30T22:51:36Z
+e T-07 causes W-167 t_created=2026-08-30T23:47:59Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z
@@ -1226,9 +2036,29 @@ e W-128 produces Y-16 t_created=2026-08-28T23:38:31Z
 e W-134 blocks W-135 t_created=2026-08-29T00:17:03Z
 e W-135 implements D-19 t_created=2026-08-29T00:17:02Z
 e W-14 blocks W-17 t_created=2026-07-27T23:47:28Z
+e W-141 blocks W-142 t_created=2026-08-30T17:34:46Z
+e W-142 blocks W-143 t_created=2026-08-30T17:34:49Z
+e W-142 blocks W-144 t_created=2026-08-30T17:34:51Z
+e W-142 blocks W-146 t_created=2026-08-30T17:34:54Z
+e W-142 implements D-20 t_created=2026-08-30T17:35:06Z
+e W-143 blocks W-145 t_created=2026-08-30T17:34:56Z
+e W-143 blocks W-147 t_created=2026-08-30T17:34:59Z
+e W-143 blocks W-148 t_created=2026-08-30T17:35:01Z
+e W-143 implements D-22 t_created=2026-08-30T17:35:10Z
+e W-149 implements D-23 t_created=2026-08-30T18:13:15Z
+e W-150 implements D-24 t_created=2026-08-30T18:27:05Z
+e W-152 implements D-25 t_created=2026-08-30T18:45:50Z
+e W-154 implements D-27 t_created=2026-08-30T19:43:20Z
+e W-155 implements D-28 t_created=2026-08-30T20:39:16Z
+e W-156 implements D-29 t_created=2026-08-30T21:02:39Z
+e W-157 implements D-30 t_created=2026-08-30T21:21:33Z
+e W-158 implements D-31 t_created=2026-08-30T21:35:55Z
+e W-160 implements D-32 t_created=2026-08-30T21:48:23Z
+e W-168 produces Y-18 t_created=2026-09-03T07:12:30Z
 e W-17 blocks W-18 t_created=2026-07-27T23:47:41Z
 e W-17 blocks W-19 t_created=2026-07-27T23:47:55Z
 e W-17 blocks W-20 t_created=2026-07-27T23:48:09Z
+e W-170 produces Y-19 t_created=2026-09-03T07:40:16Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z
@@ -1261,6 +2091,8 @@ e Y-14 distills D-17 t_created=2026-08-28T22:32:29Z
 e Y-14 distills Q-08 t_created=2026-08-28T22:32:29Z
 e Y-15 distills D-18 t_created=2026-08-28T23:17:03Z
 e Y-15 distills Q-09 t_created=2026-08-28T23:17:03Z
+e Y-17 distills D-27 t_created=2026-08-30T21:25:48Z
+e Y-17 distills D-30 t_created=2026-08-30T21:25:48Z
 
 :archive
 g G-01 status=verified fitness_kind=boolean t_created=2026-07-19T01:13:53Z t_updated=2026-08-10T18:45:36Z "Effectiveness report v1 on dogfood telemetry"

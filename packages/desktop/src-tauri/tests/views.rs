@@ -1,6 +1,6 @@
 use grove_core::parse_fixture;
 use grove_desktop_lib::templates::{ui_dir, Templates};
-use grove_desktop_lib::views::{areas, discovery, goals, graph, overview, project, themes, work};
+use grove_desktop_lib::views::{areas, cone, discovery, goals, graph, overview, project, themes, work};
 
 mod common;
 
@@ -1203,10 +1203,10 @@ fn graph_model_discovery_matches_area_or_root() {
     for expected in [
         ("Project", "A-01"),
         ("Project", "A-02"),
-        ("A-01", "Y-01"), // smallest area id wins when several areas match
+        ("A-01", "Y-01"),
         ("A-02", "Y-02"),
         ("Project", "Y-03"),
-        ("Project", "Y-04"), // stale discoveries never match an area
+        ("Project", "Y-04"),
     ] {
         assert!(
             contains.contains(&(expected.0.to_string(), expected.1.to_string())),
@@ -2637,8 +2637,8 @@ fn project_rail_button_and_gating_wiring() {
     let html = std::fs::read_to_string(ui_dir().join("index.html")).unwrap();
     assert_eq!(
         html.matches(r#"<li class="side-rail-item" data-level="#).count(),
-        8,
-        "eight route items"
+        9,
+        "nine route items"
     );
     let item = html
         .split(r#"<li class="side-rail-item side-rail-action side-rail-project">"#)
@@ -3173,3 +3173,528 @@ fn window_state_plugin_registered() {
         "window-state crate is a dependency"
     );
 }
+
+#[test]
+fn cone_model_lists_works_and_resolves_seed() {
+    let st = fixture_state();
+    let m = cone::model(&st, "W-01", 4, 50);
+    let works = m["works"].as_array().unwrap();
+    assert_eq!(works.len(), 4, "non-archived work items only");
+    assert_eq!(works[0]["id"], "W-01");
+    assert_eq!(works[0]["label"], "W-01 - Themed alpha");
+    assert_eq!(m["selected"], "W-01");
+    assert_eq!(m["selectedText"], "W-01 - Themed alpha");
+    assert_eq!(m["seed"]["id"], "W-01");
+    assert_eq!(m["seed"]["title"], "Themed alpha");
+    assert_eq!(m["seed"]["status"], "proposed");
+    assert_eq!(m["seed"]["status_variant"], "neutral");
+    assert_eq!(m["seed_empty"], false, "W-01 blocks W-02");
+
+    let m = cone::model(&st, " W-04 ", 4, 50);
+    assert_eq!(m["selected"], "W-04", "seed param trimmed");
+    assert_eq!(m["seed"]["status_variant"], "success");
+    assert_eq!(m["seed_empty"], true, "W-04 has no blocks edges");
+
+    let m = cone::model(&st, "W-99", 4, 50);
+    assert!(m.get("seed").is_none(), "unknown seed renders picker state");
+    assert_eq!(m["selected"], "W-99");
+
+    let m = cone::model(&st, "G-01", 4, 50);
+    assert!(m.get("seed").is_none(), "only work items seed the cone");
+}
+
+#[test]
+fn cone_fragment_renders_picker_seed_and_empty_states() {
+    let st = fixture_state();
+    let tpl = templates();
+
+    let html = tpl.render("cone", &cone::model(&st, "", 4, 50)).unwrap();
+    assert!(html.contains(r#"<section class="view view-cone""#));
+    assert!(html.contains(r#"id="cone-select""#));
+    assert!(html.contains("Pick a work item to trace its causality cone."));
+    assert!(!html.contains("cone-stage"));
+
+    let html = tpl.render("cone", &cone::model(&st, "W-01", 4, 50)).unwrap();
+    assert!(
+        html.contains("W-01 - Themed alpha"),
+        "the picker carries the seed selection now that the card is gone"
+    );
+    assert!(html.contains(r#"id="cone-stage" data-seed="W-01""#));
+    assert!(!html.contains("its cone is empty"));
+
+    let html = tpl.render("cone", &cone::model(&st, "W-04", 4, 50)).unwrap();
+    assert!(html.contains("This work item has no blocks edges yet"));
+    assert!(!html.contains("cone-stage"));
+    for banned in ['\u{b7}', '\u{2013}', '\u{2014}'] {
+        assert!(!html.contains(banned), "cone template ascii: {banned}");
+    }
+}
+
+#[test]
+fn cone_model_walks_the_fixture_diamond() {
+    let st = fixture_state();
+    let m = cone::model(&st, "W-03", 4, 50);
+    let cone = &m["cone"];
+    assert_eq!(cone["seed"], "W-03");
+    assert_eq!(cone["depth"], 4);
+    assert_eq!(cone["max"], 50);
+    assert_eq!(
+        cone["backward"],
+        serde_json::json!(["W-02", "W-09", "W-01"]),
+        "hop one holds W-02 and W-09, hop two holds W-01"
+    );
+    assert_eq!(
+        cone["order"],
+        serde_json::json!(["W-01", "W-02", "W-09"]),
+        "contraction order runs dependencies first, smallest id on ties"
+    );
+    assert_eq!(cone["forward"], serde_json::json!([]), "nothing blocks on W-03");
+    let dep_ids: Vec<&str> = m["dependencies"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|d| d["id"].as_str().unwrap_or_default())
+        .collect();
+    assert_eq!(
+        dep_ids,
+        vec!["W-01", "W-02", "W-09"],
+        "dependency rows follow contraction order"
+    );
+    assert!(m["impact"].as_array().unwrap().is_empty());
+    assert_eq!(cone["truncated"], false);
+    assert_eq!(cone["backward_truncated"], false);
+    assert_eq!(cone["forward_truncated"], false);
+    let nodes = cone["nodes"].as_array().unwrap();
+    assert_eq!(nodes.len(), 4, "seed plus three predecessors");
+    assert!(nodes.iter().any(|n| n["id"] == "W-09" && n["archived"] == true));
+    let edges = cone["edges"].as_array().unwrap();
+    assert_eq!(edges.len(), 3, "all fixture blocks edges stay inside the cone");
+    assert!(edges.contains(&serde_json::json!({"from": "W-01", "to": "W-02"})));
+    assert!(edges.contains(&serde_json::json!({"from": "W-09", "to": "W-03"})));
+
+    let m = cone::model(&st, "W-01", 4, 50);
+    assert_eq!(m["cone"]["backward"], serde_json::json!([]));
+    assert_eq!(
+        m["cone"]["forward"],
+        serde_json::json!(["W-02", "W-03"]),
+        "impact fans out from W-01"
+    );
+    let dep_ids: Vec<&str> = m["dependencies"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|d| d["id"].as_str().unwrap_or_default())
+        .collect();
+    assert!(dep_ids.is_empty(), "no dependency rows without a backward cone");
+    let impact_ids: Vec<&str> = m["impact"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|d| d["id"].as_str().unwrap_or_default())
+        .collect();
+    assert_eq!(impact_ids, vec!["W-02", "W-03"], "impact rows list the blast radius");
+    for d in m["impact"].as_array().unwrap() {
+        assert!(!d["title"].as_str().unwrap_or("").is_empty(), "rows carry titles");
+    }
+}
+
+#[test]
+fn cone_model_caps_walks_and_flags_truncation() {
+    let st = fixture_state();
+    let m = cone::model(&st, "W-03", 4, 2);
+    assert_eq!(m["cone"]["backward"], serde_json::json!(["W-02", "W-09"]));
+    assert_eq!(m["cone"]["truncated"], true, "node cap reached");
+    assert_eq!(m["cone"]["backward_truncated"], true);
+
+    let m = cone::model(&st, "W-03", 1, 50);
+    assert_eq!(m["cone"]["backward"], serde_json::json!(["W-02", "W-09"]));
+    assert_eq!(m["cone"]["truncated"], true, "depth cap leaves unseen neighbors");
+}
+
+#[test]
+fn cone_params_default_to_four_and_fifty_and_clamp() {
+    assert_eq!(cone::params_depth_max(&serde_json::json!({})), (4, 50));
+    assert_eq!(
+        cone::params_depth_max(&serde_json::json!({"depth": 2, "max": 7})),
+        (2, 7)
+    );
+    assert_eq!(
+        cone::params_depth_max(&serde_json::json!({"depth": 0})),
+        (1, 50),
+        "depth below one clamps up"
+    );
+    assert_eq!(
+        cone::params_depth_max(&serde_json::json!({"max": "many"})),
+        (4, 50),
+        "unparsable values fall back to defaults"
+    );
+}
+
+#[test]
+fn cone_fragment_embeds_blob_and_controls() {
+    let st = fixture_state();
+    let tpl = templates();
+
+    let html = tpl.render("cone", &cone::model(&st, "W-03", 4, 50)).unwrap();
+    assert!(html.contains(r#"<script type="application/json" id="cone-data">"#));
+    assert!(html.contains(r#"id="cone-depth" min="1" max="10" value="4""#));
+    assert!(html.contains(r#"id="cone-max" min="1" value="50""#));
+    assert!(html.contains(r#""backward":["W-02","W-09","W-01"]"#), "blob carries the walk");
+
+    let html = tpl.render("cone", &cone::model(&st, "W-04", 4, 50)).unwrap();
+    assert!(html.contains(r#"id="cone-data""#), "edge-less seed still embeds its cone");
+    assert!(!html.contains(r#"id="cone-depth""#), "controls hide without edges");
+
+    let html = tpl.render("cone", &cone::model(&st, "", 4, 50)).unwrap();
+    assert!(!html.contains(r#"id="cone-data""#), "no seed, no blob");
+}
+
+#[test]
+fn cone_fragment_counts_sides_and_empty_states() {
+    let st = fixture_state();
+    let tpl = templates();
+
+    let html = tpl.render("cone", &cone::model(&st, "W-01", 4, 50)).unwrap();
+    assert!(html.contains("Dependencies"), "dependencies side panel");
+    assert!(html.contains("Impact"), "impact side panel");
+    assert!(html.contains(r#">0</span>"#), "dependency count of zero");
+    assert!(
+        html.contains("badge-count badge-neutral badge-count-lg\">0<"),
+        "a zero count still renders the count modifier"
+    );
+    assert!(html.contains(r#">2</span>"#), "blast radius of two from W-01");
+    assert!(html.contains("No dependencies inside the cone."));
+    assert!(!html.contains("Nothing blocks on this work item."));
+    assert!(html.contains(r#">W-02</span>"#), "impact card lists its members");
+    assert!(html.contains(r#">W-03</span>"#), "impact card lists the blast radius");
+    assert!(html.contains(r#"id="cone-labels""#));
+    assert!(html.contains(r#"id="graph-tooltip""#));
+    assert!(html.contains(r#"class="cone-layout""#), "stage and furniture share a side layout");
+    assert!(html.contains(r#"class="cone-sidebar""#), "controls, legend and cards sit beside the stage");
+    let sidebar_at = html.find(r#"class="cone-sidebar""#).expect("sidebar present");
+    let controls_at = html.find(r#"id="cone-depth""#).expect("controls present");
+    let stage_at = html.find(r#"id="cone-stage""#).expect("stage present");
+    assert!(
+        sidebar_at < controls_at && controls_at < stage_at,
+        "controls live inside the sidebar before the stage"
+    );
+    assert!(!html.contains("cone-seed-card"), "the seed card is gone");
+    assert!(!html.contains("cone-legend"), "the dom legend is gone; axes are named in-scene");
+    assert!(!html.contains(r#"class="cone-axis""#), "no dom axis strip over the orbiting scene");
+    assert!(!html.contains(r#"id="graph-info""#), "graph info panel stays out of the cone");
+
+    let html = tpl.render("cone", &cone::model(&st, "W-03", 4, 50)).unwrap();
+    assert!(html.contains(r#">3</span>"#), "three dependencies behind W-03");
+    assert!(html.contains(r#">W-09</span>"#), "dependency card lists its members");
+    assert!(html.contains("Nothing blocks on this work item."));
+    assert!(!html.contains("No dependencies inside the cone."));
+    for banned in ['\u{b7}', '\u{2013}', '\u{2014}'] {
+        assert!(!html.contains(banned), "cone sides ascii: {banned}");
+    }
+}
+
+#[test]
+fn cone_strata_context_names_goals_areas_themes_and_files() {
+    let lock = r#"@grove 1
+# AUTO-GENERATED. Do not edit. Use `grove` CLI.
+# checksum: sha256:fixture
+a A-01 status=present t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Desktop"
+
+g G-01 status=verified fitness_kind=count t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Ship"
+  area: A-01
+
+t T-01 status=open t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Theme"
+
+w W-01 type=feature status=done cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Alpha"
+  goals: G-01
+  theme: T-01
+  surface: packages/desktop/ui/js/views/cone.js
+
+w W-02 type=feature status=proposed cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Beta"
+  goals: G-01
+  surface: packages/desktop/ui/js/views/cone.js,packages/desktop/ui/js/utils/cone-model.js
+
+e W-01 blocks W-02 t_created=2026-07-27T00:00:00Z
+"#;
+    let st = parse_fixture(lock).expect("fixture parses");
+    let m = cone::model(&st, "W-02", 4, 50);
+    let strata = &m["cone"]["strata"];
+    let goals = strata["goals"].as_array().unwrap();
+    assert_eq!(goals.len(), 1);
+    assert_eq!(goals[0]["id"], "G-01");
+    assert_eq!(
+        goals[0]["members"],
+        serde_json::json!(["W-01", "W-02"]),
+        "both cone members claim the goal"
+    );
+    let areas = strata["areas"].as_array().unwrap();
+    assert_eq!(areas.len(), 1);
+    assert_eq!(areas[0]["id"], "A-01");
+    assert_eq!(areas[0]["goals"], serde_json::json!(["G-01"]));
+    let themes = strata["themes"].as_array().unwrap();
+    assert_eq!(themes.len(), 1);
+    assert_eq!(themes[0]["members"], serde_json::json!(["W-01"]));
+    let files = strata["files"].as_array().unwrap();
+    assert_eq!(files.len(), 2, "surface union across cone members");
+    assert_eq!(files[0]["id"], "packages/desktop/ui/js/utils/cone-model.js");
+    assert_eq!(files[0]["touchers"], serde_json::json!(["W-02"]));
+    assert_eq!(files[1]["id"], "packages/desktop/ui/js/views/cone.js");
+    assert_eq!(files[1]["touchers"], serde_json::json!(["W-01", "W-02"]));
+}
+
+#[test]
+fn cone_seed_goal_fragility_labels_brittle_paths() {
+    let lock = r#"@grove 1
+# AUTO-GENERATED. Do not edit. Use `grove` CLI.
+# checksum: sha256:fixture
+g G-01 status=verified fitness_kind=manual t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Single path"
+g G-02 status=verified fitness_kind=manual t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Double path"
+g G-03 status=verified fitness_kind=manual t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Orphan"
+
+w W-80 type=feature status=progress cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Seed"
+  goals: G-01,G-02,G-03
+
+w W-81 type=feature status=done cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Relay one"
+
+w W-82 type=feature status=done cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Relay two a"
+
+w W-83 type=feature status=done cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Relay two b"
+
+e G-01 blocks W-81 t_created=2026-07-27T00:00:00Z
+e W-81 blocks W-80 t_created=2026-07-27T00:00:00Z
+e G-02 blocks W-82 t_created=2026-07-27T00:00:00Z
+e G-02 blocks W-83 t_created=2026-07-27T00:00:00Z
+e W-82 blocks W-80 t_created=2026-07-27T00:00:00Z
+e W-83 blocks W-80 t_created=2026-07-27T00:00:00Z
+"#;
+    let st = parse_fixture(lock).expect("fixture parses");
+    let m = cone::model(&st, "W-80", 4, 50);
+    let frag = m["fragility"].as_array().unwrap();
+    assert_eq!(m["fragility_count"], 3, "fragility badge count covers every seed goal");
+    assert_eq!(frag[0]["id"], "G-01");
+    assert_eq!(frag[0]["connectivity"], 1);
+    assert_eq!(frag[0]["label"], "brittle");
+    assert_eq!(frag[0]["variant"], "warning");
+    assert_eq!(frag[1]["id"], "G-02");
+    assert_eq!(frag[1]["connectivity"], 2);
+    assert_eq!(frag[1]["label"], "2 disjoint paths");
+    assert_eq!(frag[1]["variant"], "info");
+    assert_eq!(frag[2]["id"], "G-03");
+    assert_eq!(frag[2]["connectivity"], 0);
+    assert_eq!(frag[2]["label"], "no path");
+    assert_eq!(frag[2]["variant"], "neutral");
+
+    let html = templates().render("cone", &m).unwrap();
+    assert!(html.contains("Fragility"), "fragility card renders");
+    assert!(html.contains("brittle"), "single path reads as brittle");
+    assert!(html.contains("2 disjoint paths"), "redundant path count renders");
+    assert!(html.contains("no path"), "zero connectivity reads as no path");
+    assert!(html.contains("Single path"), "goal title shows in the fragility row");
+    assert!(html.contains("Double path"), "every fragility row carries its goal title");
+    assert!(
+        html.contains(r#"class="overview-row cone-fragility-row""#),
+        "fragility rows use the standard row layout"
+    );
+
+    let relay = cone::model(&st, "W-81", 4, 50);
+    assert!(
+        relay["fragility"].as_array().unwrap().is_empty(),
+        "a seed without goals carries no fragility rows"
+    );
+    let relay_html = templates().render("cone", &relay).unwrap();
+    assert!(!relay_html.contains("Fragility"), "no fragility card without goals");
+}
+
+#[test]
+fn cone_lists_relevant_discoveries_with_reasons() {
+    let lock = r#"@grove 1
+# AUTO-GENERATED. Do not edit. Use `grove` CLI.
+# checksum: sha256:fixture
+y Y-01 status=active t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Surface anchor"
+  surface: pkg/a.rs
+
+y Y-02 status=active t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Tag anchor"
+  tags: graph
+
+y Y-03 status=stale t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Stale anchor"
+  surface: pkg/a.rs
+
+y Y-04 status=active t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Both anchors"
+  surface: pkg/a.rs
+  tags: graph
+
+w W-90 type=feature status=progress cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Seed"
+  surface: pkg/a.rs
+
+w W-91 type=feature status=done cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Member"
+  tags: graph
+
+e W-91 blocks W-90 t_created=2026-07-27T00:00:00Z
+"#;
+    let st = parse_fixture(lock).expect("fixture parses");
+    let m = cone::model(&st, "W-90", 4, 50);
+    let rows = m["discoveries"].as_array().unwrap();
+    assert_eq!(
+        m["discoveries_count"],
+        3,
+        "discoveries badge count covers the ranked rows"
+    );
+    let ids: Vec<&str> = rows.iter().map(|r| r["id"].as_str().unwrap_or_default()).collect();
+    assert_eq!(
+        ids,
+        vec!["Y-04", "Y-01", "Y-02"],
+        "two anchors outrank one, stale discoveries drop out"
+    );
+    assert_eq!(rows[0]["title"], "Both anchors");
+    assert_eq!(rows[0]["reason"], "surface: pkg/a.rs; tags: graph");
+    assert_eq!(rows[1]["reason"], "surface: pkg/a.rs");
+    assert_eq!(rows[2]["reason"], "tags: graph");
+
+    let html = templates().render("cone", &m).unwrap();
+    assert!(html.contains("Relevant discoveries"), "discovery card renders");
+    assert!(html.contains("Both anchors"), "invariant text shows");
+    assert!(html.contains("surface: pkg/a.rs; tags: graph"), "overlap reason shows");
+    assert!(
+        html.contains(r#"class="overview-row cone-discovery-row" data-navigate="discovery""#),
+        "rows use the overview format and activate discovery navigation"
+    );
+    assert!(
+        !html.contains(r##"<a href="#" data-navigate"##),
+        "no raw link styling on discovery rows"
+    );
+}
+
+#[test]
+fn cone_surface_map_lists_union_with_touch_counts() {
+    let lock = r#"@grove 1
+# AUTO-GENERATED. Do not edit. Use `grove` CLI.
+# checksum: sha256:fixture
+w W-01 type=feature status=done cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Alpha"
+  surface: packages/desktop/ui/js/views/cone.js
+
+w W-02 type=feature status=progress cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Beta"
+  surface: packages/desktop/ui/js/views/cone.js,packages/desktop/ui/js/utils/cone-model.js
+
+e W-01 blocks W-02 t_created=2026-07-27T00:00:00Z
+"#;
+    let st = parse_fixture(lock).expect("fixture parses");
+    let m = cone::model(&st, "W-02", 4, 50);
+    let surface = m["surface"].as_array().unwrap();
+    assert_eq!(m["surface_count"], 2, "union across seed and cone members");
+    assert_eq!(surface[0]["path"], "packages/desktop/ui/js/utils/cone-model.js");
+    assert_eq!(surface[0]["count"], 1);
+    assert_eq!(surface[0]["touchers"], serde_json::json!(["W-02"]));
+    assert_eq!(surface[1]["path"], "packages/desktop/ui/js/views/cone.js");
+    assert_eq!(surface[1]["count"], 2, "shared file counts both touchers");
+    assert_eq!(surface[1]["touchers"], serde_json::json!(["W-01", "W-02"]));
+
+    let html = templates().render("cone", &m).unwrap();
+    assert!(html.contains("Surface"), "surface card renders");
+    assert!(html.contains(r#"data-surface-file="packages/desktop/ui/js/views/cone.js""#));
+    assert!(
+        html.contains(r#"title="packages/desktop/ui/js/views/cone.js""#),
+        "chips truncate with the full path tooltip from the area pattern"
+    );
+}
+
+#[test]
+fn cone_marks_critical_path_members() {
+    let lock = r#"@grove 1
+# AUTO-GENERATED. Do not edit. Use `grove` CLI.
+# checksum: sha256:fixture
+w W-01 type=feature status=progress cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Chain head"
+
+w W-02 type=feature status=progress cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Chain middle"
+
+w W-03 type=feature status=progress cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Seed"
+
+w W-09 type=feature status=progress cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Shortcut"
+
+e W-01 blocks W-02 t_created=2026-07-27T00:00:00Z
+e W-02 blocks W-03 t_created=2026-07-27T00:00:00Z
+e W-09 blocks W-03 t_created=2026-07-27T00:00:00Z
+"#;
+    let st = parse_fixture(lock).expect("fixture parses");
+    let m = cone::model(&st, "W-03", 4, 50);
+    let cone = &m["cone"];
+    assert_eq!(
+        cone["critical"],
+        serde_json::json!(["W-01", "W-02", "W-03"]),
+        "the longest chain inside the cone is the critical path"
+    );
+    for n in cone["nodes"].as_array().unwrap() {
+        let on_path = matches!(n["id"].as_str(), Some("W-01") | Some("W-02") | Some("W-03"));
+        assert_eq!(n["critical"], on_path, "node {} carries the marker", n["id"]);
+    }
+
+    let html = templates().render("cone", &m).unwrap();
+    assert!(
+        html.contains("Critical path inside the cone"),
+        "the legend explains the marker"
+    );
+}
+
+#[test]
+fn cone_fragment_shell_renders_sidebar_and_counts() {
+    let st = fixture_state();
+    let html = templates().render("cone", &cone::model(&st, "W-01", 4, 50)).unwrap();
+    assert!(html.contains("Dependencies"), "dependency count card names the backward zone");
+    assert!(html.contains("Impact"), "impact count card names the forward zone");
+    assert!(!html.contains("cone-legend"), "no dom legend remains");
+    assert!(
+        html.contains("badge badge-count badge-neutral"),
+        "cone count badges use the count modifier over their variant"
+    );
+}
+
+#[test]
+fn cone_level_registry_and_unknown_error_lists_it() {
+    assert!(grove_desktop_lib::views::LEVELS.contains(&"cone"));
+    let tpl = templates();
+    let err = grove_desktop_lib::views::render_view(&tpl, ".", "bogus", &serde_json::json!({}))
+        .expect_err("unknown level rejected");
+    assert!(err.contains("cone"), "unknown-level error lists cone: {err}");
+}
+
+#[test]
+fn cone_rail_route_icon_and_wiring() {
+    let html = std::fs::read_to_string(ui_dir().join("index.html")).unwrap();
+    let item = html
+        .split(r#"<li class="side-rail-item" data-level="cone">"#)
+        .nth(1)
+        .and_then(|rest| rest.split("</li>").next())
+        .expect("cone rail item present");
+    assert!(item.contains(r#"aria-label="Causality cone""#));
+    assert!(item.contains("nav-icon-cone"));
+    assert!(item.contains(">Causality cone</span>"));
+    assert!(html.contains(r#"href="/css/views/cone.css""#));
+
+    let main = std::fs::read_to_string(ui_dir().join("js").join("main.js")).unwrap();
+    let routes = main
+        .split("const ROUTES = new Set([")
+        .nth(1)
+        .and_then(|rest| rest.split("]);").next())
+        .expect("ROUTES set present");
+    assert!(routes.contains(r#""cone""#), "cone is a route");
+    assert!(main.contains(r#"import("./views/cone.js")"#));
+    assert!(main.contains("mod.initCone(viewRoot, { navigate: loadView })"));
+
+    let js = std::fs::read_to_string(ui_dir().join("js").join("views").join("cone.js")).unwrap();
+    assert!(js.contains("new SearchableSelect"));
+    assert!(js.contains(r#"navigate?.("cone", { id: item.id })"#));
+    assert!(js.contains("select.destroy()"), "cleanup tears the select down");
+
+    let nav_css =
+        std::fs::read_to_string(ui_dir().join("css").join("views").join("overview.css")).unwrap();
+    assert!(nav_css.contains(".nav-icon-cone"));
+    assert!(nav_css.contains(r#"url("/icons/cone.svg")"#));
+
+    let icon = std::fs::read_to_string(ui_dir().join("icons").join("cone.svg")).unwrap();
+    assert!(icon.contains(r#"viewBox="0 0 24 24""#));
+    assert!(icon.contains(r#"fill="currentColor""#));
+    let manifest =
+        std::fs::read_to_string(ui_dir().join("..").join("tools").join("icons.manifest.json"))
+            .unwrap();
+    assert!(manifest.contains("\"cone\""), "cone in the icon manifest");
+}
+

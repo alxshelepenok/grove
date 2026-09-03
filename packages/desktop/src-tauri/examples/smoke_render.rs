@@ -21,6 +21,7 @@ fn main() {
         "work",
         "themes",
         "graph",
+        "cone",
     ] {
         let html = render_view(&tpl, &root, level, &serde_json::json!({})).expect("render");
         println!("=== {level} ({} bytes) ===", html.len());
