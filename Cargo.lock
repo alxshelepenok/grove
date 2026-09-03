@@ -1408,7 +1408,7 @@ dependencies = [
 
 [[package]]
 name = "grove-core"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "serde_json",
  "sha2",
@@ -1417,7 +1417,7 @@ dependencies = [
 
 [[package]]
 name = "grove-desktop"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "grove-core",
  "handlebars",
@@ -1432,7 +1432,7 @@ dependencies = [
 
 [[package]]
 name = "grove-mcp"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "grove-core",
  "serde_json",
