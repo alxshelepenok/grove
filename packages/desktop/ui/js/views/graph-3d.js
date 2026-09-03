@@ -10,12 +10,12 @@ import {
   parseGraphModel,
 } from "../utils/graph-model.js";
 import { createInfoPanel, createTooltip } from "./graph-panel.js";
+import { labelFadeOpacity } from "../utils/label-fade.js";
 
 const EDGE_RGB = [0.55, 0.57, 0.62];
 const CONTAINS_RGB = [0.42, 0.72, 0.62];
 const EDGE_OPACITY = 0.55;
 const LABEL_MAX_NODES = 200;
-const LABEL_FAR_FACTOR = 1.6;
 const HOVER_SCALE = 1.25;
 
 const RT_VS = `
@@ -377,9 +377,12 @@ export function initGraph3D(root, { navigate, model, raytrace = false } = {}) {
   });
   const labelsAllowed = nodes.length <= LABEL_MAX_NODES;
   let labelsOn = false;
+  let labelFade = 0;
   labelsEl.style.display = "none";
   const updateLabelVisibility = () => {
-    const on = labelsAllowed && spherical.radius <= labelBaseRadius * LABEL_FAR_FACTOR;
+    const fade = labelsAllowed ? labelFadeOpacity(spherical.radius / labelBaseRadius) : 0;
+    labelFade = fade;
+    const on = fade > 0;
     if (on === labelsOn) return;
     labelsOn = on;
     labelsEl.style.display = on ? "" : "none";
@@ -399,6 +402,7 @@ export function initGraph3D(root, { navigate, model, raytrace = false } = {}) {
         continue;
       }
       el.hidden = false;
+      el.style.opacity = labelFade.toFixed(3);
       const x = ((projected.x + 1) / 2) * w;
       const y = ((1 - projected.y) / 2) * h - radiusOf[i] - 3;
       el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`;

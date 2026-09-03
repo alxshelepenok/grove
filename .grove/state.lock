@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:0f113eee8345da33e7cb0c00bbc2001f1fecb86cd825eb0a7bb08977228ef583
+# checksum: sha256:1450e00aa551ed4d8b02cbf973cfa09dc73472b287506b5d9fc8e57ad4bfa1b2
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -75,6 +75,11 @@ g G-32 status=verified fitness_kind=count t_created=2026-09-03T07:15:59Z t_updat
   fitness_current: 1
 
 g G-33 status=verified fitness_kind=count t_created=2026-09-03T07:30:08Z t_updated=2026-09-03T07:39:58Z "Cone text fades out with zoom like Obsidian"
+  area: A-05
+  fitness_target: 1
+  fitness_current: 1
+
+g G-34 status=verified fitness_kind=count t_created=2026-09-03T08:02:34Z t_updated=2026-09-03T08:16:27Z "Graph labels fade with zoom through the shared curve"
   area: A-05
   fitness_target: 1
   fitness_current: 1
@@ -1361,6 +1366,23 @@ w W-170 type=feature status=done cynefin=complicated t_created=2026-09-03T07:30:
     | bun test (packages/desktop/ui): 40 pass / 0 fail across 8 files, incl. 5 new tests in js/utils/label-fade.test.js covering window edges, midpoint 0.5, monotonicity and the degenerate collapsed window.
     | Runtime verified in the served harness at three zoom levels: 1.0x all five id labels visible with style.opacity 1 (read programmatically), 1.7x ids and legend words ghosted semi-transparent (vision check), 2.6x zero text elements anywhere (vision check); sceneLabels sprites and work DOM labels share one fade value computed in the cone tick. Harness removed after verification.
 
+w W-171 type=feature status=done cynefin=complicated t_created=2026-09-03T08:02:44Z t_updated=2026-09-03T08:16:27Z "Fade graph labels with zoom via labelFadeOpacity in both views"
+  goals: G-34
+  fitness: G-34=+1
+  surface: packages/desktop/ui/js/views/graph.js, packages/desktop/ui/js/views/graph-3d.js
+  ac:
+    | The 2D graph fades id labels with labelFadeOpacity over fitScale / zoom, replacing the LABEL_MIN_SCALE threshold; the label layer hides entirely once opacity reaches zero.
+    | The 3D graph fades id labels with labelFadeOpacity over camera radius over labelBaseRadius, replacing the LABEL_FAR_FACTOR threshold; the label layer hides entirely once opacity reaches zero.
+    | The node-count perf gates (LABEL_MAX_NODES) and hover and cleanup behavior stay unchanged in both views, and no reference to the removed thresholds remains.
+    | Served-harness screenshots for 2D and 3D at fit, ghost and far zoom states show full labels, semi-transparent labels and no labels, matching the cone behavior.
+  hypothesis:
+    | Both views already refresh their label layer from a single zoom metric per frame (draw in 2D, tick in 3D), so swapping the binary gates for the shared curve keeps cost identical: one fade per frame applied as DOM style opacity, with the container display optimization retained.
+  evidence_strategy:
+    | bun test suites green; served harness pages for 2D and 3D screenshot at three zoom states each, plus programmatic reads of label style opacity and container display.
+  evidence:
+    | bun test (packages/desktop/ui): 40 pass / 0 fail; grep shows no remaining references to LABEL_MIN_SCALE or LABEL_FAR_FACTOR; perf gates (LABEL_MAX_NODES), hover and cleanup paths untouched.
+    | Runtime verified in served harnesses per view at three zoom states (0, 4, 8 wheel notches of deltaY 100): 2D labels opacity 1 -> 0.652 on all six elements -> container display none; 3D labels opacity 1 -> 0.652 -> display none; vision checks of both ghost screenshots report faded 60-70% labels; far screenshots show no text. Harnesses removed after verification.
+
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
   fitness: G-21=+1
@@ -1940,13 +1962,14 @@ y Y-18 status=active t_created=2026-09-03T07:12:30Z t_updated=2026-09-03T07:13:0
   skill_updates:
     | Tune any future 3D highlight thickness in pixels-per-world-unit at the default rig radius before picking a constant; verify in a served-DOM harness screenshot, not by eye in code review.
 
-y Y-19 status=active t_created=2026-09-03T07:40:16Z t_updated=2026-09-03T07:41:03Z "Zoom text fade is one shared curve, not per-view thresholds"
+y Y-19 status=active t_created=2026-09-03T07:40:16Z t_updated=2026-09-03T08:16:53Z "Zoom text fade is one shared curve, not per-view thresholds"
   tags: label fade, causality cone
   surface: packages/desktop/ui/js/utils/label-fade.js
   invariant:
     | Text visibility under zoom is a pure function labelFadeOpacity(factor) in a DOM-free util: full at or below the inner factor edge (1.1), smoothstep to zero at the outer edge (2.4), where factor is camera radius over fit radius (3D) or fit scale over zoom scale (2D). Views feed it per frame to sprite material opacity and DOM style opacity; no view may keep text on a hard threshold or permanently visible legend.
   skill_updates:
     | The graph view (js/views/graph.js, graph-3d.js) still hides ids on its own threshold; port it to labelFadeOpacity with the 2D factor mapping when that screen is touched next.
+    | Ported to both graph views (W-171): 2D maps fitScale over zoom, 3D maps camera radius over labelBaseRadius; the curve itself needed no change.
 
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"
   surface: packages/grove/src/stats.jl, packages/grove/test/test_stats.jl
