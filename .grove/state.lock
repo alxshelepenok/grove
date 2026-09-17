@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:7aa8088ed4ccb68da512b395e06508551b3a6996664c83cdd168a9de0740fdae
+# checksum: sha256:e966f58fbbaa231ff728ff689687b083de43d9f7d4960c55ef4a3d3fdb49e7b2
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -1618,6 +1618,23 @@ w W-183 type=refactor status=done cynefin=clear t_created=2026-09-17T15:57:33Z t
     | Docs-only change: no test surfaces touched; grove check ok.
   why:
     | Documentation polish per review; enabling work, no fitness delta.
+
+w W-184 type=bug status=done cynefin=clear t_created=2026-09-17T16:31:50Z t_updated=2026-09-17T16:40:22Z "Align the help output into three columns"
+  goals: G-36
+  fitness: G-36=+0
+  surface: packages/core/src/cli.rs, packages/grove/src/cli.jl, packages/grove/conformance/corpus/help.json
+  ac:
+    | Read and Mutate sections render as three aligned columns (command, arguments, description) with per-section fixed widths; every command row carries a description.
+    | Rust and Julia help outputs are byte-identical; help.json re-pinned; suites green.
+  repro:
+    | The help description column starts at different offsets across rows (ready at column 21, deps at 22, skill at 32, log at its own) in both implementations; field and unlink rows carry no description.
+  evidence_strategy:
+    | cat -A inspection of both help outputs; diff between implementations; corpus replay; suite runs.
+  evidence:
+    | Both HELP blocks now render three fixed columns per section (Read: command 8, arguments 17, description at 31; Mutate: 10, 29, 45); field and unlink rows gained descriptions; skill and log rows sit on the shared grid.
+    | Rust and Julia help outputs are byte-identical (diff clean); help.json re-pinned via record; conformance 27 scenarios green; core 290 passed; mcp 13 passed.
+  why:
+    | Formatting defect in shipped output; enabling fix, no fitness delta.
 
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21

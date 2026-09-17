@@ -135,6 +135,7 @@
 | W-181 | bug | Lowercase the rules section reference in the distill hint | G-36 | clear | ⊤ | done |  |
 | W-182 | refactor | Drop the operational rules section and the stale path comment | G-36 | clear | ⊤ | done |  |
 | W-183 | refactor | Polish the agent skill bundle section in install.md | G-36 | clear | ⊤ | done |  |
+| W-184 | bug | Align the help output into three columns | G-36 | clear | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -350,6 +351,7 @@ graph TD
   W_181["W-181: Lowercase the rules section reference in the distill hint"]:::done
   W_182["W-182: Drop the operational rules section and the stale path comment"]:::done
   W_183["W-183: Polish the agent skill bundle section in install.md"]:::done
+  W_184["W-184: Align the help output into three columns"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
