@@ -30,6 +30,7 @@ mod revalidate;
 mod serialize;
 mod session;
 mod session_lock;
+mod skill;
 mod stats;
 mod status;
 mod times;

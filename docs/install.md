@@ -73,7 +73,7 @@ grove set W-01 status=done  # atomic close: deltas applied, goal re-derived, che
 
 ## MCP server
 
-`grove-mcp` exposes the full CLI as MCP tools over stdio (one tool per command, plus `grove://packet`, `grove://show/<id>`, and `grove://skill` resources - the last is a compact protocol primer, so an agent with only the MCP integration gets the behavioral minimum without the full skill). Build it from the repo root:
+`grove-mcp` exposes the full CLI as MCP tools over stdio (one tool per command, plus `grove://packet`, `grove://show/<id>`, and `grove://skill` resources - the last serves the embedded agent skill (SKILL.md root, per-page `grove://skill/<page>` reads), so an agent with only the MCP integration gets the full skill in-band). Build it from the repo root:
 
 ```bash
 cargo build --release

@@ -523,8 +523,9 @@ fn resources_list_and_read_match_cli_output() {
             .unwrap_or_else(|| panic!("missing {u}"))
             .clone()
     };
-    let primer = find_uri("grove://skill");
-    assert_eq!(primer["mimeType"], "text/markdown");
+    let skill = find_uri("grove://skill");
+    assert_eq!(skill["mimeType"], "text/markdown");
+    assert_eq!(skill["name"], "grove skill");
     let pw = find_uri("grove://packet/W-01");
     assert_eq!(pw["mimeType"], "text/markdown");
     assert_eq!(pw["name"], "W-01 Res work");
@@ -555,17 +556,17 @@ fn resources_list_and_read_match_cli_output() {
     assert_eq!(v["error"]["code"], -32000);
     let v = read(&mut s, 25, "grove://skill");
     assert_eq!(v["result"]["contents"][0]["mimeType"], "text/markdown");
-    let primer_text = v["result"]["contents"][0]["text"].as_str().unwrap();
-    for keyword in [
-        "dual-track",
-        "Definition of Ready",
-        "WIP_LIMIT",
-        "chaotic",
-        "distill",
-        "evidence",
-    ] {
-        assert!(primer_text.contains(keyword), "primer misses {keyword}");
+    let skill_text = v["result"]["contents"][0]["text"].as_str().unwrap();
+    assert!(skill_text.starts_with("---\n"));
+    for keyword in ["name: grove", "dual-track", "Definition of Ready", "Reading order"] {
+        assert!(skill_text.contains(keyword), "skill root misses {keyword}");
     }
+    let v = read(&mut s, 26, "grove://skill/references/rules.md");
+    assert_eq!(v["result"]["contents"][0]["mimeType"], "text/markdown");
+    let rules_text = v["result"]["contents"][0]["text"].as_str().unwrap();
+    assert!(rules_text.contains("# 6. Rules"), "rules page missing");
+    let v = read(&mut s, 27, "grove://skill/nope.md");
+    assert_eq!(v["error"]["code"], -32602);
 }
 
 #[test]

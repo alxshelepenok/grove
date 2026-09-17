@@ -561,7 +561,7 @@ fn resources_list_json(server: &McpServer) -> String {
     let mut items: Vec<String> = vec![format!(
         "{{\"uri\":{},\"name\":{},\"mimeType\":{}}}",
         jstr("grove://skill"),
-        jstr("grove protocol primer"),
+        jstr("grove skill"),
         jstr("text/markdown")
     )];
     if let Ok(st) = load(&ctx, true) {
@@ -579,15 +579,20 @@ fn resources_list_json(server: &McpServer) -> String {
     format!("{{\"resources\":[{}]}}", items.join(","))
 }
 
-const SKILL_PRIMER: &str = include_str!("../assets/skill-primer.md");
-
 fn resource_read(server: &McpServer, uri: &str) -> Result<String, (i64, String)> {
-    if uri == "grove://skill" {
+    if uri == "grove://skill" || uri.starts_with("grove://skill/") {
+        let page = uri
+            .strip_prefix("grove://skill")
+            .unwrap_or_default()
+            .trim_start_matches('/');
+        let page = if page.is_empty() { "SKILL.md" } else { page };
+        let text = crate::skill::skill_page(page)
+            .ok_or_else(|| (ERR_INVALID_PARAMS, format!("unknown skill page: {page}")))?;
         return Ok(format!(
             "{{\"contents\":[{{\"uri\":{},\"mimeType\":{},\"text\":{}}}]}}",
             jstr(uri),
             jstr("text/markdown"),
-            jstr(SKILL_PRIMER)
+            jstr(text)
         ));
     }
     let Some(path) = uri.strip_prefix("grove://") else {
