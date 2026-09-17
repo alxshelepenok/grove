@@ -231,7 +231,7 @@ fn replay_truth_scenario() {
     step!(ctx, "fitness_progress", op_fitness(&mut ctx.st, "W-01", "G-01", 3, EFF), 0, "", "",
         &[r#"{"v":1,"cmd":"fitness","ts":"2031-01-01T00:00:00Z","inv":{"had_key":true,"wid":"W-01","gid":"G-01","previous":1,"op":"restore_fitness_key"}}"#]);
     step!(ctx, "set_w_done", op_set(&mut ctx.st, "W-01", "status", "done", EFF), 0, "",
-        "grove: goal G-01 (Goal one) verified, distill content: `grove distill G-01` (or `grove distill G-01 --null` when nothing is worth keeping; lazy distill, see the Rules section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.\n",
+        "grove: goal G-01 (Goal one) verified, distill content: `grove distill G-01` (or `grove distill G-01 --null` when nothing is worth keeping; lazy distill, see the rules section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.\n",
         &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"had_session_at_before":true,"old_w_status":"progress","had_session_before":true,"id":"W-01","op":"set_w_status_with_goals","goal_statuses":{"G-01":"unverified","G-02":"unverified"},"old_session_at":"2031-01-01T00:00:00Z","old_session":"testsession"}}"#]);
 
     assert_eq!(serialize(&ctx.st), LOCK_DONE, "lock after done");

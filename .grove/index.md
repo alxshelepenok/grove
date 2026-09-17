@@ -132,6 +132,7 @@
 | W-178 | feature | Stamp the skill version and surface the handshake | G-36 | clear | ⊤ | done |  |
 | W-179 | feature | Add grove skill print and install commands | G-36 | complicated | ⊤ | done |  |
 | W-180 | refactor | Wrap the skill source in a grove directory | G-36 | clear | ⊤ | done |  |
+| W-181 | bug | Lowercase the rules section reference in the distill hint | G-36 | clear | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -343,6 +344,7 @@ graph TD
   W_178["W-178: Stamp the skill version and surface the handshake"]:::done
   W_179["W-179: Add grove skill print and install commands"]:::done
   W_180["W-180: Wrap the skill source in a grove directory"]:::done
+  W_181["W-181: Lowercase the rules section reference in the distill hint"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
