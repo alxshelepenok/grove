@@ -29,7 +29,10 @@ while IFS= read -r e; do
   esac
 done < <(printf '%s\n' "$explicits")
 [ -z "$missing" ]
-report $? "every explicit asset carries its signature twin (missing:$missing)"
+rc=$?
+detail=""
+[ -n "$missing" ] && detail=" (missing:$missing)"
+report $rc "every explicit asset carries its signature twin$detail"
 
 bad=""
 while IFS= read -r e; do
@@ -38,7 +41,10 @@ while IFS= read -r e; do
   done < <(printf '%s\n' "$globs")
 done < <(printf '%s\n' "$explicits")
 [ -z "$bad" ]
-report $? "no explicit asset is covered by a glob (would upload twice:$bad)"
+rc=$?
+detail=""
+[ -n "$bad" ] && detail=" (would upload twice:$bad)"
+report $rc "no explicit asset is covered by a glob$detail"
 
 printf '%s\n' "$assets" | grep -qxF 'out/grove-skill.tar.gz.sig'
 report $? "the glob-attached skill archive has its signature attached"
