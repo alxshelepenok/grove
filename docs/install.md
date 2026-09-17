@@ -113,4 +113,14 @@ Restart the client after editing the config; the `mcp__grove__*` tools appear in
 
 ## Agent skill bundle
 
-The agent-facing workflow documentation (`docs/skills/`) ships as a single signed file, `grove-skill.md` (+ `grove-skill.md.sig`), attached to every release. Drop the file into your agent's skills directory as-is; verify it first with the committed public key (`docs/security/artifacts/public-keys/grove-manifest-2026-08.pem`) if you fetched it outside the installer.
+The agent-facing workflow documentation (`docs/skills/`) ships as a signed archive, `grove-skill.tar.gz` (+ `grove-skill.tar.gz.sig`), attached to every release. The archive expands to a `grove/` directory (`SKILL.md`, `references/`, `diagrams/`), the layout skill-aware agents load natively:
+
+```bash
+tar -xzf grove-skill.tar.gz -C ~/.zcode/skills   # or your agent's skills directory
+```
+
+Verify the archive first with the committed public key (`docs/security/artifacts/public-keys/grove-manifest-2026-08.pem`) if you fetched it outside the installer:
+
+```bash
+bin/verify.sh docs/security/artifacts/public-keys/grove-manifest-2026-08.pem grove-skill.tar.gz grove-skill.tar.gz.sig
+```

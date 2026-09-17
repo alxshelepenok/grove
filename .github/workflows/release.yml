@@ -317,8 +317,8 @@ jobs:
           cp sbom/sbom.cdx.json docs/security/artifacts/sbom.cdx.json
           bin/sign.sh key.pem docs/security/artifacts/sbom.cdx.json
           bin/sign.sh key.pem docs/security/artifacts/vex.json
-          bin/skill-bundle.sh --output out/grove-skill.md
-          bin/sign.sh key.pem out/grove-skill.md
+          bin/skill-bundle.sh --output out/grove-skill.tar.gz
+          bin/sign.sh key.pem out/grove-skill.tar.gz
           if ! bin/verify.sh trusted.pem install.sh install.sh.sig 2>/dev/null; then
             bin/sign.sh key.pem install.sh
           fi
@@ -356,6 +356,7 @@ jobs:
 
           - grove and grove-mcp CLI binaries + grove-desktop portable archives: linux-x64, macos-arm64, macos-x64, windows-x64.
           - Desktop OS bundles: msi + nsis (windows), dmg (macOS arm64 + x64), deb + AppImage (linux).
+          - Signed agent skill archive (grove-skill.tar.gz): directory skill (SKILL.md, references, diagrams) to unpack into the agent's skills directory.
           - Signed manifest, SHA256SUMS, CycloneDX SBOM, VEX, signed installers.
           EOF
           cat manifest.json
@@ -406,7 +407,7 @@ jobs:
             --verify-tag \
             out/*.tar.gz out/*.deb out/*.AppImage out/*.dmg out/*.msi out/*-setup.exe \
             out/SHA256SUMS out/SHA256SUMS.sig \
-            out/grove-skill.md out/grove-skill.md.sig \
+            out/grove-skill.tar.gz out/grove-skill.tar.gz.sig \
             manifest.json manifest.json.sig \
             docs/security/artifacts/sbom.cdx.json docs/security/artifacts/sbom.cdx.json.sig \
             docs/security/artifacts/vex.json docs/security/artifacts/vex.json.sig \
