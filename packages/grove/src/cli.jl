@@ -324,7 +324,7 @@ function print_lazy_distill_prompt_on_newly_verified_goals!(
                 gid,
                 "` (or `grove distill ",
                 gid,
-                " --null` when nothing is worth keeping; lazy distill, see rules.md). To skip: add a `notes` prose line containing `--distill-deferred`.",
+                " --null` when nothing is worth keeping; lazy distill, see the Rules section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.",
         )
     end
     nothing

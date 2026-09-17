@@ -3457,3 +3457,9 @@
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-09-17T13:22:12Z","inv":{"id":"W-174","field":"evidence","op":"field_pop_last"}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-09-17T13:22:12Z","inv":{"id":"W-174","field":"evidence","op":"field_pop_last"}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-09-17T13:22:13Z","inv":{"had_session_at_before":true,"old_w_status":"progress","had_session_before":true,"id":"W-174","op":"set_w_status_with_goals","goal_statuses":{"G-36":"unverified"},"old_session_at":"2026-09-17T13:19:23Z","old_session":"desktop-5a9h5ko:b9ace3ea3b856f36"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-09-17T13:22:41Z","inv":{"had_session_at_before":false,"old_w_status":"ready","had_session_before":false,"id":"W-173","op":"set_w_status_with_goals","goal_statuses":{"G-36":"partial"},"old_session_at":"","old_session":""}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-09-17T13:27:43Z","inv":{"id":"W-173","field":"evidence","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-09-17T13:27:44Z","inv":{"id":"W-173","field":"evidence","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-09-17T13:27:44Z","inv":{"id":"W-173","field":"evidence","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-09-17T13:27:44Z","inv":{"id":"W-173","field":"evidence","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-09-17T13:27:44Z","inv":{"had_session_at_before":true,"old_w_status":"progress","had_session_before":true,"id":"W-173","op":"set_w_status_with_goals","goal_statuses":{"G-36":"partial"},"old_session_at":"2026-09-17T13:22:41Z","old_session":"desktop-5a9h5ko:b9ace3ea3b856f36"}}

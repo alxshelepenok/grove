@@ -13,7 +13,7 @@ function work_significant_when_done(st::State, w::Node)::Bool
     false
 end
 
-"""Human-readable alignment trigger lines (`protocol.md` §2.5). Empty if none apply."""
+"""Human-readable alignment trigger lines (protocol section 2.5). Empty if none apply."""
 function alignment_triggers(st::State)::Vector{String}
     out = String[]
     for q in listnodes(st, :q)
