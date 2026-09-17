@@ -360,7 +360,7 @@ fn lazy_distill_prompts(st: &State, w: &Node, old_goal_status: &[(String, String
             continue;
         }
         out.push(format!(
-            "grove: goal {} ({}) verified, distill content: `grove distill {}` (or `grove distill {} --null` when nothing is worth keeping; lazy distill, see the Rules section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.",
+            "grove: goal {} ({}) verified, distill content: `grove distill {}` (or `grove distill {} --null` when nothing is worth keeping; lazy distill, see the rules section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.",
             gid, g.title, gid, gid
         ));
     }

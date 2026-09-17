@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:555ea6cff71aed7938c0b3d4181c00a85321cf557a7e58ede8701535005ad9a2
+# checksum: sha256:21e4461972db5aef4861a08041b88f912f04ebd82f95ab45f857c4aaef26f4f7
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -1566,6 +1566,23 @@ w W-180 type=refactor status=done cynefin=clear t_created=2026-09-17T15:12:16Z t
     | Embedded include paths (skill.rs) and the Julia skill_src_dir point at docs/skills/grove; suites: core 290, mcp 13, conformance 27 scenarios, Julia skill testset 8/8.
   why:
     | Layout alignment so the skill directory name matches the skill name for agent platforms; enabling work, no fitness delta.
+
+w W-181 type=bug status=done cynefin=clear t_created=2026-09-17T15:36:49Z t_updated=2026-09-17T15:41:37Z "Lowercase the rules section reference in the distill hint"
+  goals: G-36
+  fitness: G-36=+0
+  surface: packages/core/src/ops.rs, packages/grove/src/cli.jl, packages/grove/conformance/corpus, packages/core/tests/ops.rs
+  ac:
+    | Both implementations print 'see the rules section of the grove skill'.
+    | Corpus scenarios and the Rust unit test pin the lowercase string; suites green.
+  repro:
+    | The distill hint prints 'see the Rules section of the grove skill' with a mid-sentence capital, violating typography rule 7 (sentence case) in both implementations.
+  evidence_strategy:
+    | Grep before and after; cargo ops and corpus_replay tests; Julia conformance verify.
+  evidence:
+    | Both implementations, four corpus scenarios, and the Rust unit test now print 'see the rules section of the grove skill'; grep for the capitalized form returns zero hits.
+    | cargo test -p grove-core --test ops --test corpus_replay green; Julia conformance verify green.
+  why:
+    | Typography alignment; enabling fix, no fitness delta.
 
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
