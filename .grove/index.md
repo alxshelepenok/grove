@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 62 | validated B 4 · answered Q 10 · accepted D 30 · active Discovery 18 |
+| C (content) | 63 | validated B 4 · answered Q 10 · accepted D 31 · active Discovery 18 |
 | V (uncertainty) | 12 | open Q 2 · pending B 7 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
@@ -18,7 +18,7 @@
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 26 | 0 | C: validated B 2 · answered Q 3 · accepted D 14 · active Discovery 7; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-06 | Release | 5 | 1 | C: validated B 0 · answered Q 1 · accepted D 2 · active Discovery 2; V: open Q 0 · pending B 1 · W below DoR 0 |
+| A-06 | Release | 6 | 1 | C: validated B 0 · answered Q 1 · accepted D 3 · active Discovery 2; V: open Q 0 · pending B 1 · W below DoR 0 |
 | A-07 | Agent integrations | 15 | 2 | C: validated B 1 · answered Q 4 · accepted D 5 · active Discovery 5; V: open Q 0 · pending B 2 · W below DoR 0 |
 
 > Relevance view, not a partition: a node touching two areas counts in both; a W without goals counts in none. The Content health totals above are primary.
@@ -45,6 +45,7 @@
 | G-35 | Cone lattice composites behind edges without pixel breaks | boolean; current=true | verified |
 | G-36 | Skill ships as a signed archive served by CLI and MCP from one source | count; current=7 target=7 | verified |
 | G-37 | Version bump runbook matches reality | count; current=1 target=1 | verified |
+| G-38 | Branch naming convention is documented and discoverable | count; current=1 target=1 | verified |
 
 ## Work items
 
@@ -138,6 +139,7 @@
 | W-183 | refactor | Polish the agent skill bundle section in install.md | G-36 | clear | ⊤ | done |  |
 | W-184 | bug | Align the help output into three columns | G-36 | clear | ⊤ | done |  |
 | W-185 | bug | Fix the version-bearing file list and branch name in the publish runbook | G-37 | clear | ⊤ | done |  |
+| W-186 | feature | Document the branch naming convention | G-38 | clear | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -176,6 +178,7 @@
 | D-35 | Skill discovery rides instructions, root resource, and status pointer | accepted |  |
 | D-36 | CLI text references stable identifiers only | accepted |  |
 | D-37 | docs/skills is the single source embedded into the binary, carrying grove protocol content only | accepted | D-34 |
+| D-38 | Branch names carry a commit-type prefix and a node or version identifier | accepted |  |
 
 ## Open questions
 
@@ -268,6 +271,7 @@ graph TD
   G_35["G-35: Cone lattice composites behind edges without pixel breaks"]:::goal
   G_36["G-36: Skill ships as a signed archive served by CLI and MCP from one source"]:::goal
   G_37["G-37: Version bump runbook matches reality"]:::goal
+  G_38["G-38: Branch naming convention is documented and discoverable"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
@@ -356,6 +360,7 @@ graph TD
   W_183["W-183: Polish the agent skill bundle section in install.md"]:::done
   W_184["W-184: Align the help output into three columns"]:::done
   W_185["W-185: Fix the version-bearing file list and branch name in the publish runbook"]:::done
+  W_186["W-186: Document the branch naming convention"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -389,6 +394,7 @@ graph TD
   D_35["D-35: Skill discovery rides instructions, root resource, and status pointer"]:::decision
   D_36["D-36: CLI text references stable identifiers only"]:::decision
   D_37["D-37: docs/skills is the single source embedded into the binary, carrying grove protocol content only"]:::decision
+  D_38["D-38: Branch names carry a commit-type prefix and a node or version identifier"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_05["Q-05: What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1?"]:::question
@@ -568,6 +574,7 @@ graph TD
   W_178 -->|implements| D_34
   W_179 -->|implements| D_35
   W_182 -->|implements| D_37
+  W_186 -->|implements| D_38
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78

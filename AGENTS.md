@@ -28,6 +28,10 @@ This document contains links to available skill documentation for agents.
 - **[Update VEX](docs/security/runbooks/update-vex.md)**: triage new trivy findings into `not_affected` statements in the signed VEX document or a fix, within one weekly cycle.
 - **[Incident response](docs/security/runbooks/incident-response.md)**: on-call procedure for signing-key or release-pipeline compromise: secret revocation and dispatch freeze in CI-based signing.
 
+## Development
+
+- **[Branch naming](docs/branch-naming.md)**: the branch-to-commit naming convention for release, task, chore, and bot branches.
+
 ## Usage
 
 Each skill document contains:
