@@ -15,14 +15,15 @@ Publish a signed grove release `vX.Y.Z` through the `Release` workflow (`.github
 
 ## Steps
 
-1. Bump the version in all five version-bearing files on a branch:
+1. Bump the version in all six version-bearing files on a `chore/version-vX.Y.Z` branch:
    - `packages/core/Cargo.toml`
    - `packages/mcp/Cargo.toml`
    - `packages/desktop/src-tauri/Cargo.toml`
    - `packages/desktop/src-tauri/tauri.conf.json`
    - `packages/grove/Project.toml`
+   - `packages/dsh/package.json`
 
-   Open a PR to `main`, get it reviewed and merged.
+   Run `cargo build --workspace` so `Cargo.lock` records the new versions, then open a PR to `main`, get it reviewed and merged.
 2. Create and push the annotated tag from the merged commit on `main`:
    ```bash
    git checkout main && git pull
