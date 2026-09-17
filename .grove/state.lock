@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:61f2a30abb251ba0f1f23a2a8afb50a0051b8abcdc885d6911efef7ee4deb74e
+# checksum: sha256:9c6af1d8d58cc2f6dc4d1fb4e4b4876f7c2d029f1832e6a2765d415b2a54740c
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -99,6 +99,11 @@ g G-37 status=verified fitness_kind=count t_created=2026-09-17T17:10:52Z t_updat
   fitness_current: 1
 
 g G-38 status=verified fitness_kind=count t_created=2026-09-17T17:21:28Z t_updated=2026-09-17T17:22:14Z "Branch naming convention is documented and discoverable"
+  area: A-06
+  fitness_target: 1
+  fitness_current: 1
+
+g G-39 status=verified fitness_kind=count t_created=2026-09-17T20:44:24Z t_updated=2026-09-17T20:47:38Z "Release workflow uploads the skill archive exactly once"
   area: A-06
   fitness_target: 1
   fitness_current: 1
@@ -1678,6 +1683,23 @@ w W-186 type=feature status=done cynefin=clear t_created=2026-09-17T17:21:30Z t_
     | docs/branch-naming.md: human-readable table (eight rows, real examples: release/v0.1.8, feat/G-25, fix/G-27, feat/W-176, fix/W-173, refactor/W-174, dependabot/cargo/sha2-0.11.0), rules, and a machine form matching D-38.
     | CONTRIBUTING.md gains a Branch naming section; AGENTS.md gains a Development section linking the document; this branch itself follows the convention (docs/W-186).
     | D-38 accepted and linked via implements; docs-only change, grove check ok.
+
+w W-187 type=bug status=done cynefin=clear t_created=2026-09-17T20:44:25Z t_updated=2026-09-17T20:47:38Z "Drop the duplicated skill asset from the release upload list"
+  goals: G-39
+  fitness: G-39=+1
+  surface: .github/workflows/release.yml, packages/grove/conformance/corpus
+  ac:
+    | The gh release create asset list mentions grove-skill.tar.gz exactly once (via the out/*.tar.gz glob); its .sig stays explicit.
+    | A guard prevents reintroduction: the asset list contains no name matched by an earlier glob in the same command.
+    | Rollback executed per runbook: partial release and tag v0.2.0 deleted; re-tag happens after this fix merges.
+  repro:
+    | Release v0.2.0 sign-and-publish failed with HTTP 422 'ReleaseAsset.name already exists' for grove-skill.tar.gz: the gh release create asset list contains the glob out/*.tar.gz (which matches grove-skill.tar.gz since W-175 renamed the artifact) plus an explicit out/grove-skill.tar.gz entry, uploading the same asset name twice.
+  evidence_strategy:
+    | Workflow diff; grep showing a single occurrence; re-release after merge (maintainer dispatch).
+  evidence:
+    | Root cause confirmed: W-175 renamed the artifact to .tar.gz while the gh release create list kept the explicit entry next to the out/*.tar.gz glob, uploading grove-skill.tar.gz twice (HTTP 422 ReleaseAsset.name already exists, release 391000132).
+    | Fix: explicit out/grove-skill.tar.gz removed from the asset list (glob attaches it); out/grove-skill.tar.gz.sig stays explicit; tests/release/test-release-assets.sh guards the regression (3 passed) and runs in shell-tests.yml on all runners.
+    | Rollback executed per runbook: failed release deleted (not found on retry), tag v0.2.0 deleted remotely and locally; manifest sequence note applies (next run consumes the next sequence).
 
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21

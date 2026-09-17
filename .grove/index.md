@@ -46,6 +46,7 @@
 | G-36 | Skill ships as a signed archive served by CLI and MCP from one source | count; current=7 target=7 | verified |
 | G-37 | Version bump runbook matches reality | count; current=1 target=1 | verified |
 | G-38 | Branch naming convention is documented and discoverable | count; current=1 target=1 | verified |
+| G-39 | Release workflow uploads the skill archive exactly once | count; current=1 target=1 | verified |
 
 ## Work items
 
@@ -140,6 +141,7 @@
 | W-184 | bug | Align the help output into three columns | G-36 | clear | ⊤ | done |  |
 | W-185 | bug | Fix the version-bearing file list and branch name in the publish runbook | G-37 | clear | ⊤ | done |  |
 | W-186 | feature | Document the branch naming convention | G-38 | clear | ⊤ | done |  |
+| W-187 | bug | Drop the duplicated skill asset from the release upload list | G-39 | clear | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -272,6 +274,7 @@ graph TD
   G_36["G-36: Skill ships as a signed archive served by CLI and MCP from one source"]:::goal
   G_37["G-37: Version bump runbook matches reality"]:::goal
   G_38["G-38: Branch naming convention is documented and discoverable"]:::goal
+  G_39["G-39: Release workflow uploads the skill archive exactly once"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
@@ -361,6 +364,7 @@ graph TD
   W_184["W-184: Align the help output into three columns"]:::done
   W_185["W-185: Fix the version-bearing file list and branch name in the publish runbook"]:::done
   W_186["W-186: Document the branch naming convention"]:::done
+  W_187["W-187: Drop the duplicated skill asset from the release upload list"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
