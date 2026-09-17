@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:ad33915530f139919714233bf7fe712b7b53976c6d38c31d03cd238cccbd0c84
+# checksum: sha256:fc8dc2df2eb5b7cdd5ff4a154107229099c382d6893a530322311d0a0f93dfd0
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -91,7 +91,7 @@ g G-35 status=verified fitness_kind=boolean t_created=2026-09-04T11:33:57Z t_upd
 g G-36 status=partial fitness_kind=count t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:22:13Z "Skill ships as a signed archive served by CLI and MCP from one source"
   area: A-07
   fitness_target: 7
-  fitness_current: 2
+  fitness_current: 3
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -1450,7 +1450,7 @@ w W-174 type=refactor status=done cynefin=clear t_created=2026-09-17T13:05:27Z t
     | CI wiring: shell-tests.yml gains a Linux-only Skill bundle suite step (macOS bsdtar lacks --sort).
     | Multi-file skill support in the live agent environment: adspower-browser and clarity skills ship references/ subdirectories and trigger.
 
-w W-175 type=feature status=proposed cynefin=clear t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:11:24Z "Wire the skill archive into the signed release pipeline"
+w W-175 type=feature status=ready cynefin=clear t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:28:09Z "Wire the skill archive into the signed release pipeline"
   goals: G-36
   theme: T-08
   fitness: G-36=+1
@@ -1466,11 +1466,11 @@ w W-175 type=feature status=proposed cynefin=clear t_created=2026-09-17T13:05:27
   evidence_strategy:
     | Workflow dry-run output; manifest content check; docs diff.
 
-w W-176 type=feature status=proposed cynefin=complicated t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:07:15Z "Serve the embedded skill through MCP and retire the primer"
+w W-176 type=feature status=done cynefin=complicated t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:39:55Z "Serve the embedded skill through MCP and retire the primer"
   goals: G-36
   theme: T-08
   fitness: G-36=+1
-  surface: packages/core/src/mcp.rs, packages/core/assets/skill-primer.md, packages/mcp/tests/mcp.rs, docs/skills
+  surface: packages/core/src/mcp.rs, packages/core/assets/skill-primer.md, packages/mcp/tests/mcp.rs, docs/skills, docs/install.md
   ac:
     | Unique primer operational rules are merged into the skill pages.
     | packages/core/assets/skill-primer.md is deleted and no stale primer references remain in code or docs.
@@ -1481,6 +1481,11 @@ w W-176 type=feature status=proposed cynefin=complicated t_created=2026-09-17T13
     | Pages embedded via include_str! (B-11) let one source serve MCP with no runtime file dependencies.
   evidence_strategy:
     | cargo test for grove-mcp; embedded strings check on the built binary; manual MCP session transcript.
+  evidence:
+    | Primer operational rules merged into docs/skills/references/rules.md (new Operational rules section); packages/core/assets/skill-primer.md deleted; grep finds no primer references in code or docs.
+    | cargo test -p grove-mcp: 13 passed; grove://skill serves the embedded SKILL.md (frontmatter, name: grove, dual-track, Definition of Ready, Reading order), grove://skill/references/rules.md resolves, unknown page returns -32602.
+    | cargo test -p grove-core: 289 passed, 0 failed (skill.rs embed module, lib.rs wiring).
+    | install.md MCP section now describes the embedded skill resource instead of the primer.
 
 w W-177 type=feature status=proposed cynefin=clear t_created=2026-09-17T13:05:28Z t_updated=2026-09-17T13:11:31Z "Announce the skill through MCP instructions and the status pointer"
   goals: G-36
@@ -2077,11 +2082,13 @@ b B-10 status=testing cynefin=clear t_created=2026-09-17T13:05:37Z t_updated=202
     | Windows unpack verified locally: tar -xzf yields grove/SKILL.md plus references/ plus diagrams/.
     | Reading tar.gz is universal (bsdtar on macOS, tar on Linux); only archive creation needs GNU tar, guarded in bin/skill-bundle.sh.
 
-b B-11 status=proposed cynefin=complicated t_created=2026-09-17T13:05:37Z t_updated=2026-09-17T13:07:05Z "cargo embeds docs/skills from outside the crate"
+b B-11 status=validated cynefin=complicated t_created=2026-09-17T13:05:37Z t_updated=2026-09-17T13:38:00Z "cargo embeds docs/skills from outside the crate"
   vm:
     | Compile spike: include_str! with a ../../docs path, then check the string lands in the binary.
   threshold:
     | The build succeeds and page text is present in the artifact.
+  result:
+    | Compile spike green: include_str! from ../../../docs/skills/SKILL.md and references/rules.md builds and the page text is present in the test binary (1 passed).
 
 t T-01 status=open t_created=2026-07-19T01:14:31Z t_updated=2026-07-19T01:14:31Z "Scaling performance"
 

@@ -95,3 +95,13 @@ grove check || exit 1
 ```
 
 This blocks commits with broken invariants or stale `index.md`.
+
+## Operational rules
+
+These rules govern the working agent, not the state model.
+
+- Minimal diffs; stay on the current work item's topic.
+- Code and comments in English; ASCII hyphens, no em or en dashes in code text.
+- No comments in code unless the codebase already has them as a convention.
+- Temporary files go to the system temp area, not the repo.
+- Do not commit or push unless the user explicitly asks.
