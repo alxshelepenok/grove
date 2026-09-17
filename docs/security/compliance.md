@@ -39,7 +39,7 @@ Signatures are RSA-2048/PSS with the dedicated release key; the public half is c
 | `SHA256SUMS` | Yes (`SHA256SUMS.sig`) | Hashes of all release binaries and bundles |
 | `sbom.cdx.json` | Yes | CycloneDX 1.6 SBOM, mirrored under `docs/security/artifacts/` |
 | `vex.json` | Yes | VEX statements, mirrored under `docs/security/artifacts/` |
-| `grove-skill.md` | Yes (`grove-skill.md.sig`) | Agent skill bundle |
+| `grove-skill.tar.gz` | Yes (`grove-skill.tar.gz.sig`) | Agent skill archive |
 | `install.sh` / `install.ps1` | Yes (`.sig`) | Re-signed only when the committed copy fails verification |
 | CLI / desktop portable `tar.gz` | Indirectly | Covered by the signed manifest hashes and `SHA256SUMS.sig`; GitHub build-provenance attestation attached |
 | OS bundles (`msi`, `nsis setup.exe`, `dmg`, `deb`, `AppImage`) | Indirectly | Same coverage as above; no Authenticode signature or Apple notarization |

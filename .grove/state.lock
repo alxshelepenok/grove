@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:fc8dc2df2eb5b7cdd5ff4a154107229099c382d6893a530322311d0a0f93dfd0
+# checksum: sha256:fae527ddad552051fb751422a8dbf0581362d733e8995463f7c5ee5b8d621a05
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -91,7 +91,7 @@ g G-35 status=verified fitness_kind=boolean t_created=2026-09-04T11:33:57Z t_upd
 g G-36 status=partial fitness_kind=count t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:22:13Z "Skill ships as a signed archive served by CLI and MCP from one source"
   area: A-07
   fitness_target: 7
-  fitness_current: 3
+  fitness_current: 4
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -1450,7 +1450,7 @@ w W-174 type=refactor status=done cynefin=clear t_created=2026-09-17T13:05:27Z t
     | CI wiring: shell-tests.yml gains a Linux-only Skill bundle suite step (macOS bsdtar lacks --sort).
     | Multi-file skill support in the live agent environment: adspower-browser and clarity skills ship references/ subdirectories and trigger.
 
-w W-175 type=feature status=ready cynefin=clear t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:28:09Z "Wire the skill archive into the signed release pipeline"
+w W-175 type=feature status=done cynefin=clear t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:42:00Z "Wire the skill archive into the signed release pipeline"
   goals: G-36
   theme: T-08
   fitness: G-36=+1
@@ -1465,6 +1465,11 @@ w W-175 type=feature status=ready cynefin=clear t_created=2026-09-17T13:05:27Z t
     | One signed archive artifact drops into the existing manifest chain without new key material.
   evidence_strategy:
     | Workflow dry-run output; manifest content check; docs diff.
+  evidence:
+    | release.yml builds and signs out/grove-skill.tar.gz; attachments list and release-notes Contents carry the archive; the dry-run summary glob out/*.tar.gz picks it up automatically.
+    | Local pipeline simulation green: bin/skill-bundle.sh, bin/sign.sh (RSA-2048/PSS), bin/verify.sh OK, sha256sum covers the archive; manifest.sh consumes SHA256SUMS generated from out/*.
+    | Docs updated (install.md unpack plus verify instructions, release-distribution.md, compliance.md, key-management.md); the only remaining grove-skill.md mentions are Q-12 title strings inside .grove state.
+    | Adjacent suites green: tests/crypto/test-sign.sh 5 passed; tests/manifest/test-manifest.sh 13 passed. GitHub dry-run dispatch remains a maintainer step.
 
 w W-176 type=feature status=done cynefin=complicated t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:39:55Z "Serve the embedded skill through MCP and retire the primer"
   goals: G-36

@@ -7,7 +7,7 @@
 | Measure | Count | Composition |
 | --- | --- | --- |
 | C (content) | 62 | validated B 4 · answered Q 10 · accepted D 30 · active Discovery 18 |
-| V (uncertainty) | 16 | open Q 2 · pending B 7 · W below DoR 2 · uncovered surface 5 |
+| V (uncertainty) | 15 | open Q 2 · pending B 7 · W below DoR 2 · uncovered surface 4 |
 
 ## Areas
 
@@ -19,7 +19,7 @@
 | A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 26 | 0 | C: validated B 2 · answered Q 3 · accepted D 14 · active Discovery 7; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 5 | 1 | C: validated B 0 · answered Q 1 · accepted D 2 · active Discovery 2; V: open Q 0 · pending B 1 · W below DoR 0 |
-| A-07 | Agent integrations | 15 | 6 | C: validated B 1 · answered Q 4 · accepted D 5 · active Discovery 5; V: open Q 0 · pending B 2 · W below DoR 0 · uncovered surface 4 |
+| A-07 | Agent integrations | 15 | 5 | C: validated B 1 · answered Q 4 · accepted D 5 · active Discovery 5; V: open Q 0 · pending B 2 · W below DoR 0 · uncovered surface 3 |
 
 > Relevance view, not a partition: a node touching two areas counts in both; a W without goals counts in none. The Content health totals above are primary.
 
@@ -43,13 +43,13 @@
 | G-33 | Cone text fades out with zoom like Obsidian | count; current=1 target=1 | verified |
 | G-34 | Graph labels fade with zoom through the shared curve | count; current=1 target=1 | verified |
 | G-35 | Cone lattice composites behind edges without pixel breaks | boolean; current=true | verified |
-| G-36 | Skill ships as a signed archive served by CLI and MCP from one source | count; current=3 target=7 | partial |
+| G-36 | Skill ships as a signed archive served by CLI and MCP from one source | count; current=4 target=7 | partial |
 
 ## Work items
 
 | ID | Type | Title | Goals | Cynefin | DoR | Status | Critical |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed |  |
+| W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed | ★ |
 | W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-17 | complicated | ⊥ | proposed |  |
 | W-100 | bug | Truncate area surface chips with ellipsis tooltip | G-22 | clear | ⊤ | done |  |
 | W-101 | bug | Widen count badges for totals above ninety-nine | G-23 | clear | ⊤ | done |  |
@@ -126,10 +126,10 @@
 | W-172 | bug | Stop lattice lines cutting 1px breaks into cone edges | G-35 | clear | ⊤ | done |  |
 | W-173 | bug | Fix dangling skill references in CLI output | G-36 | clear | ⊤ | done |  |
 | W-174 | refactor | Restructure docs/skills into SKILL.md plus references | G-36 | clear | ⊤ | done |  |
-| W-175 | feature | Wire the skill archive into the signed release pipeline | G-36 | clear | ⊤ | ready | ★ |
+| W-175 | feature | Wire the skill archive into the signed release pipeline | G-36 | clear | ⊤ | done |  |
 | W-176 | feature | Serve the embedded skill through MCP and retire the primer | G-36 | complicated | ⊤ | done |  |
 | W-177 | feature | Announce the skill through MCP instructions and the status pointer | G-36 | clear | ⊤ | proposed |  |
-| W-178 | feature | Stamp the skill version and surface the handshake | G-36 | clear | ⊤ | proposed | ★ |
+| W-178 | feature | Stamp the skill version and surface the handshake | G-36 | clear | ⊤ | proposed |  |
 | W-179 | feature | Add grove skill print and install commands | G-36 | complicated | ⊤ | proposed |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
@@ -259,7 +259,7 @@ graph TD
   G_34["G-34: Graph labels fade with zoom through the shared curve"]:::goal
   G_35["G-35: Cone lattice composites behind edges without pixel breaks"]:::goal
   G_36["G-36: Skill ships as a signed archive served by CLI and MCP from one source"]:::goal
-  W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature
+  W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
   W_101["W-101: Widen count badges for totals above ninety-nine"]:::done
@@ -336,10 +336,10 @@ graph TD
   W_172["W-172: Stop lattice lines cutting 1px breaks into cone edges"]:::done
   W_173["W-173: Fix dangling skill references in CLI output"]:::done
   W_174["W-174: Restructure docs/skills into SKILL.md plus references"]:::done
-  W_175["W-175: Wire the skill archive into the signed release pipeline"]:::ready,critical
+  W_175["W-175: Wire the skill archive into the signed release pipeline"]:::done
   W_176["W-176: Serve the embedded skill through MCP and retire the primer"]:::done
   W_177["W-177: Announce the skill through MCP instructions and the status pointer"]:::feature
-  W_178["W-178: Stamp the skill version and surface the handshake"]:::feature,critical
+  W_178["W-178: Stamp the skill version and surface the handshake"]:::feature
   W_179["W-179: Add grove skill print and install commands"]:::feature
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
@@ -582,7 +582,7 @@ graph TD
   Y_17 -->|distills| D_27
   Y_17 -->|distills| D_30
   Y_20 -->|distills| Q_11
-  class W_175,W_178 critical
+  class W_04 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff
 classDef theme fill:#2a4a3a,color:#fff

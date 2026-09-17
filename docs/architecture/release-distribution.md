@@ -64,7 +64,7 @@ Plus the trust and transparency files:
 - `sbom.cdx.json` and `sbom.cdx.json.sig` (CycloneDX 1.6).
 - `vex.json` and `vex.json.sig`.
 - `install.sh`, `install.sh.sig`, `install.ps1`, `install.ps1.sig`. Installer signatures are only re-created when they no longer verify against the current key (key rotation), otherwise the committed `.sig` files ship as-is.
-- `grove-skill.md` and `grove-skill.md.sig`: the single-file agent skill bundle from `bin/skill-bundle.sh`.
+- `grove-skill.tar.gz` and `grove-skill.tar.gz.sig`: the agent skill directory archive (SKILL.md, references, diagrams) from `bin/skill-bundle.sh` (deterministic GNU tar plus gzip -n).
 - SLSA build provenance attestations via `actions/attest-build-provenance` covering all archives, bundles, and `manifest.json`.
 
 All `.sig` files are detached RSA-2048/PSS over SHA-256, base64url without padding (see `bin/sign.sh`).

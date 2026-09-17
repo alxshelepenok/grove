@@ -9,7 +9,7 @@ Describes the cryptographic keys behind Grove's release trust system: what exist
 
 ## Problem
 
-Every release artifact's integrity ultimately reduces to one signature: the signed `manifest.json` (and its companions `SHA256SUMS.sig`, `sbom.cdx.json.sig`, `vex.json.sig`, the installer signatures, and `grove-skill.md.sig`). The signing key must be usable by CI (releases are built and published by GitHub Actions), protected from casual exfiltration, recoverable if the CI secret is lost, and rotatable without breaking installed clients.
+Every release artifact's integrity ultimately reduces to one signature: the signed `manifest.json` (and its companions `SHA256SUMS.sig`, `sbom.cdx.json.sig`, `vex.json.sig`, the installer signatures, and `grove-skill.tar.gz.sig`). The signing key must be usable by CI (releases are built and published by GitHub Actions), protected from casual exfiltration, recoverable if the CI secret is lost, and rotatable without breaking installed clients.
 
 ## Key inventory
 
@@ -17,7 +17,7 @@ Grove has exactly one long-lived signing identity. Key ids follow the pattern `g
 
 | Key | Algorithm | Purpose | Private half storage | Public half |
 | --- | --- | --- | --- | --- |
-| `grove-manifest-2026-08` | RSA-2048, PSS padding over SHA-256 | Signs `manifest.json`, `SHA256SUMS`, `sbom.cdx.json`, `vex.json`, `grove-skill.md`, and (on rotation) `install.sh.sig` / `install.ps1.sig`. | GitHub environment secret `GROVE_MANIFEST_SIGNING_KEY` on the `release` environment, plus an offline backup (encrypted USB drive or paper, stored physically separated from the workstation). | `docs/security/artifacts/public-keys/grove-manifest-2026-08.pem`; embedded in `install.sh` (`GROVE_TRUSTED_KEYS` heredoc) and `install.ps1` (`$TrustedModulusHex`, exponent 65537). |
+| `grove-manifest-2026-08` | RSA-2048, PSS padding over SHA-256 | Signs `manifest.json`, `SHA256SUMS`, `sbom.cdx.json`, `vex.json`, `grove-skill.tar.gz`, and (on rotation) `install.sh.sig` / `install.ps1.sig`. | GitHub environment secret `GROVE_MANIFEST_SIGNING_KEY` on the `release` environment, plus an offline backup (encrypted USB drive or paper, stored physically separated from the workstation). | `docs/security/artifacts/public-keys/grove-manifest-2026-08.pem`; embedded in `install.sh` (`GROVE_TRUSTED_KEYS` heredoc) and `install.ps1` (`$TrustedModulusHex`, exponent 65537). |
 
 The current key was generated on 2026-08-05; its SPKI SHA-256 fingerprint prefix is `72d7aabe9c2ffcb4` (execution log in `docs/security/runbooks/key-generation.md`).
 
