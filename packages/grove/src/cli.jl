@@ -40,7 +40,7 @@ const SKILL_PAGES = (
     "diagrams/workflow.md",
 )
 
-skill_src_dir() = joinpath(@__DIR__, "..", "..", "..", "docs", "skills")
+skill_src_dir() = joinpath(@__DIR__, "..", "..", "..", "docs", "skills", "grove")
 
 function stamp_skill(md::AbstractString)::String
     lines = split(md, '\n')

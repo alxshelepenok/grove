@@ -131,6 +131,7 @@
 | W-177 | feature | Announce the skill through MCP instructions and the status pointer | G-36 | clear | ⊤ | done |  |
 | W-178 | feature | Stamp the skill version and surface the handshake | G-36 | clear | ⊤ | done |  |
 | W-179 | feature | Add grove skill print and install commands | G-36 | complicated | ⊤ | done |  |
+| W-180 | refactor | Wrap the skill source in a grove directory | G-36 | clear | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -211,7 +212,7 @@
 | T-05 | Graph view render loop and robustness debt | done | W-117 | W-117, W-118, W-119, W-120 |
 | T-06 | Graph view grows a 3D renderer | done | W-122, W-139 | W-121, W-122, W-123, W-124, W-125, W-126, W-127, W-128, W-129, W-130, W-131, W-132, W-133, W-134, W-135, W-136, W-137, W-138, W-139, W-140 |
 | T-07 | Desktop grows a causality cone view | done | W-166, W-167 | W-141, W-142, W-143, W-144, W-145, W-146, W-147, W-148, W-149, W-150, W-151, W-152, W-153, W-154, W-155, W-156, W-157, W-158, W-159, W-160, W-161, W-162, W-163, W-164, W-165, W-166, W-167 |
-| T-08 | Skill packaging drift and dangling references | done | W-173, W-174 | W-173, W-174, W-175, W-176, W-177, W-178, W-179 |
+| T-08 | Skill packaging drift and dangling references | done | W-173, W-174, W-180 | W-173, W-174, W-175, W-176, W-177, W-178, W-179, W-180 |
 
 ## Discoveries
 
@@ -341,6 +342,7 @@ graph TD
   W_177["W-177: Announce the skill through MCP instructions and the status pointer"]:::done
   W_178["W-178: Stamp the skill version and surface the handshake"]:::done
   W_179["W-179: Add grove skill print and install commands"]:::done
+  W_180["W-180: Wrap the skill source in a grove directory"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -472,6 +474,7 @@ graph TD
   T_07 -->|causes| W_167
   T_08 -->|causes| W_173
   T_08 -->|causes| W_174
+  T_08 -->|causes| W_180
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
   W_03 -->|produces| D_11

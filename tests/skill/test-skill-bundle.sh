@@ -23,10 +23,10 @@ for entry in "grove/" "grove/SKILL.md" "grove/references/rules.md" "grove/diagra
   report $? "archive contains $entry"
 done
 
-head -2 docs/skills/SKILL.md | grep -q '^name: grove$'
+head -2 docs/skills/grove/SKILL.md | grep -q '^name: grove$'
 report $? "skill frontmatter stays at the top of SKILL.md"
 
-find docs/skills -name "*.md" -print0 | while IFS= read -r -d '' f; do
+find docs/skills/grove -name "*.md" -print0 | while IFS= read -r -d '' f; do
   dir=$(dirname "$f")
   grep -o "]([^)]*)" "$f" | sed 's/^](//; s/)$//' | while IFS= read -r t; do
     case "$t" in http*|\#*|mailto:*) continue ;; esac
@@ -50,7 +50,7 @@ tar -xzf "$work/bundle-v.tar.gz" -C "$work/unpack"
 sed -n '2p' "$work/unpack/grove/SKILL.md" | grep -qx 'version: 9.9.9'
 report $? "--version stamps the frontmatter second line"
 
-if grep -q '^version:' docs/skills/SKILL.md; then r=1; else r=0; fi
+if grep -q '^version:' docs/skills/grove/SKILL.md; then r=1; else r=0; fi
 report $r "source SKILL.md carries no version line"
 
 echo "$pass passed, $fail failed"

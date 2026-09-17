@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:bdbe5868952b5072c939232e45b3184b314cb3cce07c5ee559e9831a23328a3e
+# checksum: sha256:555ea6cff71aed7938c0b3d4181c00a85321cf557a7e58ede8701535005ad9a2
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -1548,6 +1548,25 @@ w W-179 type=feature status=done cynefin=complicated t_created=2026-09-17T13:05:
     | Byte parity: Rust and Julia print outputs are identical (diff clean); corpus scenario skill.json (print plus install steps) replays green on both implementations; help.json re-pinned with the new HELP line.
     | Unit tests: Rust skill_cmd 1 passed; Julia test_cli_skill 8 passed; suites: core 290 passed, mcp 13 passed, Julia runtests exit 0, conformance 27 scenarios green; skill classified as a read command in both session classifications.
 
+w W-180 type=refactor status=done cynefin=clear t_created=2026-09-17T15:12:16Z t_updated=2026-09-17T15:18:01Z "Wrap the skill source in a grove directory"
+  goals: G-36
+  theme: T-08
+  fitness: G-36=+0
+  surface: docs/skills, packages/core/src/skill.rs, packages/grove/src/cli.jl, bin/skill-bundle.sh, tests/skill/test-skill-bundle.sh, AGENTS.md, docs/install.md
+  ac:
+    | docs/skills/grove/ holds SKILL.md, references/, and diagrams/; the repo layout equals the installed layout (name inside SKILL.md matches the directory).
+    | skill-bundle.sh --src defaults to docs/skills/grove and the archive still expands to grove/.
+    | Embedded paths (skill.rs) and the Julia source dir point at docs/skills/grove.
+    | AGENTS.md and install.md reference the new path; suites green (skill bundle, core, mcp, conformance).
+  evidence_strategy:
+    | Tree listing; test-skill-bundle.sh output; cargo and julia suite runs.
+  evidence:
+    | docs/skills/grove/ now holds SKILL.md, references/, diagrams/; the repo layout equals the installed layout, so the skill name matches its directory for agent platforms.
+    | skill-bundle.sh --src defaults to docs/skills/grove; archive still expands to grove/ (test-skill-bundle.sh 9 passed).
+    | Embedded include paths (skill.rs) and the Julia skill_src_dir point at docs/skills/grove; suites: core 290, mcp 13, conformance 27 scenarios, Julia skill testset 8/8.
+  why:
+    | Layout alignment so the skill directory name matches the skill name for agent platforms; enabling work, no fitness delta.
+
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
   fitness: G-21=+1
@@ -2118,7 +2137,7 @@ t T-06 status=done t_created=2026-08-28T23:06:23Z t_updated=2026-08-29T13:44:58Z
 
 t T-07 status=done t_created=2026-08-30T17:29:26Z t_updated=2026-08-31T00:13:53Z "Desktop grows a causality cone view"
 
-t T-08 status=done t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T15:01:41Z "Skill packaging drift and dangling references"
+t T-08 status=done t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T15:18:01Z "Skill packaging drift and dangling references"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-07-27T14:44:48Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -2310,6 +2329,7 @@ e T-07 causes W-166 t_created=2026-08-30T22:51:36Z
 e T-07 causes W-167 t_created=2026-08-30T23:47:59Z
 e T-08 causes W-173 t_created=2026-09-17T13:07:12Z
 e T-08 causes W-174 t_created=2026-09-17T13:07:13Z
+e T-08 causes W-180 t_created=2026-09-17T15:12:18Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z

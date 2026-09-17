@@ -5,14 +5,14 @@ cd "$(dirname "$0")/.."
 die() { echo "error: $*" >&2; exit 1; }
 
 output="grove-skill.tar.gz"
-src="docs/skills"
+src="docs/skills/grove"
 ver=""
 while [ $# -gt 0 ]; do
   case $1 in
     --output) output=$2; shift 2 ;;
     --src) src=$2; shift 2 ;;
     --version) ver=$2; shift 2 ;;
-    *) echo "usage: skill-bundle.sh [--output grove-skill.tar.gz] [--src docs/skills] [--version X.Y.Z]" >&2; exit 2 ;;
+    *) echo "usage: skill-bundle.sh [--output grove-skill.tar.gz] [--src docs/skills/grove] [--version X.Y.Z]" >&2; exit 2 ;;
   esac
 done
 
