@@ -190,6 +190,45 @@ fn strip_trailing_ws(s: &str) -> String {
         .join("\n")
 }
 
+fn replace_ver(s: &str) -> String {
+    // mask dotted version triplets (with optional v prefix) behind <ver>
+    let cs: Vec<char> = s.chars().collect();
+    let mut out = String::with_capacity(s.len());
+    let mut i = 0;
+    while i < cs.len() {
+        let start = if cs[i] == 'v' && i + 1 < cs.len() && cs[i + 1].is_ascii_digit() {
+            i + 1
+        } else if cs[i].is_ascii_digit() {
+            i
+        } else {
+            out.push(cs[i]);
+            i += 1;
+            continue;
+        };
+        let mut j = start;
+        let mut dots = 0;
+        while j < cs.len() && (cs[j].is_ascii_digit() || cs[j] == '.') {
+            if cs[j] == '.' {
+                dots += 1;
+            }
+            j += 1;
+        }
+        let group: String = cs[start..j].iter().collect();
+        let parts: Vec<&str> = group.split('.').collect();
+        if dots == 2 && parts.len() == 3 && parts.iter().all(|p| !p.is_empty()) {
+            out.push_str("<ver>");
+            i = j;
+        } else if start != i {
+            out.push('v');
+            i = start;
+        } else {
+            out.extend(cs[i..j].iter().copied());
+            i = j;
+        }
+    }
+    out
+}
+
 fn normalize(s: &str, paths: &[(String, String)], tokens: &[String]) -> String {
     let mut s = s.replace("\r\n", "\n").replace('\r', "\n");
     for (p, ph) in paths {
@@ -204,6 +243,7 @@ fn normalize(s: &str, paths: &[(String, String)], tokens: &[String]) -> String {
     for (_, ph) in paths {
         s = common::normalize_path_suffixes(&s, ph);
     }
+    s = replace_ver(&s);
     s = replace_ts(&s);
     s = replace_sha256_prefixed(&s);
     s = replace_bare_sha(&s);

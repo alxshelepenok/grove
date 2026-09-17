@@ -6,11 +6,13 @@ die() { echo "error: $*" >&2; exit 1; }
 
 output="grove-skill.tar.gz"
 src="docs/skills"
+ver=""
 while [ $# -gt 0 ]; do
   case $1 in
     --output) output=$2; shift 2 ;;
     --src) src=$2; shift 2 ;;
-    *) echo "usage: skill-bundle.sh [--output grove-skill.tar.gz] [--src docs/skills]" >&2; exit 2 ;;
+    --version) ver=$2; shift 2 ;;
+    *) echo "usage: skill-bundle.sh [--output grove-skill.tar.gz] [--src docs/skills] [--version X.Y.Z]" >&2; exit 2 ;;
   esac
 done
 
@@ -22,6 +24,13 @@ tar --help 2>/dev/null | grep -q -- --sort || die "GNU tar is required (for --so
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 cp -R "$src" "$stage/grove"
+
+if [ -n "$ver" ]; then
+  head -1 "$stage/grove/SKILL.md" | grep -q '^---$' || die "SKILL.md frontmatter not found"
+  awk -v v="$ver" 'NR == 1 { print; print "version: " v; next } { print }' \
+    "$stage/grove/SKILL.md" > "$stage/grove/SKILL.md.new"
+  mv "$stage/grove/SKILL.md.new" "$stage/grove/SKILL.md"
+fi
 
 tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
     -C "$stage" -cf - grove | gzip -n > "$output"

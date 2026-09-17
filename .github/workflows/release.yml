@@ -317,7 +317,7 @@ jobs:
           cp sbom/sbom.cdx.json docs/security/artifacts/sbom.cdx.json
           bin/sign.sh key.pem docs/security/artifacts/sbom.cdx.json
           bin/sign.sh key.pem docs/security/artifacts/vex.json
-          bin/skill-bundle.sh --output out/grove-skill.tar.gz
+          bin/skill-bundle.sh --output out/grove-skill.tar.gz --version "$VERSION"
           bin/sign.sh key.pem out/grove-skill.tar.gz
           if ! bin/verify.sh trusted.pem install.sh install.sh.sig 2>/dev/null; then
             bin/sign.sh key.pem install.sh

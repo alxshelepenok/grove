@@ -43,5 +43,15 @@ else
 fi
 report $r "every relative link resolves inside the skill directory"
 
+bin/skill-bundle.sh --output "$work/bundle-v.tar.gz" --version 9.9.9 > /dev/null
+rm -rf "$work/unpack"
+mkdir -p "$work/unpack"
+tar -xzf "$work/bundle-v.tar.gz" -C "$work/unpack"
+sed -n '2p' "$work/unpack/grove/SKILL.md" | grep -qx 'version: 9.9.9'
+report $? "--version stamps the frontmatter second line"
+
+if grep -q '^version:' docs/skills/SKILL.md; then r=1; else r=0; fi
+report $r "source SKILL.md carries no version line"
+
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

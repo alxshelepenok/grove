@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:8cb7f7f6d228e3cb7900ead8ca23b850058a33ea82334cf79d7a94a12ec81ee6
+# checksum: sha256:8a4e396a8fda1ec1c60c1155f53d9f5b420e41a1931f27c3410739043d2d4aa7
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -91,7 +91,7 @@ g G-35 status=verified fitness_kind=boolean t_created=2026-09-04T11:33:57Z t_upd
 g G-36 status=partial fitness_kind=count t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:22:13Z "Skill ships as a signed archive served by CLI and MCP from one source"
   area: A-07
   fitness_target: 7
-  fitness_current: 5
+  fitness_current: 6
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -1510,7 +1510,7 @@ w W-177 type=feature status=done cynefin=clear t_created=2026-09-17T13:05:28Z t_
     | grove status and grove next print 'skill: grove://skill' first in text output and carry the skill field in --json, in both implementations; pins updated (sessions.json x3, wip-i4.json, next-log text plus json fixture).
     | cargo test -p grove-core: 289 passed; cargo test -p grove-mcp: 13 passed; Julia conformance verify: 26 scenarios green; live binary: grove.exe status opens with the pointer line.
 
-w W-178 type=feature status=proposed cynefin=clear t_created=2026-09-17T13:05:28Z t_updated=2026-09-17T13:07:15Z "Stamp the skill version and surface the handshake"
+w W-178 type=feature status=done cynefin=clear t_created=2026-09-17T13:05:28Z t_updated=2026-09-17T14:20:58Z "Stamp the skill version and surface the handshake"
   goals: G-36
   theme: T-08
   fitness: G-36=+1
@@ -1523,6 +1523,11 @@ w W-178 type=feature status=proposed cynefin=clear t_created=2026-09-17T13:05:28
     | A stamped version makes a stale installed skill detectable instead of silent.
   evidence_strategy:
     | Dry-run archive frontmatter; embedded copy check; a mismatch demonstration.
+  evidence:
+    | skill-bundle.sh --version X.Y.Z stamps 'version:' as the frontmatter second line (test asserts; source SKILL.md stays unstamped); release.yml passes --version $VERSION.
+    | Embedded copy: skill.rs stamps CARGO_PKG_VERSION at serve time; grove://skill returns frontmatter with the version line (mcp test asserts it); MCP instructions expose binary and embedded skill versions.
+    | Pointer line now reads 'skill: grove://skill (skill vX, binary vX)' in both implementations; corpus pins carry <ver> via a new version mask in both normalizers, so version bumps do not churn the corpus.
+    | Suites: cargo core 289 passed; mcp 13 passed (incl. version stamp assert); Julia conformance 26 green; skill bundle tests 9 passed; live grove.exe status shows 'skill: grove://skill (skill v0.1.8, binary v0.1.8)'.
 
 w W-179 type=feature status=proposed cynefin=complicated t_created=2026-09-17T13:05:28Z t_updated=2026-09-17T13:11:32Z "Add grove skill print and install commands"
   goals: G-36
