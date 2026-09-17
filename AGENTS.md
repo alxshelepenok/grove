@@ -4,7 +4,7 @@ This document contains links to available skill documentation for agents.
 
 ## Skills
 
-- **[Grove](docs/skills/index.md)**: a dual-track, evidence-based workflow for AI agents.
+- **[Grove](docs/skills/SKILL.md)**: a dual-track, evidence-based workflow for AI agents.
 
 ## Architecture
 

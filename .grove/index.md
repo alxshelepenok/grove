@@ -6,8 +6,8 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 54 | validated B 3 · answered Q 7 · accepted D 26 · active Discovery 18 |
-| V (uncertainty) | 10 | open Q 2 · pending B 5 · W below DoR 2 · uncovered surface 1 |
+| C (content) | 61 | validated B 3 · answered Q 10 · accepted D 30 · active Discovery 18 |
+| V (uncertainty) | 20 | open Q 2 · pending B 8 · W below DoR 3 · uncovered surface 7 |
 
 ## Areas
 
@@ -19,7 +19,7 @@
 | A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 26 | 0 | C: validated B 2 · answered Q 3 · accepted D 14 · active Discovery 7; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 5 | 1 | C: validated B 0 · answered Q 1 · accepted D 2 · active Discovery 2; V: open Q 0 · pending B 1 · W below DoR 0 |
-| A-07 | Agent integrations | 4 | 0 | C: validated B 0 · answered Q 1 · accepted D 1 · active Discovery 2; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-07 | Agent integrations | 14 | 10 | C: validated B 0 · answered Q 4 · accepted D 5 · active Discovery 5; V: open Q 0 · pending B 3 · W below DoR 1 · uncovered surface 6 |
 
 > Relevance view, not a partition: a node touching two areas counts in both; a W without goals counts in none. The Content health totals above are primary.
 
@@ -43,12 +43,13 @@
 | G-33 | Cone text fades out with zoom like Obsidian | count; current=1 target=1 | verified |
 | G-34 | Graph labels fade with zoom through the shared curve | count; current=1 target=1 | verified |
 | G-35 | Cone lattice composites behind edges without pixel breaks | boolean; current=true | verified |
+| G-36 | Skill ships as a signed archive served by CLI and MCP from one source | count; current=1 target=7 | partial |
 
 ## Work items
 
 | ID | Type | Title | Goals | Cynefin | DoR | Status | Critical |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed | ★ |
+| W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed |  |
 | W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-17 | complicated | ⊥ | proposed |  |
 | W-100 | bug | Truncate area surface chips with ellipsis tooltip | G-22 | clear | ⊤ | done |  |
 | W-101 | bug | Widen count badges for totals above ninety-nine | G-23 | clear | ⊤ | done |  |
@@ -123,6 +124,13 @@
 | W-170 | feature | Fade cone text with zoom through a shared label-fade util | G-33 | complicated | ⊤ | done |  |
 | W-171 | feature | Fade graph labels with zoom via labelFadeOpacity in both views | G-34 | complicated | ⊤ | done |  |
 | W-172 | bug | Stop lattice lines cutting 1px breaks into cone edges | G-35 | clear | ⊤ | done |  |
+| W-173 | bug | Fix dangling skill references in CLI output | G-36 | clear | ⊤ | ready |  |
+| W-174 | refactor | Restructure docs/skills into SKILL.md plus references | G-36 | clear | ⊤ | done |  |
+| W-175 | feature | Wire the skill archive into the signed release pipeline | G-36 | clear | ⊤ | proposed |  |
+| W-176 | feature | Serve the embedded skill through MCP and retire the primer | G-36 | complicated | ⊥ | proposed | ★ |
+| W-177 | feature | Announce the skill through MCP instructions and the status pointer | G-36 | clear | ⊤ | proposed | ★ |
+| W-178 | feature | Stamp the skill version and surface the handshake | G-36 | clear | ⊤ | proposed |  |
+| W-179 | feature | Add grove skill print and install commands | G-36 | complicated | ⊤ | proposed |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -156,6 +164,10 @@
 | D-30 | Cone labels ride screen space and side cards carry their members | accepted | D-29 |
 | D-31 | Cone labels copy the identifier type exactly and the zoom gate governs identifiers | accepted | D-30 |
 | D-32 | Cone sidebar scrolls as one stack with one row anatomy | accepted | D-31 |
+| D-33 | Skill artifact is a signed directory archive | accepted |  |
+| D-34 | docs/skills is the single source embedded into the binary | accepted |  |
+| D-35 | Skill discovery rides instructions, root resource, and status pointer | accepted |  |
+| D-36 | CLI text references stable identifiers only | accepted |  |
 
 ## Open questions
 
@@ -170,6 +182,9 @@
 | Q-09 | Vendoring three.js under the JS supply chain policy | complicated | W-121 | answered |
 | Q-10 | Fastest ray tracing for a sphere graph | complicated | W-135 | answered |
 | Q-11 | Cone lattice lines cut one-pixel breaks into edges: which fix removes the artifact? | complicated |  | answered |
+| Q-12 | Keep shipping single-file grove-skill.md alongside the archive, or cut over immediately? | clear | W-175 | answered |
+| Q-13 | tar.gz or zip for the skill archive? | clear | W-174 | answered |
+| Q-14 | Does the Julia CLI need parity for the new skill surfaces? | complicated | W-177, W-179 | answered |
 
 ## Assumptions
 
@@ -183,6 +198,9 @@
 | B-06 | CFBundleIconFile wiring renders the Grove icon in Finder |  | W-112 | proposed |
 | B-07 | Quadratic 3D layout holds interactive frame rates at 1000 nodes |  | W-124 | validated |
 | B-08 | Fragility renders inside the interaction budget |  | W-145 | validated |
+| B-09 | Agent platforms accept directory skills with relative links |  | W-174 | testing |
+| B-10 | Supported hosts unpack the archive without extra dependencies |  | W-174 | testing |
+| B-11 | cargo embeds docs/skills from outside the crate |  | W-176 | proposed |
 
 ## Themes
 
@@ -193,6 +211,7 @@
 | T-05 | Graph view render loop and robustness debt | done | W-117 | W-117, W-118, W-119, W-120 |
 | T-06 | Graph view grows a 3D renderer | done | W-122, W-139 | W-121, W-122, W-123, W-124, W-125, W-126, W-127, W-128, W-129, W-130, W-131, W-132, W-133, W-134, W-135, W-136, W-137, W-138, W-139, W-140 |
 | T-07 | Desktop grows a causality cone view | done | W-166, W-167 | W-141, W-142, W-143, W-144, W-145, W-146, W-147, W-148, W-149, W-150, W-151, W-152, W-153, W-154, W-155, W-156, W-157, W-158, W-159, W-160, W-161, W-162, W-163, W-164, W-165, W-166, W-167 |
+| T-08 | Skill packaging drift and dangling references | open | W-173, W-174 | W-173, W-174, W-175, W-176, W-177, W-178, W-179 |
 
 ## Discoveries
 
@@ -239,7 +258,8 @@ graph TD
   G_33["G-33: Cone text fades out with zoom like Obsidian"]:::goal
   G_34["G-34: Graph labels fade with zoom through the shared curve"]:::goal
   G_35["G-35: Cone lattice composites behind edges without pixel breaks"]:::goal
-  W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
+  G_36["G-36: Skill ships as a signed archive served by CLI and MCP from one source"]:::goal
+  W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
   W_101["W-101: Widen count badges for totals above ninety-nine"]:::done
@@ -314,6 +334,13 @@ graph TD
   W_170["W-170: Fade cone text with zoom through a shared label-fade util"]:::done
   W_171["W-171: Fade graph labels with zoom via labelFadeOpacity in both views"]:::done
   W_172["W-172: Stop lattice lines cutting 1px breaks into cone edges"]:::done
+  W_173["W-173: Fix dangling skill references in CLI output"]:::ready
+  W_174["W-174: Restructure docs/skills into SKILL.md plus references"]:::done
+  W_175["W-175: Wire the skill archive into the signed release pipeline"]:::feature
+  W_176["W-176: Serve the embedded skill through MCP and retire the primer"]:::feature,critical
+  W_177["W-177: Announce the skill through MCP instructions and the status pointer"]:::feature,critical
+  W_178["W-178: Stamp the skill version and surface the handshake"]:::feature
+  W_179["W-179: Add grove skill print and install commands"]:::feature
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -342,6 +369,10 @@ graph TD
   D_30["D-30: Cone labels ride screen space and side cards carry their members"]:::decision
   D_31["D-31: Cone labels copy the identifier type exactly and the zoom gate governs identifiers"]:::decision
   D_32["D-32: Cone sidebar scrolls as one stack with one row anatomy"]:::decision
+  D_33["D-33: Skill artifact is a signed directory archive"]:::decision
+  D_34["D-34: docs/skills is the single source embedded into the binary"]:::decision
+  D_35["D-35: Skill discovery rides instructions, root resource, and status pointer"]:::decision
+  D_36["D-36: CLI text references stable identifiers only"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_05["Q-05: What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1?"]:::question
@@ -351,6 +382,9 @@ graph TD
   Q_09["Q-09: Vendoring three.js under the JS supply chain policy"]:::question
   Q_10["Q-10: Fastest ray tracing for a sphere graph"]:::question
   Q_11["Q-11: Cone lattice lines cut one-pixel breaks into edges: which fix removes the artifact?"]:::question
+  Q_12["Q-12: Keep shipping single-file grove-skill.md alongside the archive, or cut over immediately?"]:::question
+  Q_13["Q-13: tar.gz or zip for the skill archive?"]:::question
+  Q_14["Q-14: Does the Julia CLI need parity for the new skill surfaces?"]:::question
   B_01["B-01: Surprise rate declines as C grows"]:::assumption
   B_02["B-02: Rework proxies are lower on covered surfaces than uncovered"]:::assumption
   B_03["B-03: Distill yield stays above noise at archive gates"]:::assumption
@@ -359,11 +393,15 @@ graph TD
   B_06["B-06: CFBundleIconFile wiring renders the Grove icon in Finder"]:::assumption
   B_07["B-07: Quadratic 3D layout holds interactive frame rates at 1000 nodes"]:::assumption
   B_08["B-08: Fragility renders inside the interaction budget"]:::assumption
+  B_09["B-09: Agent platforms accept directory skills with relative links"]:::assumption
+  B_10["B-10: Supported hosts unpack the archive without extra dependencies"]:::assumption
+  B_11["B-11: cargo embeds docs/skills from outside the crate"]:::assumption
   T_01["T-01: Scaling performance"]:::theme
   T_04["T-04: Plugin toolchain restyle"]:::theme
   T_05["T-05: Graph view render loop and robustness debt"]:::theme
   T_06["T-06: Graph view grows a 3D renderer"]:::theme
   T_07["T-07: Desktop grows a causality cone view"]:::theme
+  T_08["T-08: Skill packaging drift and dangling references"]:::theme
   Y_01["Y-01: Normalize at capture, never inject test clocks"]:::discovery
   Y_02["Y-02: Never gate a validation task on the hypotheses it validates"]:::discovery
   Y_03["Y-03: Integration surfaces are thin adapters over the core CLI contract"]:::discovery
@@ -394,6 +432,9 @@ graph TD
   B_06 -.->|targets| W_112
   B_07 -.->|targets| W_124
   B_08 -.->|targets| W_145
+  B_09 -.->|targets| W_174
+  B_10 -.->|targets| W_174
+  B_11 -.->|targets| W_176
   D_10 -->|supersedes| D_08
   D_22 -->|supersedes| D_21
   D_23 -->|supersedes| D_22
@@ -414,6 +455,10 @@ graph TD
   Q_08 -->|asks| W_116
   Q_09 -->|asks| W_121
   Q_10 -->|asks| W_135
+  Q_12 -->|asks| W_175
+  Q_13 -->|asks| W_174
+  Q_14 -->|asks| W_177
+  Q_14 -->|asks| W_179
   T_02 -->|causes| W_17
   T_02 -->|causes| W_85
   T_03 -->|causes| W_85
@@ -425,6 +470,8 @@ graph TD
   T_06 -->|causes| W_139
   T_07 -->|causes| W_166
   T_07 -->|causes| W_167
+  T_08 -->|causes| W_173
+  T_08 -->|causes| W_174
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
   W_03 -->|produces| D_11
@@ -487,6 +534,19 @@ graph TD
   W_17 ==>|blocks| W_20
   W_170 -->|produces| Y_19
   W_172 -->|produces| Y_20
+  W_173 -->|implements| D_36
+  W_174 ==>|blocks| W_175
+  W_174 ==>|blocks| W_176
+  W_174 -->|implements| D_33
+  W_175 ==>|blocks| W_178
+  W_175 -->|implements| D_33
+  W_176 ==>|blocks| W_177
+  W_176 ==>|blocks| W_178
+  W_176 ==>|blocks| W_179
+  W_176 -->|implements| D_34
+  W_177 -->|implements| D_35
+  W_178 -->|implements| D_34
+  W_179 -->|implements| D_35
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78
@@ -522,7 +582,7 @@ graph TD
   Y_17 -->|distills| D_27
   Y_17 -->|distills| D_30
   Y_20 -->|distills| Q_11
-  class W_04 critical
+  class W_176,W_177 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff
 classDef theme fill:#2a4a3a,color:#fff

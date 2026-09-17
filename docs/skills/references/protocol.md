@@ -1,6 +1,6 @@
 # 2. Workflow protocol
 
-Two loops run concurrently, not as phases. Either may run in any session. See diagram in [diagrams/dual-track.md](diagrams/dual-track.md) and the top-level flow in [diagrams/workflow.md](diagrams/workflow.md).
+Two loops run concurrently, not as phases. Either may run in any session. See diagram in [diagrams/dual-track.md](../diagrams/dual-track.md) and the top-level flow in [diagrams/workflow.md](../diagrams/workflow.md).
 
 ## 2.1 Cynefin-driven mode selection
 
