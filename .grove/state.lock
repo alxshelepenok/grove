@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:e966f58fbbaa231ff728ff689687b083de43d9f7d4960c55ef4a3d3fdb49e7b2
+# checksum: sha256:8d3f9bb48a999094853f2b1b6ea7d299fa54c015aefda4ddcf29804d4a3ed9ee
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -92,6 +92,11 @@ g G-36 status=verified fitness_kind=count t_created=2026-09-17T13:05:27Z t_updat
   area: A-07
   fitness_target: 7
   fitness_current: 7
+
+g G-37 status=verified fitness_kind=count t_created=2026-09-17T17:10:52Z t_updated=2026-09-17T17:11:35Z "Version bump runbook matches reality"
+  area: A-06
+  fitness_target: 1
+  fitness_current: 1
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -1635,6 +1640,22 @@ w W-184 type=bug status=done cynefin=clear t_created=2026-09-17T16:31:50Z t_upda
     | Rust and Julia help outputs are byte-identical (diff clean); help.json re-pinned via record; conformance 27 scenarios green; core 290 passed; mcp 13 passed.
   why:
     | Formatting defect in shipped output; enabling fix, no fitness delta.
+
+w W-185 type=bug status=done cynefin=clear t_created=2026-09-17T17:10:52Z t_updated=2026-09-17T17:11:35Z "Fix the version-bearing file list and branch name in the publish runbook"
+  goals: G-37
+  fitness: G-37=+1
+  surface: docs/security/runbooks/publish-release.md
+  ac:
+    | Step 1 lists six version-bearing files including packages/dsh/package.json.
+    | Step 1 names the bump branch chore/version-vX.Y.Z per the branch naming convention.
+    | Step 1 notes the Cargo.lock refresh via cargo build.
+  repro:
+    | Runbook step 1 says 'all five version-bearing files' and omits packages/dsh/package.json; commit 9f4da92 (0.1.8 bump) touched six version files plus Cargo.lock, so following the runbook verbatim ships a release with a lagging dsh version.
+  evidence_strategy:
+    | Runbook diff; grep for the old five-file wording.
+  evidence:
+    | Runbook step 1 now lists six version-bearing files (packages/dsh/package.json added, matching the 9f4da92 bump set), names the chore/version-vX.Y.Z branch, and notes the Cargo.lock refresh via cargo build --workspace.
+    | Grep for the old 'five version-bearing' wording returns zero hits; docs-only change, grove check ok.
 
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
