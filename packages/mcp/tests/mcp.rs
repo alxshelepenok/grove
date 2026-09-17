@@ -629,7 +629,7 @@ fn binary_smoke_ndjson_session() {
         .collect();
     assert_eq!(parsed[0]["result"]["serverInfo"]["name"], "grove-mcp");
     assert_eq!(parsed[1]["id"], 2);
-    assert_eq!(parsed[2]["result"]["tools"].as_array().unwrap().len(), 38);
+    assert_eq!(parsed[2]["result"]["tools"].as_array().unwrap().len(), 39);
     let add_text = parsed[3]["result"]["content"][0]["text"].as_str().unwrap();
     assert!(add_text.contains("A-01"), "{add_text}");
     let resources = parsed[4]["result"]["resources"].as_array().unwrap();

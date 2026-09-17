@@ -24,6 +24,68 @@ end
 
 skill_pointer_line() = "skill: grove://skill (skill v$(grove_version()), binary v$(grove_version()))"
 
+const SKILL_PAGES = (
+    "SKILL.md",
+    "references/model.md",
+    "references/protocol.md",
+    "references/planning.md",
+    "references/cli.md",
+    "references/evidence.md",
+    "references/rules.md",
+    "references/lockfile.md",
+    "references/typography.md",
+    "references/checklist.md",
+    "diagrams/dual-track.md",
+    "diagrams/graph-template.md",
+    "diagrams/workflow.md",
+)
+
+skill_src_dir() = joinpath(@__DIR__, "..", "..", "..", "docs", "skills")
+
+function stamp_skill(md::AbstractString)::String
+    lines = split(md, '\n')
+    head = lines[1:min(3, length(lines))]
+    any(l -> startswith(l, "version:"), head) && return md
+    ver = grove_version()
+    out = IOBuffer()
+    for (i, l) in enumerate(lines)
+        (i == length(lines) && isempty(l)) && break
+        print(out, l, '\n')
+        (i == 1 && l == "---") && print(out, "version: ", ver, '\n')
+    end
+    return String(take!(out))
+end
+
+function cmd_skill(ctx::CliCtx, pos, kw)::Int
+    dir = get(kw, "install", "")
+    srcroot = skill_src_dir()
+    if isempty(dir)
+        md = stamp_skill(read(joinpath(srcroot, "SKILL.md"), String))
+        if ctx.json
+            json_cli_out(Dict("command" => "skill", "mode" => "print", "markdown" => md))
+            return EXIT_OK
+        end
+        print(md)
+        return EXIT_OK
+    end
+    target = joinpath(dir, "grove")
+    mkpath(joinpath(target, "references"))
+    mkpath(joinpath(target, "diagrams"))
+    n = 0
+    for p in SKILL_PAGES
+        text = p == "SKILL.md" ? stamp_skill(read(joinpath(srcroot, p), String)) : read(joinpath(srcroot, p), String)
+        write(joinpath(target, p), text)
+        n += 1
+    end
+    if ctx.json
+        json_cli_out(Dict("command" => "skill", "mode" => "install", "files" => n, "target" => target))
+        return EXIT_OK
+    end
+    println("installed $n skill files to $target")
+    EXIT_OK
+end
+
+
 indexpath(ctx::CliCtx) = joinpath(devdir(ctx), "index.md")
 glossarypath(ctx::CliCtx) = joinpath(devdir(ctx), "glossary.md")
 
@@ -1926,6 +1988,7 @@ const COMMANDS = Dict{String,Function}(
     "gate" => cmd_gate,
     "revalidate" => cmd_revalidate,
     "glossary" => cmd_glossary,
+    "skill" => cmd_skill,
     "projects" => cmd_projects,
     "promote" => cmd_promote,
 )
@@ -1950,6 +2013,7 @@ Read:
   stats              read-only telemetry from journal + lock (cycle time, DoR, bets, discovery, undo, surprise, C/V)
   diff               structural diff vs git ref (--since=REF, default HEAD)
   projects           registry table: name, path, last opened
+  skill [--install=<dir>]        print the embedded agent skill or install it as a directory
   log   [<ID>]      timeline from t_* on nodes/edges + journal.log (--limit=N, default 200; 0=unlimited)
   gate               report-only distillation gate: tw delta, surface overflows, invalidated B, accepted D [--theta=N] [--n=N]
 
@@ -1982,7 +2046,7 @@ Root resolution: --root wins; else --project / GROVE_PROJECT (directory or regis
 const SESSION_READ_COMMANDS = Set([
     "ready", "next", "packet", "deps", "impact", "path", "dor", "triage",
     "show", "list", "graph", "check", "status", "diff", "log", "stats",
-    "projects", "promote",
+    "projects", "promote", "skill",
 ])
 
 const SESSION_MUTATE_COMMANDS = Set([

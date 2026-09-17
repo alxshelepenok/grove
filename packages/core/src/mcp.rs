@@ -318,6 +318,17 @@ const TOOL_SPECS: &[ToolSpec] = &[
         ],
         required: &["id", "to"],
     },
+    ToolSpec {
+        cmd: "skill",
+        props: &[Prop {
+            key: "install",
+            cli: "install",
+            typ: PropType::Str,
+            desc: "directory to install the skill into (omit to print)",
+            choices: &[],
+        }],
+        required: &[],
+    },
 ];
 
 fn spec_for(cmd: &str) -> Option<&'static ToolSpec> {

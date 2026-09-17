@@ -47,3 +47,39 @@ pub fn pointer_line() -> String {
         skill_version()
     )
 }
+
+pub const PAGES: [&str; 13] = [
+    "SKILL.md",
+    "references/model.md",
+    "references/protocol.md",
+    "references/planning.md",
+    "references/cli.md",
+    "references/evidence.md",
+    "references/rules.md",
+    "references/lockfile.md",
+    "references/typography.md",
+    "references/checklist.md",
+    "diagrams/dual-track.md",
+    "diagrams/graph-template.md",
+    "diagrams/workflow.md",
+];
+
+pub fn install_into(dir: &str) -> Result<(usize, String), String> {
+    let target = std::path::Path::new(dir).join("grove");
+    for sub in ["references", "diagrams"] {
+        std::fs::create_dir_all(target.join(sub)).map_err(|e| e.to_string())?;
+    }
+    let mut n = 0usize;
+    for p in PAGES {
+        let text = if p == "SKILL.md" {
+            stamped_skill_md()
+        } else {
+            skill_page(p)
+                .ok_or_else(|| format!("missing embedded skill page: {p}"))?
+                .to_string()
+        };
+        std::fs::write(target.join(p), text).map_err(|e| format!("write {p}: {e}"))?;
+        n += 1;
+    }
+    Ok((n, target.display().to_string()))
+}
