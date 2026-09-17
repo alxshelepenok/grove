@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:fae527ddad552051fb751422a8dbf0581362d733e8995463f7c5ee5b8d621a05
+# checksum: sha256:8cb7f7f6d228e3cb7900ead8ca23b850058a33ea82334cf79d7a94a12ec81ee6
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -91,7 +91,7 @@ g G-35 status=verified fitness_kind=boolean t_created=2026-09-04T11:33:57Z t_upd
 g G-36 status=partial fitness_kind=count t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:22:13Z "Skill ships as a signed archive served by CLI and MCP from one source"
   area: A-07
   fitness_target: 7
-  fitness_current: 4
+  fitness_current: 5
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -1492,7 +1492,7 @@ w W-176 type=feature status=done cynefin=complicated t_created=2026-09-17T13:05:
     | cargo test -p grove-core: 289 passed, 0 failed (skill.rs embed module, lib.rs wiring).
     | install.md MCP section now describes the embedded skill resource instead of the primer.
 
-w W-177 type=feature status=proposed cynefin=clear t_created=2026-09-17T13:05:28Z t_updated=2026-09-17T13:11:31Z "Announce the skill through MCP instructions and the status pointer"
+w W-177 type=feature status=done cynefin=clear t_created=2026-09-17T13:05:28Z t_updated=2026-09-17T13:58:28Z "Announce the skill through MCP instructions and the status pointer"
   goals: G-36
   theme: T-08
   fitness: G-36=+1
@@ -1500,11 +1500,15 @@ w W-177 type=feature status=proposed cynefin=clear t_created=2026-09-17T13:05:28
   ac:
     | initialize response carries instructions naming grove://skill.
     | resources/list advertises exactly one skill resource (the root).
-    | grove status and grove next print one pointer line with the skill version in text and --json output.
+    | grove status and grove next print one pointer line naming grove://skill in text and --json output (version lands with W-178).
   hypothesis:
     | A pointer inside tool output reaches agents whose clients drop instructions or never list resources.
   evidence_strategy:
     | MCP tests asserting the instructions field; corpus scenarios pin the status and next pointer output for both implementations.
+  evidence:
+    | MCP initialize carries instructions naming grove://skill (handshake test asserts it); resources/list advertises exactly one skill resource, the root (root-only asserted).
+    | grove status and grove next print 'skill: grove://skill' first in text output and carry the skill field in --json, in both implementations; pins updated (sessions.json x3, wip-i4.json, next-log text plus json fixture).
+    | cargo test -p grove-core: 289 passed; cargo test -p grove-mcp: 13 passed; Julia conformance verify: 26 scenarios green; live binary: grove.exe status opens with the pointer line.
 
 w W-178 type=feature status=proposed cynefin=clear t_created=2026-09-17T13:05:28Z t_updated=2026-09-17T13:07:15Z "Stamp the skill version and surface the handshake"
   goals: G-36

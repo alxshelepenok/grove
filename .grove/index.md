@@ -7,7 +7,7 @@
 | Measure | Count | Composition |
 | --- | --- | --- |
 | C (content) | 62 | validated B 4 · answered Q 10 · accepted D 30 · active Discovery 18 |
-| V (uncertainty) | 15 | open Q 2 · pending B 7 · W below DoR 2 · uncovered surface 4 |
+| V (uncertainty) | 14 | open Q 2 · pending B 7 · W below DoR 2 · uncovered surface 3 |
 
 ## Areas
 
@@ -19,7 +19,7 @@
 | A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 26 | 0 | C: validated B 2 · answered Q 3 · accepted D 14 · active Discovery 7; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 5 | 1 | C: validated B 0 · answered Q 1 · accepted D 2 · active Discovery 2; V: open Q 0 · pending B 1 · W below DoR 0 |
-| A-07 | Agent integrations | 15 | 5 | C: validated B 1 · answered Q 4 · accepted D 5 · active Discovery 5; V: open Q 0 · pending B 2 · W below DoR 0 · uncovered surface 3 |
+| A-07 | Agent integrations | 15 | 4 | C: validated B 1 · answered Q 4 · accepted D 5 · active Discovery 5; V: open Q 0 · pending B 2 · W below DoR 0 · uncovered surface 2 |
 
 > Relevance view, not a partition: a node touching two areas counts in both; a W without goals counts in none. The Content health totals above are primary.
 
@@ -43,7 +43,7 @@
 | G-33 | Cone text fades out with zoom like Obsidian | count; current=1 target=1 | verified |
 | G-34 | Graph labels fade with zoom through the shared curve | count; current=1 target=1 | verified |
 | G-35 | Cone lattice composites behind edges without pixel breaks | boolean; current=true | verified |
-| G-36 | Skill ships as a signed archive served by CLI and MCP from one source | count; current=4 target=7 | partial |
+| G-36 | Skill ships as a signed archive served by CLI and MCP from one source | count; current=5 target=7 | partial |
 
 ## Work items
 
@@ -128,7 +128,7 @@
 | W-174 | refactor | Restructure docs/skills into SKILL.md plus references | G-36 | clear | ⊤ | done |  |
 | W-175 | feature | Wire the skill archive into the signed release pipeline | G-36 | clear | ⊤ | done |  |
 | W-176 | feature | Serve the embedded skill through MCP and retire the primer | G-36 | complicated | ⊤ | done |  |
-| W-177 | feature | Announce the skill through MCP instructions and the status pointer | G-36 | clear | ⊤ | proposed |  |
+| W-177 | feature | Announce the skill through MCP instructions and the status pointer | G-36 | clear | ⊤ | done |  |
 | W-178 | feature | Stamp the skill version and surface the handshake | G-36 | clear | ⊤ | proposed |  |
 | W-179 | feature | Add grove skill print and install commands | G-36 | complicated | ⊤ | proposed |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
@@ -338,7 +338,7 @@ graph TD
   W_174["W-174: Restructure docs/skills into SKILL.md plus references"]:::done
   W_175["W-175: Wire the skill archive into the signed release pipeline"]:::done
   W_176["W-176: Serve the embedded skill through MCP and retire the primer"]:::done
-  W_177["W-177: Announce the skill through MCP instructions and the status pointer"]:::feature
+  W_177["W-177: Announce the skill through MCP instructions and the status pointer"]:::done
   W_178["W-178: Stamp the skill version and surface the handshake"]:::feature
   W_179["W-179: Add grove skill print and install commands"]:::feature
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done

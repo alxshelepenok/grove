@@ -447,6 +447,7 @@ pub fn cmd_status(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpR
         ]);
         let d = JuliaDict::from_pairs(vec![
             ("command".to_string(), JVal::Str("status".to_string())),
+            ("skill".to_string(), JVal::Str("grove://skill".to_string())),
             ("progress".to_string(), JVal::Arr(items)),
             (
                 "alignment_triggers".to_string(),
@@ -458,7 +459,7 @@ pub fn cmd_status(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpR
         r.out = json_cli_out(d);
         return r;
     }
-    let mut out = String::from("# grove status\n\n## Work in `progress`\n\n");
+    let mut out = String::from("skill: grove://skill\n\n# grove status\n\n## Work in `progress`\n\n");
     if prog.is_empty() {
         out.push_str("(none)\n");
     } else {

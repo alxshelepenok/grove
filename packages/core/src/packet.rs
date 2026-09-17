@@ -271,12 +271,13 @@ pub fn cmd_next(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> OpRe
     if ctx.json {
         r.out = json_cli_out(JuliaDict::from_pairs(vec![
             ("command".to_string(), JVal::Str("next".to_string())),
+            ("skill".to_string(), JVal::Str("grove://skill".to_string())),
             ("work".to_string(), JVal::Str(pick.id.clone())),
             ("packet_markdown".to_string(), JVal::Str(pkt)),
         ]));
         return r;
     }
-    r.out = pkt;
+    r.out = format!("skill: grove://skill\n\n{pkt}");
     r
 }
 

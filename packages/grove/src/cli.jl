@@ -1103,10 +1103,10 @@ function cmd_next(ctx::CliCtx, pos, kw)
     pick = isempty(crit) ? first(rs) : first(crit)
     pkt = packet(st, pick)
     if ctx.json
-        json_cli_out(Dict("command" => "next", "work" => pick.id, "packet_markdown" => pkt))
+        json_cli_out(Dict("command" => "next", "skill" => "grove://skill", "work" => pick.id, "packet_markdown" => pkt))
         return EXIT_OK
     end
-    print(pkt)
+    print("skill: grove://skill\n\n", pkt)
     EXIT_OK
 end
 
@@ -1448,6 +1448,7 @@ function cmd_status(ctx::CliCtx, pos, kw)
         inv = check_all(st)
         json_cli_out(Dict(
             "command" => "status",
+            "skill" => "grove://skill",
             "progress" => items,
             "alignment_triggers" => al,
             "invariants" => Dict(
@@ -1457,6 +1458,8 @@ function cmd_status(ctx::CliCtx, pos, kw)
         ))
         return EXIT_OK
     end
+    println("skill: grove://skill")
+    println()
     println("# grove status")
     println()
     println("## Work in `progress`")

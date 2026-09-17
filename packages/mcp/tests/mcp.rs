@@ -91,6 +91,8 @@ fn handshake(s: &mut McpServer) {
         "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"0\"}}}",
     );
     assert_eq!(r["result"]["serverInfo"]["name"], "grove-mcp");
+    let instructions = r["result"]["instructions"].as_str().unwrap();
+    assert!(instructions.contains("grove://skill"));
     assert!(
         handle_message(s, "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}").is_none()
     );
@@ -526,6 +528,11 @@ fn resources_list_and_read_match_cli_output() {
     let skill = find_uri("grove://skill");
     assert_eq!(skill["mimeType"], "text/markdown");
     assert_eq!(skill["name"], "grove skill");
+    let skill_entries = resources
+        .iter()
+        .filter(|r| r["uri"].as_str().unwrap().starts_with("grove://skill"))
+        .count();
+    assert_eq!(skill_entries, 1, "skill must advertise the root only");
     let pw = find_uri("grove://packet/W-01");
     assert_eq!(pw["mimeType"], "text/markdown");
     assert_eq!(pw["name"], "W-01 Res work");
