@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 52 | validated B 3 · answered Q 6 · accepted D 26 · active Discovery 17 |
+| C (content) | 54 | validated B 3 · answered Q 7 · accepted D 26 · active Discovery 18 |
 | V (uncertainty) | 10 | open Q 2 · pending B 5 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
@@ -17,7 +17,7 @@
 | A-02 | API | 0 | 3 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-05 | Desktop | 25 | 0 | C: validated B 2 · answered Q 3 · accepted D 14 · active Discovery 6; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-05 | Desktop | 26 | 0 | C: validated B 2 · answered Q 3 · accepted D 14 · active Discovery 7; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 5 | 1 | C: validated B 0 · answered Q 1 · accepted D 2 · active Discovery 2; V: open Q 0 · pending B 1 · W below DoR 0 |
 | A-07 | Agent integrations | 4 | 0 | C: validated B 0 · answered Q 1 · accepted D 1 · active Discovery 2; V: open Q 0 · pending B 0 · W below DoR 0 |
 
@@ -42,6 +42,7 @@
 | G-32 | Cone entities float above their lattices | count; current=1 target=1 | verified |
 | G-33 | Cone text fades out with zoom like Obsidian | count; current=1 target=1 | verified |
 | G-34 | Graph labels fade with zoom through the shared curve | count; current=1 target=1 | verified |
+| G-35 | Cone lattice composites behind edges without pixel breaks | boolean; current=true | verified |
 
 ## Work items
 
@@ -121,6 +122,7 @@
 | W-169 | feature | Lift cone entities above the lattice planes | G-32 | clear | ⊤ | done |  |
 | W-170 | feature | Fade cone text with zoom through a shared label-fade util | G-33 | complicated | ⊤ | done |  |
 | W-171 | feature | Fade graph labels with zoom via labelFadeOpacity in both views | G-34 | complicated | ⊤ | done |  |
+| W-172 | bug | Stop lattice lines cutting 1px breaks into cone edges | G-35 | clear | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -167,6 +169,7 @@
 | Q-08 | Verify graph view JS fixes without a runner | complicated | W-114, W-115, W-116 | answered |
 | Q-09 | Vendoring three.js under the JS supply chain policy | complicated | W-121 | answered |
 | Q-10 | Fastest ray tracing for a sphere graph | complicated | W-135 | answered |
+| Q-11 | Cone lattice lines cut one-pixel breaks into edges: which fix removes the artifact? | complicated |  | answered |
 
 ## Assumptions
 
@@ -214,6 +217,7 @@
 | Y-17 | One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate | causality cone | active |
 | Y-18 | Thick 3D edges need beam geometry, not linewidth | beam geometry, causality cone | active |
 | Y-19 | Zoom text fade is one shared curve, not per-view thresholds | causality cone, label fade | active |
+| Y-20 | Backdrop ordering for transparent 3D line layers | backdrop ordering, causality cone | active |
 
 ## Dependency graph
 
@@ -234,6 +238,7 @@ graph TD
   G_32["G-32: Cone entities float above their lattices"]:::goal
   G_33["G-33: Cone text fades out with zoom like Obsidian"]:::goal
   G_34["G-34: Graph labels fade with zoom through the shared curve"]:::goal
+  G_35["G-35: Cone lattice composites behind edges without pixel breaks"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
@@ -308,6 +313,7 @@ graph TD
   W_169["W-169: Lift cone entities above the lattice planes"]:::done
   W_170["W-170: Fade cone text with zoom through a shared label-fade util"]:::done
   W_171["W-171: Fade graph labels with zoom via labelFadeOpacity in both views"]:::done
+  W_172["W-172: Stop lattice lines cutting 1px breaks into cone edges"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -344,6 +350,7 @@ graph TD
   Q_08["Q-08: Verify graph view JS fixes without a runner"]:::question
   Q_09["Q-09: Vendoring three.js under the JS supply chain policy"]:::question
   Q_10["Q-10: Fastest ray tracing for a sphere graph"]:::question
+  Q_11["Q-11: Cone lattice lines cut one-pixel breaks into edges: which fix removes the artifact?"]:::question
   B_01["B-01: Surprise rate declines as C grows"]:::assumption
   B_02["B-02: Rework proxies are lower on covered surfaces than uncovered"]:::assumption
   B_03["B-03: Distill yield stays above noise at archive gates"]:::assumption
@@ -376,6 +383,7 @@ graph TD
   Y_17["Y-17: One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate"]:::discovery
   Y_18["Y-18: Thick 3D edges need beam geometry, not linewidth"]:::discovery
   Y_19["Y-19: Zoom text fade is one shared curve, not per-view thresholds"]:::discovery
+  Y_20["Y-20: Backdrop ordering for transparent 3D line layers"]:::discovery
   A_01["A-01: Evals"]:::area
   A_02["A-02: API"]:::area
   A_03["A-03: Rust core"]:::area
@@ -478,6 +486,7 @@ graph TD
   W_17 ==>|blocks| W_19
   W_17 ==>|blocks| W_20
   W_170 -->|produces| Y_19
+  W_172 -->|produces| Y_20
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78
@@ -512,6 +521,7 @@ graph TD
   Y_15 -->|distills| Q_09
   Y_17 -->|distills| D_27
   Y_17 -->|distills| D_30
+  Y_20 -->|distills| Q_11
   class W_04 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff
