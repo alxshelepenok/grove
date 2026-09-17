@@ -1,5 +1,3 @@
-// Paths mirror docs/skills/grove of the source tree; the build fails if one drifts.
-
 pub fn skill_page(path: &str) -> Option<&'static str> {
     let path = path.trim_start_matches('/');
     Some(match path {

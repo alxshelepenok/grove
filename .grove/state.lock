@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:21e4461972db5aef4861a08041b88f912f04ebd82f95ab45f857c4aaef26f4f7
+# checksum: sha256:c2f3a2bf2ea23a880cbf24c3b2c2f80e3b5ceae3ba60e19e8ff747f386749f0b
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -1584,6 +1584,24 @@ w W-181 type=bug status=done cynefin=clear t_created=2026-09-17T15:36:49Z t_upda
   why:
     | Typography alignment; enabling fix, no fitness delta.
 
+w W-182 type=refactor status=done cynefin=clear t_created=2026-09-17T15:44:21Z t_updated=2026-09-17T15:50:01Z "Drop the operational rules section and the stale path comment"
+  goals: G-36
+  theme: T-08
+  fitness: G-36=+0
+  surface: docs/skills/grove/references/rules.md, packages/core/src/skill.rs
+  ac:
+    | references/rules.md carries no Operational rules section; the skill contains no generic agent hygiene rules (D-37).
+    | skill.rs carries no path-mirror comment.
+    | Suites green: skill bundle, core, mcp, conformance.
+  evidence_strategy:
+    | Grep outputs; suite runs.
+  evidence:
+    | references/rules.md no longer carries the Operational rules section (grep zero hits); the primer rules are dropped per D-37, not preserved elsewhere.
+    | skill.rs opens directly with pub fn skill_page; the path-mirror comment is gone.
+    | Suites: skill bundle 9 passed, core 290 passed, mcp 13 passed, Julia conformance 27 scenarios green.
+  why:
+    | Content correction per D-37; enabling work, no fitness delta.
+
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
   fitness: G-21=+1
@@ -1943,7 +1961,7 @@ d D-33 status=accepted t_created=2026-09-17T13:05:35Z t_updated=2026-09-17T13:11
   validation:
     | Release dry-run produces a deterministic archive; an agent loads the unpacked skill (B-09).
 
-d D-34 status=accepted t_created=2026-09-17T13:05:35Z t_updated=2026-09-17T13:11:23Z "docs/skills is the single source embedded into the binary"
+d D-34 status=superseded t_created=2026-09-17T13:05:35Z t_updated=2026-09-17T15:44:21Z "docs/skills is the single source embedded into the binary"
   context:
     | The protocol contract lives in three hand-maintained copies (skill pages, skill-primer.md, help text) that drift apart.
   options:
@@ -1978,6 +1996,18 @@ d D-36 status=accepted t_created=2026-09-17T13:05:36Z t_updated=2026-09-17T13:11
     | References resolve for installed users; a repo grep can enforce the policy.
   validation:
     | Grep over user-facing strings; updated tests.
+
+d D-37 status=accepted t_created=2026-09-17T15:44:19Z t_updated=2026-09-17T15:44:23Z "docs/skills is the single source embedded into the binary, carrying grove protocol content only"
+  context:
+    | D-34 embedded docs/skills into the binary and merged the primer's unique operational rules into the skill before deleting the primer file.
+  options:
+    | OC1: keep the merged operational rules in references/rules.md. OC2: remove them; generic agent hygiene does not belong in the grove skill.
+  decision:
+    | OC2 per user decision; the skill carries grove protocol content only. Otherwise D-34 stands unchanged: one embedded source, MCP serves SKILL.md, no primer.
+  consequences:
+    | The primer's operational rules (commit policy, temp files, diff hygiene, comment style) are dropped, not preserved anywhere in the repo.
+  validation:
+    | Grep shows no Operational rules section and no primer references; suites green.
 
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
@@ -2154,7 +2184,7 @@ t T-06 status=done t_created=2026-08-28T23:06:23Z t_updated=2026-08-29T13:44:58Z
 
 t T-07 status=done t_created=2026-08-30T17:29:26Z t_updated=2026-08-31T00:13:53Z "Desktop grows a causality cone view"
 
-t T-08 status=done t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T15:18:01Z "Skill packaging drift and dangling references"
+t T-08 status=done t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T15:50:01Z "Skill packaging drift and dangling references"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-07-27T14:44:48Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -2320,6 +2350,7 @@ e D-29 supersedes D-28 t_created=2026-08-30T21:02:14Z
 e D-30 supersedes D-29 t_created=2026-08-30T21:21:09Z
 e D-31 supersedes D-30 t_created=2026-08-30T21:35:40Z
 e D-32 supersedes D-31 t_created=2026-08-30T21:48:11Z
+e D-37 supersedes D-34 t_created=2026-09-17T15:44:19Z
 e Q-01 asks W-06 t_created=2026-07-19T01:19:10Z
 e Q-02 asks W-09 t_created=2026-07-19T01:19:17Z
 e Q-05 asks W-103 t_created=2026-08-17T10:53:14Z
@@ -2347,6 +2378,7 @@ e T-07 causes W-167 t_created=2026-08-30T23:47:59Z
 e T-08 causes W-173 t_created=2026-09-17T13:07:12Z
 e T-08 causes W-174 t_created=2026-09-17T13:07:13Z
 e T-08 causes W-180 t_created=2026-09-17T15:12:18Z
+e T-08 causes W-182 t_created=2026-09-17T15:45:05Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z
@@ -2422,6 +2454,7 @@ e W-176 implements D-34 t_created=2026-09-17T13:07:15Z
 e W-177 implements D-35 t_created=2026-09-17T13:07:15Z
 e W-178 implements D-34 t_created=2026-09-17T13:07:15Z
 e W-179 implements D-35 t_created=2026-09-17T13:07:15Z
+e W-182 implements D-37 t_created=2026-09-17T15:44:23Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z
