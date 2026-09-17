@@ -1,6 +1,6 @@
 # Grove protocol primer (compact)
 
-This is the minimal behavioral contract for an agent driving grove through MCP tools only. It is a condensed derivative of `docs/skills/` (model.md, protocol.md, rules.md); the full reference ships as `grove-skill.md` with every release. When this text and the full skill disagree, the full skill wins.
+This is the minimal behavioral contract for an agent driving grove through MCP tools only. It is a condensed derivative of `docs/skills/` (references/model.md, references/protocol.md, references/rules.md); the full reference ships as `grove-skill.md` with every release. When this text and the full skill disagree, the full skill wins.
 
 ## What grove is
 

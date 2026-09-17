@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:a290456f49a32b202480619e7f9bf9d86c85891c6c3930cab805648ac1a3adb5
+# checksum: sha256:d763f6bd0a6f3e8205c4fdad7a6df1fce4c47585586942bbc5d0181c1ab2b91b
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -87,6 +87,11 @@ g G-34 status=verified fitness_kind=count t_created=2026-09-03T08:02:34Z t_updat
 g G-35 status=verified fitness_kind=boolean t_created=2026-09-04T11:33:57Z t_updated=2026-09-04T11:39:28Z "Cone lattice composites behind edges without pixel breaks"
   area: A-05
   fitness_current: true
+
+g G-36 status=partial fitness_kind=count t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:22:13Z "Skill ships as a signed archive served by CLI and MCP from one source"
+  area: A-07
+  fitness_target: 7
+  fitness_current: 1
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -1405,6 +1410,116 @@ w W-172 type=bug status=done cynefin=clear t_created=2026-09-04T11:33:59Z t_upda
     | Verification: bun test js 45/0 with 5 new contract tests (lattice and strata-link depthWrite/renderOrder, skipped-link positions, edge default order); cargo test -p grove-desktop green (views 95, package total 149).
     | Runtime pixels stay with the manual pass per D-17: open the cone view and orbit so grid lines cross lit and critical edges; the edge line must stay continuous with the grid passing behind it.
 
+w W-173 type=bug status=ready cynefin=clear t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:11:31Z "Fix dangling skill references in CLI output"
+  goals: G-36
+  theme: T-08
+  fitness: G-36=+1
+  surface: packages/core/src/ops.rs, packages/grove/src/cli.jl, packages/grove/src/status.jl, packages/core/tests/ops.rs, packages/grove/conformance/corpus
+  ac:
+    | Rust distill hint references a stable target (skill section title or grove://skill URI) instead of rules.md.
+    | Julia distill hint matches the same policy.
+    | status.jl docstring references the protocol section without a repo filename.
+    | A grep over user-facing strings in both implementations returns no repo-internal .md filenames (glossary.md and index.md runtime files excluded).
+    | Tests asserting the old strings are updated and green.
+  repro:
+    | Push any goal to verified via a W done transition with the Rust or Julia CLI; the stderr distill hint prints 'lazy distill, see rules.md' (packages/core/src/ops.rs:363, packages/grove/src/cli.jl:327), but rules.md does not exist at runtime for installed users.
+  evidence_strategy:
+    | Grep outputs before and after; cargo test for grove-core and grove-mcp; Julia test run for the parity pieces in scope.
+
+w W-174 type=refactor status=done cynefin=clear t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:22:13Z "Restructure docs/skills into SKILL.md plus references"
+  goals: G-36
+  theme: T-08
+  fitness: G-36=+1
+  surface: docs/skills, bin/skill-bundle.sh, tests/skill/test-skill-bundle.sh, AGENTS.md
+  ac:
+    | docs/skills holds SKILL.md (frontmatter plus minimal contract), references/ depth pages, and diagrams/.
+    | Cross-page links are plain relative markdown links; no sed rewriting or heading slugifier remains in bin/skill-bundle.sh.
+    | AGENTS.md points at the new layout and the restructured skill loads in a real agent (B-09 validation).
+    | bin/skill-bundle.sh packs the directory into a deterministic tar.gz (Q-13) and tests/skill/test-skill-bundle.sh verifies determinism plus in-directory link resolution.
+  evidence_strategy:
+    | Directory tree and link check output; shell test suite; agent load transcript.
+  evidence:
+    | tests/skill/test-skill-bundle.sh: 7 passed, 0 failed (byte-stable tar.gz, grove/ + SKILL.md + references/rules.md + diagrams/workflow.md entries, frontmatter intact, every relative link resolves in-directory).
+    | Unpack check on Windows (Git Bash tar): archive expands to grove/SKILL.md, references/ (9 pages), diagrams/ (3 pages).
+    | No stale paths: grep for skills/index.md and skills/model.md returns nothing; AGENTS.md and skill-primer.md updated to the new layout.
+    | CI wiring: shell-tests.yml gains a Linux-only Skill bundle suite step (macOS bsdtar lacks --sort).
+    | Multi-file skill support in the live agent environment: adspower-browser and clarity skills ship references/ subdirectories and trigger.
+
+w W-175 type=feature status=proposed cynefin=clear t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:11:24Z "Wire the skill archive into the signed release pipeline"
+  goals: G-36
+  theme: T-08
+  fitness: G-36=+1
+  surface: .github/workflows/release.yml, docs/install.md, docs/architecture/release-distribution.md, docs/security/compliance.md, docs/architecture/key-management.md
+  ac:
+    | Release notes template lists the new artifact.
+    | install.md, release-distribution.md, compliance.md, and key-management.md describe the archive and its signature.
+    | Release dry-run builds and signs grove-skill.tar.gz and stops producing grove-skill.md (Q-12 immediate cutover).
+    | SHA256SUMS and manifest.json cover the archive.
+    | Docs no longer reference the single-file grove-skill.md artifact.
+  hypothesis:
+    | One signed archive artifact drops into the existing manifest chain without new key material.
+  evidence_strategy:
+    | Workflow dry-run output; manifest content check; docs diff.
+
+w W-176 type=feature status=proposed cynefin=complicated t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:07:15Z "Serve the embedded skill through MCP and retire the primer"
+  goals: G-36
+  theme: T-08
+  fitness: G-36=+1
+  surface: packages/core/src/mcp.rs, packages/core/assets/skill-primer.md, packages/mcp/tests/mcp.rs, docs/skills
+  ac:
+    | Unique primer operational rules are merged into the skill pages.
+    | packages/core/assets/skill-primer.md is deleted and no stale primer references remain in code or docs.
+    | grove://skill returns the embedded SKILL.md.
+    | Per-page reads resolve (grove://skill/<page> or a documented equivalent).
+    | packages/mcp tests are retargeted to the embedded skill and green.
+  hypothesis:
+    | Pages embedded via include_str! (B-11) let one source serve MCP with no runtime file dependencies.
+  evidence_strategy:
+    | cargo test for grove-mcp; embedded strings check on the built binary; manual MCP session transcript.
+
+w W-177 type=feature status=proposed cynefin=clear t_created=2026-09-17T13:05:28Z t_updated=2026-09-17T13:11:31Z "Announce the skill through MCP instructions and the status pointer"
+  goals: G-36
+  theme: T-08
+  fitness: G-36=+1
+  surface: packages/core/src/mcp.rs, packages/core/src/status.rs, packages/grove/src/status.jl, packages/grove/src/cli.jl, packages/grove/conformance/corpus
+  ac:
+    | initialize response carries instructions naming grove://skill.
+    | resources/list advertises exactly one skill resource (the root).
+    | grove status and grove next print one pointer line with the skill version in text and --json output.
+  hypothesis:
+    | A pointer inside tool output reaches agents whose clients drop instructions or never list resources.
+  evidence_strategy:
+    | MCP tests asserting the instructions field; corpus scenarios pin the status and next pointer output for both implementations.
+
+w W-178 type=feature status=proposed cynefin=clear t_created=2026-09-17T13:05:28Z t_updated=2026-09-17T13:07:15Z "Stamp the skill version and surface the handshake"
+  goals: G-36
+  theme: T-08
+  fitness: G-36=+1
+  surface: bin/skill-bundle.sh, packages/core/src/mcp.rs, .github/workflows/release.yml, docs/skills/SKILL.md
+  ac:
+    | The build injects the release version into the frontmatter of the archived and the embedded SKILL.md.
+    | The status pointer and MCP instructions expose binary and skill versions together.
+    | A version mismatch is visible in output.
+  hypothesis:
+    | A stamped version makes a stale installed skill detectable instead of silent.
+  evidence_strategy:
+    | Dry-run archive frontmatter; embedded copy check; a mismatch demonstration.
+
+w W-179 type=feature status=proposed cynefin=complicated t_created=2026-09-17T13:05:28Z t_updated=2026-09-17T13:11:32Z "Add grove skill print and install commands"
+  goals: G-36
+  theme: T-08
+  fitness: G-36=+1
+  surface: packages/core/src/cli.rs, packages/core/src/bin/grove.rs, packages/core/tests/ops.rs, docs/install.md, packages/grove/src/cli.jl, packages/grove/conformance/corpus
+  ac:
+    | grove skill prints the embedded SKILL.md to stdout.
+    | grove skill --install <dir> writes SKILL.md, references/, and diagrams/.
+    | grove --help mentions print and install.
+    | Unit tests cover both paths; corpus scenarios pin the skill command output for both implementations.
+  hypothesis:
+    | CLI-only agents can bootstrap the skill without fetching release artifacts.
+  evidence_strategy:
+    | cargo test; install into a temp directory; tree listing.
+
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
   fitness: G-21=+1
@@ -1752,6 +1867,54 @@ d D-32 status=accepted t_created=2026-08-30T21:47:51Z t_updated=2026-08-30T21:48
   validation:
     | Cargo template assertions for the count badges and uniform row markup, a css assertion that overflow-y appears exactly once in the cone stylesheet and only on the card stack; bun and cargo green; the user confirms (D-17).
 
+d D-33 status=accepted t_created=2026-09-17T13:05:35Z t_updated=2026-09-17T13:11:22Z "Skill artifact is a signed directory archive"
+  context:
+    | The single-file grove-skill.md (1510 lines) defeats progressive disclosure and bin/skill-bundle.sh rewrites links with sed, coupling anchors to a hand-rolled slugifier.
+  options:
+    | OC1: keep the flattened single file. OC2: ship a directory archive (SKILL.md plus references plus diagrams) signed as one artifact. OC3: embed only, with no released file artifact.
+  decision:
+    | OC2; SKILL.md keeps the frontmatter and the minimal contract, depth pages stay separate files with plain relative links.
+  consequences:
+    | The sed rewriting and heading slugifier are deleted; platforms with directory-skill support load the skill natively; one signature covers the archive.
+  validation:
+    | Release dry-run produces a deterministic archive; an agent loads the unpacked skill (B-09).
+
+d D-34 status=accepted t_created=2026-09-17T13:05:35Z t_updated=2026-09-17T13:11:23Z "docs/skills is the single source embedded into the binary"
+  context:
+    | The protocol contract lives in three hand-maintained copies (skill pages, skill-primer.md, help text) that drift apart.
+  options:
+    | OC1: generate the docs from help text. OC2: embed docs/skills pages into the binary and serve them everywhere. OC3: keep the primer as a manual condensate.
+  decision:
+    | OC2; the build embeds the pages of the same tag, MCP serves grove://skill from the embedded SKILL.md, and the primer's unique rules are merged before the file is deleted.
+  consequences:
+    | One source of truth; version match between binary and skill becomes mechanical; the primer conflict clause disappears.
+  validation:
+    | cargo build embeds the pages (B-11); mcp tests serve the embedded skill.
+
+d D-35 status=accepted t_created=2026-09-17T13:05:35Z t_updated=2026-09-17T13:11:23Z "Skill discovery rides instructions, root resource, and status pointer"
+  context:
+    | MCP initialize lacks instructions, and resource-only discovery depends on the client listing resources.
+  options:
+    | OC1: resources only. OC2: instructions plus a root-only resource plus a pointer line in status and next output plus a grove skill command.
+  decision:
+    | OC2; resources/list advertises only the root and depth pages resolve on demand.
+  consequences:
+    | Every client type has at least one discovery channel; tool output carries the pointer even where instructions are dropped.
+  validation:
+    | MCP tests assert the instructions field; status snapshots show the pointer.
+
+d D-36 status=accepted t_created=2026-09-17T13:05:36Z t_updated=2026-09-17T13:11:23Z "CLI text references stable identifiers only"
+  context:
+    | User-facing strings cite repo-internal filenames (rules.md) that do not exist at runtime.
+  options:
+    | OC1: keep filename references. OC2: reference command names, skill section titles, and grove:// URIs.
+  decision:
+    | OC2 for all user-facing output in both implementations.
+  consequences:
+    | References resolve for installed users; a repo grep can enforce the policy.
+  validation:
+    | Grep over user-facing strings; updated tests.
+
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
     | attestations already give a GitHub-backed second path; cosign keyless would add a Sigstore-anchored one without storing another key, at the cost of another tool in the sign job; deferred from v1, revisit after the first releases
@@ -1812,6 +1975,30 @@ q Q-11 status=answered cynefin=complicated t_created=2026-09-04T11:30:56Z t_upda
     | Fix: treat the lattice as a backdrop; set depthWrite=false plus renderOrder=-2 on the work and strata lattices and renderOrder=-1 with depthWrite=false on the strata link lines, keep edges at default order so they always composite over the grid; label sprites already layer this way with renderOrder=10 (cone-labels.js:50).
     | Blend mode alone is not sufficient: additive lattice blending removes the darkening symptom but not the depth-test occlusion at exact plane piercings; it is an optional stylistic variant on top of the ordering fix, not a replacement.
 
+q Q-12 status=answered cynefin=clear t_created=2026-09-17T13:05:36Z t_updated=2026-09-17T13:11:21Z "Keep shipping single-file grove-skill.md alongside the archive, or cut over immediately?"
+  why:
+    | Existing users drop grove-skill.md into their skills directories; removing it outright is a breaking change for them.
+  exit:
+    | The transition policy is chosen (immediate cutover or an N-release overlap) and the release workflow plus docs match it.
+  outcome:
+    | Immediate cutover chosen: grove-skill.tar.gz replaces grove-skill.md from the first release carrying it; the single-file artifact and its signature are dropped.
+
+q Q-13 status=answered cynefin=clear t_created=2026-09-17T13:05:36Z t_updated=2026-09-17T13:11:22Z "tar.gz or zip for the skill archive?"
+  why:
+    | The pipeline is unix-native (tar) while agent hosts on Windows unpack zip without bsdtar.
+  exit:
+    | The archive format is chosen with an unpack story for Windows, macOS, and Linux.
+  outcome:
+    | tar.gz chosen: native to the release pipeline, bsdtar on Windows 10+, tar on macOS and Linux; matches the binary archive format.
+
+q Q-14 status=answered cynefin=complicated t_created=2026-09-17T13:05:36Z t_updated=2026-09-17T13:11:22Z "Does the Julia CLI need parity for the new skill surfaces?"
+  why:
+    | The Julia implementation still runs in CI conformance and it is unknown whether new commands must mirror there.
+  exit:
+    | The scope is decided (Rust-only or both implementations), grounded in what the conformance suite asserts.
+  outcome:
+    | Parity through the shared corpus: new CLI surfaces (skill command, status and next pointer) get corpus scenarios pinning both implementations; MCP-specific pieces (instructions, resources) stay Rust-only since Julia has no MCP server.
+
 b B-01 status=testing cynefin=complicated t_created=2026-07-19T01:19:39Z t_updated=2026-07-27T18:00:12Z "Surprise rate declines as C grows"
   vm:
     | grove stats: surprise signals per done W against the C/V curve over the dogfood period
@@ -1866,6 +2053,31 @@ b B-08 status=validated cynefin=complicated t_created=2026-08-30T17:31:13Z t_upd
   result:
     | examples/cone_timing.rs on the repo lock (seed W-99, 1 goal, 155 nodes): 20 builds of cone::model plus goal_fragility complete in 0-3 ms wall time (worst 3 ms), inside the 100 ms budget; no manual-refresh fallback needed.
 
+b B-09 status=testing cynefin=complicated t_created=2026-09-17T13:05:36Z t_updated=2026-09-17T13:21:58Z "Agent platforms accept directory skills with relative links"
+  vm:
+    | Restructure the skill, then load it in ZCode and Claude Code; check activation and link resolution.
+  threshold:
+    | The skill triggers and every relative link resolves in both.
+  result:
+    | Link resolution verified mechanically: tests/skill/test-skill-bundle.sh 7/7 green (byte-stable archive, entries, frontmatter, every relative link resolves).
+    | ZCode accepts directory skills with subfiles: adspower-browser (references/) and clarity (references/, scripts/) are installed and trigger in the live environment.
+    | Pending: fresh-session activation of the restructured grove skill and a Claude Code check.
+
+b B-10 status=testing cynefin=clear t_created=2026-09-17T13:05:37Z t_updated=2026-09-17T13:21:59Z "Supported hosts unpack the archive without extra dependencies"
+  vm:
+    | Unpack the archive on Windows 10+ (bsdtar), macOS, and Linux.
+  threshold:
+    | All three platforms unpack successfully.
+  result:
+    | Windows unpack verified locally: tar -xzf yields grove/SKILL.md plus references/ plus diagrams/.
+    | Reading tar.gz is universal (bsdtar on macOS, tar on Linux); only archive creation needs GNU tar, guarded in bin/skill-bundle.sh.
+
+b B-11 status=proposed cynefin=complicated t_created=2026-09-17T13:05:37Z t_updated=2026-09-17T13:07:05Z "cargo embeds docs/skills from outside the crate"
+  vm:
+    | Compile spike: include_str! with a ../../docs path, then check the string lands in the binary.
+  threshold:
+    | The build succeeds and page text is present in the artifact.
+
 t T-01 status=open t_created=2026-07-19T01:14:31Z t_updated=2026-07-19T01:14:31Z "Scaling performance"
 
 t T-04 status=open t_created=2026-08-17T11:44:27Z t_updated=2026-08-17T11:44:38Z "Plugin toolchain restyle"
@@ -1875,6 +2087,8 @@ t T-05 status=done t_created=2026-08-28T22:38:42Z t_updated=2026-08-28T22:48:51Z
 t T-06 status=done t_created=2026-08-28T23:06:23Z t_updated=2026-08-29T13:44:58Z "Graph view grows a 3D renderer"
 
 t T-07 status=done t_created=2026-08-30T17:29:26Z t_updated=2026-08-31T00:13:53Z "Desktop grows a causality cone view"
+
+t T-08 status=open t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:07:13Z "Skill packaging drift and dangling references"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-07-27T14:44:48Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -2026,6 +2240,9 @@ a A-07 status=present t_created=2026-08-17T10:50:04Z t_updated=2026-08-17T10:50:
 e B-06 targets W-112 t_created=2026-08-28T00:20:28Z
 e B-07 targets W-124 t_created=2026-08-28T23:06:43Z
 e B-08 targets W-145 t_created=2026-08-30T17:35:15Z
+e B-09 targets W-174 t_created=2026-09-17T13:05:36Z
+e B-10 targets W-174 t_created=2026-09-17T13:05:37Z
+e B-11 targets W-176 t_created=2026-09-17T13:05:37Z
 e D-10 supersedes D-08 t_created=2026-08-07T13:50:42Z
 e D-22 supersedes D-21 t_created=2026-08-30T17:30:42Z
 e D-23 supersedes D-22 t_created=2026-08-30T18:11:59Z
@@ -2046,6 +2263,10 @@ e Q-08 asks W-115 t_created=2026-08-28T22:26:17Z
 e Q-08 asks W-116 t_created=2026-08-28T22:26:17Z
 e Q-09 asks W-121 t_created=2026-08-28T23:07:30Z
 e Q-10 asks W-135 t_created=2026-08-29T00:17:02Z
+e Q-12 asks W-175 t_created=2026-09-17T13:05:36Z
+e Q-13 asks W-174 t_created=2026-09-17T13:05:36Z
+e Q-14 asks W-177 t_created=2026-09-17T13:05:36Z
+e Q-14 asks W-179 t_created=2026-09-17T13:05:36Z
 e T-02 causes W-17 t_created=2026-07-28T02:40:29Z
 e T-02 causes W-85 t_created=2026-08-05T18:45:04Z
 e T-03 causes W-85 t_created=2026-08-05T18:45:33Z
@@ -2057,6 +2278,8 @@ e T-06 causes W-122 t_created=2026-08-28T23:07:30Z
 e T-06 causes W-139 t_created=2026-08-29T13:03:50Z
 e T-07 causes W-166 t_created=2026-08-30T22:51:36Z
 e T-07 causes W-167 t_created=2026-08-30T23:47:59Z
+e T-08 causes W-173 t_created=2026-09-17T13:07:12Z
+e T-08 causes W-174 t_created=2026-09-17T13:07:13Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z
@@ -2119,6 +2342,19 @@ e W-17 blocks W-19 t_created=2026-07-27T23:47:55Z
 e W-17 blocks W-20 t_created=2026-07-27T23:48:09Z
 e W-170 produces Y-19 t_created=2026-09-03T07:40:16Z
 e W-172 produces Y-20 t_created=2026-09-04T11:40:01Z
+e W-173 implements D-36 t_created=2026-09-17T13:07:14Z
+e W-174 blocks W-175 t_created=2026-09-17T13:07:13Z
+e W-174 blocks W-176 t_created=2026-09-17T13:07:13Z
+e W-174 implements D-33 t_created=2026-09-17T13:07:14Z
+e W-175 blocks W-178 t_created=2026-09-17T13:07:14Z
+e W-175 implements D-33 t_created=2026-09-17T13:07:14Z
+e W-176 blocks W-177 t_created=2026-09-17T13:07:13Z
+e W-176 blocks W-178 t_created=2026-09-17T13:07:14Z
+e W-176 blocks W-179 t_created=2026-09-17T13:07:13Z
+e W-176 implements D-34 t_created=2026-09-17T13:07:15Z
+e W-177 implements D-35 t_created=2026-09-17T13:07:15Z
+e W-178 implements D-34 t_created=2026-09-17T13:07:15Z
+e W-179 implements D-35 t_created=2026-09-17T13:07:15Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z

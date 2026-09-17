@@ -30,6 +30,11 @@ jobs:
         run: bash tests/install/test-install.sh
         shell: bash
 
+      - name: Skill bundle suite
+        if: runner.os == 'Linux'
+        run: bash tests/skill/test-skill-bundle.sh
+        shell: bash
+
       - name: PowerShell installer suite
         if: runner.os == 'Windows'
         run: powershell -NoProfile -ExecutionPolicy Bypass -File tests/install/test-install.ps1

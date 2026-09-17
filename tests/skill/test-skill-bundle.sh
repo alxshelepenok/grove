@@ -11,47 +11,37 @@ report() {
   if [ "$1" -eq 0 ]; then pass=$((pass+1)); echo "PASS: $2"; else fail=$((fail+1)); echo "FAIL: $2"; fi
 }
 
-bin/skill-bundle.sh --output "$work/bundle-a.md" > /dev/null
-bin/skill-bundle.sh --output "$work/bundle-b.md" > /dev/null
+bin/skill-bundle.sh --output "$work/bundle-a.tar.gz" > /dev/null
+bin/skill-bundle.sh --output "$work/bundle-b.tar.gz" > /dev/null
 
-cmp -s "$work/bundle-a.md" "$work/bundle-b.md"
+cmp -s "$work/bundle-a.tar.gz" "$work/bundle-b.tar.gz"
 report $? "bundle is byte-stable for unchanged sources"
 
-head -2 "$work/bundle-a.md" | grep -q '^name: grove$'
-report $? "skill frontmatter stays at the top"
-
-prev_line=0
-order_ok=1
-for heading in "# 1. Formal model" "# 2. Workflow protocol" "# 3. Planning" "# 4. CLI reference" "# 5. Evidence (Definition of Done)" "# 6. Rules" "# 7. Lockfile specification" "# 8. Typography" "# 9. Quality checklist" "# 10. Diagrams"; do
-  count=$(grep -cF "$heading" "$work/bundle-a.md")
-  line=$(grep -nF "$heading" "$work/bundle-a.md" | head -1 | cut -d: -f1)
-  if [ "$count" -ne 1 ] || [ -z "$line" ] || [ "$line" -le "$prev_line" ]; then
-    order_ok=0
-    echo "  heading problem: '$heading' count=$count line=$line prev=$prev_line"
-  fi
-  prev_line=$line
+tar -tzf "$work/bundle-a.tar.gz" > "$work/listing.txt"
+for entry in "grove/" "grove/SKILL.md" "grove/references/rules.md" "grove/diagrams/workflow.md"; do
+  grep -qx "$entry" "$work/listing.txt"
+  report $? "archive contains $entry"
 done
-report $((1 - order_ok)) "every numbered section appears exactly once in the recorded order"
 
-if grep -qE '\]\([^)#][^)]*\.md(#[^)]*)?\)' "$work/bundle-a.md"; then
-  grep -nE '\]\([^)#][^)]*\.md(#[^)]*)?\)' "$work/bundle-a.md" | head -5
+head -2 docs/skills/SKILL.md | grep -q '^name: grove$'
+report $? "skill frontmatter stays at the top of SKILL.md"
+
+find docs/skills -name "*.md" -print0 | while IFS= read -r -d '' f; do
+  dir=$(dirname "$f")
+  grep -o "]([^)]*)" "$f" | sed 's/^](//; s/)$//' | while IFS= read -r t; do
+    case "$t" in http*|\#*|mailto:*) continue ;; esac
+    path="${t%%#*}"
+    [ -z "$path" ] && continue
+    [ -e "$dir/$path" ] || echo "BROKEN: $f -> $t"
+  done
+done > "$work/broken.txt"
+if [ -s "$work/broken.txt" ]; then
+  head -5 "$work/broken.txt"
   r=1
 else
   r=0
 fi
-report $r "no relative .md links remain"
-
-grep -qF '](#1-formal-model)' "$work/bundle-a.md"
-report $? "file links rewritten to section anchors"
-
-grep -qF '](#dual-track-loops)' "$work/bundle-a.md"
-report $? "diagram links rewritten to appendix anchors"
-
-if grep -q '^# Dual-track loops' "$work/bundle-a.md"; then r=1; else r=0; fi
-report $r "diagram headings demoted under the appendix"
-
-grep -q '^## Dual-track loops' "$work/bundle-a.md"
-report $? "appendix contains the diagram content"
+report $r "every relative link resolves inside the skill directory"
 
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

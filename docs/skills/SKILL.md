@@ -56,19 +56,19 @@ grove check                             # all invariants; use in pre-commit
 
 ## Reading order
 
-This page is the minimal safe contract; the pages below are depth, opened when the task touches their topic (see [planning](planning.md) §6). Full versions:
+This page is the minimal safe contract; the pages below are depth, opened when the task touches their topic (see [planning](references/planning.md) §6). Full versions:
 
 **Must-read on activation:**
 
-1. [Formal model](model.md): nodes, edges, statuses, invariants I₁..I₁₃, DoR.
-2. [Protocol](protocol.md): workflow, cynefin gating, session start, discovery / delivery loops, alignment triggers.
-3. [Planning](planning.md): planning context lives in the lock, full node vocabulary, required fields, goal fitness.
-4. [CLI](cli.md): full CLI reference.
-5. [Evidence](evidence.md): DoD per work-item type.
-6. [Rules](rules.md): operational rules, merge protocol, pre-commit hook.
-7. [Lockfile](lockfile.md): grammar; needed only for tooling outside the CLI.
-8. [Typography](typography.md): formatting rules for all prose fields, entity titles, and other text content. Must be followed consistently.
-9. [Checklist](checklist.md): end-of-session quality gate.
+1. [Formal model](references/model.md): nodes, edges, statuses, invariants I₁..I₁₃, DoR.
+2. [Protocol](references/protocol.md): workflow, cynefin gating, session start, discovery / delivery loops, alignment triggers.
+3. [Planning](references/planning.md): planning context lives in the lock, full node vocabulary, required fields, goal fitness.
+4. [CLI](references/cli.md): full CLI reference.
+5. [Evidence](references/evidence.md): DoD per work-item type.
+6. [Rules](references/rules.md): operational rules, merge protocol, pre-commit hook.
+7. [Lockfile](references/lockfile.md): grammar; needed only for tooling outside the CLI.
+8. [Typography](references/typography.md): formatting rules for all prose fields, entity titles, and other text content. Must be followed consistently.
+9. [Checklist](references/checklist.md): end-of-session quality gate.
 10. [Diagrams](diagrams/): mermaid for dual-track, top-level workflow, palette.
 
 ## Hard constraints
@@ -78,6 +78,6 @@ This page is the minimal safe contract; the pages below are depth, opened when t
 - Never mark `done` without recording evidence via `grove evidence`.
 - Never re-run discovery if `state.lock` already exists.
 - If `cynefin = chaotic` on any node you touch, stop and escalate.
-- Never put planning context into side markdown files; decisions, questions, and assumptions are D/Q/B nodes ([planning](planning.md)).
+- Never put planning context into side markdown files; decisions, questions, and assumptions are D/Q/B nodes ([planning](references/planning.md)).
 - Never ship a plan of only G and W nodes; surface unknowns as Q/B and choices as D first.
 - Never leave a goal without `fitness_kind` + `fitness_target` or a work item without full DoR fields at creation.
