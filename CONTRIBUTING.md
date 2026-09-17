@@ -39,6 +39,10 @@ The dependency graph is attack surface and audit surface; the signed SBOM (`docs
 
 Propose new dependencies in the PR description: what it does, why the alternatives fail, its license, and its build-time behavior.
 
+## Branch naming
+
+Follow [docs/branch-naming.md](docs/branch-naming.md): `release/vX.Y.Z` for the release line, `(fix|feat|refactor|docs|chore)/((W|G)-NNN|version-vX.Y.Z)` for tracked work and version bumps, `dependabot/*` untouched.
+
 ## Pull requests
 
 1. Fork and branch from `main`. Keep the diff scoped to one concern.

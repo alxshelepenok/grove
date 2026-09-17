@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:8d3f9bb48a999094853f2b1b6ea7d299fa54c015aefda4ddcf29804d4a3ed9ee
+# checksum: sha256:61f2a30abb251ba0f1f23a2a8afb50a0051b8abcdc885d6911efef7ee4deb74e
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -94,6 +94,11 @@ g G-36 status=verified fitness_kind=count t_created=2026-09-17T13:05:27Z t_updat
   fitness_current: 7
 
 g G-37 status=verified fitness_kind=count t_created=2026-09-17T17:10:52Z t_updated=2026-09-17T17:11:35Z "Version bump runbook matches reality"
+  area: A-06
+  fitness_target: 1
+  fitness_current: 1
+
+g G-38 status=verified fitness_kind=count t_created=2026-09-17T17:21:28Z t_updated=2026-09-17T17:22:14Z "Branch naming convention is documented and discoverable"
   area: A-06
   fitness_target: 1
   fitness_current: 1
@@ -1657,6 +1662,23 @@ w W-185 type=bug status=done cynefin=clear t_created=2026-09-17T17:10:52Z t_upda
     | Runbook step 1 now lists six version-bearing files (packages/dsh/package.json added, matching the 9f4da92 bump set), names the chore/version-vX.Y.Z branch, and notes the Cargo.lock refresh via cargo build --workspace.
     | Grep for the old 'five version-bearing' wording returns zero hits; docs-only change, grove check ok.
 
+w W-186 type=feature status=done cynefin=clear t_created=2026-09-17T17:21:30Z t_updated=2026-09-17T17:22:14Z "Document the branch naming convention"
+  goals: G-38
+  fitness: G-38=+1
+  surface: docs/branch-naming.md, CONTRIBUTING.md, AGENTS.md
+  ac:
+    | docs/branch-naming.md explains the scheme in a human-readable table with real examples, plus rules and a machine form.
+    | CONTRIBUTING.md and AGENTS.md link the document.
+    | Examples reference real branches wherever they exist (verified against git branch -r); the chore rows show the form, with an en dash placeholder where no instance exists yet.
+  hypothesis:
+    | A short dedicated page with a table keeps the convention checkable without reading git history.
+  evidence_strategy:
+    | Doc review; branch existence check via git branch -r.
+  evidence:
+    | docs/branch-naming.md: human-readable table (eight rows, real examples: release/v0.1.8, feat/G-25, fix/G-27, feat/W-176, fix/W-173, refactor/W-174, dependabot/cargo/sha2-0.11.0), rules, and a machine form matching D-38.
+    | CONTRIBUTING.md gains a Branch naming section; AGENTS.md gains a Development section linking the document; this branch itself follows the convention (docs/W-186).
+    | D-38 accepted and linked via implements; docs-only change, grove check ok.
+
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
   fitness: G-21=+1
@@ -2063,6 +2085,18 @@ d D-37 status=accepted t_created=2026-09-17T15:44:19Z t_updated=2026-09-17T15:44
     | The primer's operational rules (commit policy, temp files, diff hygiene, comment style) are dropped, not preserved anywhere in the repo.
   validation:
     | Grep shows no Operational rules section and no primer references; suites green.
+
+d D-38 status=accepted t_created=2026-09-17T17:21:28Z t_updated=2026-09-17T17:21:31Z "Branch names carry a commit-type prefix and a node or version identifier"
+  context:
+    | Branch names drifted across eras (goal-grained feat/G-NN, work-item fix/W-NNN, free-form badges/development) and release mechanics had no fixed name.
+  options:
+    | OC1: plain slugs without identifiers. OC2: type prefix plus identifier (node id or version). OC3: encode the stack order in names.
+  decision:
+    | OC2: release/vX.Y.Z for the release line, (fix|feat|refactor|docs|chore) over (W|G)-NNN or version-vX.Y.Z for tracked work and bumps, dependabot untouched. Human-readable table lives in docs/branch-naming.md.
+  consequences:
+    | Branch list and merge log agree (branch prefix equals commit type); every tracked branch points at a grove node in one click; bumps have one fixed form.
+  validation:
+    | docs/branch-naming.md review; existing branches match the scheme.
 
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
@@ -2511,6 +2545,7 @@ e W-177 implements D-35 t_created=2026-09-17T13:07:15Z
 e W-178 implements D-34 t_created=2026-09-17T13:07:15Z
 e W-179 implements D-35 t_created=2026-09-17T13:07:15Z
 e W-182 implements D-37 t_created=2026-09-17T15:44:23Z
+e W-186 implements D-38 t_created=2026-09-17T17:21:31Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z
