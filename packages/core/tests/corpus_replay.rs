@@ -191,7 +191,6 @@ fn strip_trailing_ws(s: &str) -> String {
 }
 
 fn replace_ver(s: &str) -> String {
-    // mask dotted version triplets (with optional v prefix) behind <ver>
     let cs: Vec<char> = s.chars().collect();
     let mut out = String::with_capacity(s.len());
     let mut i = 0;

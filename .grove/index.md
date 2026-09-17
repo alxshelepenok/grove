@@ -134,6 +134,7 @@
 | W-180 | refactor | Wrap the skill source in a grove directory | G-36 | clear | ⊤ | done |  |
 | W-181 | bug | Lowercase the rules section reference in the distill hint | G-36 | clear | ⊤ | done |  |
 | W-182 | refactor | Drop the operational rules section and the stale path comment | G-36 | clear | ⊤ | done |  |
+| W-183 | refactor | Polish the agent skill bundle section in install.md | G-36 | clear | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -215,7 +216,7 @@
 | T-05 | Graph view render loop and robustness debt | done | W-117 | W-117, W-118, W-119, W-120 |
 | T-06 | Graph view grows a 3D renderer | done | W-122, W-139 | W-121, W-122, W-123, W-124, W-125, W-126, W-127, W-128, W-129, W-130, W-131, W-132, W-133, W-134, W-135, W-136, W-137, W-138, W-139, W-140 |
 | T-07 | Desktop grows a causality cone view | done | W-166, W-167 | W-141, W-142, W-143, W-144, W-145, W-146, W-147, W-148, W-149, W-150, W-151, W-152, W-153, W-154, W-155, W-156, W-157, W-158, W-159, W-160, W-161, W-162, W-163, W-164, W-165, W-166, W-167 |
-| T-08 | Skill packaging drift and dangling references | done | W-173, W-174, W-180, W-182 | W-173, W-174, W-175, W-176, W-177, W-178, W-179, W-180, W-182 |
+| T-08 | Skill packaging drift and dangling references | done | W-173, W-174, W-180, W-182, W-183 | W-173, W-174, W-175, W-176, W-177, W-178, W-179, W-180, W-182, W-183 |
 
 ## Discoveries
 
@@ -348,6 +349,7 @@ graph TD
   W_180["W-180: Wrap the skill source in a grove directory"]:::done
   W_181["W-181: Lowercase the rules section reference in the distill hint"]:::done
   W_182["W-182: Drop the operational rules section and the stale path comment"]:::done
+  W_183["W-183: Polish the agent skill bundle section in install.md"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -483,6 +485,7 @@ graph TD
   T_08 -->|causes| W_174
   T_08 -->|causes| W_180
   T_08 -->|causes| W_182
+  T_08 -->|causes| W_183
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
   W_03 -->|produces| D_11
