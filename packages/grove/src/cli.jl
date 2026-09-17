@@ -1997,47 +1997,47 @@ const HELP = """
 grove (graph-driven reasoning over verified evidence)
 
 Read:
-  ready              list work items ready to start (critical first)
-  next               propose single next W with full execution packet
-  packet  <W-NN>     full execution packet for a W [--cone --cone-depth=N --cone-max=N]
-  deps    <ID>       transitive blocks-predecessors
-  impact  <ID>       transitive blocks-successors
-  path               critical path (longest unfinished blocks chain)
-  triage             rank open W by discovery need (cov, χ, fragility; read-only advisory)
-  dor     <W-NN>     DoR conjunct breakdown
-  show    <ID>       record dump
-  list    <kind>     list nodes (g|w|d|q|b|t|y|a) [--status= --cynefin=]
-  check              verify lock checksum and invariants
-  graph              print mermaid block
-  status             summary: progress work, alignment triggers, invariant notes
-  stats              read-only telemetry from journal + lock (cycle time, DoR, bets, discovery, undo, surprise, C/V)
-  diff               structural diff vs git ref (--since=REF, default HEAD)
-  projects           registry table: name, path, last opened
-  skill [--install=<dir>]        print the embedded agent skill or install it as a directory
-  log   [<ID>]      timeline from t_* on nodes/edges + journal.log (--limit=N, default 200; 0=unlimited)
-  gate               report-only distillation gate: tw delta, surface overflows, invalidated B, accepted D [--theta=N] [--n=N]
+  ready                        list work items ready to start (critical first)
+  next                         propose single next W with full execution packet
+  packet    <W-NN>             full execution packet for a W [--cone --cone-depth=N --cone-max=N]
+  deps      <ID>               transitive blocks-predecessors
+  impact    <ID>               transitive blocks-successors
+  path                         critical path (longest unfinished blocks chain)
+  triage                       rank open W by discovery need (cov, χ, fragility; read-only advisory)
+  dor       <W-NN>             DoR conjunct breakdown
+  show      <ID>               record dump
+  list      <kind>             list nodes (g|w|d|q|b|t|y|a) [--status= --cynefin=]
+  check                        verify lock checksum and invariants
+  graph                        print mermaid block
+  status                       summary: progress work, alignment triggers, invariant notes
+  stats                        read-only telemetry from journal + lock (cycle time, DoR, bets, discovery, undo, surprise, C/V)
+  diff                         structural diff vs git ref (--since=REF, default HEAD)
+  projects                     registry table: name, path, last opened
+  skill     [--install=<dir>]  print the embedded agent skill or install it as a directory
+  log       [<ID>]             timeline from t_* on nodes/edges + journal.log (--limit=N, default 200; 0=unlimited)
+  gate                         report-only distillation gate: tw delta, surface overflows, invalidated B, accepted D [--theta=N] [--n=N]
 
 Mutate:
-  init                            create .grove/state.lock + index.md + glossary.md [--id-stride=N] [--id-offset=K] [--id-width=W]
-  add <kind> --title="…" [...]    create node; prints assigned ID
-  set <ID> <key>=<value>          guarded transitions
-  field <ID> <field> add|rm|clear "…"
-  link <from> <label> <to>        labels: blocks|implements|asks|tests|targets|produces|causes|supersedes|distills
-  unlink <from> <label> <to>
-  evidence <W-NN> "…"             append evidence line
-  fitness  <W-NN> <G-NN> <±N>     set per-goal delta
-  archive  <G-NN>                 archive G + exclusive w/d/q/b/t (requires distillation: a linked Discovery or `grove distill G-NN --null`)
-  distill  <G-NN> [--null]        distillation worksheet for a verified goal; --null writes a null-distill attestation (journal, non-mutation)
-  renumber <ID> --to=<NEW-ID>      rewrite record + refs (not if id in done evidence)
-  undo [--steps=N]                revert last N mutations (truncates `.grove/journal.log`)
-  resume  <W-NN>                   adopt session token on a `progress` W (journal undo restores prior claim)
-  handoff <W-NN> --to=<token>      transfer ownership (holder only)
-  revert  <W-NN>                   `progress` -> `ready`, clear session (holder or stale claim)
-  revalidate <Y-NN> --surface=…|--from=ID   `stale` Discovery -> `active`, paid with a fresh anchor
-  promote <Y-NN> --to=<project>     copy a Discovery into another project with origin provenance; copy starts `proposed`
-  glossary rename <old> <new>      rewrite glossary.md term + Discovery tags atomically
-  render                          regenerate index.md
-  repair --confirm                accept current lock contents (recompute checksum)
+  init                                       create .grove/state.lock + index.md + glossary.md [--id-stride=N] [--id-offset=K] [--id-width=W]
+  add         <kind> --title="…" [...]       create node; prints assigned ID
+  set         <ID> <key>=<value>             guarded transitions
+  field       <ID> <field> add|rm|clear "…"  append one entry, remove the nth, or clear all
+  link        <from> <label> <to>            labels: blocks|implements|asks|tests|targets|produces|causes|supersedes|distills
+  unlink      <from> <label> <to>            remove an edge
+  evidence    <W-NN> "…"                     append evidence line
+  fitness     <W-NN> <G-NN> <±N>             set per-goal delta
+  archive     <G-NN>                         archive G + exclusive w/d/q/b/t (requires distillation: a linked Discovery or `grove distill G-NN --null`)
+  distill     <G-NN> [--null]                distillation worksheet for a verified goal; --null writes a null-distill attestation (journal, non-mutation)
+  renumber    <ID> --to=<NEW-ID>             rewrite record + refs (not if id in done evidence)
+  undo        [--steps=N]                    revert last N mutations (truncates `.grove/journal.log`)
+  resume      <W-NN>                         adopt session token on a `progress` W (journal undo restores prior claim)
+  handoff     <W-NN> --to=<token>            transfer ownership (holder only)
+  revert      <W-NN>                         `progress` -> `ready`, clear session (holder or stale claim)
+  revalidate  <Y-NN> --surface=…|--from=ID   `stale` Discovery -> `active`, paid with a fresh anchor
+  promote     <Y-NN> --to=<project>          copy a Discovery into another project with origin provenance; copy starts `proposed`
+  glossary    rename <old> <new>             rewrite glossary.md term + Discovery tags atomically
+  render                                     regenerate index.md
+  repair      --confirm                      accept current lock contents (recompute checksum)
 
 Global flags: --root=<path> --project=<name|path> --quiet --json --no-render [--session=<token>]  (--since for diff; --limit for log; --steps for undo)
 Root resolution: --root wins; else --project / GROVE_PROJECT (directory or registry name); else walk up from cwd to the first dir containing .grove/state.lock.
