@@ -407,7 +407,7 @@ jobs:
             --verify-tag \
             out/*.tar.gz out/*.deb out/*.AppImage out/*.dmg out/*.msi out/*-setup.exe \
             out/SHA256SUMS out/SHA256SUMS.sig \
-            out/grove-skill.tar.gz out/grove-skill.tar.gz.sig \
+            out/grove-skill.tar.gz.sig \
             manifest.json manifest.json.sig \
             docs/security/artifacts/sbom.cdx.json docs/security/artifacts/sbom.cdx.json.sig \
             docs/security/artifacts/vex.json docs/security/artifacts/vex.json.sig \

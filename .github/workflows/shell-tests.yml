@@ -35,6 +35,10 @@ jobs:
         run: bash tests/skill/test-skill-bundle.sh
         shell: bash
 
+      - name: Release asset list suite
+        run: bash tests/release/test-release-assets.sh
+        shell: bash
+
       - name: PowerShell installer suite
         if: runner.os == 'Windows'
         run: powershell -NoProfile -ExecutionPolicy Bypass -File tests/install/test-install.ps1
