@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:c2f3a2bf2ea23a880cbf24c3b2c2f80e3b5ceae3ba60e19e8ff747f386749f0b
+# checksum: sha256:7aa8088ed4ccb68da512b395e06508551b3a6996664c83cdd168a9de0740fdae
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -1602,6 +1602,23 @@ w W-182 type=refactor status=done cynefin=clear t_created=2026-09-17T15:44:21Z t
   why:
     | Content correction per D-37; enabling work, no fitness delta.
 
+w W-183 type=refactor status=done cynefin=clear t_created=2026-09-17T15:57:33Z t_updated=2026-09-17T15:58:07Z "Polish the agent skill bundle section in install.md"
+  goals: G-36
+  theme: T-08
+  fitness: G-36=+0
+  surface: docs/install.md
+  ac:
+    | The Agent skill bundle section is the second section, right after Quickstart.
+    | The opening line drops the repo path reference; the tar example uses the Kimi Code CLI skills directory with two spaces before the comment, matching document style.
+    | No other zcode references remain; grove check green.
+  evidence_strategy:
+    | Section order grep; diff review; grep for zcode.
+  evidence:
+    | Section order: Quickstart, Agent skill bundle, Verify before you run (grep of headings); opening line drops the repo path; tar example reads ~/.kimi-code/skills with exactly two spaces before the comment (cat -A verified); zero zcode references remain in docs and README.
+    | Docs-only change: no test surfaces touched; grove check ok.
+  why:
+    | Documentation polish per review; enabling work, no fitness delta.
+
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
   fitness: G-21=+1
@@ -2184,7 +2201,7 @@ t T-06 status=done t_created=2026-08-28T23:06:23Z t_updated=2026-08-29T13:44:58Z
 
 t T-07 status=done t_created=2026-08-30T17:29:26Z t_updated=2026-08-31T00:13:53Z "Desktop grows a causality cone view"
 
-t T-08 status=done t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T15:50:01Z "Skill packaging drift and dangling references"
+t T-08 status=done t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T15:58:07Z "Skill packaging drift and dangling references"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-07-27T14:44:48Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -2379,6 +2396,7 @@ e T-08 causes W-173 t_created=2026-09-17T13:07:12Z
 e T-08 causes W-174 t_created=2026-09-17T13:07:13Z
 e T-08 causes W-180 t_created=2026-09-17T15:12:18Z
 e T-08 causes W-182 t_created=2026-09-17T15:45:05Z
+e T-08 causes W-183 t_created=2026-09-17T15:57:35Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z

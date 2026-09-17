@@ -16,6 +16,21 @@ iwr https://raw.githubusercontent.com/alxshelepenok/grove/main/install.ps1 -UseB
 
 The installer downloads the signed release manifest, verifies its RSA-2048/PSS signature against the embedded release key *before parsing it*, then downloads the `grove` and `grove-mcp` binaries plus the `grove-desktop` app for your platform and checks their SHA-256 and size against the manifest *before installing* into `~/.local/grove` (`%USERPROFILE%\.local\grove` on Windows). Add `~/.local/grove/bin` to your `PATH`.
 
+## Agent skill bundle
+
+The agent-facing workflow documentation ships as a signed archive, `grove-skill.tar.gz` (+ `grove-skill.tar.gz.sig`), attached to every release. The archive expands to a `grove/` directory (`SKILL.md`, `references/`, `diagrams/`), the layout skill-aware agents load natively:
+
+```bash
+tar -xzf grove-skill.tar.gz -C ~/.kimi-code/skills  # or your agent's skills directory
+```
+
+Verify the archive first with the committed public key (`docs/security/artifacts/public-keys/grove-manifest-2026-08.pem`) if you fetched it outside the installer:
+
+```bash
+bin/verify.sh docs/security/artifacts/public-keys/grove-manifest-2026-08.pem grove-skill.tar.gz grove-skill.tar.gz.sig
+```
+
+
 ## Verify before you run
 
 For the cautious, a two-step variant:
@@ -110,17 +125,3 @@ Claude Desktop (`%APPDATA%\Claude\claude_desktop_config.json` on Windows, `~/Lib
 ```
 
 Restart the client after editing the config; the `mcp__grove__*` tools appear in the next session.
-
-## Agent skill bundle
-
-The agent-facing workflow documentation (`docs/skills/grove/`) ships as a signed archive, `grove-skill.tar.gz` (+ `grove-skill.tar.gz.sig`), attached to every release. The archive expands to a `grove/` directory (`SKILL.md`, `references/`, `diagrams/`), the layout skill-aware agents load natively:
-
-```bash
-tar -xzf grove-skill.tar.gz -C ~/.zcode/skills   # or your agent's skills directory
-```
-
-Verify the archive first with the committed public key (`docs/security/artifacts/public-keys/grove-manifest-2026-08.pem`) if you fetched it outside the installer:
-
-```bash
-bin/verify.sh docs/security/artifacts/public-keys/grove-manifest-2026-08.pem grove-skill.tar.gz grove-skill.tar.gz.sig
-```
