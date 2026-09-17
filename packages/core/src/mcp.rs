@@ -644,12 +644,15 @@ fn negotiate_version(params: Option<&Json>) -> String {
     }
 }
 
+const MCP_INSTRUCTIONS: &str = "Grove is a graph-driven workflow protocol. Read the resource grove://skill (the SKILL.md root; per-page reads grove://skill/<page>) before driving work items. Start every session with the status and next tools; keep check green.";
+
 fn initialize_result_json(version: &str) -> String {
     format!(
-        "{{\"protocolVersion\":{},\"capabilities\":{{\"tools\":{{\"listChanged\":false}},\"resources\":{{\"listChanged\":false,\"subscribe\":false}}}},\"serverInfo\":{{\"name\":{},\"version\":{}}}}}",
+        "{{\"protocolVersion\":{},\"capabilities\":{{\"tools\":{{\"listChanged\":false}},\"resources\":{{\"listChanged\":false,\"subscribe\":false}}}},\"serverInfo\":{{\"name\":{},\"version\":{}}},\"instructions\":{}}}",
         jstr(version),
         jstr(MCP_SERVER_NAME),
-        jstr(MCP_SERVER_VERSION)
+        jstr(MCP_SERVER_VERSION),
+        jstr(MCP_INSTRUCTIONS)
     )
 }
 

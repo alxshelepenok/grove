@@ -292,12 +292,12 @@ fn status_json_match_and_stale_match_julia_ground_truth() {
     let r = cmd_status(&ctx, &[], &[("session".to_string(), "tok-abc".to_string())]);
     assert_eq!(
         r.out,
-        "{\"invariants\":{\"messages\":[],\"ok\":true},\"progress\":[{\"stale_for_agent\":false,\"id\":\"W-01\",\"title\":\"Alpha\",\"options_hint\":\"\",\"session_detail\":\"  session=tok-abc\",\"session\":\"tok-abc\"}],\"command\":\"status\",\"alignment_triggers\":[]}\n"
+        "{\"invariants\":{\"messages\":[],\"ok\":true},\"skill\":\"grove://skill\",\"progress\":[{\"stale_for_agent\":false,\"id\":\"W-01\",\"title\":\"Alpha\",\"options_hint\":\"\",\"session_detail\":\"  session=tok-abc\",\"session\":\"tok-abc\"}],\"command\":\"status\",\"alignment_triggers\":[]}\n"
     );
     let r = cmd_status(&ctx, &[], &[("session".to_string(), "someone-else".to_string())]);
     assert_eq!(
         r.out,
-        "{\"invariants\":{\"messages\":[],\"ok\":true},\"progress\":[{\"stale_for_agent\":true,\"id\":\"W-01\",\"title\":\"Alpha\",\"options_hint\":\"grove resume W-01 | grove revert W-01 | grove handoff W-01 --to=<token>\",\"session_detail\":\"  session=tok-abc  [!= this session]\",\"session\":\"tok-abc\"}],\"command\":\"status\",\"alignment_triggers\":[]}\n"
+        "{\"invariants\":{\"messages\":[],\"ok\":true},\"skill\":\"grove://skill\",\"progress\":[{\"stale_for_agent\":true,\"id\":\"W-01\",\"title\":\"Alpha\",\"options_hint\":\"grove resume W-01 | grove revert W-01 | grove handoff W-01 --to=<token>\",\"session_detail\":\"  session=tok-abc  [!= this session]\",\"session\":\"tok-abc\"}],\"command\":\"status\",\"alignment_triggers\":[]}\n"
     );
 }
 
@@ -370,7 +370,7 @@ fn empty_state_outputs_match_julia_ground_truth() {
     let r = cmd_status(&ctxj, &[], &[]);
     assert_eq!(
         r.out,
-        "{\"invariants\":{\"messages\":[],\"ok\":true},\"progress\":[],\"command\":\"status\",\"alignment_triggers\":[]}\n"
+        "{\"invariants\":{\"messages\":[],\"ok\":true},\"skill\":\"grove://skill\",\"progress\":[],\"command\":\"status\",\"alignment_triggers\":[]}\n"
     );
     let r = cmd_log(&ctxj, &[], &[]);
     assert_eq!(r.out, "{\"rows\":[],\"command\":\"log\",\"limit\":200}\n");
