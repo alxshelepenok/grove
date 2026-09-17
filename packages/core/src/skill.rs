@@ -19,3 +19,31 @@ pub fn skill_page(path: &str) -> Option<&'static str> {
         _ => return None,
     })
 }
+
+pub fn skill_version() -> &'static str {
+    env!("CARGO_PKG_VERSION")
+}
+
+pub fn stamped_skill_md() -> String {
+    let md = skill_page("SKILL.md").unwrap_or_default();
+    if md.lines().take(3).any(|l| l.starts_with("version:")) {
+        return md.to_string();
+    }
+    let mut out = String::new();
+    for (i, line) in md.lines().enumerate() {
+        out.push_str(line);
+        out.push('\n');
+        if i == 0 && line.trim() == "---" {
+            out.push_str(&format!("version: {}\n", skill_version()));
+        }
+    }
+    out
+}
+
+pub fn pointer_line() -> String {
+    format!(
+        "skill: grove://skill (skill v{}, binary v{})",
+        skill_version(),
+        skill_version()
+    )
+}

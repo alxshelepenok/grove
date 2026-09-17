@@ -565,6 +565,13 @@ fn resources_list_and_read_match_cli_output() {
     assert_eq!(v["result"]["contents"][0]["mimeType"], "text/markdown");
     let skill_text = v["result"]["contents"][0]["text"].as_str().unwrap();
     assert!(skill_text.starts_with("---\n"));
+    assert!(
+        skill_text
+            .lines()
+            .take(3)
+            .any(|l| l.starts_with("version: ")),
+        "served skill frontmatter must carry the version stamp"
+    );
     for keyword in ["name: grove", "dual-track", "Definition of Ready", "Reading order"] {
         assert!(skill_text.contains(keyword), "skill root misses {keyword}");
     }

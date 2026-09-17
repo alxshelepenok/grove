@@ -64,6 +64,11 @@ fn normalize_placeholders(st: &mut State) {
 
 fn normalize_out(s: &str, subs: &[(&str, &str)]) -> String {
     let mut out = s.to_string();
+    let ver = env!("CARGO_PKG_VERSION");
+    out = out.replace(
+        &format!("skill v{ver}, binary v{ver}"),
+        "skill <ver>, binary <ver>",
+    );
     for (from, to) in subs {
         out = out.replace(from, to);
     }

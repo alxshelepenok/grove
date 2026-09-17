@@ -15,6 +15,15 @@ CliCtx() = CliCtx(pwd(), false, false, false)
 
 devdir(ctx::CliCtx) = joinpath(ctx.root, ".grove")
 lockpath(ctx::CliCtx) = joinpath(devdir(ctx), "state.lock")
+function grove_version()::String
+    for l in eachline(joinpath(@__DIR__, "..", "Project.toml"))
+        startswith(l, "version = ") && return strip(strip(l[11:end]), '"')
+    end
+    return "unknown"
+end
+
+skill_pointer_line() = "skill: grove://skill (skill v$(grove_version()), binary v$(grove_version()))"
+
 indexpath(ctx::CliCtx) = joinpath(devdir(ctx), "index.md")
 glossarypath(ctx::CliCtx) = joinpath(devdir(ctx), "glossary.md")
 
@@ -1106,7 +1115,7 @@ function cmd_next(ctx::CliCtx, pos, kw)
         json_cli_out(Dict("command" => "next", "skill" => "grove://skill", "work" => pick.id, "packet_markdown" => pkt))
         return EXIT_OK
     end
-    print("skill: grove://skill\n\n", pkt)
+    print(skill_pointer_line(), "\n\n", pkt)
     EXIT_OK
 end
 
@@ -1458,7 +1467,7 @@ function cmd_status(ctx::CliCtx, pos, kw)
         ))
         return EXIT_OK
     end
-    println("skill: grove://skill")
+    println(skill_pointer_line())
     println()
     println("# grove status")
     println()

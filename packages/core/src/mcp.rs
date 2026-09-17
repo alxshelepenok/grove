@@ -586,13 +586,18 @@ fn resource_read(server: &McpServer, uri: &str) -> Result<String, (i64, String)>
             .unwrap_or_default()
             .trim_start_matches('/');
         let page = if page.is_empty() { "SKILL.md" } else { page };
-        let text = crate::skill::skill_page(page)
-            .ok_or_else(|| (ERR_INVALID_PARAMS, format!("unknown skill page: {page}")))?;
+        let text = if page == "SKILL.md" {
+            crate::skill::stamped_skill_md()
+        } else {
+            crate::skill::skill_page(page)
+                .ok_or_else(|| (ERR_INVALID_PARAMS, format!("unknown skill page: {page}")))?
+                .to_string()
+        };
         return Ok(format!(
             "{{\"contents\":[{{\"uri\":{},\"mimeType\":{},\"text\":{}}}]}}",
             jstr(uri),
             jstr("text/markdown"),
-            jstr(text)
+            jstr(&text)
         ));
     }
     let Some(path) = uri.strip_prefix("grove://") else {
@@ -646,13 +651,22 @@ fn negotiate_version(params: Option<&Json>) -> String {
 
 const MCP_INSTRUCTIONS: &str = "Grove is a graph-driven workflow protocol. Read the resource grove://skill (the SKILL.md root; per-page reads grove://skill/<page>) before driving work items. Start every session with the status and next tools; keep check green.";
 
+fn mcp_instructions() -> String {
+    format!(
+        "{} Binary v{}; embedded skill v{}.",
+        MCP_INSTRUCTIONS,
+        MCP_SERVER_VERSION,
+        crate::skill::skill_version()
+    )
+}
+
 fn initialize_result_json(version: &str) -> String {
     format!(
         "{{\"protocolVersion\":{},\"capabilities\":{{\"tools\":{{\"listChanged\":false}},\"resources\":{{\"listChanged\":false,\"subscribe\":false}}}},\"serverInfo\":{{\"name\":{},\"version\":{}}},\"instructions\":{}}}",
         jstr(version),
         jstr(MCP_SERVER_NAME),
         jstr(MCP_SERVER_VERSION),
-        jstr(MCP_INSTRUCTIONS)
+        jstr(&mcp_instructions())
     )
 }
 

@@ -277,7 +277,7 @@ pub fn cmd_next(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> OpRe
         ]));
         return r;
     }
-    r.out = format!("skill: grove://skill\n\n{pkt}");
+    r.out = format!("{}\n\n{pkt}", crate::skill::pointer_line());
     r
 }
 

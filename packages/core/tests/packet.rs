@@ -88,7 +88,12 @@ fn wave2b_next_log_cmd_steps_byte_identical() {
             other => panic!("unexpected command {other}"),
         };
         assert_eq!(r.code as i64, step_exit(&sc, i), "step {i} exit");
-        assert_eq!(r.out, step_field(&sc, i, "stdout"), "step {i} stdout");
+        let ver = env!("CARGO_PKG_VERSION");
+        let out = r.out.replace(
+            &format!("skill v{ver}, binary v{ver}"),
+            "skill <ver>, binary <ver>",
+        );
+        assert_eq!(out, step_field(&sc, i, "stdout"), "step {i} stdout");
         assert_eq!(r.err, step_field(&sc, i, "stderr"), "step {i} stderr");
     }
 }
