@@ -433,6 +433,9 @@ const SCENARIOS = Scenario[
         ["help"],
         ["bogus"],
     ]),
+    scenario("skill", [
+        ["skill"],
+    ]),
     scenario("gate", [
         ["!git", "init", "-q"],
         ["!write", "a.txt", "a"],

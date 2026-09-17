@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:8a4e396a8fda1ec1c60c1155f53d9f5b420e41a1931f27c3410739043d2d4aa7
+# checksum: sha256:bdbe5868952b5072c939232e45b3184b314cb3cce07c5ee559e9831a23328a3e
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -88,10 +88,10 @@ g G-35 status=verified fitness_kind=boolean t_created=2026-09-04T11:33:57Z t_upd
   area: A-05
   fitness_current: true
 
-g G-36 status=partial fitness_kind=count t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:22:13Z "Skill ships as a signed archive served by CLI and MCP from one source"
+g G-36 status=verified fitness_kind=count t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T15:01:41Z "Skill ships as a signed archive served by CLI and MCP from one source"
   area: A-07
   fitness_target: 7
-  fitness_current: 6
+  fitness_current: 7
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -1529,7 +1529,7 @@ w W-178 type=feature status=done cynefin=clear t_created=2026-09-17T13:05:28Z t_
     | Pointer line now reads 'skill: grove://skill (skill vX, binary vX)' in both implementations; corpus pins carry <ver> via a new version mask in both normalizers, so version bumps do not churn the corpus.
     | Suites: cargo core 289 passed; mcp 13 passed (incl. version stamp assert); Julia conformance 26 green; skill bundle tests 9 passed; live grove.exe status shows 'skill: grove://skill (skill v0.1.8, binary v0.1.8)'.
 
-w W-179 type=feature status=proposed cynefin=complicated t_created=2026-09-17T13:05:28Z t_updated=2026-09-17T13:11:32Z "Add grove skill print and install commands"
+w W-179 type=feature status=done cynefin=complicated t_created=2026-09-17T13:05:28Z t_updated=2026-09-17T15:01:41Z "Add grove skill print and install commands"
   goals: G-36
   theme: T-08
   fitness: G-36=+1
@@ -1543,6 +1543,10 @@ w W-179 type=feature status=proposed cynefin=complicated t_created=2026-09-17T13
     | CLI-only agents can bootstrap the skill without fetching release artifacts.
   evidence_strategy:
     | cargo test; install into a temp directory; tree listing.
+  evidence:
+    | grove skill prints the version-stamped SKILL.md and grove skill --install=<dir> writes grove/ (SKILL.md, 9 reference pages, 3 diagrams, 13 files) in both implementations; HELP lists the command; MCP exposes a matching skill tool (tools/list count 39 equals COMMAND_NAMES).
+    | Byte parity: Rust and Julia print outputs are identical (diff clean); corpus scenario skill.json (print plus install steps) replays green on both implementations; help.json re-pinned with the new HELP line.
+    | Unit tests: Rust skill_cmd 1 passed; Julia test_cli_skill 8 passed; suites: core 290 passed, mcp 13 passed, Julia runtests exit 0, conformance 27 scenarios green; skill classified as a read command in both session classifications.
 
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
@@ -2114,7 +2118,7 @@ t T-06 status=done t_created=2026-08-28T23:06:23Z t_updated=2026-08-29T13:44:58Z
 
 t T-07 status=done t_created=2026-08-30T17:29:26Z t_updated=2026-08-31T00:13:53Z "Desktop grows a causality cone view"
 
-t T-08 status=open t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:07:13Z "Skill packaging drift and dangling references"
+t T-08 status=done t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T15:01:41Z "Skill packaging drift and dangling references"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-07-27T14:44:48Z "Normalize at capture, never inject test clocks"
   tags: normalization
