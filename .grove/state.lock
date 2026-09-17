@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:d763f6bd0a6f3e8205c4fdad7a6df1fce4c47585586942bbc5d0181c1ab2b91b
+# checksum: sha256:ad33915530f139919714233bf7fe712b7b53976c6d38c31d03cd238cccbd0c84
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -91,7 +91,7 @@ g G-35 status=verified fitness_kind=boolean t_created=2026-09-04T11:33:57Z t_upd
 g G-36 status=partial fitness_kind=count t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:22:13Z "Skill ships as a signed archive served by CLI and MCP from one source"
   area: A-07
   fitness_target: 7
-  fitness_current: 1
+  fitness_current: 2
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -1410,7 +1410,7 @@ w W-172 type=bug status=done cynefin=clear t_created=2026-09-04T11:33:59Z t_upda
     | Verification: bun test js 45/0 with 5 new contract tests (lattice and strata-link depthWrite/renderOrder, skipped-link positions, edge default order); cargo test -p grove-desktop green (views 95, package total 149).
     | Runtime pixels stay with the manual pass per D-17: open the cone view and orbit so grid lines cross lit and critical edges; the edge line must stay continuous with the grid passing behind it.
 
-w W-173 type=bug status=ready cynefin=clear t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:11:31Z "Fix dangling skill references in CLI output"
+w W-173 type=bug status=done cynefin=clear t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:27:44Z "Fix dangling skill references in CLI output"
   goals: G-36
   theme: T-08
   fitness: G-36=+1
@@ -1425,6 +1425,11 @@ w W-173 type=bug status=ready cynefin=clear t_created=2026-09-17T13:05:27Z t_upd
     | Push any goal to verified via a W done transition with the Rust or Julia CLI; the stderr distill hint prints 'lazy distill, see rules.md' (packages/core/src/ops.rs:363, packages/grove/src/cli.jl:327), but rules.md does not exist at runtime for installed users.
   evidence_strategy:
     | Grep outputs before and after; cargo test for grove-core and grove-mcp; Julia test run for the parity pieces in scope.
+  evidence:
+    | cargo test -p grove-core --test ops: 7 passed (updated distill hint assertion); --test corpus_replay: 7 passed.
+    | Julia conformance verify: 26 scenarios green; distill-archive, gate, staging-overwrite, stats-scripted replay the new string byte-identical.
+    | Grep sweep: no repo-internal .md filenames remain in user-facing strings of either implementation (glossary.md and index.md runtime files excluded); status.jl docstring cites protocol section 2.5.
+    | Hint now reads 'lazy distill, see the Rules section of the grove skill' per D-36.
 
 w W-174 type=refactor status=done cynefin=clear t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T13:22:13Z "Restructure docs/skills into SKILL.md plus references"
   goals: G-36
