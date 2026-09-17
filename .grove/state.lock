@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:1450e00aa551ed4d8b02cbf973cfa09dc73472b287506b5d9fc8e57ad4bfa1b2
+# checksum: sha256:a290456f49a32b202480619e7f9bf9d86c85891c6c3930cab805648ac1a3adb5
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -83,6 +83,10 @@ g G-34 status=verified fitness_kind=count t_created=2026-09-03T08:02:34Z t_updat
   area: A-05
   fitness_target: 1
   fitness_current: 1
+
+g G-35 status=verified fitness_kind=boolean t_created=2026-09-04T11:33:57Z t_updated=2026-09-04T11:39:28Z "Cone lattice composites behind edges without pixel breaks"
+  area: A-05
+  fitness_current: true
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -1383,6 +1387,24 @@ w W-171 type=feature status=done cynefin=complicated t_created=2026-09-03T08:02:
     | bun test (packages/desktop/ui): 40 pass / 0 fail; grep shows no remaining references to LABEL_MIN_SCALE or LABEL_FAR_FACTOR; perf gates (LABEL_MAX_NODES), hover and cleanup paths untouched.
     | Runtime verified in served harnesses per view at three zoom states (0, 4, 8 wheel notches of deltaY 100): 2D labels opacity 1 -> 0.652 on all six elements -> container display none; 3D labels opacity 1 -> 0.652 -> display none; vision checks of both ghost screenshots report faded 60-70% labels; far screenshots show no text. Harnesses removed after verification.
 
+w W-172 type=bug status=done cynefin=clear t_created=2026-09-04T11:33:59Z t_updated=2026-09-04T11:40:01Z "Stop lattice lines cutting 1px breaks into cone edges"
+  goals: G-35
+  fitness: G-35=+1
+  surface: packages/desktop/ui/js/views/cone-lattice.js, packages/desktop/ui/js/views/cone-lattice.test.js, packages/desktop/ui/js/views/cone-edges.test.js
+  ac:
+    | Work and strata lattice meshes render with material.depthWrite=false and renderOrder=-2.
+    | Strata link line mesh renders with material.depthWrite=false and renderOrder=-1.
+    | Edge group children keep the default renderOrder=0 so edges composite after every lattice layer.
+    | Desktop ui bun test suite passes including the new lattice contract tests.
+  repro:
+    | Open the cone view and orbit until a strata or work grid line crosses a work edge in screen space: the crossing pixel shows the dim lattice color instead of the edge color and reads as a 1px break; surface links that pierce the work plane at Y=0 flicker between grid and edge color as the camera moves (analysis in Q-11).
+  evidence_strategy:
+    | Bun contract tests over the constructed meshes and materials (depthWrite, renderOrder, edge order) plus the full ui/js suite green.
+  evidence:
+    | Fix: work and strata lattices now build with depthWrite=false and renderOrder=-2, strata link lines with depthWrite=false and renderOrder=-1 (cone-lattice.js); edges keep default renderOrder=0 and label sprites stay at 10, so lattices composite first and grid lines can no longer win the depth test or blend over an edge crossing.
+    | Verification: bun test js 45/0 with 5 new contract tests (lattice and strata-link depthWrite/renderOrder, skipped-link positions, edge default order); cargo test -p grove-desktop green (views 95, package total 149).
+    | Runtime pixels stay with the manual pass per D-17: open the cone view and orbit so grid lines cross lit and critical edges; the edge line must stay continuous with the grid passing behind it.
+
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
   fitness: G-21=+1
@@ -1784,6 +1806,12 @@ q Q-10 status=answered cynefin=complicated t_created=2026-08-29T00:15:51Z t_upda
   outcome:
     | Survey 2026-08-29: three-gpu-pathtracer (BVH path tracing, top quality) has no single-file upstream dist and peer-imports three plus three-mesh-bvh, so it needs bundling and import maps, incompatible with the verbatim vendoring policy; erichlof THREE.js-PathTracing-Renderer is primitive-specialized but monolithic and coupled to old three versions; WebGPU tracers lack WebView portability (WKWebView). For a scene of at most a few hundred spheres and segments, a bespoke GLSL3 fragment tracer with brute-force ray-sphere and ray-segment tests plus shadow rays is the fastest path that adds zero supply-chain surface.
 
+q Q-11 status=answered cynefin=complicated t_created=2026-09-04T11:30:56Z t_updated=2026-09-04T11:40:01Z "Cone lattice lines cut one-pixel breaks into edges: which fix removes the artifact?"
+  outcome:
+    | Root cause: every cone line layer is a transparent LineBasicMaterial with default depthWrite=true and no renderOrder (cone-lattice.js:33, cone-edges.js:54, cone.js:61-71); three.js sorts transparents per object by camera distance, so at screen-space crossings the depth test lets the dim grid fragment replace the edge pixel, and when the lattice object draws after the edge object the grid alpha-blends over the edge (work grid opacity 0.5 over a lit edge 0.78 drops the crossing pixel to about 0.52); both paths read as a 1px break.
+    | Fix: treat the lattice as a backdrop; set depthWrite=false plus renderOrder=-2 on the work and strata lattices and renderOrder=-1 with depthWrite=false on the strata link lines, keep edges at default order so they always composite over the grid; label sprites already layer this way with renderOrder=10 (cone-labels.js:50).
+    | Blend mode alone is not sufficient: additive lattice blending removes the darkening symptom but not the depth-test occlusion at exact plane piercings; it is an optional stylistic variant on top of the ordering fix, not a replacement.
+
 b B-01 status=testing cynefin=complicated t_created=2026-07-19T01:19:39Z t_updated=2026-07-27T18:00:12Z "Surprise rate declines as C grows"
   vm:
     | grove stats: surprise signals per done W against the C/V curve over the dogfood period
@@ -1971,6 +1999,14 @@ y Y-19 status=active t_created=2026-09-03T07:40:16Z t_updated=2026-09-03T08:16:5
     | The graph view (js/views/graph.js, graph-3d.js) still hides ids on its own threshold; port it to labelFadeOpacity with the 2D factor mapping when that screen is touched next.
     | Ported to both graph views (W-171): 2D maps fitScale over zoom, 3D maps camera radius over labelBaseRadius; the curve itself needed no change.
 
+y Y-20 status=active t_created=2026-09-04T11:40:01Z t_updated=2026-09-04T11:40:48Z "Backdrop ordering for transparent 3D line layers"
+  tags: backdrop ordering, causality cone
+  surface: packages/desktop/ui/js/views/cone-lattice.js
+  invariant:
+    | Every transparent line layer in a three.js scene declares its compositing tier explicitly: decorative grids get depthWrite=false with the lowest renderOrder, connector lines the next tier, semantic edges keep the default order, overlays sit above; without explicit tiers the per-object distance sort lets a dim grid fragment replace or darken an edge pixel at screen-space crossings, which reads as a one-pixel break.
+  glossary_updates:
+    | Added backdrop-ordering (W-172).
+
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"
   surface: packages/grove/src/stats.jl, packages/grove/test/test_stats.jl
 
@@ -2082,6 +2118,7 @@ e W-17 blocks W-18 t_created=2026-07-27T23:47:41Z
 e W-17 blocks W-19 t_created=2026-07-27T23:47:55Z
 e W-17 blocks W-20 t_created=2026-07-27T23:48:09Z
 e W-170 produces Y-19 t_created=2026-09-03T07:40:16Z
+e W-172 produces Y-20 t_created=2026-09-04T11:40:01Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z
@@ -2116,6 +2153,7 @@ e Y-15 distills D-18 t_created=2026-08-28T23:17:03Z
 e Y-15 distills Q-09 t_created=2026-08-28T23:17:03Z
 e Y-17 distills D-27 t_created=2026-08-30T21:25:48Z
 e Y-17 distills D-30 t_created=2026-08-30T21:25:48Z
+e Y-20 distills Q-11 t_created=2026-09-04T11:40:01Z
 
 :archive
 g G-01 status=verified fitness_kind=boolean t_created=2026-07-19T01:13:53Z t_updated=2026-08-10T18:45:36Z "Effectiveness report v1 on dogfood telemetry"

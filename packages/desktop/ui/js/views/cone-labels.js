@@ -21,7 +21,7 @@ const STRATUM_LABELS = [
   ["Areas", AREA_Y],
 ];
 const ZONE_LABELS = [
-  ["Dependencies", "backward"],
+  ["Deps", "backward"],
   ["Seed", "seed"],
   ["Impact", "forward"],
 ];

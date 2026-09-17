@@ -76,4 +76,11 @@ describe("createEdgeLines", () => {
     expect(edges.mesh.children.some((c) => c instanceof THREE.InstancedMesh)).toBe(true);
     edges.dispose();
   });
+
+  it("keeps the default render order so edges composite after the lattice", () => {
+    const edges = createEdgeLines({ links, entities, nodeIndex, criticalPairs });
+    expect(edges.mesh.renderOrder).toBe(0);
+    expect(edges.mesh.children.every((c) => c.renderOrder === 0)).toBe(true);
+    edges.dispose();
+  });
 });

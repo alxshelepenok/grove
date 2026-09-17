@@ -13,6 +13,8 @@ const WORK_GRID_OPACITY = 0.5;
 const STRATA_GRID_OPACITY = 0.22;
 const STRATA_LINK_COLOR = 0x4a5568;
 const STRATA_LINK_OPACITY = 0.22;
+const LATTICE_RENDER_ORDER = -2;
+const STRATA_LINK_RENDER_ORDER = -1;
 
 const buildPlaneGrid = (y, x0, x1, z0, z1, out) => {
   const cols = Math.max(1, Math.round((x1 - x0) / CELL_SPACING));
@@ -34,8 +36,11 @@ const makeLattice = (lines, opacity) => {
     color: LATTICE_COLOR,
     transparent: true,
     opacity,
+    depthWrite: false,
   });
-  return { mesh: new THREE.LineSegments(geometry, material), geometry, material };
+  const mesh = new THREE.LineSegments(geometry, material);
+  mesh.renderOrder = LATTICE_RENDER_ORDER;
+  return { mesh, geometry, material };
 };
 
 export const footprintOf = (extent) => ({
@@ -90,9 +95,12 @@ export const createStrataLinkLines = (verticalLinks, positionOf) => {
     color: STRATA_LINK_COLOR,
     transparent: true,
     opacity: STRATA_LINK_OPACITY,
+    depthWrite: false,
   });
+  const mesh = new THREE.LineSegments(geometry, material);
+  mesh.renderOrder = STRATA_LINK_RENDER_ORDER;
   return {
-    mesh: new THREE.LineSegments(geometry, material),
+    mesh,
     dispose() {
       geometry.dispose();
       material.dispose();
