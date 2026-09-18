@@ -1,3 +1,5 @@
+import { compareIds } from "./id-order.js";
+
 export const CLUSTER_HUES = [
   [262, 70, 60],
   [184, 96, 53],
@@ -43,7 +45,7 @@ export const parseGraphModel = (model) => ({
 });
 
 export const createClusterFills = (nodes) => {
-  const clusterIds = [...new Set(nodes.map((n) => n.cluster ?? ROOT_CLUSTER))].sort();
+  const clusterIds = [...new Set(nodes.map((n) => n.cluster ?? ROOT_CLUSTER))].sort(compareIds);
   const fills = new Map([[ROOT_CLUSTER, ROOT_CLUSTER_RGB]]);
   clusterIds
     .filter((id) => id !== ROOT_CLUSTER)

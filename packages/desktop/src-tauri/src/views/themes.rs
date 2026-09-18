@@ -1,6 +1,6 @@
 use super::{load_state, status_variant};
 use crate::templates::Templates;
-use grove_core::{critical_path, listnodes, status_set, Kind, Node, State};
+use grove_core::{critical_path, id_cmp, listnodes, status_set, Kind, Node, State};
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 
@@ -48,7 +48,7 @@ pub fn model(st: &State) -> Value {
     for (_, works) in by_theme {
         unthemed.extend(works);
     }
-    unthemed.sort_by(|a, b| a.id.cmp(&b.id));
+    unthemed.sort_by(|a, b| id_cmp(&a.id, &b.id));
     if !unthemed.is_empty() {
         let counts: Vec<Value> = status_set(Kind::W)
             .iter()
@@ -102,7 +102,7 @@ pub fn model(st: &State) -> Value {
             }));
         }
     }
-    cloud.sort_by(|a, b| a["id"].as_str().cmp(&b["id"].as_str()));
+    cloud.sort_by(|a, b| id_cmp(a["id"].as_str().unwrap_or(""), b["id"].as_str().unwrap_or("")));
     let questions: Vec<Value> = cloud
         .iter()
         .filter(|n| n["id"].as_str().unwrap_or_default().starts_with('Q'))

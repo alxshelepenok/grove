@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:37e28f2ae5fb024f2dfb70902280afd9df6552c0e8df9c3f4a2d1650f5305848
+# checksum: sha256:c59502f63211b19e758d8fc1f2e2d4c9f36da47d27c588f41adf0b25faec30a4
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -107,6 +107,11 @@ g G-39 status=verified fitness_kind=count t_created=2026-09-17T20:44:24Z t_updat
   area: A-06
   fitness_target: 1
   fitness_current: 1
+
+g G-40 status=verified fitness_kind=boolean t_created=2026-09-17T23:26:39Z t_updated=2026-09-18T00:01:35Z "Node id ordering is natural (family, number) everywhere"
+  area: A-03
+  fitness_target: true
+  fitness_current: true
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -1705,6 +1710,28 @@ w W-187 type=bug status=done cynefin=clear t_created=2026-09-17T20:44:25Z t_upda
     | Mutation matrix green: base 6 passed exit 0; m2 rename+explicit, m5 skill sig dropped, m6 SHA256SUMS.sig dropped, m7 manifest.json.sig dropped, m8 install.ps1.sig dropped each fail with the intended assertions and exit 1; script carries no leading comments per review.
     | Output polish: failure detail (missing/would-upload-twice lists) appends only when non-empty, so PASS lines carry no dangling colon; verified base (6 passed, clean lines) and m6 mutation (FAIL names out/SHA256SUMS.sig, exit 1).
 
+w W-188 type=bug status=done cynefin=clear t_created=2026-09-17T23:26:43Z t_updated=2026-09-18T00:01:35Z "Sort node ids by family then number everywhere"
+  goals: G-40
+  fitness: G-40=+1
+  surface: packages/core/src/status.rs, packages/core/src/ids.rs, packages/core/src/render.rs, packages/core/src/algebra.rs, packages/core/src/packet.rs, packages/grove/src/model.jl, packages/desktop/src-tauri/src/views/themes.rs, packages/desktop/src-tauri/src/views/triggers.rs, packages/desktop/src-tauri/src/views/graph.rs, packages/desktop/src-tauri/src/views/cone.rs, packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/js/utils/graph-model.js, packages/desktop/ui/js/views/graph.js
+  ac:
+    | A shared comparator orders ids by family prefix then numeric suffix (W-99 before W-100), with a total string fallback for malformed ids.
+    | Rust core listnodes returns nodes in canonical order, so core list outputs, MCP tools, and desktop views built on listnodes inherit it.
+    | Julia CLI listnodes returns the same canonical order, so grove list and status sections match Rust core output for the same lock.
+    | Desktop explicit sorts (themes cloud and unthemed, triggers digest, graph cluster tie-break, cone members) and JS tie-breaks (cone layer ids, graph cluster ids) use the canonical order.
+    | state.lock serialization order is unchanged: the lock file bytes and checksum for an identical graph stay exactly as before.
+    | Overview recent discoveries keep ordering by t_updated recency, and cone dependencies keep contraction order: only id-ordered collections change.
+    | Unit tests cover the comparator (mixed families, ninety-nine versus one hundred, malformed fallback) and at least one rendered list per toolchain asserts the order.
+  repro:
+    | Open the desktop work table in a lock with W-99 and W-100 present, or run grove list w: W-100 rows appear before W-99 because ids compare as byte strings.
+  evidence_strategy:
+    | Run cargo test for core and desktop, the Julia test suite, and the JS test runner; then diff grove list output before and after on this repository lock to confirm only intra-family order changes.
+  evidence:
+    | cargo test --workspace: 458 passed, 0 failed across 35 suites; new core comparator tests (5) and desktop views natural-order test (models_order_ids_by_number_within_family) green.
+    | julia Pkg.test(): all green including conformance corpus replays byte-identical (27 scenarios), which proves state.lock serialization order is unchanged.
+    | bun test (packages/desktop/ui): 50 passed, 0 fail; new id-order.test.js (5 tests) covers numbers-not-strings, family grouping, zero padding, malformed fallback, total order.
+    | grove list w before/after on this repository lock (Julia CLI, git stash snapshot): the only ordering change is W-99 moving from after W-187 to before W-100 (W-04, W-05, W-99, W-100, W-101, W-102); the single extra diff line is W-188 itself, absent from the before snapshot.
+
 w W-99 type=bug status=done cynefin=complicated t_created=2026-08-17T06:12:00Z t_updated=2026-08-17T06:23:26Z "Attach view-orphaned nodes to root in graph filters"
   goals: G-21
   fitness: G-21=+1
@@ -2124,6 +2151,8 @@ d D-38 status=accepted t_created=2026-09-17T17:21:28Z t_updated=2026-09-17T17:21
   validation:
     | docs/branch-naming.md review; existing branches match the scheme.
 
+d D-39 status=accepted t_created=2026-09-17T23:26:18Z t_updated=2026-09-18T00:01:50Z "Canonical node order is family-then-number tuple comparison"
+
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
     | attestations already give a GitHub-backed second path; cosign keyless would add a Sigstore-anchored one without storing another key, at the cost of another tool in the sign job; deferred from v1, revisit after the first releases
@@ -2207,6 +2236,10 @@ q Q-14 status=answered cynefin=complicated t_created=2026-09-17T13:05:36Z t_upda
     | The scope is decided (Rust-only or both implementations), grounded in what the conformance suite asserts.
   outcome:
     | Parity through the shared corpus: new CLI surfaces (skill command, status and next pointer) get corpus scenarios pinning both implementations; MCP-specific pieces (instructions, resources) stay Rust-only since Julia has no MCP server.
+
+q Q-15 status=answered cynefin=clear t_created=2026-09-17T23:15:34Z t_updated=2026-09-17T23:26:28Z "Where should natural id ordering be fixed: core listnodes or desktop views?"
+  outcome:
+    | Fix at the core level in every toolchain (Rust core, Julia CLI, desktop JS), not per view: the canonical order is tuple comparison of (family prefix, numeric id), identical everywhere. Column sorting in desktop is a later, separate feature.
 
 b B-01 status=testing cynefin=complicated t_created=2026-07-19T01:19:39Z t_updated=2026-07-27T18:00:12Z "Surprise rate declines as C grows"
   vm:
@@ -2432,6 +2465,14 @@ y Y-20 status=active t_created=2026-09-04T11:40:01Z t_updated=2026-09-04T11:40:4
   glossary_updates:
     | Added backdrop-ordering (W-172).
 
+y Y-21 status=proposed t_created=2026-09-17T23:15:39Z t_updated=2026-09-17T23:21:51Z "Desktop tables order node ids lexicographically"
+  tags: natural id order
+  surface: packages/core/src/model.rs, packages/core/src/status.rs, packages/desktop/src-tauri/src/views/work.rs, packages/desktop/src-tauri/src/views/goals.rs, packages/desktop/src-tauri/src/views/themes.rs, packages/desktop/src-tauri/src/triggers.rs, packages/desktop/ui/js/utils/cone-model.js, packages/desktop/src-tauri/src/views/cone.rs, packages/core/src/algebra.rs
+
+y Y-22 status=proposed t_created=2026-09-18T00:01:50Z t_updated=2026-09-18T00:01:50Z "Natural id order lives in three mirrored comparators while lock bytes stay byte-ordered"
+  tags: natural id order
+  surface: packages/core/src/ids.rs,  packages/grove/src/ids.jl,  packages/desktop/ui/js/utils/id-order.js,  packages/grove/src/lock.jl,  packages/core/src/serialize.rs
+
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"
   surface: packages/grove/src/stats.jl, packages/grove/test/test_stats.jl
 
@@ -2572,6 +2613,7 @@ e W-178 implements D-34 t_created=2026-09-17T13:07:15Z
 e W-179 implements D-35 t_created=2026-09-17T13:07:15Z
 e W-182 implements D-37 t_created=2026-09-17T15:44:23Z
 e W-186 implements D-38 t_created=2026-09-17T17:21:31Z
+e W-188 implements D-39 t_created=2026-09-17T23:27:25Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z
@@ -2607,6 +2649,8 @@ e Y-15 distills Q-09 t_created=2026-08-28T23:17:03Z
 e Y-17 distills D-27 t_created=2026-08-30T21:25:48Z
 e Y-17 distills D-30 t_created=2026-08-30T21:25:48Z
 e Y-20 distills Q-11 t_created=2026-09-04T11:40:01Z
+e Y-21 distills Q-15 t_created=2026-09-17T23:15:39Z
+e Y-22 distills D-39 t_created=2026-09-18T00:01:50Z
 
 :archive
 g G-01 status=verified fitness_kind=boolean t_created=2026-07-19T01:13:53Z t_updated=2026-08-10T18:45:36Z "Effectiveness report v1 on dogfood telemetry"

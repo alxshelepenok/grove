@@ -6,8 +6,9 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 63 | validated B 4 · answered Q 10 · accepted D 31 · active Discovery 18 |
+| C (content) | 65 | validated B 4 · answered Q 11 · accepted D 32 · active Discovery 18 |
 | V (uncertainty) | 12 | open Q 2 · pending B 7 · W below DoR 2 · uncovered surface 1 |
+| Decay | 1 | Discovery with decay signals |
 
 ## Areas
 
@@ -15,7 +16,7 @@
 | --- | --- | --- | --- | --- |
 | A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-02 | API | 0 | 3 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
-| A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-03 | Rust core | 2 | 0 | C: validated B 0 · answered Q 0 · accepted D 1 · active Discovery 1; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 26 | 0 | C: validated B 2 · answered Q 3 · accepted D 14 · active Discovery 7; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 6 | 1 | C: validated B 0 · answered Q 1 · accepted D 3 · active Discovery 2; V: open Q 0 · pending B 1 · W below DoR 0 |
@@ -47,6 +48,7 @@
 | G-37 | Version bump runbook matches reality | count; current=1 target=1 | verified |
 | G-38 | Branch naming convention is documented and discoverable | count; current=1 target=1 | verified |
 | G-39 | Release workflow uploads the skill archive exactly once | count; current=1 target=1 | verified |
+| G-40 | Node id ordering is natural (family, number) everywhere | boolean; current=true target=true | verified |
 
 ## Work items
 
@@ -142,6 +144,7 @@
 | W-185 | bug | Fix the version-bearing file list and branch name in the publish runbook | G-37 | clear | ⊤ | done |  |
 | W-186 | feature | Document the branch naming convention | G-38 | clear | ⊤ | done |  |
 | W-187 | bug | Drop the duplicated skill asset from the release upload list | G-39 | clear | ⊤ | done |  |
+| W-188 | bug | Sort node ids by family then number everywhere | G-40 | clear | ⊤ | done |  |
 | W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -181,6 +184,7 @@
 | D-36 | CLI text references stable identifiers only | accepted |  |
 | D-37 | docs/skills is the single source embedded into the binary, carrying grove protocol content only | accepted | D-34 |
 | D-38 | Branch names carry a commit-type prefix and a node or version identifier | accepted |  |
+| D-39 | Canonical node order is family-then-number tuple comparison | accepted |  |
 
 ## Open questions
 
@@ -198,6 +202,7 @@
 | Q-12 | Keep shipping single-file grove-skill.md alongside the archive, or cut over immediately? | clear | W-175 | answered |
 | Q-13 | tar.gz or zip for the skill archive? | clear | W-174 | answered |
 | Q-14 | Does the Julia CLI need parity for the new skill surfaces? | complicated | W-177, W-179 | answered |
+| Q-15 | Where should natural id ordering be fixed: core listnodes or desktop views? | clear |  | answered |
 
 ## Assumptions
 
@@ -250,6 +255,8 @@
 | Y-18 | Thick 3D edges need beam geometry, not linewidth | beam geometry, causality cone | active |
 | Y-19 | Zoom text fade is one shared curve, not per-view thresholds | causality cone, label fade | active |
 | Y-20 | Backdrop ordering for transparent 3D line layers | backdrop ordering, causality cone | active |
+| Y-21 | Desktop tables order node ids lexicographically | natural id order | proposed |
+| Y-22 | Natural id order lives in three mirrored comparators while lock bytes stay byte-ordered | natural id order | proposed |
 
 ## Dependency graph
 
@@ -275,6 +282,7 @@ graph TD
   G_37["G-37: Version bump runbook matches reality"]:::goal
   G_38["G-38: Branch naming convention is documented and discoverable"]:::goal
   G_39["G-39: Release workflow uploads the skill archive exactly once"]:::goal
+  G_40["G-40: Node id ordering is natural (family, number) everywhere"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
@@ -365,6 +373,7 @@ graph TD
   W_185["W-185: Fix the version-bearing file list and branch name in the publish runbook"]:::done
   W_186["W-186: Document the branch naming convention"]:::done
   W_187["W-187: Drop the duplicated skill asset from the release upload list"]:::done
+  W_188["W-188: Sort node ids by family then number everywhere"]:::done
   W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -399,6 +408,7 @@ graph TD
   D_36["D-36: CLI text references stable identifiers only"]:::decision
   D_37["D-37: docs/skills is the single source embedded into the binary, carrying grove protocol content only"]:::decision
   D_38["D-38: Branch names carry a commit-type prefix and a node or version identifier"]:::decision
+  D_39["D-39: Canonical node order is family-then-number tuple comparison"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_05["Q-05: What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1?"]:::question
@@ -411,6 +421,7 @@ graph TD
   Q_12["Q-12: Keep shipping single-file grove-skill.md alongside the archive, or cut over immediately?"]:::question
   Q_13["Q-13: tar.gz or zip for the skill archive?"]:::question
   Q_14["Q-14: Does the Julia CLI need parity for the new skill surfaces?"]:::question
+  Q_15["Q-15: Where should natural id ordering be fixed: core listnodes or desktop views?"]:::question
   B_01["B-01: Surprise rate declines as C grows"]:::assumption
   B_02["B-02: Rework proxies are lower on covered surfaces than uncovered"]:::assumption
   B_03["B-03: Distill yield stays above noise at archive gates"]:::assumption
@@ -448,6 +459,8 @@ graph TD
   Y_18["Y-18: Thick 3D edges need beam geometry, not linewidth"]:::discovery
   Y_19["Y-19: Zoom text fade is one shared curve, not per-view thresholds"]:::discovery
   Y_20["Y-20: Backdrop ordering for transparent 3D line layers"]:::discovery
+  Y_21["Y-21: Desktop tables order node ids lexicographically"]:::discovery
+  Y_22["Y-22: Natural id order lives in three mirrored comparators while lock bytes stay byte-ordered"]:::discovery
   A_01["A-01: Evals"]:::area
   A_02["A-02: API"]:::area
   A_03["A-03: Rust core"]:::area
@@ -579,6 +592,7 @@ graph TD
   W_179 -->|implements| D_35
   W_182 -->|implements| D_37
   W_186 -->|implements| D_38
+  W_188 -->|implements| D_39
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78
@@ -614,6 +628,8 @@ graph TD
   Y_17 -->|distills| D_27
   Y_17 -->|distills| D_30
   Y_20 -->|distills| Q_11
+  Y_21 -->|distills| Q_15
+  Y_22 -->|distills| D_39
   class W_04 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff

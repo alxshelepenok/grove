@@ -198,23 +198,23 @@ pub fn detect(st: &State, session: &str, dismissals: &Dismissals, journal_len: u
         }
     }
     let mut ready = grove_core::ready(st);
-    ready.sort_by_cached_key(|w| {
-        (
-            if cp.contains(&w.id) { 0 } else { 1 },
-            -(grove_core::impact(st, &w.id).len() as i64),
-            w.id.clone(),
-        )
+    ready.sort_by(|a, b| {
+        let ca = if cp.contains(&a.id) { 0 } else { 1 };
+        let cb = if cp.contains(&b.id) { 0 } else { 1 };
+        let ia = -(grove_core::impact(st, &a.id).len() as i64);
+        let ib = -(grove_core::impact(st, &b.id).len() as i64);
+        (ca, ia).cmp(&(cb, ib)).then_with(|| grove_core::id_cmp(&a.id, &b.id))
     });
     ts.ready = ready.into_iter().map(node_ref).collect();
     ts.idle = ts.ready.is_empty() && (!ts.open_q.is_empty() || !ts.open_b.is_empty());
-    let by_id = |a: &NodeRef, b: &NodeRef| a.id.cmp(&b.id);
+    let by_id = |a: &NodeRef, b: &NodeRef| grove_core::id_cmp(&a.id, &b.id);
     ts.chaotic_q.sort_by(by_id);
     ts.blocked_b.sort_by(by_id);
     ts.verified_g.sort_by(by_id);
     ts.open_q.sort_by(by_id);
     ts.open_b.sort_by(by_id);
     ts.proposed_d.sort_by(by_id);
-    ts.done_w.sort_by(|a, b| a.id.cmp(&b.id));
-    ts.stale_claims.sort_by(|a, b| a.id.cmp(&b.id));
+    ts.done_w.sort_by(|a, b| grove_core::id_cmp(&a.id, &b.id));
+    ts.stale_claims.sort_by(|a, b| grove_core::id_cmp(&a.id, &b.id));
     ts
 }

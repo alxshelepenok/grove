@@ -1,5 +1,6 @@
 use crate::cli::{atomic_write_same_dir, load, CliCtx};
 use crate::decay::dashboard_decay_count;
+use crate::ids::id_cmp;
 use crate::model::{Kind, Node, State};
 use crate::ops::OpResult;
 use crate::status::{is_terminal, listnodes};
@@ -138,7 +139,7 @@ fn sorted_edge_targets(st: &State, label: &str, from: &str) -> Vec<String> {
         .filter(|e| e.label == label && e.from == from)
         .map(|e| e.to.clone())
         .collect();
-    out.sort();
+    out.sort_by(|a, b| id_cmp(a, b));
     out.dedup();
     out
 }
@@ -306,7 +307,7 @@ fn render_themes(out: &mut String, st: &State) {
             .filter(|w| w.single("theme").trim() == n.id)
             .map(|w| w.id.clone())
             .collect();
-        tw_ids.sort();
+        tw_ids.sort_by(|a, b| id_cmp(a, b));
         let tw = tw_ids.join(", ");
         let cw = if cw.is_empty() { "\u{2013}".to_string() } else { cw };
         let tw = if tw.is_empty() { "\u{2013}".to_string() } else { tw };

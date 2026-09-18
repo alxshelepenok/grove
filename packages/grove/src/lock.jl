@@ -377,7 +377,8 @@ function serialize_body(st::State)::String
             print(io, position(io) == 0 ? ":archive\n" : "\n:archive\n")
         end
         for kind in NODE_KINDS
-            for n in listnodes(st, kind; include_archived=true)
+            section = sort!([n for n in values(st.nodes) if n.kind === kind]; by=n -> n.id)
+            for n in section
                 n.archived == archived || continue
                 if !first_in_section
                     print(io, "\n")

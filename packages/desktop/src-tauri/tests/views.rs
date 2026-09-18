@@ -3698,3 +3698,42 @@ fn cone_rail_route_icon_and_wiring() {
     assert!(manifest.contains("\"cone\""), "cone in the icon manifest");
 }
 
+
+const NATURAL_LOCK: &str = r#"@grove 1
+# AUTO-GENERATED. Do not edit. Use `grove` CLI.
+# checksum: sha256:natural
+g G-09 status=unverified t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Nine"
+g G-10 status=unverified t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Ten"
+
+w W-99 type=bug status=ready cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Ninety nine"
+w W-100 type=bug status=ready cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "One hundred"
+w W-101 type=bug status=ready cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "One hundred one"
+
+q Q-99 status=open cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Ninety ninth question"
+q Q-100 status=open cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z "Hundredth question"
+"#;
+
+#[test]
+fn models_order_ids_by_number_within_family() {
+    let st = parse_fixture(NATURAL_LOCK).expect("fixture parses");
+    let wm = work::model(&st, "all", false);
+    assert_eq!(work_ids(&wm), ["W-99", "W-100", "W-101"]);
+
+    let gm = goals::model(&st);
+    let goal_ids: Vec<&str> = gm["goals"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|g| g["id"].as_str().unwrap())
+        .collect();
+    assert_eq!(goal_ids, ["G-09", "G-10"]);
+
+    let tm = themes::model(&st);
+    let question_ids: Vec<&str> = tm["questions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|q| q["id"].as_str().unwrap())
+        .collect();
+    assert_eq!(question_ids, ["Q-99", "Q-100"]);
+}

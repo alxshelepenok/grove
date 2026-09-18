@@ -1,3 +1,4 @@
+use crate::ids::id_cmp;
 use crate::model::{Edge, Kind, Node, State};
 
 pub const EDGE_LABELS: [&str; 9] = [
@@ -68,10 +69,13 @@ pub fn getnode<'a>(st: &'a State, id: &str) -> Option<&'a Node> {
 }
 
 pub fn listnodes(st: &State, kind: Kind, include_archived: bool) -> Vec<&Node> {
-    st.nodes
+    let mut out: Vec<&Node> = st
+        .nodes
         .values()
         .filter(|n| n.kind == kind && (include_archived || !n.archived))
-        .collect()
+        .collect();
+    out.sort_by(|a, b| id_cmp(&a.id, &b.id));
+    out
 }
 
 pub fn out_edges<'a>(st: &'a State, id: &'a str, label: &'a str) -> impl Iterator<Item = &'a Edge> {

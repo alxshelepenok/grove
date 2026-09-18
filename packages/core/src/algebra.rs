@@ -1,3 +1,4 @@
+use crate::ids::id_cmp;
 use crate::model::{Kind, Node, State};
 use crate::status::{clears_blocks_predecessor, is_terminal, listnodes};
 use crate::times::stamp_touch_node;
@@ -282,21 +283,22 @@ pub fn critical_path(st: &State) -> Vec<String> {
         succ.entry(e.from.clone()).or_default().push(e.to.clone());
         *indeg.entry(e.to.clone()).or_insert(0) += 1;
     }
-    let mut queue: BTreeSet<String> = indeg
+    let mut queue: Vec<String> = indeg
         .iter()
         .filter(|(_, d)| **d == 0)
         .map(|(id, _)| id.clone())
         .collect();
     let mut topo = Vec::new();
-    while let Some(x) = queue.iter().next().cloned() {
-        queue.remove(&x);
+    while !queue.is_empty() {
+        queue.sort_by(|a, b| id_cmp(a, b));
+        let x = queue.remove(0);
         topo.push(x.clone());
         if let Some(ss) = succ.get(&x) {
             for s in ss {
                 if let Some(d) = indeg.get_mut(s) {
                     *d -= 1;
                     if *d == 0 {
-                        queue.insert(s.clone());
+                        queue.push(s.clone());
                     }
                 }
             }
@@ -321,7 +323,11 @@ pub fn critical_path(st: &State) -> Vec<String> {
     }
     let tail = active
         .iter()
-        .min_by_key(|id| (-dist[*id], (*id).clone()))
+        .min_by(|a, b| {
+            dist[b.as_str()]
+                .cmp(&dist[a.as_str()])
+                .then_with(|| id_cmp(a, b))
+        })
         .cloned()
         .expect("active non-empty");
     let mut chain = Vec::new();
@@ -364,7 +370,7 @@ pub fn bounded_cone_walk(
                 level.push(y);
             }
         }
-        level.sort();
+        level.sort_by(|a, b| id_cmp(a, b));
         let room = maxcount.saturating_sub(ids.len());
         if level.len() > room {
             ids.extend(level.into_iter().take(room));
@@ -404,21 +410,22 @@ pub fn contraction_order(st: &State, ids: &[String]) -> Vec<String> {
         succ.entry(e.from.clone()).or_default().push(e.to.clone());
         *indeg.entry(e.to.clone()).or_insert(0) += 1;
     }
-    let mut queue: BTreeSet<String> = indeg
+    let mut queue: Vec<String> = indeg
         .iter()
         .filter(|(_, d)| **d == 0)
         .map(|(id, _)| id.clone())
         .collect();
     let mut order = Vec::new();
-    while let Some(x) = queue.iter().next().cloned() {
-        queue.remove(&x);
+    while !queue.is_empty() {
+        queue.sort_by(|a, b| id_cmp(a, b));
+        let x = queue.remove(0);
         order.push(x.clone());
         if let Some(ss) = succ.get(&x) {
             for s in ss {
                 if let Some(d) = indeg.get_mut(s) {
                     *d -= 1;
                     if *d == 0 {
-                        queue.insert(s.clone());
+                        queue.push(s.clone());
                     }
                 }
             }
