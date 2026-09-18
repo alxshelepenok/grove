@@ -1,5 +1,6 @@
 import { SearchableSelect } from "../utils/searchable-select.js";
 import { wireFilterTabsFades } from "../utils/filter-tabs.js";
+import { compareIds } from "../utils/id-order.js";
 import { pickSearchRadius, screenHitRadius } from "../utils/graph-math.js";
 import { parseCssColor } from "../utils/css-color.js";
 import {
@@ -252,7 +253,7 @@ function startGraphView(root, { navigate } = {}, reenter = () => {}) {
   const { nodes, links } = parseGraphModel(model);
   canvas.graphNodes = nodes;
 
-  const clusterIds = [...new Set(nodes.map((n) => n.cluster ?? ROOT_CLUSTER))].sort();
+  const clusterIds = [...new Set(nodes.map((n) => n.cluster ?? ROOT_CLUSTER))].sort(compareIds);
   const nodeFill = nodeFillFor(createClusterFills(nodes));
 
   const clusterCenters = new Map([[ROOT_CLUSTER, [0, 0]]]);

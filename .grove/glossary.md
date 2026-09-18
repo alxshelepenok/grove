@@ -21,3 +21,4 @@
 | beam geometry | Real box instances stretched between node centers to draw a 3D edge thicker than the WebGL one-pixel linewidth cap; thickness is set in world units tuned against the default camera radius | W-168 |
 | label fade | One shared pure curve mapping zoom-out factor to text opacity (smoothstep from full to ghost to gone) fed per frame into every label system, instead of per-view visibility thresholds | W-170 |
 | backdrop ordering | Decorative transparent line layers in a three.js scene draw with an explicit low renderOrder and depthWrite=false, so backdrop grids composite first and can never win the depth test or darken semantic edges at crossings | W-172 |
+| natural id order | Node ids sort by their numeric suffix (W-99 before W-100), not byte-wise string order; byte-wise order comes from the BTreeMap key set and breaks once a family passes ninety-nine | Y-21 |

@@ -100,7 +100,7 @@ function bchain(st::State, w::Node)::Vector{String}
             push!(out, e.from)
         end
     end
-    sort!(collect(out))
+    sort!(collect(out); by = id_key)
 end
 
 """Re-derive artifact `status` from themed work items (I₆)."""
@@ -169,7 +169,7 @@ function triage_rows(st::State)::Vector{NamedTuple{(:w,:title,:cov,:declared,:un
         push!(rows, (w=w.id, title=w.title, cov=cov, declared=declared,
             uncertainty=χ, fragile=fragile, suggestion=suggestion))
     end
-    sort!(rows; by=r -> (r.cov, -r.uncertainty, r.w))
+    sort!(rows; by=r -> (r.cov, -r.uncertainty, id_key(r.w)))
     rows
 end
 
@@ -312,7 +312,7 @@ function critical_path(st::State)::Vector{String}
         push!(get!(succ, e.from, String[]), e.to)
         indeg[e.to] = get(indeg, e.to, 0) + 1
     end
-    queue = sort!([id for (id, d) in indeg if d == 0])
+    queue = sort!([id for (id, d) in indeg if d == 0]; by = id_key)
     topo = String[]
     indeg_w = copy(indeg)
     while !isempty(queue)
@@ -322,7 +322,7 @@ function critical_path(st::State)::Vector{String}
             indeg_w[s] -= 1
             if indeg_w[s] == 0
                 push!(queue, s)
-                sort!(queue)
+                sort!(queue; by = id_key)
             end
         end
     end
@@ -337,7 +337,7 @@ function critical_path(st::State)::Vector{String}
         end
     end
     isempty(dist) && return String[]
-    tail = first(sort(collect(active); by=id -> (-dist[id], id)))
+    tail = first(sort(collect(active); by=id -> (-dist[id], id_key(id))))
     chain = String[]
     cur::Union{String,Nothing} = tail
     while cur !== nothing
@@ -449,7 +449,7 @@ function bounded_cone_walk(st::State, id::AbstractString, step::Function;
             push!(seen, y)
             push!(level, y)
         end
-        sort!(level)
+        sort!(level; by = id_key)
         room = max(maxcount - length(ids), 0)
         if length(level) > room
             append!(ids, level[1:room])
@@ -481,7 +481,7 @@ function contraction_order(st::State, ids)::Vector{String}
         push!(get!(succ, e.from, String[]), e.to)
         indeg[e.to] = get(indeg, e.to, 0) + 1
     end
-    queue = sort!([id for (id, d) in indeg if d == 0])
+    queue = sort!([id for (id, d) in indeg if d == 0]; by = id_key)
     order = String[]
     while !isempty(queue)
         x = popfirst!(queue)
@@ -490,7 +490,7 @@ function contraction_order(st::State, ids)::Vector{String}
             indeg[s] -= 1
             if indeg[s] == 0
                 push!(queue, s)
-                sort!(queue)
+                sort!(queue; by = id_key)
             end
         end
     end
@@ -559,7 +559,7 @@ end
 
 function goal_fragility(st::State, w::Node)::Vector{Tuple{String,Int}}
     out = Tuple{String,Int}[]
-    for g in sort!(unique(goals_of(w)))
+    for g in sort!(unique(goals_of(w)); by = id_key)
         push!(out, (g, node_connectivity(st, g, w.id)))
     end
     out
@@ -593,7 +593,7 @@ function relevant_discoveries(st::State, w::Node, cone_ids; maxcount::Int=50)::V
         anchors > 0 && push!(scored, (-anchors, discovery.id))
     end
     out = String[]
-    for (_, id) in sort!(scored)
+    for (_, id) in sort!(scored; by = s -> (s[1], id_key(s[2])))
         push!(out, id)
     end
     first(out, maxcount)
@@ -646,7 +646,7 @@ function area_relevant_discoveries(st::State, z::Node)::Vector{String}
         anchors > 0 && push!(scored, (-anchors, discovery.id))
     end
     out = String[]
-    for (_, id) in sort!(scored)
+    for (_, id) in sort!(scored; by = s -> (s[1], id_key(s[2])))
         push!(out, id)
     end
     out

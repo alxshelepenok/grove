@@ -1,6 +1,6 @@
 use super::load_state;
 use crate::templates::Templates;
-use grove_core::{area_relevant_discoveries, Kind, State};
+use grove_core::{area_relevant_discoveries, id_cmp, Kind, State};
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
@@ -212,7 +212,7 @@ fn cluster_map(st: &State, parents: &BTreeMap<&str, Vec<&str>>) -> BTreeMap<Stri
                         }
                     }
                 }
-                goals.sort_unstable();
+                goals.sort_unstable_by(|a, b| id_cmp(a, b));
                 goals
                     .first()
                     .and_then(|g| area_of(g))

@@ -883,7 +883,7 @@ function cmd_archive(ctx::CliCtx, pos, kw)
     persist(ctx, st; session=eff, journal=wrap_journal_record("archive", Dict{String,Any}(
         "op" => JOURNAL_ARCHIVE_OP,
         "id" => String(gid),
-        "ids" => String[String(i) for i in sort!(collect(ids))],
+        "ids" => String[String(i) for i in sort!(collect(ids); by = id_key)],
     )))
     EXIT_OK
 end
@@ -894,7 +894,7 @@ end
 
 function distill_candidates(st::State, pool::Set{String})::Vector{Tuple{String,String,String}}
     out = Tuple{String,String,String}[]
-    for id in sort!(collect(pool))
+    for id in sort!(collect(pool); by = id_key)
         n = get(st.nodes, id, nothing)
         n === nothing && continue
         n.archived && continue
@@ -1150,7 +1150,7 @@ function cmd_ready(ctx::CliCtx, pos, kw)
     st = load(ctx)
     cp = Set(critical_path(st))
     rs = ready(st)
-    sort!(rs; by=w -> ((w.id in cp) ? 0 : 1, -length(impact(st, w.id)), w.id))
+    sort!(rs; by=w -> ((w.id in cp) ? 0 : 1, -length(impact(st, w.id)), id_key(w.id)))
     if ctx.json
         items = Dict{String,Any}[
             Dict("id" => w.id, "title" => w.title, "critical" => w.id in cp) for w in rs
@@ -1492,7 +1492,7 @@ function cmd_status(ctx::CliCtx, pos, kw)
     st = load(ctx)
     eff = effective_session_token(ctx.root, kw)
     prog = Node[w for w in listnodes(st, :w) if w.status === :progress]
-    sort!(prog; by=w -> w.id)
+    sort!(prog; by=w -> id_key(w.id))
     if ctx.json
         items = Dict{String,Any}[]
         for w in prog

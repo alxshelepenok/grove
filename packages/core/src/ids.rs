@@ -1,4 +1,31 @@
 use crate::model::{Kind, State};
+use std::cmp::Ordering;
+
+pub fn id_sort_key(id: &str) -> (char, i64, &str) {
+    let fallback = |num: i64| (id.chars().next().unwrap_or('\0'), num, id);
+    let mut parts = id.splitn(2, '-');
+    let (family, rest) = match (parts.next(), parts.next()) {
+        (Some(f), Some(r)) => (f, r),
+        _ => return fallback(i64::MAX),
+    };
+    let mut family_chars = family.chars();
+    let family = match (family_chars.next(), family_chars.next()) {
+        (Some(c), None) => c,
+        _ => return fallback(i64::MAX),
+    };
+    if !family.is_ascii_uppercase() || rest.is_empty() || !rest.bytes().all(|b| b.is_ascii_digit())
+    {
+        return fallback(i64::MAX);
+    }
+    match rest.parse::<i64>() {
+        Ok(n) => (family, n, id),
+        Err(_) => fallback(i64::MAX),
+    }
+}
+
+pub fn id_cmp(a: &str, b: &str) -> Ordering {
+    id_sort_key(a).cmp(&id_sort_key(b))
+}
 
 pub fn family_prefix(kind: Kind) -> char {
     match kind {
@@ -69,5 +96,46 @@ pub fn reconcile_counters(st: &mut State) {
     }
     for id in ids {
         record_id(st, &id);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::id_cmp;
+
+    fn ordered(ids: &[&str]) -> bool {
+        ids.windows(2).all(|w| id_cmp(w[0], w[1]) != std::cmp::Ordering::Greater)
+    }
+
+    #[test]
+    fn sorts_numbers_not_strings() {
+        assert!(ordered(&["W-9", "W-10", "W-99", "W-100", "W-101"]));
+        assert!(ordered(&["G-9", "G-10"]));
+        assert!(ordered(&["A-2", "A-10"]));
+    }
+
+    #[test]
+    fn families_group_by_prefix() {
+        assert!(ordered(&["A-10", "B-2", "D-99", "G-3", "Q-100", "T-4", "W-100", "Y-5"]));
+    }
+
+    #[test]
+    fn zero_and_padding_fall_back_to_string() {
+        assert!(ordered(&["W-0", "W-1"]));
+        assert!(ordered(&["W-0", "W-00"]));
+    }
+
+    #[test]
+    fn malformed_ids_sort_after_numeric_same_family() {
+        assert!(ordered(&["W-100", "W-bogus"]));
+        assert!(ordered(&["W-!", "W-bogus"]));
+        assert_eq!(id_cmp("W-bogus", "W-bogus"), std::cmp::Ordering::Equal);
+    }
+
+    #[test]
+    fn empty_and_lowercase_families_are_total() {
+        assert!(ordered(&["", "A-1"]));
+        assert!(ordered(&["Z-1", "a-1"]));
+        assert!(ordered(&["AB-1", "AB-2"]));
     }
 }

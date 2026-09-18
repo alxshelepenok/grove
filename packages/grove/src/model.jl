@@ -103,6 +103,6 @@ function listnodes(st::State, kind::Symbol; include_archived::Bool=false)
         (include_archived || !n.archived) || continue
         push!(out, n)
     end
-    sort!(out; by=n -> n.id)
+    sort!(out; by=n -> id_key(n.id))
     out
 end

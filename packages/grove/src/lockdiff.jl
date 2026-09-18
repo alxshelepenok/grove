@@ -103,7 +103,7 @@ function fmt_single_field(kind::Symbol, fname::Symbol, v::Any)::String
         isempty(lines) ? "(empty)" : string(length(lines), " prose lines")
     elseif form === :reflist
         xs::Vector{String} = v isa AbstractVector ? String.(v) : String[]
-        isempty(xs) ? "(empty)" : join(sort(xs), ",")
+        isempty(xs) ? "(empty)" : join(sort(xs; by = id_key), ",")
     elseif form === :single
         string(v)::String
     elseif form === :fitness
@@ -166,9 +166,9 @@ function lock_structural_lines(ref::State, wt::State)::Vector{String}
     for kind in NODE_KINDS
         ids_ref = Set(n.id for n in listnodes(ref, kind))
         ids_wt = Set(n.id for n in listnodes(wt, kind))
-        added = sort(collect(setdiff(ids_wt, ids_ref)))
-        removed = sort(collect(setdiff(ids_ref, ids_wt)))
-        common = sort(collect(intersect(ids_ref, ids_wt)))
+        added = sort(collect(setdiff(ids_wt, ids_ref)); by = id_key)
+        removed = sort(collect(setdiff(ids_ref, ids_wt)); by = id_key)
+        common = sort(collect(intersect(ids_ref, ids_wt)); by = id_key)
         if isempty(added) && isempty(removed) &&
            all(cid -> begin
                    nr = ref.nodes[cid]
@@ -232,9 +232,9 @@ function lock_structural_diff_payload(ref::State, wt::State)::Dict{String,Any}
     for kind in NODE_KINDS
         ids_ref = Set(n.id for n in listnodes(ref, kind))
         ids_wt = Set(n.id for n in listnodes(wt, kind))
-        added_ids = sort!(collect(setdiff(ids_wt, ids_ref)))
-        removed_ids = sort!(collect(setdiff(ids_ref, ids_wt)))
-        common = sort!(collect(intersect(ids_ref, ids_wt)))
+        added_ids = sort!(collect(setdiff(ids_wt, ids_ref)); by = id_key)
+        removed_ids = sort!(collect(setdiff(ids_ref, ids_wt)); by = id_key)
+        common = sort!(collect(intersect(ids_ref, ids_wt)); by = id_key)
         chlines = Tuple{Node,Node}[]
         for id in common
             nr = ref.nodes[id]

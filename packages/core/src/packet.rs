@@ -4,6 +4,7 @@ use crate::algebra::{
 };
 use crate::cli::{json_cli_out, load, CliCtx};
 use crate::dor::{dor, dor_breakdown, ready};
+use crate::ids::id_cmp;
 use crate::json::{JVal, JuliaDict};
 use crate::model::{Kind, Node, State};
 use crate::ops::{kw_get, OpResult, EXIT_ERR, EXIT_NOTFOUND};
@@ -217,14 +218,18 @@ pub fn cmd_ready(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> OpR
         Err(e) => return e,
     };
     let cp: BTreeSet<String> = critical_path(&st).into_iter().collect();
-    let mut rs = ready(&st);
-    rs.sort_by_cached_key(|w| {
-        (
-            if cp.contains(&w.id) { 0 } else { 1 },
-            -(impact(&st, &w.id).len() as i64),
-            w.id.clone(),
-        )
-    });
+    let mut rs: Vec<(i64, i64, &Node)> = ready(&st)
+        .into_iter()
+        .map(|w| {
+            (
+                if cp.contains(&w.id) { 0 } else { 1 },
+                -(impact(&st, &w.id).len() as i64),
+                w,
+            )
+        })
+        .collect();
+    rs.sort_by(|a, b| (a.0, a.1).cmp(&(b.0, b.1)).then_with(|| id_cmp(&a.2.id, &b.2.id)));
+    let rs: Vec<&Node> = rs.into_iter().map(|(_, _, w)| w).collect();
     let mut r = OpResult::ok();
     if ctx.json {
         let items: Vec<JVal> = rs

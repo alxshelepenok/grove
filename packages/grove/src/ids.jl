@@ -5,6 +5,23 @@ const FAMILY_PREFIX = Dict(
 
 const ID_WITH_NUM_REGEX = r"^[A-Z]-(0*[1-9][0-9]*)$"
 
+const ID_KEY_REGEX = r"^([A-Z])-(\d+)$"
+
+"""
+Canonical id order key.
+Mirrored in packages/core/src/ids.rs and packages/desktop/ui/js/utils/id-order.js.
+"""
+function id_key(id::AbstractString)::Tuple{Char, Int, String}
+    m = match(ID_KEY_REGEX, id)
+    if m !== nothing
+        n = tryparse(Int, m.captures[2])
+        if n !== nothing
+            return (first(m.captures[1]), n, String(id))
+        end
+    end
+    (isempty(id) ? Char(0) : first(id), typemax(Int), String(id))
+end
+
 """Parse uppercase family letter and numeric suffix (leading zeros ignored)."""
 function parse_id_numeric(id::AbstractString)::Tuple{Char, Int}
     s = String(strip(id))

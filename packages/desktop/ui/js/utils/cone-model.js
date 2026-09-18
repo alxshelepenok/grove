@@ -1,3 +1,4 @@
+import { compareIds } from "./id-order.js";
 import { hslToRgb } from "./graph-model.js";
 
 export const CELL_SPACING = 40;
@@ -113,7 +114,7 @@ export const parseConeModel = (blob) => {
   };
   for (const layer of layers.values()) {
     layer.sort(
-      (a, b) => (a.order ?? Infinity) - (b.order ?? Infinity) || a.id.localeCompare(b.id),
+      (a, b) => (a.order ?? Infinity) - (b.order ?? Infinity) || compareIds(a.id, b.id),
     );
     layer.forEach((n, i) => {
       n.col = n.hop;

@@ -2,6 +2,7 @@ use crate::algebra::rederive_artifacts;
 use crate::dor::{dor, dor_breakdown, parse_requires_coverage};
 use crate::fitness::{goal_structured_kind, rederive_goals, refresh_goal_structured_fitness, GOAL_FITNESS_KINDS};
 use crate::guards::{guard_status_transition, GuardVerdict};
+use crate::ids::id_cmp;
 use crate::json::{parse_json, JuliaDict};
 use crate::journal::*;
 use crate::model::{field_form, FieldValue, Form, Kind, Node, State};
@@ -912,7 +913,7 @@ pub fn op_glossary_rename(
         .filter(|x| x.lines("tags").iter().any(|t| *t == old))
         .map(|x| x.id.clone())
         .collect();
-    users.sort();
+    users.sort_by(|a, b| id_cmp(a, b));
     let in_glossary = terms.contains(&old);
     if !in_glossary && users.is_empty() {
         return OpResult::fail(
