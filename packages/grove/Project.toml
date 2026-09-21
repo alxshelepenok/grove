@@ -10,6 +10,7 @@ SHA = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
 [compat]
+Dates = "< 0.0.1, 1.6"
 JSON = "0.21"
 SHA = "0.7.0"
 TOML = "1.0.3, < 0.0.1, 1"
