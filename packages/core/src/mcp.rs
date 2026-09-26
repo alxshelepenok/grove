@@ -46,8 +46,39 @@ struct Prop {
     choices: &'static [&'static str],
 }
 
+#[derive(Clone, Copy)]
+struct Annotations {
+    read_only: bool,
+    destructive: bool,
+    idempotent: bool,
+}
+
+const RO: Annotations = Annotations {
+    read_only: true,
+    destructive: false,
+    idempotent: true,
+};
+const MUT: Annotations = Annotations {
+    read_only: false,
+    destructive: false,
+    idempotent: false,
+};
+const DES: Annotations = Annotations {
+    read_only: false,
+    destructive: true,
+    idempotent: false,
+};
+const IDEM: Annotations = Annotations {
+    read_only: false,
+    destructive: false,
+    idempotent: true,
+};
+
 struct ToolSpec {
     cmd: &'static str,
+    title: &'static str,
+    desc: &'static str,
+    ann: Annotations,
     props: &'static [Prop],
     required: &'static [&'static str],
 }
@@ -69,6 +100,9 @@ const LABELS: [&str; 9] = [
 const TOOL_SPECS: &[ToolSpec] = &[
     ToolSpec {
         cmd: "init",
+        title: "Initialise project",
+        desc: "Initialise a grove project: create .grove/state.lock, index.md and glossary.md under the project root. Run once per project; every other tool fails until the lock exists, and a second run refuses rather than overwrites. id-stride, id-offset and id-width tune numeric id allocation for new nodes. Returns the initialised .grove path.",
+        ann: MUT,
         props: &[
             Prop { key: "id_stride", cli: "id-stride", typ: PropType::Int, desc: "additive gap between successive numeric id suffixes", choices: &[] },
             Prop { key: "id_offset", cli: "id-offset", typ: PropType::Int, desc: "first suffix when a family allocator is empty", choices: &[] },
@@ -78,9 +112,12 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "add",
+        title: "Add node",
+        desc: "Create one node of the given kind and return its assigned id (for example W-12); nothing else is printed. Only kind and title are always required; other fields apply per kind (goals and theme for w, surface or why for y, fitness for g, supersedes for d, targets for q and b) and invalid combinations are rejected on write. To modify an existing node use set or field; to connect nodes use link.",
+        ann: MUT,
         props: &[
             Prop { key: "kind", cli: "", typ: PropType::Str, desc: "node kind", choices: &KINDS },
-            Prop { key: "title", cli: "title", typ: PropType::Str, desc: "node title", choices: &[] },
+            Prop { key: "title", cli: "title", typ: PropType::Str, desc: "short node title, stamped verbatim", choices: &[] },
             Prop { key: "area", cli: "area", typ: PropType::Str, desc: "owning area A-NN (required for kind g)", choices: &[] },
             Prop { key: "type", cli: "type", typ: PropType::Str, desc: "work item type (w)", choices: &["feature", "refactor", "bug", "spike"] },
             Prop { key: "cynefin", cli: "cynefin", typ: PropType::Str, desc: "cynefin class (w, q, b)", choices: &CYNEFIN },
@@ -102,17 +139,23 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "set",
+        title: "Set node attribute",
+        desc: "Apply one guarded transition of a scalar attribute on a node: status, cynefin, type, title, fitness_kind, fitness_target, area or requires_coverage. Illegal transitions (a status skip, a work item whose DoR is not met) are rejected with the reason and a pointer to dor; success is silent. For list-valued fields such as ac or evidence use field.",
+        ann: MUT,
         props: &[
-            Prop { key: "id", cli: "", typ: PropType::Str, desc: "node id", choices: &[] },
+            Prop { key: "id", cli: "", typ: PropType::Str, desc: "target node id, e.g. W-12, G-03 or D-40", choices: &[] },
             Prop { key: "key", cli: "", typ: PropType::Str, desc: "attribute key: status|cynefin|type|title|fitness_kind|fitness_target|area|requires_coverage", choices: &[] },
-            Prop { key: "value", cli: "", typ: PropType::Str, desc: "new value", choices: &[] },
+            Prop { key: "value", cli: "", typ: PropType::Str, desc: "new value for the attribute key", choices: &[] },
         ],
         required: &["id", "key", "value"],
     },
     ToolSpec {
         cmd: "field",
+        title: "Edit node field",
+        desc: "Edit one list-valued field of a node (ac, hypothesis, evidence_strategy, evidence, outcome, goals, surface, and so on): op add appends value, rm removes the entry at the 1-based index given in value, clear empties the field. Success is silent. For scalar attributes use set; for done-work proof on a work item prefer evidence.",
+        ann: MUT,
         props: &[
-            Prop { key: "id", cli: "", typ: PropType::Str, desc: "node id", choices: &[] },
+            Prop { key: "id", cli: "", typ: PropType::Str, desc: "target node id, e.g. W-12, G-03 or D-40", choices: &[] },
             Prop { key: "field", cli: "", typ: PropType::Str, desc: "field name (ac, hypothesis, evidence_strategy, evidence, outcome, goals, surface, ...)", choices: &[] },
             Prop { key: "op", cli: "", typ: PropType::Str, desc: "field operation", choices: &["add", "rm", "clear"] },
             Prop { key: "value", cli: "", typ: PropType::Str, desc: "entry text (add) or 1-based index (rm)", choices: &[] },
@@ -121,6 +164,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "link",
+        title: "Link nodes",
+        desc: "Create a directed edge from one node to another with a label: blocks, implements, asks, tests, targets, produces, causes, supersedes or distills. Edges feed the ready, next, path, deps and impact analytics and are checked by invariants, so invalid combinations are rejected; success is silent. To remove an edge use unlink.",
+        ann: MUT,
         props: &[
             Prop { key: "from", cli: "", typ: PropType::Str, desc: "source node id", choices: &[] },
             Prop { key: "label", cli: "", typ: PropType::Str, desc: "edge label", choices: &LABELS },
@@ -130,6 +176,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "unlink",
+        title: "Unlink nodes",
+        desc: "Remove one directed edge identified by its from node, label and to node. Refuses when the removal would break graph invariants; success is silent. To create an edge use link.",
+        ann: MUT,
         props: &[
             Prop { key: "from", cli: "", typ: PropType::Str, desc: "source node id", choices: &[] },
             Prop { key: "label", cli: "", typ: PropType::Str, desc: "edge label", choices: &LABELS },
@@ -139,6 +188,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "evidence",
+        title: "Append evidence",
+        desc: "Append one evidence line to a work item's evidence field: the canonical way to record done-work proof, which dor, gate and distill read. Success is silent. Equivalent to field with field=evidence and op=add, but self-documenting.",
+        ann: MUT,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "work item id W-NN", choices: &[] },
             Prop { key: "text", cli: "", typ: PropType::Str, desc: "evidence line to append", choices: &[] },
@@ -147,6 +199,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "fitness",
+        title: "Set fitness delta",
+        desc: "Record how much one work item contributes toward one goal: the per-goal delta, where +N advances the goal, 0 is neutral and -N regresses it. Typically set at creation and re-set when scope changes (the last write wins); the deltas surface in dor breakdowns and execution packets. Success is silent; an unknown work item or goal id fails with `missing: <id>` (exit 5). Use set for scalar attributes and field for list fields; this tool only edits the delta.",
+        ann: MUT,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "work item id W-NN", choices: &[] },
             Prop { key: "goal", cli: "", typ: PropType::Str, desc: "goal id G-NN", choices: &[] },
@@ -156,6 +211,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "archive",
+        title: "Archive goal",
+        desc: "Archive a verified goal together with its exclusive subgraph (w, d, q, b, t) by setting their archived flag; archived nodes stay in the lock but leave active views, so this is a soft removal, not a deletion, and hard to reverse. Requires distillation first: a linked Discovery or a null-distill attestation from distill; gate reports whether the goal is due.",
+        ann: DES,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "goal id G-NN", choices: &[] },
         ],
@@ -163,24 +221,54 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "distill",
+        title: "Distillation worksheet",
+        desc: "Print the distillation worksheet for a verified goal: what its subgraph produced and what should survive in Discoveries before archive. Refuses with the current status when the goal is not verified. Read-only unless null=true, which appends a null-distill attestation to the audit journal; state.lock itself is not mutated. Run this before archive when no Discovery captures the goal.",
+        ann: MUT,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "goal id G-NN", choices: &[] },
             Prop { key: "null", cli: "null", typ: PropType::Bool, desc: "write a null-distill attestation", choices: &[] },
         ],
         required: &["id"],
     },
-    ToolSpec { cmd: "render", props: &[], required: &[] },
+    ToolSpec {
+        cmd: "render",
+        title: "Render index",
+        desc: "Regenerate index.md from the current state.lock. Idempotent, safe to re-run and silent on success; most mutating tools already auto-render, so use it after out-of-band edits or when index.md looks stale.",
+        ann: IDEM,
+        props: &[],
+        required: &[],
+    },
     ToolSpec {
         cmd: "repair",
+        title: "Repair lock checksum",
+        desc: "Accept whatever is currently in state.lock and recompute its checksum; confirm=true is required. Last resort when check reports a checksum mismatch after a manual edit or merge: it blesses the file as-is, so inspect the contents first.",
+        ann: IDEM,
         props: &[
             Prop { key: "confirm", cli: "confirm", typ: PropType::Bool, desc: "accept current lock contents", choices: &[] },
         ],
         required: &["confirm"],
     },
-    ToolSpec { cmd: "ready", props: &[], required: &[] },
-    ToolSpec { cmd: "next", props: &[], required: &[] },
+    ToolSpec {
+        cmd: "ready",
+        title: "List ready work items",
+        desc: "List work items in status ready, one line per item (id, title, and a [crit] marker when the item sits on the critical path), critical-path first. Use this for the whole queue; use next when you want a single recommendation, or packet for one item's full context.",
+        ann: RO,
+        props: &[],
+        required: &[],
+    },
+    ToolSpec {
+        cmd: "next",
+        title: "Propose next work item",
+        desc: "Propose the single next work item to execute and return its full execution packet: the same markdown bundle packet produces, prefixed by the skill banner. The start-of-session default; ready shows the whole queue instead, and packet fetches an arbitrary work item.",
+        ann: RO,
+        props: &[],
+        required: &[],
+    },
     ToolSpec {
         cmd: "packet",
+        title: "Execution packet",
+        desc: "Full execution packet for one work item as markdown: record, goals and fitness contribution, hypotheses, linked decisions, blocking questions and the outcome of every blocker. Fetch this before starting or resuming any work item; next returns the same bundle only for its single proposal, and show prints the bare record without execution context. cone=true appends multi-hop structural context over blocks edges (cone-depth default 4, cone-max default 50 nodes); deps returns just the blocker ids. An unknown id fails with `not found` (exit 5).",
+        ann: RO,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "work item id W-NN", choices: &[] },
             Prop { key: "cone", cli: "cone", typ: PropType::Bool, desc: "append multi-hop structural context on blocks", choices: &[] },
@@ -191,22 +279,45 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "deps",
+        title: "Upstream blockers",
+        desc: "Transitive predecessors over blocks edges: every node that must finish before the given node can start, returned as one id per line in dependency order. impact is the downstream mirror; path shows the whole critical chain.",
+        ann: RO,
         props: &[
-            Prop { key: "id", cli: "", typ: PropType::Str, desc: "node id", choices: &[] },
+            Prop { key: "id", cli: "", typ: PropType::Str, desc: "target node id, e.g. W-12, G-03 or D-40", choices: &[] },
         ],
         required: &["id"],
     },
     ToolSpec {
         cmd: "impact",
+        title: "Downstream impact",
+        desc: "Transitive successors over blocks edges: every node the given node blocks from starting, returned as one id per line. deps is the upstream mirror.",
+        ann: RO,
         props: &[
-            Prop { key: "id", cli: "", typ: PropType::Str, desc: "node id", choices: &[] },
+            Prop { key: "id", cli: "", typ: PropType::Str, desc: "target node id, e.g. W-12, G-03 or D-40", choices: &[] },
         ],
         required: &["id"],
     },
-    ToolSpec { cmd: "path", props: &[], required: &[] },
-    ToolSpec { cmd: "triage", props: &[], required: &[] },
+    ToolSpec {
+        cmd: "path",
+        title: "Critical path",
+        desc: "Print the critical path: the longest chain of unfinished blocks edges, as one id per line in chain order. Use it to see the current bottleneck end to end; deps and impact cover a single node's neighborhood.",
+        ann: RO,
+        props: &[],
+        required: &[],
+    },
+    ToolSpec {
+        cmd: "triage",
+        title: "Triage discovery need",
+        desc: "Rank open work items by discovery need in a table (coverage, chi-square, fragility, suggestion). Read-only advisory input for deciding which work item needs a Discovery next; gate is the pass-or-fail check on the project.",
+        ann: RO,
+        props: &[],
+        required: &[],
+    },
     ToolSpec {
         cmd: "dor",
+        title: "DoR breakdown",
+        desc: "Definition-of-Ready breakdown for one work item: one line per conjunct with its current pass or fail and a final result line. Run it before resume to confirm a work item is actually startable; set status=progress consults the same conjuncts.",
+        ann: RO,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "work item id W-NN", choices: &[] },
         ],
@@ -214,13 +325,19 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "show",
+        title: "Show node record",
+        desc: "Dump one node's full record as plain text: kind, status, timestamps, every populated field and incident edges. An unknown id fails with no output (exit code 5). list filters many nodes by kind or status; packet wraps a work item's record in execution context.",
+        ann: RO,
         props: &[
-            Prop { key: "id", cli: "", typ: PropType::Str, desc: "node id", choices: &[] },
+            Prop { key: "id", cli: "", typ: PropType::Str, desc: "target node id, e.g. W-12, G-03 or D-40", choices: &[] },
         ],
         required: &["id"],
     },
     ToolSpec {
         cmd: "list",
+        title: "List nodes",
+        desc: "List nodes filtered by required kind (g, w, d, q, b, t, y or a), one tab-separated line per node: id, status, title. Optional status and cynefin filters (cynefin = the clear/complicated/complex/chaotic complexity class) narrow the set; when nothing matches, nothing is printed. show dumps one record in full; status summarises the whole project.",
+        ann: RO,
         props: &[
             Prop { key: "kind", cli: "", typ: PropType::Str, desc: "node kind", choices: &KINDS },
             Prop { key: "status", cli: "status", typ: PropType::Str, desc: "status filter", choices: &[] },
@@ -228,12 +345,43 @@ const TOOL_SPECS: &[ToolSpec] = &[
         ],
         required: &["kind"],
     },
-    ToolSpec { cmd: "graph", props: &[], required: &[] },
-    ToolSpec { cmd: "check", props: &[], required: &[] },
-    ToolSpec { cmd: "status", props: &[], required: &[] },
-    ToolSpec { cmd: "stats", props: &[], required: &[] },
+    ToolSpec {
+        cmd: "graph",
+        title: "Graph as mermaid",
+        desc: "Render the whole graph as a fenced mermaid flowchart block: one node per id with status classes and labelled edges. Read-only; deps and impact give a single node's neighborhood.",
+        ann: RO,
+        props: &[],
+        required: &[],
+    },
+    ToolSpec {
+        cmd: "check",
+        title: "Check invariants",
+        desc: "Verify the state.lock checksum and all structural invariants. Returns ok on success, otherwise the first failing invariant; on a checksum mismatch after a deliberate edit see repair.",
+        ann: RO,
+        props: &[],
+        required: &[],
+    },
+    ToolSpec {
+        cmd: "status",
+        title: "Status summary",
+        desc: "One-screen markdown project summary: work in progress, alignment triggers and invariant notes, prefixed by the embedded-skill banner. stats is the historical counterpart; check is pass-or-fail on invariants.",
+        ann: RO,
+        props: &[],
+        required: &[],
+    },
+    ToolSpec {
+        cmd: "stats",
+        title: "Workflow statistics",
+        desc: "Read-only telemetry computed from the journal and the lock, in metric sections: record and mutation counts, cycle time, DoR first-pass rate, bets, discovery, undo and surprise. status summarises current state instead.",
+        ann: RO,
+        props: &[],
+        required: &[],
+    },
     ToolSpec {
         cmd: "diff",
+        title: "Structural diff",
+        desc: "Structural diff of nodes and edges against a git ref (since, default HEAD): grove structures, not text hunks. Requires the project root to be a git repository; outside one it fails with a `not a git repository` error naming the root. log shows who changed what and when.",
+        ann: RO,
         props: &[
             Prop { key: "since", cli: "since", typ: PropType::Str, desc: "git ref to diff against (default HEAD)", choices: &[] },
         ],
@@ -241,6 +389,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "log",
+        title: "Journal timeline",
+        desc: "Timeline of node and edge timestamps plus raw journal records, newest first, one line each; optional id filter and limit (default 200 rows, 0 for unlimited). stats aggregates the same history into metrics.",
+        ann: RO,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "optional node id filter", choices: &[] },
             Prop { key: "limit", cli: "limit", typ: PropType::Int, desc: "row cap (default 200; 0 = unlimited)", choices: &[] },
@@ -249,6 +400,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "renumber",
+        title: "Renumber node",
+        desc: "Change a node's id and rewrite every reference to it across the graph. Refuses while the old id appears in done-work evidence; success is silent. Journal-recorded, but ids quoted in external documents will dangle.",
+        ann: MUT,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "current node id", choices: &[] },
             Prop { key: "to", cli: "to", typ: PropType::Str, desc: "new id", choices: &[] },
@@ -257,6 +411,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "resume",
+        title: "Resume work item",
+        desc: "Adopt this session's token on a progress work item, taking ownership of it: on success the item stays in progress with the session id and timestamp stamped on it (visible as session= in show output) and nothing is printed. Refuses when the item is not in progress. handoff transfers ownership to another session; revert drops the claim and returns the work item to ready.",
+        ann: MUT,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "work item id W-NN", choices: &[] },
         ],
@@ -264,6 +421,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "handoff",
+        title: "Hand off work item",
+        desc: "Transfer ownership of a progress work item to another session token; only the current holder can. resume is how the receiving session picks the item up.",
+        ann: MUT,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "work item id W-NN", choices: &[] },
             Prop { key: "to", cli: "to", typ: PropType::Str, desc: "new owner session token", choices: &[] },
@@ -272,6 +432,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "revert",
+        title: "Revert to ready",
+        desc: "Return a progress work item to ready and clear its session claim (holder or stale claim only); refuses when the item is not in progress. For rolling back graph mutations use undo.",
+        ann: MUT,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "work item id W-NN", choices: &[] },
         ],
@@ -279,6 +442,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "undo",
+        title: "Undo mutations",
+        desc: "Roll back the last N mutations (steps, default 1) by truncating the journal and replaying it. Destructive to audit history: the undone journal records are gone for good, and success is silent. For session claims use revert instead.",
+        ann: DES,
         props: &[
             Prop { key: "steps", cli: "steps", typ: PropType::Int, desc: "number of mutations to revert (default 1)", choices: &[] },
         ],
@@ -286,6 +452,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "gate",
+        title: "Distillation gate",
+        desc: "Report whether the project passes the distillation gate: baseline, treewidth delta, work items done since baseline and what would distill (thresholds theta default 0 and n default 5). Appends a gate record to the audit journal but never mutates state.lock; distill is the worksheet and archive is the action.",
+        ann: MUT,
         props: &[
             Prop { key: "theta", cli: "theta", typ: PropType::Int, desc: "surface overflow threshold (default 0)", choices: &[] },
             Prop { key: "n", cli: "n", typ: PropType::Int, desc: "done-count threshold (default 5)", choices: &[] },
@@ -294,6 +463,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "revalidate",
+        title: "Revalidate discovery",
+        desc: "Move a stale Discovery back to active by paying a fresh anchor: new surface paths and/or provenance ids. Success is silent; the Discovery's new status and revalidation log are visible via show. An unknown id fails with `not found` (exit 5). To copy a Discovery into another project use promote.",
+        ann: MUT,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "discovery id Y-NN", choices: &[] },
             Prop { key: "surface", cli: "surface", typ: PropType::Str, desc: "comma-separated fresh anchor paths", choices: &[] },
@@ -303,15 +475,28 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "glossary",
+        title: "Rename glossary term",
+        desc: "Atomically rename one glossary term in glossary.md and rewrite the Discovery tags that reference it: both halves change together or not at all. Refuses when the term is unknown.",
+        ann: MUT,
         props: &[
             Prop { key: "old", cli: "", typ: PropType::Str, desc: "existing glossary term", choices: &[] },
             Prop { key: "new", cli: "", typ: PropType::Str, desc: "replacement term", choices: &[] },
         ],
         required: &["old", "new"],
     },
-    ToolSpec { cmd: "projects", props: &[], required: &[] },
+    ToolSpec {
+        cmd: "projects",
+        title: "List projects",
+        desc: "List the project registry, one line per project: name, path and last-opened time. Entries are created and refreshed automatically as grove commands run inside a project; this server is bound to a single root at startup.",
+        ann: RO,
+        props: &[],
+        required: &[],
+    },
     ToolSpec {
         cmd: "promote",
+        title: "Promote discovery",
+        desc: "Copy a Discovery into another project (registry name or directory) with origin provenance; the copy arrives as proposed and the target project's state is written, unlike revalidate, which refreshes in place.",
+        ann: MUT,
         props: &[
             Prop { key: "id", cli: "", typ: PropType::Str, desc: "discovery id Y-NN", choices: &[] },
             Prop { key: "to", cli: "to", typ: PropType::Str, desc: "target project (directory or registry name)", choices: &[] },
@@ -320,6 +505,9 @@ const TOOL_SPECS: &[ToolSpec] = &[
     },
     ToolSpec {
         cmd: "skill",
+        title: "Embedded skill",
+        desc: "Print the embedded agent skill (the SKILL.md workflow guide with frontmatter), or install it as a skill directory when install names one. The same content is also readable as the grove://skill resource.",
+        ann: IDEM,
         props: &[Prop {
             key: "install",
             cli: "install",
@@ -404,8 +592,12 @@ fn help_description(cmd: &str) -> String {
     format!("grove {cmd}")
 }
 
-fn tool_description(cmd: &str) -> String {
-    help_description(cmd)
+fn tool_description(spec: &ToolSpec) -> String {
+    if spec.desc.is_empty() {
+        help_description(spec.cmd)
+    } else {
+        spec.desc.to_string()
+    }
 }
 
 fn prop_schema_json(prop: &Prop) -> String {
@@ -436,11 +628,15 @@ fn tool_json(spec: &ToolSpec) -> String {
     }
     let required: Vec<String> = spec.required.iter().map(|r| jstr(r)).collect();
     format!(
-        "{{\"name\":{},\"description\":{},\"inputSchema\":{{\"type\":\"object\",\"properties\":{{{}}},\"required\":[{}],\"additionalProperties\":false}}}}",
+        "{{\"name\":{},\"title\":{},\"description\":{},\"inputSchema\":{{\"type\":\"object\",\"properties\":{{{}}},\"required\":[{}],\"additionalProperties\":false}},\"annotations\":{{\"readOnlyHint\":{},\"destructiveHint\":{},\"idempotentHint\":{},\"openWorldHint\":false}}}}",
         jstr(spec.cmd),
-        jstr(&tool_description(spec.cmd)),
+        jstr(spec.title),
+        jstr(&tool_description(spec)),
         props,
-        required.join(",")
+        required.join(","),
+        spec.ann.read_only,
+        spec.ann.destructive,
+        spec.ann.idempotent
     )
 }
 

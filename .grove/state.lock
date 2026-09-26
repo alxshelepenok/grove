@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:c59502f63211b19e758d8fc1f2e2d4c9f36da47d27c588f41adf0b25faec30a4
+# checksum: sha256:be9c6aae7219948b0054ba956021ca1f7c6a4940471ab15ff8cd60cf9c1a4da5
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -2334,7 +2334,7 @@ t T-07 status=done t_created=2026-08-30T17:29:26Z t_updated=2026-08-31T00:13:53Z
 
 t T-08 status=done t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T15:58:07Z "Skill packaging drift and dangling references"
 
-y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-07-27T14:44:48Z "Normalize at capture, never inject test clocks"
+y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-09-26T00:18:53Z "Normalize at capture, never inject test clocks"
   tags: normalization
   surface: packages/grove/conformance/run.jl, packages/core/tests/corpus_replay.rs
   invariant:
@@ -2342,8 +2342,8 @@ y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-07-27T14:44:4
   skill_updates:
     | When porting behavior to a second implementation, replay the corpus fixtures instead of re-deriving expectations by hand
 
-y Y-02 status=active t_created=2026-07-27T18:20:21Z t_updated=2026-08-07T00:42:35Z "Never gate a validation task on the hypotheses it validates"
-  tags: causal inversion
+y Y-02 status=active t_created=2026-07-27T18:20:21Z t_updated=2026-09-26T00:18:53Z "Never gate a validation task on the hypotheses it validates"
+  tags: causal-inversion
   invariant:
     | Assumptions gate claims and dependent implementation work, never the measurement task that tests them; a validation task carries produces provenance for the records it measures, and hypothesis records gate external claims instead
   why:
@@ -2354,12 +2354,12 @@ y Y-02 status=active t_created=2026-07-27T18:20:21Z t_updated=2026-08-07T00:42:3
     | 2026-08-04T23:36:50Z surface=docs/plans/effectiveness-v1.md
     | 2026-08-07T00:41:12Z from=W-02
 
-y Y-03 status=active t_created=2026-07-28T01:36:10Z t_updated=2026-07-28T20:04:04Z "Integration surfaces are thin adapters over the core CLI contract"
-  tags: thin adapter
+y Y-03 status=active t_created=2026-07-28T01:36:10Z t_updated=2026-09-26T00:18:53Z "Integration surfaces are thin adapters over the core CLI contract"
+  tags: thin-adapter
   surface: packages/core/src/mcp.rs, packages/mcp/src/main.rs, packages/desktop/src-tauri/src/bridge.rs
 
-y Y-04 status=active t_created=2026-08-04T18:34:40Z t_updated=2026-08-07T01:00:48Z "Release-distribution plan audit: factual errors and design gaps"
-  tags: verify-then-parse, pinned origin
+y Y-04 status=active t_created=2026-08-04T18:34:40Z t_updated=2026-09-26T00:18:54Z "Release-distribution plan audit: factual errors and design gaps"
+  tags: verify-then-parse, pinned-origin
   surface: .github/workflows/release.yml, install.sh
   invariant:
     | Every pinned origin in the plan names a nonexistent GitHub owner (alexshelepenok vs actual alxshelepenok), the macos-13 runner is retired (use macos-15-intel until ~Aug 2027), and osv-scanner has no Julia Manifest.toml parser (JLSEC data is live in osv.dev; Trivy parses Manifest.toml natively)
@@ -2370,7 +2370,7 @@ y Y-04 status=active t_created=2026-08-04T18:34:40Z t_updated=2026-08-07T01:00:4
   revalidation:
     | 2026-08-04T23:36:50Z surface=docs/plans/release-distribution-plan.md
 
-y Y-05 status=superseded t_created=2026-08-05T17:36:18Z t_updated=2026-08-08T17:03:21Z "G-16 implementation audit: pre-release fixes and desktop artifact gap"
+y Y-05 status=superseded t_created=2026-08-05T17:36:18Z t_updated=2026-09-26T00:18:53Z "G-16 implementation audit: pre-release fixes and desktop artifact gap"
   tags: verify-then-parse
   surface: .github/workflows/release.yml
   invariant:
@@ -2380,7 +2380,7 @@ y Y-05 status=superseded t_created=2026-08-05T17:36:18Z t_updated=2026-08-08T17:
   skill_updates:
     | Desktop bundles are excluded by plan deferral, not by oversight: the manifest schema already reserves desktop_* keys, so adding them is an extension of the existing matrix (new tauri build legs + artifact keys), not a redesign; SECURITY.md scope must be extended to the desktop app when it ships
 
-y Y-06 status=superseded t_created=2026-08-05T19:13:24Z t_updated=2026-08-08T17:04:14Z "G-16 follow-up audit: artifact name collision and installer parity bugs"
+y Y-06 status=superseded t_created=2026-08-05T19:13:24Z t_updated=2026-09-26T00:18:53Z "G-16 follow-up audit: artifact name collision and installer parity bugs"
   tags: verify-then-parse
   surface: .github/workflows/release.yml
   invariant:
@@ -2390,19 +2390,19 @@ y Y-06 status=superseded t_created=2026-08-05T19:13:24Z t_updated=2026-08-08T17:
   skill_updates:
     | substring matching is not version matching: audit-filter.jl suppresses a CVE on any version whose string is a prefix of the VEX ref; desktop binary in install.sh misses chmod +x (tests pass on Git Bash only because MSYS fakes the x-bit)
 
-y Y-07 status=active t_created=2026-08-08T23:08:01Z t_updated=2026-08-08T23:19:46Z "MCP tool failures must surface CLI stderr; a bare exit code leaves clients blind"
-  tags: thin adapter
+y Y-07 status=active t_created=2026-08-08T23:08:01Z t_updated=2026-09-26T00:18:53Z "MCP tool failures must surface CLI stderr; a bare exit code leaves clients blind"
+  tags: thin-adapter
   surface: packages/core/src/mcp.rs, packages/core/src/cli.rs
 
-y Y-08 status=active t_created=2026-08-10T20:12:04Z t_updated=2026-08-10T20:13:36Z "Keep embedded-asset filenames URL-plain: percent-encoded paths (%5B etc.) against frontendDist assets are decoded inconsistently across webviews, silently breaking @font-face on systems without local font fallbacks"
-  tags: url-plain asset
+y Y-08 status=active t_created=2026-08-10T20:12:04Z t_updated=2026-09-26T00:18:54Z "Keep embedded-asset filenames URL-plain: percent-encoded paths (%5B etc.) against frontendDist assets are decoded inconsistently across webviews, silently breaking @font-face on systems without local font fallbacks"
+  tags: url-plain-asset
   surface: packages/desktop/ui/css/fonts.css, packages/desktop/src-tauri/tauri.conf.json
 
 y Y-09 status=active t_created=2026-08-17T11:31:47Z t_updated=2026-08-28T00:38:34Z "A dsh agent runs keyless by overriding the agent-default-model row with a scripted mock provider, so tool plugins can be smoke-tested through the real Loader without API keys"
   tags: dsh
   surface: packages/dsh/test/fixtures/mock-grove-llm.mjs, packages/dsh/test/fixtures/headless-smoke.patch.yml
 
-y Y-10 status=active t_created=2026-08-17T11:31:56Z t_updated=2026-08-17T11:59:56Z "A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately"
+y Y-10 status=active t_created=2026-08-17T11:31:56Z t_updated=2026-09-26T00:18:54Z "A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately"
   tags: bundle
   surface: packages/dsh/package.json, packages/dsh/cordis.patch.yml
 
@@ -2410,46 +2410,46 @@ y Y-11 status=active t_created=2026-08-17T11:59:20Z t_updated=2026-08-17T11:59:2
   tags: dsh
   surface: packages/dsh/package.json, packages/dsh/test/stubs/dsh-type-meta/package.json
 
-y Y-12 status=active t_created=2026-08-28T00:38:09Z t_updated=2026-08-28T00:38:34Z "Per-OS installer branches run under a uname shim and the CI OS matrix"
-  tags: uname shim
+y Y-12 status=active t_created=2026-08-28T00:38:09Z t_updated=2026-09-26T00:18:55Z "Per-OS installer branches run under a uname shim and the CI OS matrix"
+  tags: uname-shim
   surface: tests/install/test-install.sh
   invariant:
     | Cross-platform install scripts exercise every per-OS branch locally via a uname shim that reports the foreign OS, while native behaviour stays covered by the CI OS matrix; a native-only run never proves foreign branches.
 
-y Y-13 status=active t_created=2026-08-28T21:50:11Z t_updated=2026-08-28T21:50:19Z "Neo4j is a read-only projection of state.lock, never its storage backend"
-  tags: Neo4j
+y Y-13 status=active t_created=2026-08-28T21:50:11Z t_updated=2026-09-26T00:18:55Z "Neo4j is a read-only projection of state.lock, never its storage backend"
+  tags: neo4j
   why:
     | Grove's guarantees (SHA-256 checksum, git merge protocol, executable undo, offline single-writer) live in the lock file; a graph database only adds value downstream as a query and federation mirror, reachable through a thin Cypher export.
 
-y Y-14 status=active t_created=2026-08-28T22:32:29Z t_updated=2026-08-28T22:32:41Z "bun test runs plain-ESM unit tests without package.json"
-  tags: DOM-free module
+y Y-14 status=active t_created=2026-08-28T22:32:29Z t_updated=2026-09-26T00:18:55Z "bun test runs plain-ESM unit tests without package.json"
+  tags: dom-free-module
   surface: packages/desktop/ui/js/utils/graph-math.js, packages/desktop/ui/js/utils/graph-math.test.js
 
-y Y-15 status=active t_created=2026-08-28T23:17:03Z t_updated=2026-08-28T23:17:10Z "A vendored ESM library pair loads without an import map"
-  tags: vendored ESM pair, DOM-free module
+y Y-15 status=active t_created=2026-08-28T23:17:03Z t_updated=2026-09-26T00:18:55Z "A vendored ESM library pair loads without an import map"
+  tags: vendored-esm-pair, dom-free-module
   surface: packages/desktop/ui/js/vendor, packages/desktop/ui/js/views/graph-3d.js, packages/desktop/ui/js/utils/force-3d.js
 
-y Y-16 status=active t_created=2026-08-28T23:38:31Z t_updated=2026-09-03T07:11:31Z "Import parse checks miss handler-scoped reference errors"
-  tags: served-DOM harness, DOM-free module
+y Y-16 status=active t_created=2026-08-28T23:38:31Z t_updated=2026-09-26T00:18:56Z "Import parse checks miss handler-scoped reference errors"
+  tags: served-dom-harness, dom-free-module
   why:
     | bun import smoke checks passed while every pointerdown threw ReferenceError at runtime, because the missing identifier lived inside an event handler the import path never executes; only the served-DOM drag harness exposed it, so interaction surfaces need a browser probe, not a parse check.
 
-y Y-17 status=active t_created=2026-08-30T21:25:48Z t_updated=2026-08-30T21:25:51Z "One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate"
-  tags: causality cone
+y Y-17 status=active t_created=2026-08-30T21:25:48Z t_updated=2026-09-26T00:18:56Z "One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate"
+  tags: causality-cone
   surface: packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/js/views/cone.js
   why:
     | Six render metaphors in one day each layered a new coordinate convention onto the last (hop lattice, averaged snapping, half-step stacks), and the mixed scene read as mush: colliding cells, plane grids that never aligned, dom labels that lied under orbit. The rebuild that held did not swap the metaphor again - it fixed one integer lattice with deterministic collision resolution and shared plane footprints, moved direction into object color, and distance-compensated every label per frame so all render at one pixel height, hidden past a zoom threshold like the graph view.
 
-y Y-18 status=active t_created=2026-09-03T07:12:30Z t_updated=2026-09-03T07:13:02Z "Thick 3D edges need beam geometry, not linewidth"
-  tags: causality cone, beam geometry
+y Y-18 status=active t_created=2026-09-03T07:12:30Z t_updated=2026-09-26T00:18:56Z "Thick 3D edges need beam geometry, not linewidth"
+  tags: causality-cone, beam-geometry
   surface: packages/desktop/ui/js/views/cone-edges.js
   invariant:
     | WebGL pins LineBasicMaterial linewidth to one device pixel, so a visually thicker edge must be real geometry: instanced boxes stretched between node centers, with thickness in world units tuned against the default camera radius (about 2.7 pixels per unit at radius 320); a 6-unit beam reads as a bar, 1.5 units reads as a slightly thicker line.
   skill_updates:
     | Tune any future 3D highlight thickness in pixels-per-world-unit at the default rig radius before picking a constant; verify in a served-DOM harness screenshot, not by eye in code review.
 
-y Y-19 status=active t_created=2026-09-03T07:40:16Z t_updated=2026-09-03T08:16:53Z "Zoom text fade is one shared curve, not per-view thresholds"
-  tags: label fade, causality cone
+y Y-19 status=active t_created=2026-09-03T07:40:16Z t_updated=2026-09-26T00:18:56Z "Zoom text fade is one shared curve, not per-view thresholds"
+  tags: label-fade, causality-cone
   surface: packages/desktop/ui/js/utils/label-fade.js
   invariant:
     | Text visibility under zoom is a pure function labelFadeOpacity(factor) in a DOM-free util: full at or below the inner factor edge (1.1), smoothstep to zero at the outer edge (2.4), where factor is camera radius over fit radius (3D) or fit scale over zoom scale (2D). Views feed it per frame to sprite material opacity and DOM style opacity; no view may keep text on a hard threshold or permanently visible legend.
@@ -2457,21 +2457,25 @@ y Y-19 status=active t_created=2026-09-03T07:40:16Z t_updated=2026-09-03T08:16:5
     | The graph view (js/views/graph.js, graph-3d.js) still hides ids on its own threshold; port it to labelFadeOpacity with the 2D factor mapping when that screen is touched next.
     | Ported to both graph views (W-171): 2D maps fitScale over zoom, 3D maps camera radius over labelBaseRadius; the curve itself needed no change.
 
-y Y-20 status=active t_created=2026-09-04T11:40:01Z t_updated=2026-09-04T11:40:48Z "Backdrop ordering for transparent 3D line layers"
-  tags: backdrop ordering, causality cone
+y Y-20 status=active t_created=2026-09-04T11:40:01Z t_updated=2026-09-26T00:18:57Z "Backdrop ordering for transparent 3D line layers"
+  tags: backdrop-ordering, causality-cone
   surface: packages/desktop/ui/js/views/cone-lattice.js
   invariant:
     | Every transparent line layer in a three.js scene declares its compositing tier explicitly: decorative grids get depthWrite=false with the lowest renderOrder, connector lines the next tier, semantic edges keep the default order, overlays sit above; without explicit tiers the per-object distance sort lets a dim grid fragment replace or darken an edge pixel at screen-space crossings, which reads as a one-pixel break.
   glossary_updates:
     | Added backdrop-ordering (W-172).
 
-y Y-21 status=proposed t_created=2026-09-17T23:15:39Z t_updated=2026-09-17T23:21:51Z "Desktop tables order node ids lexicographically"
-  tags: natural id order
+y Y-21 status=proposed t_created=2026-09-17T23:15:39Z t_updated=2026-09-26T00:18:57Z "Desktop tables order node ids lexicographically"
+  tags: natural-id-order
   surface: packages/core/src/model.rs, packages/core/src/status.rs, packages/desktop/src-tauri/src/views/work.rs, packages/desktop/src-tauri/src/views/goals.rs, packages/desktop/src-tauri/src/views/themes.rs, packages/desktop/src-tauri/src/triggers.rs, packages/desktop/ui/js/utils/cone-model.js, packages/desktop/src-tauri/src/views/cone.rs, packages/core/src/algebra.rs
 
-y Y-22 status=proposed t_created=2026-09-18T00:01:50Z t_updated=2026-09-18T00:01:50Z "Natural id order lives in three mirrored comparators while lock bytes stay byte-ordered"
-  tags: natural id order
-  surface: packages/core/src/ids.rs,  packages/grove/src/ids.jl,  packages/desktop/ui/js/utils/id-order.js,  packages/grove/src/lock.jl,  packages/core/src/serialize.rs
+y Y-22 status=proposed t_created=2026-09-18T00:01:50Z t_updated=2026-09-26T00:18:57Z "Natural id order lives in three mirrored comparators while lock bytes stay byte-ordered"
+  tags: natural-id-order
+  surface: packages/core/src/ids.rs, packages/grove/src/ids.jl, packages/desktop/ui/js/utils/id-order.js, packages/grove/src/lock.jl, packages/core/src/serialize.rs
+
+y Y-23 status=active t_created=2026-09-26T00:13:45Z t_updated=2026-09-26T00:18:57Z "grove-mcp tool descriptions are dedicated TOOL_SPECS prose stating purpose, when to use, returns, and failure paths; parsed CLI help lines fail TDQS rubrics"
+  tags: tdqs
+  surface: packages/core/src/mcp.rs
 
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"
   surface: packages/grove/src/stats.jl, packages/grove/test/test_stats.jl
@@ -2520,6 +2524,7 @@ e Q-12 asks W-175 t_created=2026-09-17T13:05:36Z
 e Q-13 asks W-174 t_created=2026-09-17T13:05:36Z
 e Q-14 asks W-177 t_created=2026-09-17T13:05:36Z
 e Q-14 asks W-179 t_created=2026-09-17T13:05:36Z
+e Q-16 asks W-189 t_created=2026-09-25T22:58:12Z
 e T-02 causes W-17 t_created=2026-07-28T02:40:29Z
 e T-02 causes W-85 t_created=2026-08-05T18:45:04Z
 e T-03 causes W-85 t_created=2026-08-05T18:45:33Z
@@ -2614,6 +2619,7 @@ e W-179 implements D-35 t_created=2026-09-17T13:07:15Z
 e W-182 implements D-37 t_created=2026-09-17T15:44:23Z
 e W-186 implements D-38 t_created=2026-09-17T17:21:31Z
 e W-188 implements D-39 t_created=2026-09-17T23:27:25Z
+e W-189 implements D-40 t_created=2026-09-25T23:38:14Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z
@@ -2651,9 +2657,11 @@ e Y-17 distills D-30 t_created=2026-08-30T21:25:48Z
 e Y-20 distills Q-11 t_created=2026-09-04T11:40:01Z
 e Y-21 distills Q-15 t_created=2026-09-17T23:15:39Z
 e Y-22 distills D-39 t_created=2026-09-18T00:01:50Z
+e Y-23 distills D-40 t_created=2026-09-26T00:13:45Z
+e Y-23 distills Q-16 t_created=2026-09-26T00:13:45Z
 
 :archive
-g G-01 status=verified fitness_kind=boolean t_created=2026-07-19T01:13:53Z t_updated=2026-08-10T18:45:36Z "Effectiveness report v1 on dogfood telemetry"
+g G-01 status=verified fitness_kind=boolean t_created=2026-07-19T01:13:53Z t_updated=2026-09-25T23:56:47Z "Effectiveness report v1 on dogfood telemetry"
   area: A-01
   fitness_current: false
 
@@ -2743,7 +2751,14 @@ g G-20 status=verified fitness_kind=count t_created=2026-08-10T19:52:01Z t_updat
   fitness_target: 2
   fitness_current: 2
 
-w W-01 type=feature status=done cynefin=complicated t_created=2026-07-19T01:14:39Z t_updated=2026-07-27T18:21:48Z "Extend grove stats with audit-cost metrics"
+g G-41 status=verified fitness_kind=boolean t_created=2026-09-25T22:58:06Z t_updated=2026-09-26T00:13:59Z "grove MCP tool definitions pass TDQS quality checks"
+  area: A-04
+  fitness_target: true
+  fitness_current: true
+  notes:
+    | Criteria: tdqs lint reports 0 errors and 0 warnings; tdqs score server tier is B or better (evidence in W-189: lint 0/0, tier A 4.1).
+
+w W-01 type=feature status=done cynefin=complicated t_created=2026-07-19T01:14:39Z t_updated=2026-09-25T23:56:47Z "Extend grove stats with audit-cost metrics"
   goals: G-01
   theme: T-01
   fitness: G-01=+0
@@ -3080,6 +3095,31 @@ w W-18 type=feature status=done cynefin=complicated t_created=2026-07-27T23:45:2
     | deviations: a stale grove-desktop.exe from an earlier smoke run held the build output lock and was killed; the hand-built-lock test writes the lock directly plus repair --confirm (strict parse needs a valid checksum placeholder; CLI-driven Y transitions would need anchor edges); triggers intentionally show badge_count (triggers plus stale claims) to match the rail badge
   why:
     | G-06 (+1 of 5): overview is the landing surface and the status bar carries the same vitals on every route; that is what makes the app feel instrumented rather than navigational
+
+w W-189 type=bug status=done cynefin=clear t_created=2026-09-25T22:58:10Z t_updated=2026-09-26T00:13:59Z "Fix grove MCP tool definitions flagged by TDQS"
+  goals: G-41
+  fitness: G-41=+1
+  surface: packages/core/src/mcp.rs, packages/mcp/tests/mcp.rs
+  ac:
+    | tdqs lint over the rebuilt grove-mcp tools/list reports 0 errors and 0 warnings
+    | tdqs score records server tier B or better with a fixed free OpenRouter model
+    | Every grove-mcp tool description states purpose, when to use the tool, and what it returns
+    | cargo test -p grove-core -p grove-mcp passes with the new descriptions
+  hypothesis:
+    | Rubric losses concentrate in Purpose Clarity and Usage Guidelines because descriptions are one-line CLI help strings; dedicated multi-sentence prose in TOOL_SPECS fixes this without output-schema changes.
+  repro:
+    | Dump grove-mcp tools/list and run npx mcp-tdqs score: one-line CLI-help descriptions (e.g. show: 'record dump') score low on Purpose Clarity and Usage Guidelines dimensions.
+  evidence_strategy:
+    | Dump tools/list before and after, run npx mcp-tdqs lint and score against a fixed free OpenRouter model, record tier and dimension deltas; run cargo test.
+  evidence:
+    | cargo test -p grove-core -p grove-mcp: core suites green (21 + 5), MCP suite 13/13 including new title/annotations/readOnly assertions.
+    | npx mcp-tdqs lint on the rebuilt binary: 0 errors, 0 warnings, 39 informational no-output-schema notes — via both --file (dumped tools/list) and --command (live stdio spawn).
+    | TDQS score (cohere/north-mini-code:free, reasoning off) of the rich-description tools/list: server tier A 3.5 (mean 3.70, min 2.4), descriptionQuality B 3.2, coherence A 4.3; weakest dimensions usage_guidelines 3.18 / contextual_completeness 3.18 — the committed descriptions add when-to-use, returns and failure clauses plus titles and annotations targeting exactly those.
+    | Direct re-score of the final dump is pending: OpenRouter account hit free-models-per-day (429 on every :free model); report artifacts in .tdqs-tmp/ (tools-after.json ready to score).
+    | Final tdqs score via Aliyun MaaS qwen-plus-character (user-supplied OpenAI-compatible endpoint, substituted for the quota-exhausted OpenRouter free tier): server tier A 4.1, mean 4.30, min 3.0, descriptionQuality A 3.8, coherence A 4.8; zero tools below tier B; dimension averages: purpose_clarity 4.90, usage_guidelines 4.31, contextual_completeness 4.18 (baseline weak spots). Report: .tdqs-tmp/score-after.json; dump: .tdqs-tmp/tools-after.json.
+    | independent re-validation (2026-09-26): tdqs lint 0 errors / 0 warnings (39 informational no-output-schema notes) and cargo test -p grove-core -p grove-mcp 308 passed / 0 failed on the rebuilt binary.
+    | tdqs score via Aliyun MaaS qwen-plus-character, three runs: baseline confirmed A 4.2 all-A (min 3.8); second run A 3.7 flagged fitness B 3.2 and list B 3.0 on behavioral_transparency (no error/edge-case clauses); descriptions of show, diff, resume, revalidate, fitness, list extended with error paths and post-conditions verified against ops.rs/revalidate.rs and live CLI behavior on a scratch project.
+    | final tdqs score: server tier A 3.9, descriptionQuality A 4.0, coherence A 3.8, mean 4.3, min 3.7, all 39 tools tier A; artifacts .tdqs-tmp/tools-final.json (dump) and .tdqs-tmp/score-final.json (report), dir now gitignored.
 
 w W-19 type=feature status=done cynefin=complicated t_created=2026-07-27T23:45:41Z t_updated=2026-07-29T00:01:54Z "Areas screen with per-area coverage"
   goals: G-06
@@ -4743,6 +4783,8 @@ d D-04 status=accepted t_created=2026-07-20T03:29:25Z t_updated=2026-08-08T23:08
 
 d D-11 status=accepted t_created=2026-08-08T23:05:21Z t_updated=2026-08-08T23:06:46Z "Programmatic API surface abandoned in favor of MCP; scaling and perf work extracted to G-17"
 
+d D-40 status=accepted t_created=2026-09-25T22:58:05Z t_updated=2026-09-26T00:13:59Z "grove-mcp serves dedicated per-tool descriptions from TOOL_SPECS instead of parsed CLI help lines"
+
 q Q-01 status=answered cynefin=complicated t_created=2026-07-19T01:19:10Z t_updated=2026-08-08T23:06:46Z "Is the Julia server still needed if the Rust track lands?"
   exit:
     | Resolved at the Phase 3 gate from Phase 4 corpus results
@@ -4756,6 +4798,10 @@ q Q-02 status=answered cynefin=complex t_created=2026-07-19T01:19:17Z t_updated=
     | Deferred to the 4C gate by design: W-09 itself delivers the differential corpus evidence this question is answered from; answering now would be unfounded
   outcome:
     | Rust becomes the MCP and desktop backend: corpus 28/28 byte-identical, 19/19 read-only commands identical on the dogfood lock, 278 cargo tests green; maintenance burden accepted
+
+q Q-16 status=answered cynefin=complicated t_created=2026-09-25T22:58:05Z t_updated=2026-09-26T00:13:59Z "Do description-only changes lift grove-mcp to TDQS tier B, or are structured output schemas required?"
+  outcome:
+    | Description-only for this pass: tdqs lint is already clean (0 errors, 0 warnings; only informational no-output-schema notes), and grove tools return human-readable text, so structured output schemas are a separate later feature. Dedicated prose descriptions carry the rubric weight.
 
 t T-02 status=open t_created=2026-07-28T02:40:22Z t_updated=2026-08-05T18:45:04Z "Desktop UI coherence"
 
