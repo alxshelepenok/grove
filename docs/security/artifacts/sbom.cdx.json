@@ -2,9 +2,9 @@
   "dependencies": [
     {
       "dependsOn": [
-        "bfbe9a02-7e6f-40c7-aef0-e6302e8de2f9"
+        "4fe467e9-face-45ac-9c3e-d388e9a66751"
       ],
-      "ref": "7a47a720-7d9b-4673-ae48-4963a5e83b66"
+      "ref": "48b5fd7c-d307-4790-9fef-bb450952a51d"
     },
     {
       "dependsOn": [
@@ -14,18 +14,18 @@
         "pkg:julia/SHA@0.7.0?uuid=ea8e919c-243c-51af-8825-aaa63cd721ce",
         "pkg:julia/TOML@1.0.3?uuid=fa267f1f-6049-4f14-aa54-33bafae1ed76"
       ],
-      "ref": "bfbe9a02-7e6f-40c7-aef0-e6302e8de2f9"
+      "ref": "4fe467e9-face-45ac-9c3e-d388e9a66751"
     },
     {
       "dependsOn": [
         "registry+https://github.com/rust-lang/crates.io-index#sha2@0.10.9",
         "registry+https://github.com/rust-lang/crates.io-index#unicode-normalization@0.1.25"
       ],
-      "ref": "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.0"
+      "ref": "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.1"
     },
     {
       "dependsOn": [
-        "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.0",
+        "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.1",
         "registry+https://github.com/rust-lang/crates.io-index#handlebars@6.4.4",
         "registry+https://github.com/rust-lang/crates.io-index#serde@1.0.229",
         "registry+https://github.com/rust-lang/crates.io-index#serde_json@1.0.151",
@@ -35,14 +35,14 @@
         "registry+https://github.com/rust-lang/crates.io-index#tauri-plugin-single-instance@2.4.4",
         "registry+https://github.com/rust-lang/crates.io-index#tauri-plugin-window-state@2.4.1"
       ],
-      "ref": "path+file:///home/runner/work/grove/grove/packages/desktop/src-tauri#grove-desktop@0.2.0"
+      "ref": "path+file:///home/runner/work/grove/grove/packages/desktop/src-tauri#grove-desktop@0.2.1"
     },
     {
       "dependsOn": [
-        "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.0",
+        "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.1",
         "registry+https://github.com/rust-lang/crates.io-index#sha2@0.10.9"
       ],
-      "ref": "path+file:///home/runner/work/grove/grove/packages/mcp#grove-mcp@0.2.0"
+      "ref": "path+file:///home/runner/work/grove/grove/packages/mcp#grove-mcp@0.2.1"
     },
     {
       "dependsOn": [
@@ -2809,7 +2809,7 @@
       "ref": "registry+https://github.com/rust-lang/crates.io-index#zvariant_utils@3.5.0"
     }
   ],
-  "serialNumber": "urn:uuid:92cc8093-3812-4187-900b-584a9733dda1",
+  "serialNumber": "urn:uuid:8ef395e1-f266-4e6c-9f03-737112a3d177",
   "specVersion": "1.6",
   "metadata": {
     "tools": [
@@ -2825,14 +2825,14 @@
       "bom-ref": "pkg:generic/grove",
       "type": "application"
     },
-    "timestamp": "2026-09-17T22:20:16Z"
+    "timestamp": "2026-09-26T00:41:50Z"
   },
   "bomFormat": "CycloneDX",
   "version": 1,
   "components": [
     {
       "name": "packages/grove",
-      "bom-ref": "7a47a720-7d9b-4673-ae48-4963a5e83b66",
+      "bom-ref": "48b5fd7c-d307-4790-9fef-bb450952a51d",
       "properties": [
         {
           "name": "aquasecurity:trivy:SchemaVersion",
@@ -6606,26 +6606,26 @@
         }
       ],
       "scope": "required",
-      "bom-ref": "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.0",
-      "purl": "pkg:cargo/grove-core@0.2.0?download_url=file://.",
+      "bom-ref": "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.1",
+      "purl": "pkg:cargo/grove-core@0.2.1?download_url=file://.",
       "components": [
         {
           "name": "grove_core",
-          "bom-ref": "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.0 bin-target-0",
-          "purl": "pkg:cargo/grove-core@0.2.0?download_url=file://.#src/lib.rs",
+          "bom-ref": "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.1 bin-target-0",
+          "purl": "pkg:cargo/grove-core@0.2.1?download_url=file://.#src/lib.rs",
           "type": "library",
-          "version": "0.2.0"
+          "version": "0.2.1"
         },
         {
           "name": "grove",
-          "bom-ref": "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.0 bin-target-1",
-          "purl": "pkg:cargo/grove-core@0.2.0?download_url=file://.#src/bin/grove.rs",
+          "bom-ref": "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.1 bin-target-1",
+          "purl": "pkg:cargo/grove-core@0.2.1?download_url=file://.#src/bin/grove.rs",
           "type": "application",
-          "version": "0.2.0"
+          "version": "0.2.1"
         }
       ],
       "type": "application",
-      "version": "0.2.0"
+      "version": "0.2.1"
     },
     {
       "name": "grove-core",
@@ -6635,10 +6635,10 @@
         }
       ],
       "scope": "required",
-      "bom-ref": "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.0",
-      "purl": "pkg:cargo/grove-core@0.2.0?download_url=file://../../core",
+      "bom-ref": "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.1",
+      "purl": "pkg:cargo/grove-core@0.2.1?download_url=file://../../core",
       "type": "library",
-      "version": "0.2.0"
+      "version": "0.2.1"
     },
     {
       "name": "grove-core",
@@ -6648,10 +6648,10 @@
         }
       ],
       "scope": "required",
-      "bom-ref": "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.0",
-      "purl": "pkg:cargo/grove-core@0.2.0?download_url=file://../core",
+      "bom-ref": "path+file:///home/runner/work/grove/grove/packages/core#grove-core@0.2.1",
+      "purl": "pkg:cargo/grove-core@0.2.1?download_url=file://../core",
       "type": "library",
-      "version": "0.2.0"
+      "version": "0.2.1"
     },
     {
       "name": "grove-desktop",
@@ -6661,26 +6661,26 @@
         }
       ],
       "scope": "required",
-      "bom-ref": "path+file:///home/runner/work/grove/grove/packages/desktop/src-tauri#grove-desktop@0.2.0",
-      "purl": "pkg:cargo/grove-desktop@0.2.0?download_url=file://.",
+      "bom-ref": "path+file:///home/runner/work/grove/grove/packages/desktop/src-tauri#grove-desktop@0.2.1",
+      "purl": "pkg:cargo/grove-desktop@0.2.1?download_url=file://.",
       "components": [
         {
           "name": "grove_desktop_lib",
-          "bom-ref": "path+file:///home/runner/work/grove/grove/packages/desktop/src-tauri#grove-desktop@0.2.0 bin-target-0",
-          "purl": "pkg:cargo/grove-desktop@0.2.0?download_url=file://.#src/lib.rs",
+          "bom-ref": "path+file:///home/runner/work/grove/grove/packages/desktop/src-tauri#grove-desktop@0.2.1 bin-target-0",
+          "purl": "pkg:cargo/grove-desktop@0.2.1?download_url=file://.#src/lib.rs",
           "type": "library",
-          "version": "0.2.0"
+          "version": "0.2.1"
         },
         {
           "name": "grove-desktop",
-          "bom-ref": "path+file:///home/runner/work/grove/grove/packages/desktop/src-tauri#grove-desktop@0.2.0 bin-target-1",
-          "purl": "pkg:cargo/grove-desktop@0.2.0?download_url=file://.#src/main.rs",
+          "bom-ref": "path+file:///home/runner/work/grove/grove/packages/desktop/src-tauri#grove-desktop@0.2.1 bin-target-1",
+          "purl": "pkg:cargo/grove-desktop@0.2.1?download_url=file://.#src/main.rs",
           "type": "application",
-          "version": "0.2.0"
+          "version": "0.2.1"
         }
       ],
       "type": "application",
-      "version": "0.2.0"
+      "version": "0.2.1"
     },
     {
       "name": "grove-mcp",
@@ -6690,19 +6690,19 @@
         }
       ],
       "scope": "required",
-      "bom-ref": "path+file:///home/runner/work/grove/grove/packages/mcp#grove-mcp@0.2.0",
-      "purl": "pkg:cargo/grove-mcp@0.2.0?download_url=file://.",
+      "bom-ref": "path+file:///home/runner/work/grove/grove/packages/mcp#grove-mcp@0.2.1",
+      "purl": "pkg:cargo/grove-mcp@0.2.1?download_url=file://.",
       "components": [
         {
           "name": "grove-mcp",
-          "bom-ref": "path+file:///home/runner/work/grove/grove/packages/mcp#grove-mcp@0.2.0 bin-target-0",
-          "purl": "pkg:cargo/grove-mcp@0.2.0?download_url=file://.#src/main.rs",
+          "bom-ref": "path+file:///home/runner/work/grove/grove/packages/mcp#grove-mcp@0.2.1 bin-target-0",
+          "purl": "pkg:cargo/grove-mcp@0.2.1?download_url=file://.#src/main.rs",
           "type": "application",
-          "version": "0.2.0"
+          "version": "0.2.1"
         }
       ],
       "type": "application",
-      "version": "0.2.0"
+      "version": "0.2.1"
     },
     {
       "bom-ref": "registry+https://github.com/rust-lang/crates.io-index#gtk-sys@0.18.2",
