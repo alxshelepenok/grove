@@ -212,11 +212,32 @@ fn tools_list_covers_all_commands_with_valid_schemas() {
     assert_eq!(names, expected);
     for t in tools {
         assert!(t["description"].as_str().unwrap().len() > 3, "{}", t["name"]);
+        assert!(
+            t["title"].as_str().unwrap().len() > 3,
+            "{}: title missing or too short",
+            t["name"]
+        );
+        assert!(t["annotations"].is_object(), "{}", t["name"]);
+        assert!(
+            t["annotations"]["openWorldHint"].is_boolean()
+                && t["annotations"]["readOnlyHint"].is_boolean()
+                && t["annotations"]["destructiveHint"].is_boolean()
+                && t["annotations"]["idempotentHint"].is_boolean(),
+            "{}: annotation hints must be booleans",
+            t["name"]
+        );
         assert_eq!(t["inputSchema"]["type"], "object");
         assert!(t["inputSchema"]["properties"].is_object(), "{}", t["name"]);
         assert!(t["inputSchema"]["required"].is_array(), "{}", t["name"]);
     }
     let find = |n: &str| tools.iter().find(|t| t["name"] == n).unwrap().clone();
+    let show = find("show");
+    assert_eq!(show["annotations"]["readOnlyHint"], true);
+    assert_eq!(show["annotations"]["idempotentHint"], true);
+    let undo = find("undo");
+    assert_eq!(undo["annotations"]["destructiveHint"], true);
+    let init = find("init");
+    assert_eq!(init["annotations"]["readOnlyHint"], false);
     let add = find("add");
     let add_req: Vec<&str> = add["inputSchema"]["required"]
         .as_array()
