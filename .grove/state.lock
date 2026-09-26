@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:0b82c0c517ef82af86415a7c3f023b7cf386d036d176b182f789608af2126d20
+# checksum: sha256:be9c6aae7219948b0054ba956021ca1f7c6a4940471ab15ff8cd60cf9c1a4da5
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -2334,16 +2334,16 @@ t T-07 status=done t_created=2026-08-30T17:29:26Z t_updated=2026-08-31T00:13:53Z
 
 t T-08 status=done t_created=2026-09-17T13:05:27Z t_updated=2026-09-17T15:58:07Z "Skill packaging drift and dangling references"
 
-y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-09-26T00:13:01Z "Normalize at capture, never inject test clocks"
-  tags: Normalization
+y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-09-26T00:18:53Z "Normalize at capture, never inject test clocks"
+  tags: normalization
   surface: packages/grove/conformance/run.jl, packages/core/tests/corpus_replay.rs
   invariant:
     | Volatile values (timestamps, checksums, session tokens, machine-specific paths) are masked at capture time; fixtures store the normalized form and verification is a plain string diff; the CLI carries no test-only hooks
   skill_updates:
     | When porting behavior to a second implementation, replay the corpus fixtures instead of re-deriving expectations by hand
 
-y Y-02 status=active t_created=2026-07-27T18:20:21Z t_updated=2026-09-26T00:13:01Z "Never gate a validation task on the hypotheses it validates"
-  tags: Causal inversion
+y Y-02 status=active t_created=2026-07-27T18:20:21Z t_updated=2026-09-26T00:18:53Z "Never gate a validation task on the hypotheses it validates"
+  tags: causal-inversion
   invariant:
     | Assumptions gate claims and dependent implementation work, never the measurement task that tests them; a validation task carries produces provenance for the records it measures, and hypothesis records gate external claims instead
   why:
@@ -2354,12 +2354,12 @@ y Y-02 status=active t_created=2026-07-27T18:20:21Z t_updated=2026-09-26T00:13:0
     | 2026-08-04T23:36:50Z surface=docs/plans/effectiveness-v1.md
     | 2026-08-07T00:41:12Z from=W-02
 
-y Y-03 status=active t_created=2026-07-28T01:36:10Z t_updated=2026-09-26T00:13:01Z "Integration surfaces are thin adapters over the core CLI contract"
-  tags: Thin adapter
+y Y-03 status=active t_created=2026-07-28T01:36:10Z t_updated=2026-09-26T00:18:53Z "Integration surfaces are thin adapters over the core CLI contract"
+  tags: thin-adapter
   surface: packages/core/src/mcp.rs, packages/mcp/src/main.rs, packages/desktop/src-tauri/src/bridge.rs
 
-y Y-04 status=active t_created=2026-08-04T18:34:40Z t_updated=2026-09-26T00:13:02Z "Release-distribution plan audit: factual errors and design gaps"
-  tags: Verify-then-parse, Pinned origin
+y Y-04 status=active t_created=2026-08-04T18:34:40Z t_updated=2026-09-26T00:18:54Z "Release-distribution plan audit: factual errors and design gaps"
+  tags: verify-then-parse, pinned-origin
   surface: .github/workflows/release.yml, install.sh
   invariant:
     | Every pinned origin in the plan names a nonexistent GitHub owner (alexshelepenok vs actual alxshelepenok), the macos-13 runner is retired (use macos-15-intel until ~Aug 2027), and osv-scanner has no Julia Manifest.toml parser (JLSEC data is live in osv.dev; Trivy parses Manifest.toml natively)
@@ -2370,8 +2370,8 @@ y Y-04 status=active t_created=2026-08-04T18:34:40Z t_updated=2026-09-26T00:13:0
   revalidation:
     | 2026-08-04T23:36:50Z surface=docs/plans/release-distribution-plan.md
 
-y Y-05 status=superseded t_created=2026-08-05T17:36:18Z t_updated=2026-09-26T00:13:01Z "G-16 implementation audit: pre-release fixes and desktop artifact gap"
-  tags: Verify-then-parse
+y Y-05 status=superseded t_created=2026-08-05T17:36:18Z t_updated=2026-09-26T00:18:53Z "G-16 implementation audit: pre-release fixes and desktop artifact gap"
+  tags: verify-then-parse
   surface: .github/workflows/release.yml
   invariant:
     | release.yml interpolates an unvalidated version input into shell and builds the dispatch ref rather than the tag; trivy is invoked with --severity CRITICAL,HIGH which drops UNKNOWN-severity JLSEC advisories silently; install.sh.sig/install.ps1.sig and dist/ are absent so the README verify-then-run flow 404s until the first release
@@ -2380,8 +2380,8 @@ y Y-05 status=superseded t_created=2026-08-05T17:36:18Z t_updated=2026-09-26T00:
   skill_updates:
     | Desktop bundles are excluded by plan deferral, not by oversight: the manifest schema already reserves desktop_* keys, so adding them is an extension of the existing matrix (new tauri build legs + artifact keys), not a redesign; SECURITY.md scope must be extended to the desktop app when it ships
 
-y Y-06 status=superseded t_created=2026-08-05T19:13:24Z t_updated=2026-09-26T00:13:01Z "G-16 follow-up audit: artifact name collision and installer parity bugs"
-  tags: Verify-then-parse
+y Y-06 status=superseded t_created=2026-08-05T19:13:24Z t_updated=2026-09-26T00:18:53Z "G-16 follow-up audit: artifact name collision and installer parity bugs"
+  tags: verify-then-parse
   surface: .github/workflows/release.yml
   invariant:
     | build and build-desktop both upload actions/upload-artifact with name dist-<target> in one run; since v4 artifacts are immutable, the second upload fails - every release or dry-run dies before the sign job; download side (pattern dist-*, merge-multiple) already expects distinct names
@@ -2390,66 +2390,66 @@ y Y-06 status=superseded t_created=2026-08-05T19:13:24Z t_updated=2026-09-26T00:
   skill_updates:
     | substring matching is not version matching: audit-filter.jl suppresses a CVE on any version whose string is a prefix of the VEX ref; desktop binary in install.sh misses chmod +x (tests pass on Git Bash only because MSYS fakes the x-bit)
 
-y Y-07 status=active t_created=2026-08-08T23:08:01Z t_updated=2026-09-26T00:13:01Z "MCP tool failures must surface CLI stderr; a bare exit code leaves clients blind"
-  tags: Thin adapter
+y Y-07 status=active t_created=2026-08-08T23:08:01Z t_updated=2026-09-26T00:18:53Z "MCP tool failures must surface CLI stderr; a bare exit code leaves clients blind"
+  tags: thin-adapter
   surface: packages/core/src/mcp.rs, packages/core/src/cli.rs
 
-y Y-08 status=active t_created=2026-08-10T20:12:04Z t_updated=2026-09-26T00:13:02Z "Keep embedded-asset filenames URL-plain: percent-encoded paths (%5B etc.) against frontendDist assets are decoded inconsistently across webviews, silently breaking @font-face on systems without local font fallbacks"
-  tags: Url-plain asset
+y Y-08 status=active t_created=2026-08-10T20:12:04Z t_updated=2026-09-26T00:18:54Z "Keep embedded-asset filenames URL-plain: percent-encoded paths (%5B etc.) against frontendDist assets are decoded inconsistently across webviews, silently breaking @font-face on systems without local font fallbacks"
+  tags: url-plain-asset
   surface: packages/desktop/ui/css/fonts.css, packages/desktop/src-tauri/tauri.conf.json
 
 y Y-09 status=active t_created=2026-08-17T11:31:47Z t_updated=2026-08-28T00:38:34Z "A dsh agent runs keyless by overriding the agent-default-model row with a scripted mock provider, so tool plugins can be smoke-tested through the real Loader without API keys"
   tags: dsh
   surface: packages/dsh/test/fixtures/mock-grove-llm.mjs, packages/dsh/test/fixtures/headless-smoke.patch.yml
 
-y Y-10 status=active t_created=2026-08-17T11:31:56Z t_updated=2026-09-26T00:13:02Z "A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately"
-  tags: Bundle
+y Y-10 status=active t_created=2026-08-17T11:31:56Z t_updated=2026-09-26T00:18:54Z "A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately"
+  tags: bundle
   surface: packages/dsh/package.json, packages/dsh/cordis.patch.yml
 
 y Y-11 status=active t_created=2026-08-17T11:59:20Z t_updated=2026-08-17T11:59:28Z "bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it"
   tags: dsh
   surface: packages/dsh/package.json, packages/dsh/test/stubs/dsh-type-meta/package.json
 
-y Y-12 status=active t_created=2026-08-28T00:38:09Z t_updated=2026-09-26T00:13:02Z "Per-OS installer branches run under a uname shim and the CI OS matrix"
-  tags: Uname shim
+y Y-12 status=active t_created=2026-08-28T00:38:09Z t_updated=2026-09-26T00:18:55Z "Per-OS installer branches run under a uname shim and the CI OS matrix"
+  tags: uname-shim
   surface: tests/install/test-install.sh
   invariant:
     | Cross-platform install scripts exercise every per-OS branch locally via a uname shim that reports the foreign OS, while native behaviour stays covered by the CI OS matrix; a native-only run never proves foreign branches.
 
-y Y-13 status=active t_created=2026-08-28T21:50:11Z t_updated=2026-08-28T21:50:19Z "Neo4j is a read-only projection of state.lock, never its storage backend"
-  tags: Neo4j
+y Y-13 status=active t_created=2026-08-28T21:50:11Z t_updated=2026-09-26T00:18:55Z "Neo4j is a read-only projection of state.lock, never its storage backend"
+  tags: neo4j
   why:
     | Grove's guarantees (SHA-256 checksum, git merge protocol, executable undo, offline single-writer) live in the lock file; a graph database only adds value downstream as a query and federation mirror, reachable through a thin Cypher export.
 
-y Y-14 status=active t_created=2026-08-28T22:32:29Z t_updated=2026-08-28T22:32:41Z "bun test runs plain-ESM unit tests without package.json"
-  tags: DOM-free module
+y Y-14 status=active t_created=2026-08-28T22:32:29Z t_updated=2026-09-26T00:18:55Z "bun test runs plain-ESM unit tests without package.json"
+  tags: dom-free-module
   surface: packages/desktop/ui/js/utils/graph-math.js, packages/desktop/ui/js/utils/graph-math.test.js
 
-y Y-15 status=active t_created=2026-08-28T23:17:03Z t_updated=2026-09-26T00:13:02Z "A vendored ESM library pair loads without an import map"
-  tags: Vendored ESM pair, DOM-free module
+y Y-15 status=active t_created=2026-08-28T23:17:03Z t_updated=2026-09-26T00:18:55Z "A vendored ESM library pair loads without an import map"
+  tags: vendored-esm-pair, dom-free-module
   surface: packages/desktop/ui/js/vendor, packages/desktop/ui/js/views/graph-3d.js, packages/desktop/ui/js/utils/force-3d.js
 
-y Y-16 status=active t_created=2026-08-28T23:38:31Z t_updated=2026-09-26T00:13:59Z "Import parse checks miss handler-scoped reference errors"
-  tags: Served-DOM harness, DOM-free module
+y Y-16 status=active t_created=2026-08-28T23:38:31Z t_updated=2026-09-26T00:18:56Z "Import parse checks miss handler-scoped reference errors"
+  tags: served-dom-harness, dom-free-module
   why:
     | bun import smoke checks passed while every pointerdown threw ReferenceError at runtime, because the missing identifier lived inside an event handler the import path never executes; only the served-DOM drag harness exposed it, so interaction surfaces need a browser probe, not a parse check.
 
-y Y-17 status=active t_created=2026-08-30T21:25:48Z t_updated=2026-09-26T00:13:03Z "One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate"
-  tags: Causality cone
+y Y-17 status=active t_created=2026-08-30T21:25:48Z t_updated=2026-09-26T00:18:56Z "One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate"
+  tags: causality-cone
   surface: packages/desktop/ui/js/utils/cone-model.js, packages/desktop/ui/js/views/cone.js
   why:
     | Six render metaphors in one day each layered a new coordinate convention onto the last (hop lattice, averaged snapping, half-step stacks), and the mixed scene read as mush: colliding cells, plane grids that never aligned, dom labels that lied under orbit. The rebuild that held did not swap the metaphor again - it fixed one integer lattice with deterministic collision resolution and shared plane footprints, moved direction into object color, and distance-compensated every label per frame so all render at one pixel height, hidden past a zoom threshold like the graph view.
 
-y Y-18 status=active t_created=2026-09-03T07:12:30Z t_updated=2026-09-26T00:13:03Z "Thick 3D edges need beam geometry, not linewidth"
-  tags: Causality cone, Beam geometry
+y Y-18 status=active t_created=2026-09-03T07:12:30Z t_updated=2026-09-26T00:18:56Z "Thick 3D edges need beam geometry, not linewidth"
+  tags: causality-cone, beam-geometry
   surface: packages/desktop/ui/js/views/cone-edges.js
   invariant:
     | WebGL pins LineBasicMaterial linewidth to one device pixel, so a visually thicker edge must be real geometry: instanced boxes stretched between node centers, with thickness in world units tuned against the default camera radius (about 2.7 pixels per unit at radius 320); a 6-unit beam reads as a bar, 1.5 units reads as a slightly thicker line.
   skill_updates:
     | Tune any future 3D highlight thickness in pixels-per-world-unit at the default rig radius before picking a constant; verify in a served-DOM harness screenshot, not by eye in code review.
 
-y Y-19 status=active t_created=2026-09-03T07:40:16Z t_updated=2026-09-26T00:13:03Z "Zoom text fade is one shared curve, not per-view thresholds"
-  tags: Label fade, Causality cone
+y Y-19 status=active t_created=2026-09-03T07:40:16Z t_updated=2026-09-26T00:18:56Z "Zoom text fade is one shared curve, not per-view thresholds"
+  tags: label-fade, causality-cone
   surface: packages/desktop/ui/js/utils/label-fade.js
   invariant:
     | Text visibility under zoom is a pure function labelFadeOpacity(factor) in a DOM-free util: full at or below the inner factor edge (1.1), smoothstep to zero at the outer edge (2.4), where factor is camera radius over fit radius (3D) or fit scale over zoom scale (2D). Views feed it per frame to sprite material opacity and DOM style opacity; no view may keep text on a hard threshold or permanently visible legend.
@@ -2457,24 +2457,24 @@ y Y-19 status=active t_created=2026-09-03T07:40:16Z t_updated=2026-09-26T00:13:0
     | The graph view (js/views/graph.js, graph-3d.js) still hides ids on its own threshold; port it to labelFadeOpacity with the 2D factor mapping when that screen is touched next.
     | Ported to both graph views (W-171): 2D maps fitScale over zoom, 3D maps camera radius over labelBaseRadius; the curve itself needed no change.
 
-y Y-20 status=active t_created=2026-09-04T11:40:01Z t_updated=2026-09-26T00:13:03Z "Backdrop ordering for transparent 3D line layers"
-  tags: Backdrop ordering, Causality cone
+y Y-20 status=active t_created=2026-09-04T11:40:01Z t_updated=2026-09-26T00:18:57Z "Backdrop ordering for transparent 3D line layers"
+  tags: backdrop-ordering, causality-cone
   surface: packages/desktop/ui/js/views/cone-lattice.js
   invariant:
     | Every transparent line layer in a three.js scene declares its compositing tier explicitly: decorative grids get depthWrite=false with the lowest renderOrder, connector lines the next tier, semantic edges keep the default order, overlays sit above; without explicit tiers the per-object distance sort lets a dim grid fragment replace or darken an edge pixel at screen-space crossings, which reads as a one-pixel break.
   glossary_updates:
     | Added backdrop-ordering (W-172).
 
-y Y-21 status=proposed t_created=2026-09-17T23:15:39Z t_updated=2026-09-26T00:13:04Z "Desktop tables order node ids lexicographically"
-  tags: Natural id order
+y Y-21 status=proposed t_created=2026-09-17T23:15:39Z t_updated=2026-09-26T00:18:57Z "Desktop tables order node ids lexicographically"
+  tags: natural-id-order
   surface: packages/core/src/model.rs, packages/core/src/status.rs, packages/desktop/src-tauri/src/views/work.rs, packages/desktop/src-tauri/src/views/goals.rs, packages/desktop/src-tauri/src/views/themes.rs, packages/desktop/src-tauri/src/triggers.rs, packages/desktop/ui/js/utils/cone-model.js, packages/desktop/src-tauri/src/views/cone.rs, packages/core/src/algebra.rs
 
-y Y-22 status=proposed t_created=2026-09-18T00:01:50Z t_updated=2026-09-26T00:13:04Z "Natural id order lives in three mirrored comparators while lock bytes stay byte-ordered"
-  tags: Natural id order
+y Y-22 status=proposed t_created=2026-09-18T00:01:50Z t_updated=2026-09-26T00:18:57Z "Natural id order lives in three mirrored comparators while lock bytes stay byte-ordered"
+  tags: natural-id-order
   surface: packages/core/src/ids.rs, packages/grove/src/ids.jl, packages/desktop/ui/js/utils/id-order.js, packages/grove/src/lock.jl, packages/core/src/serialize.rs
 
-y Y-23 status=active t_created=2026-09-26T00:13:45Z t_updated=2026-09-26T00:13:59Z "grove-mcp tool descriptions are dedicated TOOL_SPECS prose stating purpose, when to use, returns, and failure paths; parsed CLI help lines fail TDQS rubrics"
-  tags: TDQS
+y Y-23 status=active t_created=2026-09-26T00:13:45Z t_updated=2026-09-26T00:18:57Z "grove-mcp tool descriptions are dedicated TOOL_SPECS prose stating purpose, when to use, returns, and failure paths; parsed CLI help lines fail TDQS rubrics"
+  tags: tdqs
   surface: packages/core/src/mcp.rs
 
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"

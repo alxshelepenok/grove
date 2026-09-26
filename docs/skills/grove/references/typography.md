@@ -4,7 +4,7 @@ Applies to this skill and to anything the agent writes into `.grove/glossary.md`
 
 **Definitions:**
 - **Prose bullet/numbered item:** Full sentences in markdown lists (`- …` or `1. …`) that end with punctuation.
-- **Phrase:** Short noun or gerund phrases used as titles, labels, or in structured data (e.g. glossary entries, state lock fields).
+- **Phrase:** Short noun or gerund phrases used as titles, labels, or in structured data (e.g. entity titles, state lock fields).
 
 1. **Full stop.** Each prose bullet (`- …`) and each prose numbered item (`1. …`) ends with `.`. Checklist lines (`- [ ] …`) end with `.` as well. Exceptions: headings; YAML / Mermaid / code fences; table delimiter rows; identifiers and symbols inside formal blocks.
 
@@ -26,4 +26,4 @@ Applies to this skill and to anything the agent writes into `.grove/glossary.md`
 
 10. **Short main phrase.** The part before the parenthesis should be a noun phrase or gerund phrase of at most eight words. If you need more words, the item is probably two items.
 
-11. **Field values that are not titles.** Short identifier-like fields (IDs, status values, cynefin tags, edge labels) follow their own grammar defined in `lockfile.md` and are exempt from the rules above.
+11. **Field values that are not titles.** Short identifier-like fields (IDs, status values, cynefin tags, edge labels) follow their own grammar defined in `lockfile.md` and are exempt from the rules above. Glossary terms are identifier-like as well: entirely lowercase, words joined by single ASCII hyphens (`causal-inversion`), proper nouns included (`neo4j`, `dom-free-module`). Sentence case never applies to them.

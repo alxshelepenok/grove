@@ -234,29 +234,29 @@
 
 | ID | Title | Tags | Status |
 | --- | --- | --- | --- |
-| Y-01 | Normalize at capture, never inject test clocks | Normalization | active |
-| Y-02 | Never gate a validation task on the hypotheses it validates | Causal inversion | active |
-| Y-03 | Integration surfaces are thin adapters over the core CLI contract | Thin adapter | active |
-| Y-04 | Release-distribution plan audit: factual errors and design gaps | Pinned origin, Verify-then-parse | active |
-| Y-05 | G-16 implementation audit: pre-release fixes and desktop artifact gap | Verify-then-parse | superseded |
-| Y-06 | G-16 follow-up audit: artifact name collision and installer parity bugs | Verify-then-parse | superseded |
-| Y-07 | MCP tool failures must surface CLI stderr; a bare exit code leaves clients blind | Thin adapter | active |
-| Y-08 | Keep embedded-asset filenames URL-plain: percent-encoded paths (%5B etc.) against frontendDist assets are decoded inconsistently across webviews, silently breaking @font-face on systems without local font fallbacks | Url-plain asset | active |
+| Y-01 | Normalize at capture, never inject test clocks | normalization | active |
+| Y-02 | Never gate a validation task on the hypotheses it validates | causal-inversion | active |
+| Y-03 | Integration surfaces are thin adapters over the core CLI contract | thin-adapter | active |
+| Y-04 | Release-distribution plan audit: factual errors and design gaps | pinned-origin, verify-then-parse | active |
+| Y-05 | G-16 implementation audit: pre-release fixes and desktop artifact gap | verify-then-parse | superseded |
+| Y-06 | G-16 follow-up audit: artifact name collision and installer parity bugs | verify-then-parse | superseded |
+| Y-07 | MCP tool failures must surface CLI stderr; a bare exit code leaves clients blind | thin-adapter | active |
+| Y-08 | Keep embedded-asset filenames URL-plain: percent-encoded paths (%5B etc.) against frontendDist assets are decoded inconsistently across webviews, silently breaking @font-face on systems without local font fallbacks | url-plain-asset | active |
 | Y-09 | A dsh agent runs keyless by overriding the agent-default-model row with a scripted mock provider, so tool plugins can be smoke-tested through the real Loader without API keys | dsh | active |
-| Y-10 | A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately | Bundle | active |
+| Y-10 | A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately | bundle | active |
 | Y-11 | bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it | dsh | active |
-| Y-12 | Per-OS installer branches run under a uname shim and the CI OS matrix | Uname shim | active |
-| Y-13 | Neo4j is a read-only projection of state.lock, never its storage backend | Neo4j | active |
-| Y-14 | bun test runs plain-ESM unit tests without package.json | DOM-free module | active |
-| Y-15 | A vendored ESM library pair loads without an import map | DOM-free module, Vendored ESM pair | active |
-| Y-16 | Import parse checks miss handler-scoped reference errors | DOM-free module, Served-DOM harness | active |
-| Y-17 | One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate | Causality cone | active |
-| Y-18 | Thick 3D edges need beam geometry, not linewidth | Beam geometry, Causality cone | active |
-| Y-19 | Zoom text fade is one shared curve, not per-view thresholds | Causality cone, Label fade | active |
-| Y-20 | Backdrop ordering for transparent 3D line layers | Backdrop ordering, Causality cone | active |
-| Y-21 | Desktop tables order node ids lexicographically | Natural id order | proposed |
-| Y-22 | Natural id order lives in three mirrored comparators while lock bytes stay byte-ordered | Natural id order | proposed |
-| Y-23 | grove-mcp tool descriptions are dedicated TOOL_SPECS prose stating purpose, when to use, returns, and failure paths; parsed CLI help lines fail TDQS rubrics | TDQS | active |
+| Y-12 | Per-OS installer branches run under a uname shim and the CI OS matrix | uname-shim | active |
+| Y-13 | Neo4j is a read-only projection of state.lock, never its storage backend | neo4j | active |
+| Y-14 | bun test runs plain-ESM unit tests without package.json | dom-free-module | active |
+| Y-15 | A vendored ESM library pair loads without an import map | dom-free-module, vendored-esm-pair | active |
+| Y-16 | Import parse checks miss handler-scoped reference errors | dom-free-module, served-dom-harness | active |
+| Y-17 | One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate | causality-cone | active |
+| Y-18 | Thick 3D edges need beam geometry, not linewidth | beam-geometry, causality-cone | active |
+| Y-19 | Zoom text fade is one shared curve, not per-view thresholds | causality-cone, label-fade | active |
+| Y-20 | Backdrop ordering for transparent 3D line layers | backdrop-ordering, causality-cone | active |
+| Y-21 | Desktop tables order node ids lexicographically | natural-id-order | proposed |
+| Y-22 | Natural id order lives in three mirrored comparators while lock bytes stay byte-ordered | natural-id-order | proposed |
+| Y-23 | grove-mcp tool descriptions are dedicated TOOL_SPECS prose stating purpose, when to use, returns, and failure paths; parsed CLI help lines fail TDQS rubrics | tdqs | active |
 
 ## Dependency graph
 
