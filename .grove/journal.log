@@ -3868,6 +3868,10 @@
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T21:46:50Z","inv":{"had_session_at_before":false,"old_w_status":"proposed","had_session_before":false,"id":"W-191","op":"set_w_status_with_goals","goal_statuses":{"G-43":"unverified"},"old_session_at":"","old_session":""}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"fitness","ts":"2026-10-22T22:08:43Z","inv":{"had_key":true,"wid":"W-191","gid":"G-43","previous":0,"op":"restore_fitness_key"}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-22T22:08:43Z","inv":{"id":"W-191","field":"evidence","op":"field_pop_last"}}
-{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-22T22:16:03Z","inv":{"id":"W-191","field":"evidence","op":"field_pop_last"}}
-{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"fitness","ts":"2026-10-22T22:16:03Z","inv":{"had_key":true,"wid":"W-191","gid":"G-43","previous":1,"op":"restore_fitness_key"}}
-{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T22:16:03Z","inv":{"had_session_at_before":true,"old_w_status":"progress","had_session_before":true,"id":"W-191","op":"set_w_status_with_goals","goal_statuses":{"G-43":"unverified"},"old_session_at":"2026-10-22T21:46:50Z","old_session":"desktop-5a9h5ko:b9ace3ea3b856f36"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"undo","ts":"2026-10-22T22:24:44Z","inv":{"steps":4,"op":"undo"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"fitness","ts":"2026-10-22T22:24:49Z","inv":{"had_key":true,"wid":"W-191","gid":"G-43","previous":1,"op":"restore_fitness_key"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-22T22:24:49Z","inv":{"id":"W-191","field":"evidence","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T22:24:49Z","inv":{"had_session_at_before":true,"old_w_status":"progress","had_session_before":true,"id":"W-191","op":"set_w_status_with_goals","goal_statuses":{"G-43":"unverified"},"old_session_at":"2026-10-22T21:46:50Z","old_session":"desktop-5a9h5ko:b9ace3ea3b856f36"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T22:24:53Z","inv":{"id":"Y-60","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T22:25:03Z","inv":{"goal":"G-43","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T22:25:03Z","inv":{"ids":["G-43","W-191"],"id":"G-43","op":"archive"}}

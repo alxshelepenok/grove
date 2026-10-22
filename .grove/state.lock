@@ -1,13 +1,9 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:85000d4d4ba352bd1d856dc9279114c63591483ca26a1d5eb22bf7307e6508c1
+# checksum: sha256:c37c15ca5a2a36d5dbfc1f3fc6499ae80eab0bfc9f9a29dcaf4e5d6543c9a619
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
-
-g G-43 status=unverified fitness_kind=boolean t_created=2026-10-22T21:46:44Z t_updated=2026-10-22T21:46:44Z "Conformance fixtures match the shipped skill corpus"
-  area: A-08
-  fitness_current: false
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -29,21 +25,6 @@ w W-05 type=refactor status=proposed cynefin=complicated t_created=2026-07-19T01
     | lands after the benchmark suite (W-04) and before the 10k-node budget is enforced
   why:
     | Enabling work: clears the known scaling debt before the 10k-node budget applies
-
-w W-191 type=bug status=done cynefin=clear t_created=2026-10-22T21:46:44Z t_updated=2026-10-22T22:16:03Z "Refresh skill conformance fixture after the markdown reflow"
-  goals: G-43
-  fitness: G-43=+0
-  ac:
-    | grove conformance verify reports all scenarios green, including skill, against the reflowed docs/skills corpus.
-  hypothesis:
-    | The corpus fixture pins the printed skill text, so re-recording the scenario through the standard record path restores byte-identical conformance without touching test code.
-  repro:
-    | make check-md green but make coverage fails: conformance scenario skill reports stdout drift because corpus/skill.json pins the pre-reflow SKILL.md text
-  evidence_strategy:
-    | Run conformance/run.jl record then verify; rerun the full test suite with coverage.
-  evidence:
-    | root cause: conformance fixture corpus/skill.json (packages/grove/conformance) pins the full SKILL.md text printed by the skill command; the 80-column reflow of docs/skills changed that text and verify reported stdout drift in scenario skill only; run.jl record re-recorded 27 fixtures byte-identical except skill.json, run.jl verify reports conformance: 27 scenarios green; make coverage green end to end: suite passed, COVERAGE_SUMMARY lines_hit=4182 lines_total=4718 pct=88.64 (min 70)
-    | second root cause found while verifying: commit 8a1c33b accidentally removed the diagrams/graph-template.md include arm from packages/core/src/skill.rs skill_page while PAGES still lists it, so skill install exited 1 with missing embedded skill page and rust test skill_print_and_install failed; restored the include arm, cargo test -p grove-core all green, cargo test -p grove-mcp green
 
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
@@ -547,6 +528,11 @@ y Y-59 status=proposed t_created=2026-10-22T20:14:07Z t_updated=2026-10-22T20:18
   why:
     | done W-190: prettier reflows tracked markdown prose at width 80, machine-parsed markdown stays excluded
 
+y Y-60 status=proposed t_created=2026-10-22T22:24:53Z t_updated=2026-10-22T22:24:53Z "Skill corpus changes need fixture refresh and page mapping sync"
+  tags: markdown-reflow, embedded-skill
+  why:
+    | done W-191: the conformance skill fixture and the rust skill_page include list both pin the shipped corpus, so any corpus edit must refresh corpus/skill.json and keep PAGES in sync with skill_page arms
+
 a A-01 status=present t_created=2026-07-19T01:13:14Z t_updated=2026-07-27T14:45:22Z "Evals"
   surface: packages/grove/src/stats.jl, packages/grove/test/test_stats.jl
 
@@ -693,6 +679,7 @@ e W-186 implements D-38 t_created=2026-09-17T17:21:31Z
 e W-188 implements D-39 t_created=2026-09-17T23:27:25Z
 e W-189 implements D-40 t_created=2026-09-25T23:38:14Z
 e W-190 produces Y-59 t_created=2026-10-22T20:14:07Z
+e W-191 produces Y-60 t_created=2026-10-22T22:24:53Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z
@@ -975,6 +962,10 @@ g G-41 status=verified fitness_kind=boolean t_created=2026-09-25T22:58:06Z t_upd
     | Criteria: tdqs lint reports 0 errors and 0 warnings; tdqs score server tier is B or better (evidence in W-189: lint 0/0, tier A 4.1).
 
 g G-42 status=verified fitness_kind=boolean t_created=2026-10-22T19:48:47Z t_updated=2026-10-22T20:14:48Z "Markdown sources stay reflowed at width 80"
+  area: A-08
+  fitness_current: true
+
+g G-43 status=verified fitness_kind=boolean t_created=2026-10-22T21:46:44Z t_updated=2026-10-22T22:25:03Z "Conformance fixtures match the shipped skill corpus"
   area: A-08
   fitness_current: true
 
@@ -2979,6 +2970,21 @@ w W-190 type=feature status=done cynefin=clear t_created=2026-10-22T19:48:47Z t_
     | Run the script in check mode before and after formatting files; verify PROVENANCE.md parse compat by running bin/sbom.sh parsing regex over the untouched file.
   evidence:
     | bin/md-format.sh (--check/--write, embedded --prose-wrap always --print-width 80, excludes .grove/ and vendored PROVENANCE.md) verified in git-bash 5.2: syntax check, error paths (missing prettier, bad flag, missing file), write idempotency on throwaway copies, repo-wide reflow of 32 md files, final check-exit 0; PROVENANCE.md untouched and sbom.sh provenance regex still parses rows; skill-bundle.sh frontmatter gate intact (line 1 is ---); make fmt-md/check-md green; missing prettier produced the designed error, then the user installed prettier 3.9.10 globally via bun
+
+w W-191 type=bug status=done cynefin=clear t_created=2026-10-22T21:46:44Z t_updated=2026-10-22T22:25:03Z "Refresh skill conformance fixture after the markdown reflow"
+  goals: G-43
+  fitness: G-43=+1
+  ac:
+    | grove conformance verify reports all scenarios green, including skill, against the reflowed docs/skills corpus.
+  hypothesis:
+    | The corpus fixture pins the printed skill text, so re-recording the scenario through the standard record path restores byte-identical conformance without touching test code.
+  repro:
+    | make check-md green but make coverage fails: conformance scenario skill reports stdout drift because corpus/skill.json pins the pre-reflow SKILL.md text
+  evidence_strategy:
+    | Run conformance/run.jl record then verify; rerun the full test suite with coverage.
+  evidence:
+    | root cause: conformance fixture corpus/skill.json (packages/grove/conformance) pins the full SKILL.md text printed by the skill command; the 80-column reflow of docs/skills changed that text and verify reported stdout drift in scenario skill only; run.jl record re-recorded 27 fixtures byte-identical except skill.json, run.jl verify reports conformance: 27 scenarios green; make coverage green end to end: suite passed, COVERAGE_SUMMARY lines_hit=4182 lines_total=4718 pct=88.64 (min 70)
+    | second root cause found while verifying: commit 8a1c33b accidentally removed the diagrams/graph-template.md include arm from packages/core/src/skill.rs skill_page while PAGES still lists it, so skill install exited 1 with missing embedded skill page and rust test skill_print_and_install failed; restored the include arm, cargo test -p grove-core all green, cargo test -p grove-mcp green
 
 w W-20 type=feature status=done cynefin=clear t_created=2026-07-27T23:45:55Z t_updated=2026-07-29T00:01:54Z "Work screen listing work items"
   goals: G-06

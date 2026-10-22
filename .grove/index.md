@@ -29,7 +29,6 @@
 | ID | Outcome | Fitness function | Status |
 | --- | --- | --- | --- |
 | G-17 | Scaling and performance budget | count; current= target=2 | unverified |
-| G-43 | Conformance fixtures match the shipped skill corpus | boolean; current=false | unverified |
 
 ## Work items
 
@@ -37,7 +36,6 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed | ★ |
 | W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-17 | complicated | ⊥ | proposed |  |
-| W-191 | bug | Refresh skill conformance fixture after the markdown reflow | G-43 | clear | ⊤ | done |  |
 
 ## Decisions
 
@@ -143,16 +141,15 @@
 | Y-57 | Branch names carry a commit-type prefix and an identifier | branch-naming | proposed |
 | Y-58 | Canonical node order compares family then number | natural-id-order | proposed |
 | Y-59 | Markdown prose reflows to a hard 80-column limit | markdown-reflow | proposed |
+| Y-60 | Skill corpus changes need fixture refresh and page mapping sync | embedded-skill, markdown-reflow | proposed |
 
 ## Dependency graph
 
 ```mermaid
 graph TD
   G_17["G-17: Scaling and performance budget"]:::goal
-  G_43["G-43: Conformance fixtures match the shipped skill corpus"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
-  W_191["W-191: Refresh skill conformance fixture after the markdown reflow"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
@@ -233,6 +230,7 @@ graph TD
   Y_57["Y-57: Branch names carry a commit-type prefix and an identifier"]:::discovery
   Y_58["Y-58: Canonical node order compares family then number"]:::discovery
   Y_59["Y-59: Markdown prose reflows to a hard 80-column limit"]:::discovery
+  Y_60["Y-60: Skill corpus changes need fixture refresh and page mapping sync"]:::discovery
   A_01["A-01: Evals"]:::area
   A_02["A-02: API"]:::area
   A_03["A-03: Rust core"]:::area
@@ -369,6 +367,7 @@ graph TD
   W_188 -->|implements| D_39
   W_189 -->|implements| D_40
   W_190 -->|produces| Y_59
+  W_191 -->|produces| Y_60
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78
