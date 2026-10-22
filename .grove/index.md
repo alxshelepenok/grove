@@ -6,8 +6,8 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 66 | validated B 4 · answered Q 11 · accepted D 32 · active Discovery 19 |
-| V (uncertainty) | 12 | open Q 2 · pending B 7 · W below DoR 2 · uncovered surface 1 |
+| C (content) | 31 | validated B 1 · answered Q 3 · accepted D 8 · active Discovery 19 |
+| V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
 
@@ -15,11 +15,12 @@
 | --- | --- | --- | --- | --- |
 | A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-02 | API | 0 | 3 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
-| A-03 | Rust core | 2 | 0 | C: validated B 0 · answered Q 0 · accepted D 1 · active Discovery 1; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-05 | Desktop | 26 | 0 | C: validated B 2 · answered Q 3 · accepted D 14 · active Discovery 7; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-06 | Release | 6 | 1 | C: validated B 0 · answered Q 1 · accepted D 3 · active Discovery 2; V: open Q 0 · pending B 1 · W below DoR 0 |
-| A-07 | Agent integrations | 16 | 2 | C: validated B 1 · answered Q 4 · accepted D 5 · active Discovery 6; V: open Q 0 · pending B 2 · W below DoR 0 |
+| A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-06 | Release | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-07 | Agent integrations | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-08 | Tooling | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 
 > Relevance view, not a partition: a node touching two areas counts in both; a W without goals counts in none. The Content health totals above are primary.
 
@@ -28,26 +29,7 @@
 | ID | Outcome | Fitness function | Status |
 | --- | --- | --- | --- |
 | G-17 | Scaling and performance budget | count; current= target=2 | unverified |
-| G-21 | Graph kind filters keep every node attached | count; current=1 target=1 | verified |
-| G-22 | Area surface chips truncate with tooltip | count; current=1 target=1 | verified |
-| G-23 | Count badges switch style above ninety-nine | count; current=1 target=1 | verified |
-| G-24 | Area card headers wrap ids as units | count; current=1 target=1 | verified |
-| G-25 | DeepSeek Harness plugin exposes the Grove CLI as agent tools | count; current=7 target=7 | verified |
-| G-26 | macOS install fixes the launcher icon and PATH setup | count; current=4 target=4 | verified |
-| G-27 | Graph view defects stay fixed (interactions, render loop, badges, environment) | count; current=7 target=7 | verified |
-| G-28 | Graph view renders 3D behind a toolbar toggle (vendored three.js) | count; current=12 target=12 | verified |
-| G-29 | Graph options persist behind an Options menu (mode, ray tracing) | count; current=8 target=8 | verified |
-| G-30 | Causality cone view exposes dependency risk | count; current=16 target=13 | verified |
-| G-31 | Cone critical path renders as a thick line | count; current=1 target=1 | verified |
-| G-32 | Cone entities float above their lattices | count; current=1 target=1 | verified |
-| G-33 | Cone text fades out with zoom like Obsidian | count; current=1 target=1 | verified |
-| G-34 | Graph labels fade with zoom through the shared curve | count; current=1 target=1 | verified |
-| G-35 | Cone lattice composites behind edges without pixel breaks | boolean; current=true | verified |
-| G-36 | Skill ships as a signed archive served by CLI and MCP from one source | count; current=7 target=7 | verified |
-| G-37 | Version bump runbook matches reality | count; current=1 target=1 | verified |
-| G-38 | Branch naming convention is documented and discoverable | count; current=1 target=1 | verified |
-| G-39 | Release workflow uploads the skill archive exactly once | count; current=1 target=1 | verified |
-| G-40 | Node id ordering is natural (family, number) everywhere | boolean; current=true target=true | verified |
+| G-43 | Conformance fixtures match the shipped skill corpus | boolean; current=false | unverified |
 
 ## Work items
 
@@ -55,96 +37,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed | ★ |
 | W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-17 | complicated | ⊥ | proposed |  |
-| W-100 | bug | Truncate area surface chips with ellipsis tooltip | G-22 | clear | ⊤ | done |  |
-| W-101 | bug | Widen count badges for totals above ninety-nine | G-23 | clear | ⊤ | done |  |
-| W-102 | bug | Keep area id tokens whole in card headers | G-24 | clear | ⊤ | done |  |
-| W-103 | feature | Scaffold the dsh bundle package (package.json, cordis.patch.yml, TS entry) | G-25 | clear | ⊤ | done |  |
-| W-104 | feature | Implement read-only Grove tools (status, next, packet, list, show, ready, path) | G-25 | clear | ⊤ | done |  |
-| W-105 | feature | Implement mutating Grove tools (add, field, set, evidence, fitness, link) | G-25 | complicated | ⊤ | done |  |
-| W-106 | feature | Smoke test the bundle in a live dsh profile and document the setup | G-25 | complicated | ⊤ | done |  |
-| W-107 | refactor | Restructure the plugin as packages/dsh on the Bun toolchain | G-25 | complicated | ⊤ | done |  |
-| W-108 | refactor | Migrate the plugin tests to bun test | G-25 | clear | ⊤ | done |  |
-| W-109 | refactor | Apply project code style (comments, quotes, semicolons, aliases) | G-25 | clear | ⊤ | done |  |
-| W-110 | bug | Cover the macOS icon and zsh PATH fixes in the installer suite | G-26 | clear | ⊤ | done |  |
-| W-111 | bug | Ship icon.icns inside the portable desktop archive | G-26 | clear | ⊤ | done |  |
-| W-112 | bug | Install the Grove.app icon in install.sh | G-26 | clear | ⊤ | done |  |
-| W-113 | bug | Write the PATH line to zsh startup files on macOS | G-26 | clear | ⊤ | done |  |
-| W-114 | bug | Fix graph node hit testing at non-unit zoom | G-27 | clear | ⊤ | done |  |
-| W-115 | bug | Reset graph pan state on lost pointer capture | G-27 | clear | ⊤ | done |  |
-| W-116 | bug | Keep manual camera changes when simulation settles | G-27 | clear | ⊤ | done |  |
-| W-117 | refactor | Reuse frame buffers in the graph render loop | G-27 | clear | ⊤ | done |  |
-| W-118 | bug | Cover all core statuses in graph badges | G-27 | clear | ⊤ | done |  |
-| W-119 | bug | Harden graph environment handling (colors, guards, shaders) | G-27 | clear | ⊤ | done |  |
-| W-120 | bug | Clamp tooltips and stabilize camera inputs (pan deltas, dpr) | G-27 | clear | ⊤ | done |  |
-| W-121 | feature | Vendor three.js with provenance records | G-28 | clear | ⊤ | done |  |
-| W-122 | refactor | Extract shared graph view foundation | G-28 | clear | ⊤ | done |  |
-| W-123 | feature | Build a DOM-free 3D force layout | G-28 | clear | ⊤ | done |  |
-| W-124 | feature | Render the grove graph in 3D | G-28 | complicated | ⊤ | done |  |
-| W-125 | feature | Toggle 3D mode from the graph toolbar | G-28 | clear | ⊤ | done |  |
-| W-126 | bug | Heal the 2D canvas context after mode switches | G-28 | clear | ⊤ | done |  |
-| W-127 | bug | Size the 3D canvas to the stage | G-28 | clear | ⊤ | done |  |
-| W-128 | bug | Keep pointer drags alive during capture events | G-28 | complicated | ⊤ | done |  |
-| W-129 | bug | Settle the 3D entry without camera jumps | G-28 | clear | ⊤ | done |  |
-| W-130 | bug | Shade 3D spheres with scene lighting | G-28 | clear | ⊤ | done |  |
-| W-131 | bug | Even out 3D node spacing | G-28 | complicated | ⊤ | done |  |
-| W-132 | bug | Hide 3D labels at far camera distances | G-28 | clear | ⊤ | done |  |
-| W-133 | feature | Keep graph mode across view switches | G-29 | clear | ⊤ | done |  |
-| W-134 | feature | Host graph toggles in an Options dropdown | G-29 | clear | ⊤ | done |  |
-| W-135 | feature | Trace the 3D graph with a GLSL ray tracer | G-29 | complicated | ⊤ | done |  |
-| W-136 | bug | Hide the options menu when hidden | G-29 | clear | ⊤ | done |  |
-| W-137 | bug | Trace spheres only and rasterize edges | G-29 | complicated | ⊤ | done |  |
-| W-138 | bug | Survive teardown when the view root is replaced | G-29 | clear | ⊤ | done |  |
-| W-139 | refactor | Cut ray tracing and frame-loop waste | G-29 | complicated | ⊤ | done |  |
-| W-140 | bug | Antialias traced sphere silhouettes analytically | G-29 | complicated | ⊤ | done |  |
-| W-141 | feature | Scaffold the causality cone view | G-30 | clear | ⊤ | done |  |
-| W-142 | feature | Compute the cone walk in-process | G-30 | complicated | ⊤ | done |  |
-| W-143 | feature | Render the cone as a 3D matrix | G-30 | complicated | ⊤ | done |  |
-| W-144 | feature | Map cone surfaces onto files | G-30 | complicated | ⊤ | done |  |
-| W-145 | feature | Highlight brittle goal chains | G-30 | complicated | ⊤ | done |  |
-| W-146 | feature | List relevant discoveries under the cone | G-30 | complicated | ⊤ | done |  |
-| W-147 | feature | Link cone nodes to packets | G-30 | clear | ⊤ | done |  |
-| W-148 | feature | Mark the critical path in the cone | G-30 | clear | ⊤ | done |  |
-| W-149 | feature | Stack cone layers as voxel matrices | G-30 | clear | ⊤ | done |  |
-| W-150 | feature | Draw visible table grids in cone slices | G-30 | clear | ⊤ | done |  |
-| W-151 | bug | Fix the cone scene crash on load | G-30 | clear | ⊤ | done |  |
-| W-152 | feature | Stack the cone as strata planes | G-30 | clear | ⊤ | done |  |
-| W-153 | bug | Fix cone legibility defects from review | G-30 | clear | ⊤ | rejected |  |
-| W-154 | bug | Rebuild the cone scene as a zoned column lattice | G-30 | complicated | ⊤ | done |  |
-| W-155 | bug | Apply the cone review: shapes, in-scene axis labels, full-height stage | G-30 | complicated | ⊤ | done |  |
-| W-156 | bug | Apply the second cone review: typed labels, file zone colors, zoom-stable ids, standard discovery rows | G-30 | clear | ⊤ | done |  |
-| W-157 | bug | Apply the third cone review: screen-space labels, member rows, per-card scroll | G-30 | clear | ⊤ | done |  |
-| W-158 | bug | Apply the fourth cone review: exact identifier type, legend colors, identifier zoom gate, row layout | G-30 | clear | ⊤ | done |  |
-| W-159 | bug | Fix the sprite glyph size to land at the probed identifier pixel height | G-30 | clear | ⊤ | done |  |
-| W-160 | bug | Unify the cone sidebar: one scroll, one row anatomy, badges everywhere | G-30 | clear | ⊤ | done |  |
-| W-161 | bug | Stack the cone controls on two rows with full-width fields | G-30 | clear | ⊤ | done |  |
-| W-162 | bug | Apply the fifth cone review: count modifier badges, sidebar scroll, cursor, control widths, chip accent | G-30 | clear | ⊤ | done |  |
-| W-163 | bug | Fix the count badge circle and stretch the control rows | G-30 | clear | ⊤ | done |  |
-| W-164 | bug | Match badge-count to the filter-tab count metrics and the original goals red | G-30 | clear | ⊤ | done |  |
-| W-165 | bug | Center the count badges, keep zero counts as counts, pad the sidebar edge | G-30 | clear | ⊤ | done |  |
-| W-166 | refactor | Cut source-string assertions down to rendered contracts | G-30 | clear | ⊤ | done |  |
-| W-167 | refactor | Split the cone scene into focused modules | G-30 | clear | ⊤ | done |  |
-| W-168 | feature | Render the cone critical path as thick beams | G-31 | clear | ⊤ | done |  |
-| W-169 | feature | Lift cone entities above the lattice planes | G-32 | clear | ⊤ | done |  |
-| W-170 | feature | Fade cone text with zoom through a shared label-fade util | G-33 | complicated | ⊤ | done |  |
-| W-171 | feature | Fade graph labels with zoom via labelFadeOpacity in both views | G-34 | complicated | ⊤ | done |  |
-| W-172 | bug | Stop lattice lines cutting 1px breaks into cone edges | G-35 | clear | ⊤ | done |  |
-| W-173 | bug | Fix dangling skill references in CLI output | G-36 | clear | ⊤ | done |  |
-| W-174 | refactor | Restructure docs/skills into SKILL.md plus references | G-36 | clear | ⊤ | done |  |
-| W-175 | feature | Wire the skill archive into the signed release pipeline | G-36 | clear | ⊤ | done |  |
-| W-176 | feature | Serve the embedded skill through MCP and retire the primer | G-36 | complicated | ⊤ | done |  |
-| W-177 | feature | Announce the skill through MCP instructions and the status pointer | G-36 | clear | ⊤ | done |  |
-| W-178 | feature | Stamp the skill version and surface the handshake | G-36 | clear | ⊤ | done |  |
-| W-179 | feature | Add grove skill print and install commands | G-36 | complicated | ⊤ | done |  |
-| W-180 | refactor | Wrap the skill source in a grove directory | G-36 | clear | ⊤ | done |  |
-| W-181 | bug | Lowercase the rules section reference in the distill hint | G-36 | clear | ⊤ | done |  |
-| W-182 | refactor | Drop the operational rules section and the stale path comment | G-36 | clear | ⊤ | done |  |
-| W-183 | refactor | Polish the agent skill bundle section in install.md | G-36 | clear | ⊤ | done |  |
-| W-184 | bug | Align the help output into three columns | G-36 | clear | ⊤ | done |  |
-| W-185 | bug | Fix the version-bearing file list and branch name in the publish runbook | G-37 | clear | ⊤ | done |  |
-| W-186 | feature | Document the branch naming convention | G-38 | clear | ⊤ | done |  |
-| W-187 | bug | Drop the duplicated skill asset from the release upload list | G-39 | clear | ⊤ | done |  |
-| W-188 | bug | Sort node ids by family then number everywhere | G-40 | clear | ⊤ | done |  |
-| W-99 | bug | Attach view-orphaned nodes to root in graph filters | G-21 | complicated | ⊤ | done |  |
+| W-191 | bug | Refresh skill conformance fixture after the markdown reflow | G-43 | clear | ⊤ | done |  |
 
 ## Decisions
 
@@ -156,34 +49,9 @@
 | D-08 | Compliance scoped to non-commercial FOSS; CRA machinery dropped with documented revisit triggers | accepted |  |
 | D-09 | Distribution only via GitHub Releases with a signed manifest as the trust anchor | accepted |  |
 | D-10 | License changed from MIT to AGPL-3.0-only before the first release | accepted | D-08 |
-| D-12 | dsh plugin as a thin CLI wrapper bundle | accepted |  |
 | D-13 | Bun toolchain and project code style for the dsh plugin | accepted |  |
-| D-14 | macOS launcher icon ships as an icns in the portable archive | accepted |  |
-| D-15 | macOS PATH lines land in zsh startup files created on demand | accepted |  |
 | D-16 | Neo4j integrates as a read-only Cypher projection of state.lock | proposed |  |
 | D-17 | Graph view geometry lives in a DOM-free module | accepted |  |
-| D-18 | 3D graph view runs on vendored three.js ESM | accepted |  |
-| D-19 | Experimental ray tracing is a bespoke GLSL tracer | accepted |  |
-| D-20 | Causality view computes cones in-process | accepted |  |
-| D-21 | Cone renders through d3 force layout | accepted |  |
-| D-22 | Cone renders as a 3D instanced scene | accepted | D-21 |
-| D-23 | Cone renders as a voxel matrix | accepted | D-22 |
-| D-24 | Matrix slices draw visible table grids | accepted | D-23 |
-| D-25 | Cone renders as a wireframe cell volume | accepted | D-24 |
-| D-26 | Cone renders as a semantic strata cube | accepted | D-25 |
-| D-27 | Cone renders as a zoned column lattice | accepted | D-26 |
-| D-28 | Cone encodes kind by shape and labels its axes in-scene | accepted |  |
-| D-29 | Cone marks zones through file colors and a typed label axis | accepted | D-28 |
-| D-30 | Cone labels ride screen space and side cards carry their members | accepted | D-29 |
-| D-31 | Cone labels copy the identifier type exactly and the zoom gate governs identifiers | accepted | D-30 |
-| D-32 | Cone sidebar scrolls as one stack with one row anatomy | accepted | D-31 |
-| D-33 | Skill artifact is a signed directory archive | accepted |  |
-| D-34 | docs/skills is the single source embedded into the binary | superseded |  |
-| D-35 | Skill discovery rides instructions, root resource, and status pointer | accepted |  |
-| D-36 | CLI text references stable identifiers only | accepted |  |
-| D-37 | docs/skills is the single source embedded into the binary, carrying grove protocol content only | accepted | D-34 |
-| D-38 | Branch names carry a commit-type prefix and a node or version identifier | accepted |  |
-| D-39 | Canonical node order is family-then-number tuple comparison | accepted |  |
 
 ## Open questions
 
@@ -191,16 +59,8 @@
 | --- | --- | --- | --- | --- |
 | Q-03 | Add cosign keyless as an additional, no-stored-key verification path alongside attestations? | complicated |  | open |
 | Q-04 | What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)? | complicated |  | open |
-| Q-05 | What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1? | complicated | W-103 | answered |
-| Q-06 | How to verify macOS installer fixes without a local Mac | complicated | W-110 | answered |
 | Q-07 | How Neo4j integrates into Grove: role, pattern, and boundaries | complicated |  | answered |
-| Q-08 | Verify graph view JS fixes without a runner | complicated | W-114, W-115, W-116 | answered |
-| Q-09 | Vendoring three.js under the JS supply chain policy | complicated | W-121 | answered |
-| Q-10 | Fastest ray tracing for a sphere graph | complicated | W-135 | answered |
 | Q-11 | Cone lattice lines cut one-pixel breaks into edges: which fix removes the artifact? | complicated |  | answered |
-| Q-12 | Keep shipping single-file grove-skill.md alongside the archive, or cut over immediately? | clear | W-175 | answered |
-| Q-13 | tar.gz or zip for the skill archive? | clear | W-174 | answered |
-| Q-14 | Does the Julia CLI need parity for the new skill surfaces? | complicated | W-177, W-179 | answered |
 | Q-15 | Where should natural id ordering be fixed: core listnodes or desktop views? | clear |  | answered |
 
 ## Assumptions
@@ -212,23 +72,13 @@
 | B-03 | Distill yield stays above noise at archive gates |  |  | testing |
 | B-04 | DoR refusals followed by discovery raise first-pass evidence acceptance |  |  | testing |
 | B-05 | The dsh plugin runtime permits spawning the grove CLI as a child process |  |  | validated |
-| B-06 | CFBundleIconFile wiring renders the Grove icon in Finder |  | W-112 | proposed |
-| B-07 | Quadratic 3D layout holds interactive frame rates at 1000 nodes |  | W-124 | validated |
-| B-08 | Fragility renders inside the interaction budget |  | W-145 | validated |
-| B-09 | Agent platforms accept directory skills with relative links |  | W-174 | testing |
-| B-10 | Supported hosts unpack the archive without extra dependencies |  | W-174 | testing |
-| B-11 | cargo embeds docs/skills from outside the crate |  | W-176 | validated |
 
 ## Themes
 
 | ID | Title | Status | Causes work | Themed work |
 | --- | --- | --- | --- | --- |
 | T-01 | Scaling performance | open | – | W-04, W-05 |
-| T-04 | Plugin toolchain restyle | open | W-107, W-108, W-109 | – |
-| T-05 | Graph view render loop and robustness debt | done | W-117 | W-117, W-118, W-119, W-120 |
-| T-06 | Graph view grows a 3D renderer | done | W-122, W-139 | W-121, W-122, W-123, W-124, W-125, W-126, W-127, W-128, W-129, W-130, W-131, W-132, W-133, W-134, W-135, W-136, W-137, W-138, W-139, W-140 |
-| T-07 | Desktop grows a causality cone view | done | W-166, W-167 | W-141, W-142, W-143, W-144, W-145, W-146, W-147, W-148, W-149, W-150, W-151, W-152, W-153, W-154, W-155, W-156, W-157, W-158, W-159, W-160, W-161, W-162, W-163, W-164, W-165, W-166, W-167 |
-| T-08 | Skill packaging drift and dangling references | done | W-173, W-174, W-180, W-182, W-183 | W-173, W-174, W-175, W-176, W-177, W-178, W-179, W-180, W-182, W-183 |
+| T-06 | Graph view grows a 3D renderer | open | W-122, W-139 | – |
 
 ## Discoveries
 
@@ -244,10 +94,10 @@
 | Y-08 | Keep embedded-asset filenames URL-plain: percent-encoded paths (%5B etc.) against frontendDist assets are decoded inconsistently across webviews, silently breaking @font-face on systems without local font fallbacks | url-plain-asset | active |
 | Y-09 | A dsh agent runs keyless by overriding the agent-default-model row with a scripted mock provider, so tool plugins can be smoke-tested through the real Loader without API keys | dsh | active |
 | Y-10 | A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately | bundle | active |
-| Y-11 | bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it | dsh | active |
+| Y-11 | Bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it | dsh | active |
 | Y-12 | Per-OS installer branches run under a uname shim and the CI OS matrix | uname-shim | active |
 | Y-13 | Neo4j is a read-only projection of state.lock, never its storage backend | neo4j | active |
-| Y-14 | bun test runs plain-ESM unit tests without package.json | dom-free-module | active |
+| Y-14 | Bun test runs plain-ESM unit tests without package.json | dom-free-module | active |
 | Y-15 | A vendored ESM library pair loads without an import map | dom-free-module, vendored-esm-pair | active |
 | Y-16 | Import parse checks miss handler-scoped reference errors | dom-free-module, served-dom-harness | active |
 | Y-17 | One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate | causality-cone | active |
@@ -256,189 +106,74 @@
 | Y-20 | Backdrop ordering for transparent 3D line layers | backdrop-ordering, causality-cone | active |
 | Y-21 | Desktop tables order node ids lexicographically | natural-id-order | proposed |
 | Y-22 | Natural id order lives in three mirrored comparators while lock bytes stay byte-ordered | natural-id-order | proposed |
-| Y-23 | grove-mcp tool descriptions are dedicated TOOL_SPECS prose stating purpose, when to use, returns, and failure paths; parsed CLI help lines fail TDQS rubrics | tdqs | active |
+| Y-23 | The grove-mcp tool descriptions are dedicated TOOL_SPECS prose stating purpose, when to use, returns, and failure paths; parsed CLI help lines fail TDQS rubrics | tdqs | active |
+| Y-24 | A dsh plugin is a thin CLI wrapper bundle | dsh, thin-adapter | proposed |
+| Y-25 | Tool registration rides ctx.tools.register(defineTool(...)) in dsh 0.1 | cordis, dsh | proposed |
+| Y-26 | The launcher icon ships as an icns in the portable archive | macos-install-compat | proposed |
+| Y-27 | PATH lines land in zsh startup files created on demand | macos-install-compat | proposed |
+| Y-28 | The macOS installer fixes verify through a local uname shim and the CI matrix | macos-install-compat, uname-shim | proposed |
+| Y-29 | Graph view JS fixes verify through the served DOM harness and plain bun tests | served-dom-harness | proposed |
+| Y-30 | Quadratic 3D layout holds interactive rates at 1000 nodes | frame-budget | proposed |
+| Y-31 | 3D graph view runs on vendored three.js ESM | vendored-esm-pair | proposed |
+| Y-32 | The three.js vendoring follows provenance rows and SBOM purl dedupe | vendored-esm-pair | proposed |
+| Y-33 | Ray tracing is a bespoke GLSL cone tracer | ray-tracing | proposed |
+| Y-34 | Brute-force GLSL sphere tracer adds zero supply-chain surface | ray-tracing | proposed |
+| Y-35 | Cone fragility renders inside the frame budget | causality-cone, frame-budget | proposed |
+| Y-36 | The causality view computes cones in-process | causality-cone | proposed |
+| Y-37 | The cone renders through the d3 force layout | causality-cone | proposed |
+| Y-38 | The cone renders as a 3D instanced scene | causality-cone | proposed |
+| Y-39 | The cone renders as a voxel matrix | causality-cone | proposed |
+| Y-40 | Matrix slices draw visible table grids | causality-cone | proposed |
+| Y-41 | The cone renders as a wireframe cell volume | causality-cone | proposed |
+| Y-42 | The cone renders as a semantic strata cube | causality-cone | proposed |
+| Y-43 | The cone renders as a zoned column lattice | causality-cone | proposed |
+| Y-44 | Cone nodes encode kind by shape with in-scene axis labels | causality-cone | proposed |
+| Y-45 | Cone zones ride file colors and a typed label axis | causality-cone | proposed |
+| Y-46 | Cone labels ride screen space and side cards carry members | causality-cone | proposed |
+| Y-47 | Cone labels copy the identifier type and the zoom gate governs identifiers | causality-cone, rendered-contract | proposed |
+| Y-48 | The cone sidebar scrolls as one stack with one row anatomy | causality-cone | proposed |
+| Y-49 | Cargo embeds docs/skills from outside the crate | embedded-skill | proposed |
+| Y-50 | The skill artifact is a signed directory archive | embedded-skill, verify-then-parse | proposed |
+| Y-51 | Skill discovery rides instructions, root resource, and status pointer | embedded-skill | proposed |
+| Y-52 | CLI text references stable identifiers only | rendered-contract | proposed |
+| Y-53 | The docs/skills corpus is the single embedded source carrying protocol content only | embedded-skill | proposed |
+| Y-54 | The single-file skill artifact was cut over to the archive immediately | embedded-skill | proposed |
+| Y-55 | The skill archive format is tar.gz | embedded-skill | proposed |
+| Y-56 | Skill CLI parity rides the shared corpus and MCP surfaces stay Rust only | embedded-skill | proposed |
+| Y-57 | Branch names carry a commit-type prefix and an identifier | branch-naming | proposed |
+| Y-58 | Canonical node order compares family then number | natural-id-order | proposed |
+| Y-59 | Markdown prose reflows to a hard 80-column limit | markdown-reflow | proposed |
 
 ## Dependency graph
 
 ```mermaid
 graph TD
   G_17["G-17: Scaling and performance budget"]:::goal
-  G_21["G-21: Graph kind filters keep every node attached"]:::goal
-  G_22["G-22: Area surface chips truncate with tooltip"]:::goal
-  G_23["G-23: Count badges switch style above ninety-nine"]:::goal
-  G_24["G-24: Area card headers wrap ids as units"]:::goal
-  G_25["G-25: DeepSeek Harness plugin exposes the Grove CLI as agent tools"]:::goal
-  G_26["G-26: macOS install fixes the launcher icon and PATH setup"]:::goal
-  G_27["G-27: Graph view defects stay fixed (interactions, render loop, badges, environment)"]:::goal
-  G_28["G-28: Graph view renders 3D behind a toolbar toggle (vendored three.js)"]:::goal
-  G_29["G-29: Graph options persist behind an Options menu (mode, ray tracing)"]:::goal
-  G_30["G-30: Causality cone view exposes dependency risk"]:::goal
-  G_31["G-31: Cone critical path renders as a thick line"]:::goal
-  G_32["G-32: Cone entities float above their lattices"]:::goal
-  G_33["G-33: Cone text fades out with zoom like Obsidian"]:::goal
-  G_34["G-34: Graph labels fade with zoom through the shared curve"]:::goal
-  G_35["G-35: Cone lattice composites behind edges without pixel breaks"]:::goal
-  G_36["G-36: Skill ships as a signed archive served by CLI and MCP from one source"]:::goal
-  G_37["G-37: Version bump runbook matches reality"]:::goal
-  G_38["G-38: Branch naming convention is documented and discoverable"]:::goal
-  G_39["G-39: Release workflow uploads the skill archive exactly once"]:::goal
-  G_40["G-40: Node id ordering is natural (family, number) everywhere"]:::goal
+  G_43["G-43: Conformance fixtures match the shipped skill corpus"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
-  W_100["W-100: Truncate area surface chips with ellipsis tooltip"]:::done
-  W_101["W-101: Widen count badges for totals above ninety-nine"]:::done
-  W_102["W-102: Keep area id tokens whole in card headers"]:::done
-  W_103["W-103: Scaffold the dsh bundle package (package.json, cordis.patch.yml, TS entry)"]:::done
-  W_104["W-104: Implement read-only Grove tools (status, next, packet, list, show, ready, path)"]:::done
-  W_105["W-105: Implement mutating Grove tools (add, field, set, evidence, fitness, link)"]:::done
-  W_106["W-106: Smoke test the bundle in a live dsh profile and document the setup"]:::done
-  W_107["W-107: Restructure the plugin as packages/dsh on the Bun toolchain"]:::done
-  W_108["W-108: Migrate the plugin tests to bun test"]:::done
-  W_109["W-109: Apply project code style (comments, quotes, semicolons, aliases)"]:::done
-  W_110["W-110: Cover the macOS icon and zsh PATH fixes in the installer suite"]:::done
-  W_111["W-111: Ship icon.icns inside the portable desktop archive"]:::done
-  W_112["W-112: Install the Grove.app icon in install.sh"]:::done
-  W_113["W-113: Write the PATH line to zsh startup files on macOS"]:::done
-  W_114["W-114: Fix graph node hit testing at non-unit zoom"]:::done
-  W_115["W-115: Reset graph pan state on lost pointer capture"]:::done
-  W_116["W-116: Keep manual camera changes when simulation settles"]:::done
-  W_117["W-117: Reuse frame buffers in the graph render loop"]:::done
-  W_118["W-118: Cover all core statuses in graph badges"]:::done
-  W_119["W-119: Harden graph environment handling (colors, guards, shaders)"]:::done
-  W_120["W-120: Clamp tooltips and stabilize camera inputs (pan deltas, dpr)"]:::done
-  W_121["W-121: Vendor three.js with provenance records"]:::done
-  W_122["W-122: Extract shared graph view foundation"]:::done
-  W_123["W-123: Build a DOM-free 3D force layout"]:::done
-  W_124["W-124: Render the grove graph in 3D"]:::done
-  W_125["W-125: Toggle 3D mode from the graph toolbar"]:::done
-  W_126["W-126: Heal the 2D canvas context after mode switches"]:::done
-  W_127["W-127: Size the 3D canvas to the stage"]:::done
-  W_128["W-128: Keep pointer drags alive during capture events"]:::done
-  W_129["W-129: Settle the 3D entry without camera jumps"]:::done
-  W_130["W-130: Shade 3D spheres with scene lighting"]:::done
-  W_131["W-131: Even out 3D node spacing"]:::done
-  W_132["W-132: Hide 3D labels at far camera distances"]:::done
-  W_133["W-133: Keep graph mode across view switches"]:::done
-  W_134["W-134: Host graph toggles in an Options dropdown"]:::done
-  W_135["W-135: Trace the 3D graph with a GLSL ray tracer"]:::done
-  W_136["W-136: Hide the options menu when hidden"]:::done
-  W_137["W-137: Trace spheres only and rasterize edges"]:::done
-  W_138["W-138: Survive teardown when the view root is replaced"]:::done
-  W_139["W-139: Cut ray tracing and frame-loop waste"]:::done
-  W_140["W-140: Antialias traced sphere silhouettes analytically"]:::done
-  W_141["W-141: Scaffold the causality cone view"]:::done
-  W_142["W-142: Compute the cone walk in-process"]:::done
-  W_143["W-143: Render the cone as a 3D matrix"]:::done
-  W_144["W-144: Map cone surfaces onto files"]:::done
-  W_145["W-145: Highlight brittle goal chains"]:::done
-  W_146["W-146: List relevant discoveries under the cone"]:::done
-  W_147["W-147: Link cone nodes to packets"]:::done
-  W_148["W-148: Mark the critical path in the cone"]:::done
-  W_149["W-149: Stack cone layers as voxel matrices"]:::done
-  W_150["W-150: Draw visible table grids in cone slices"]:::done
-  W_151["W-151: Fix the cone scene crash on load"]:::done
-  W_152["W-152: Stack the cone as strata planes"]:::done
-  W_153["W-153: Fix cone legibility defects from review"]:::rejected
-  W_154["W-154: Rebuild the cone scene as a zoned column lattice"]:::done
-  W_155["W-155: Apply the cone review: shapes, in-scene axis labels, full-height stage"]:::done
-  W_156["W-156: Apply the second cone review: typed labels, file zone colors, zoom-stable ids, standard discovery rows"]:::done
-  W_157["W-157: Apply the third cone review: screen-space labels, member rows, per-card scroll"]:::done
-  W_158["W-158: Apply the fourth cone review: exact identifier type, legend colors, identifier zoom gate, row layout"]:::done
-  W_159["W-159: Fix the sprite glyph size to land at the probed identifier pixel height"]:::done
-  W_160["W-160: Unify the cone sidebar: one scroll, one row anatomy, badges everywhere"]:::done
-  W_161["W-161: Stack the cone controls on two rows with full-width fields"]:::done
-  W_162["W-162: Apply the fifth cone review: count modifier badges, sidebar scroll, cursor, control widths, chip accent"]:::done
-  W_163["W-163: Fix the count badge circle and stretch the control rows"]:::done
-  W_164["W-164: Match badge-count to the filter-tab count metrics and the original goals red"]:::done
-  W_165["W-165: Center the count badges, keep zero counts as counts, pad the sidebar edge"]:::done
-  W_166["W-166: Cut source-string assertions down to rendered contracts"]:::done
-  W_167["W-167: Split the cone scene into focused modules"]:::done
-  W_168["W-168: Render the cone critical path as thick beams"]:::done
-  W_169["W-169: Lift cone entities above the lattice planes"]:::done
-  W_170["W-170: Fade cone text with zoom through a shared label-fade util"]:::done
-  W_171["W-171: Fade graph labels with zoom via labelFadeOpacity in both views"]:::done
-  W_172["W-172: Stop lattice lines cutting 1px breaks into cone edges"]:::done
-  W_173["W-173: Fix dangling skill references in CLI output"]:::done
-  W_174["W-174: Restructure docs/skills into SKILL.md plus references"]:::done
-  W_175["W-175: Wire the skill archive into the signed release pipeline"]:::done
-  W_176["W-176: Serve the embedded skill through MCP and retire the primer"]:::done
-  W_177["W-177: Announce the skill through MCP instructions and the status pointer"]:::done
-  W_178["W-178: Stamp the skill version and surface the handshake"]:::done
-  W_179["W-179: Add grove skill print and install commands"]:::done
-  W_180["W-180: Wrap the skill source in a grove directory"]:::done
-  W_181["W-181: Lowercase the rules section reference in the distill hint"]:::done
-  W_182["W-182: Drop the operational rules section and the stale path comment"]:::done
-  W_183["W-183: Polish the agent skill bundle section in install.md"]:::done
-  W_184["W-184: Align the help output into three columns"]:::done
-  W_185["W-185: Fix the version-bearing file list and branch name in the publish runbook"]:::done
-  W_186["W-186: Document the branch naming convention"]:::done
-  W_187["W-187: Drop the duplicated skill asset from the release upload list"]:::done
-  W_188["W-188: Sort node ids by family then number everywhere"]:::done
-  W_99["W-99: Attach view-orphaned nodes to root in graph filters"]:::done
+  W_191["W-191: Refresh skill conformance fixture after the markdown reflow"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
   D_08["D-08: Compliance scoped to non-commercial FOSS; CRA machinery dropped with documented revisit triggers"]:::decision
   D_09["D-09: Distribution only via GitHub Releases with a signed manifest as the trust anchor"]:::decision
   D_10["D-10: License changed from MIT to AGPL-3.0-only before the first release"]:::decision
-  D_12["D-12: dsh plugin as a thin CLI wrapper bundle"]:::decision
   D_13["D-13: Bun toolchain and project code style for the dsh plugin"]:::decision
-  D_14["D-14: macOS launcher icon ships as an icns in the portable archive"]:::decision
-  D_15["D-15: macOS PATH lines land in zsh startup files created on demand"]:::decision
   D_16["D-16: Neo4j integrates as a read-only Cypher projection of state.lock"]:::decision
   D_17["D-17: Graph view geometry lives in a DOM-free module"]:::decision
-  D_18["D-18: 3D graph view runs on vendored three.js ESM"]:::decision
-  D_19["D-19: Experimental ray tracing is a bespoke GLSL tracer"]:::decision
-  D_20["D-20: Causality view computes cones in-process"]:::decision
-  D_21["D-21: Cone renders through d3 force layout"]:::decision
-  D_22["D-22: Cone renders as a 3D instanced scene"]:::decision
-  D_23["D-23: Cone renders as a voxel matrix"]:::decision
-  D_24["D-24: Matrix slices draw visible table grids"]:::decision
-  D_25["D-25: Cone renders as a wireframe cell volume"]:::decision
-  D_26["D-26: Cone renders as a semantic strata cube"]:::decision
-  D_27["D-27: Cone renders as a zoned column lattice"]:::decision
-  D_28["D-28: Cone encodes kind by shape and labels its axes in-scene"]:::decision
-  D_29["D-29: Cone marks zones through file colors and a typed label axis"]:::decision
-  D_30["D-30: Cone labels ride screen space and side cards carry their members"]:::decision
-  D_31["D-31: Cone labels copy the identifier type exactly and the zoom gate governs identifiers"]:::decision
-  D_32["D-32: Cone sidebar scrolls as one stack with one row anatomy"]:::decision
-  D_33["D-33: Skill artifact is a signed directory archive"]:::decision
-  D_34["D-34: docs/skills is the single source embedded into the binary"]:::decision
-  D_35["D-35: Skill discovery rides instructions, root resource, and status pointer"]:::decision
-  D_36["D-36: CLI text references stable identifiers only"]:::decision
-  D_37["D-37: docs/skills is the single source embedded into the binary, carrying grove protocol content only"]:::decision
-  D_38["D-38: Branch names carry a commit-type prefix and a node or version identifier"]:::decision
-  D_39["D-39: Canonical node order is family-then-number tuple comparison"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
-  Q_05["Q-05: What is the exact ctx.tools.register signature and parameter schema format in dsh 0.1?"]:::question
-  Q_06["Q-06: How to verify macOS installer fixes without a local Mac"]:::question
   Q_07["Q-07: How Neo4j integrates into Grove: role, pattern, and boundaries"]:::question
-  Q_08["Q-08: Verify graph view JS fixes without a runner"]:::question
-  Q_09["Q-09: Vendoring three.js under the JS supply chain policy"]:::question
-  Q_10["Q-10: Fastest ray tracing for a sphere graph"]:::question
   Q_11["Q-11: Cone lattice lines cut one-pixel breaks into edges: which fix removes the artifact?"]:::question
-  Q_12["Q-12: Keep shipping single-file grove-skill.md alongside the archive, or cut over immediately?"]:::question
-  Q_13["Q-13: tar.gz or zip for the skill archive?"]:::question
-  Q_14["Q-14: Does the Julia CLI need parity for the new skill surfaces?"]:::question
   Q_15["Q-15: Where should natural id ordering be fixed: core listnodes or desktop views?"]:::question
   B_01["B-01: Surprise rate declines as C grows"]:::assumption
   B_02["B-02: Rework proxies are lower on covered surfaces than uncovered"]:::assumption
   B_03["B-03: Distill yield stays above noise at archive gates"]:::assumption
   B_04["B-04: DoR refusals followed by discovery raise first-pass evidence acceptance"]:::assumption
   B_05["B-05: The dsh plugin runtime permits spawning the grove CLI as a child process"]:::assumption
-  B_06["B-06: CFBundleIconFile wiring renders the Grove icon in Finder"]:::assumption
-  B_07["B-07: Quadratic 3D layout holds interactive frame rates at 1000 nodes"]:::assumption
-  B_08["B-08: Fragility renders inside the interaction budget"]:::assumption
-  B_09["B-09: Agent platforms accept directory skills with relative links"]:::assumption
-  B_10["B-10: Supported hosts unpack the archive without extra dependencies"]:::assumption
-  B_11["B-11: cargo embeds docs/skills from outside the crate"]:::assumption
   T_01["T-01: Scaling performance"]:::theme
-  T_04["T-04: Plugin toolchain restyle"]:::theme
-  T_05["T-05: Graph view render loop and robustness debt"]:::theme
   T_06["T-06: Graph view grows a 3D renderer"]:::theme
-  T_07["T-07: Desktop grows a causality cone view"]:::theme
-  T_08["T-08: Skill packaging drift and dangling references"]:::theme
   Y_01["Y-01: Normalize at capture, never inject test clocks"]:::discovery
   Y_02["Y-02: Never gate a validation task on the hypotheses it validates"]:::discovery
   Y_03["Y-03: Integration surfaces are thin adapters over the core CLI contract"]:::discovery
@@ -449,10 +184,10 @@ graph TD
   Y_08["Y-08: Keep embedded-asset filenames URL-plain: percent-encoded paths (%5B etc.) against frontendDist assets are decoded inconsistently across webviews, silently breaking @font-face on systems without local font fallbacks"]:::discovery
   Y_09["Y-09: A dsh agent runs keyless by overriding the agent-default-model row with a scripted mock provider, so tool plugins can be smoke-tested through the real Loader without API keys"]:::discovery
   Y_10["Y-10: A dsh bundle needs dsh.bundle.patch in package.json and a cordis.patch.yml insert row; dsh plugin add forwards to pnpm, which must be installed separately"]:::discovery
-  Y_11["Y-11: bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it"]:::discovery
+  Y_11["Y-11: Bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it"]:::discovery
   Y_12["Y-12: Per-OS installer branches run under a uname shim and the CI OS matrix"]:::discovery
   Y_13["Y-13: Neo4j is a read-only projection of state.lock, never its storage backend"]:::discovery
-  Y_14["Y-14: bun test runs plain-ESM unit tests without package.json"]:::discovery
+  Y_14["Y-14: Bun test runs plain-ESM unit tests without package.json"]:::discovery
   Y_15["Y-15: A vendored ESM library pair loads without an import map"]:::discovery
   Y_16["Y-16: Import parse checks miss handler-scoped reference errors"]:::discovery
   Y_17["Y-17: One lattice, one label space: a 3D scene reads only when every entity shares one coordinate grammar and axis labels live in screen space behind a zoom gate"]:::discovery
@@ -461,7 +196,43 @@ graph TD
   Y_20["Y-20: Backdrop ordering for transparent 3D line layers"]:::discovery
   Y_21["Y-21: Desktop tables order node ids lexicographically"]:::discovery
   Y_22["Y-22: Natural id order lives in three mirrored comparators while lock bytes stay byte-ordered"]:::discovery
-  Y_23["Y-23: grove-mcp tool descriptions are dedicated TOOL_SPECS prose stating purpose, when to use, returns, and failure paths; parsed CLI help lines fail TDQS rubrics"]:::discovery
+  Y_23["Y-23: The grove-mcp tool descriptions are dedicated TOOL_SPECS prose stating purpose, when to use, returns, and failure paths; parsed CLI help lines fail TDQS rubrics"]:::discovery
+  Y_24["Y-24: A dsh plugin is a thin CLI wrapper bundle"]:::discovery
+  Y_25["Y-25: Tool registration rides ctx.tools.register(defineTool(...)) in dsh 0.1"]:::discovery
+  Y_26["Y-26: The launcher icon ships as an icns in the portable archive"]:::discovery
+  Y_27["Y-27: PATH lines land in zsh startup files created on demand"]:::discovery
+  Y_28["Y-28: The macOS installer fixes verify through a local uname shim and the CI matrix"]:::discovery
+  Y_29["Y-29: Graph view JS fixes verify through the served DOM harness and plain bun tests"]:::discovery
+  Y_30["Y-30: Quadratic 3D layout holds interactive rates at 1000 nodes"]:::discovery
+  Y_31["Y-31: 3D graph view runs on vendored three.js ESM"]:::discovery
+  Y_32["Y-32: The three.js vendoring follows provenance rows and SBOM purl dedupe"]:::discovery
+  Y_33["Y-33: Ray tracing is a bespoke GLSL cone tracer"]:::discovery
+  Y_34["Y-34: Brute-force GLSL sphere tracer adds zero supply-chain surface"]:::discovery
+  Y_35["Y-35: Cone fragility renders inside the frame budget"]:::discovery
+  Y_36["Y-36: The causality view computes cones in-process"]:::discovery
+  Y_37["Y-37: The cone renders through the d3 force layout"]:::discovery
+  Y_38["Y-38: The cone renders as a 3D instanced scene"]:::discovery
+  Y_39["Y-39: The cone renders as a voxel matrix"]:::discovery
+  Y_40["Y-40: Matrix slices draw visible table grids"]:::discovery
+  Y_41["Y-41: The cone renders as a wireframe cell volume"]:::discovery
+  Y_42["Y-42: The cone renders as a semantic strata cube"]:::discovery
+  Y_43["Y-43: The cone renders as a zoned column lattice"]:::discovery
+  Y_44["Y-44: Cone nodes encode kind by shape with in-scene axis labels"]:::discovery
+  Y_45["Y-45: Cone zones ride file colors and a typed label axis"]:::discovery
+  Y_46["Y-46: Cone labels ride screen space and side cards carry members"]:::discovery
+  Y_47["Y-47: Cone labels copy the identifier type and the zoom gate governs identifiers"]:::discovery
+  Y_48["Y-48: The cone sidebar scrolls as one stack with one row anatomy"]:::discovery
+  Y_49["Y-49: Cargo embeds docs/skills from outside the crate"]:::discovery
+  Y_50["Y-50: The skill artifact is a signed directory archive"]:::discovery
+  Y_51["Y-51: Skill discovery rides instructions, root resource, and status pointer"]:::discovery
+  Y_52["Y-52: CLI text references stable identifiers only"]:::discovery
+  Y_53["Y-53: The docs/skills corpus is the single embedded source carrying protocol content only"]:::discovery
+  Y_54["Y-54: The single-file skill artifact was cut over to the archive immediately"]:::discovery
+  Y_55["Y-55: The skill archive format is tar.gz"]:::discovery
+  Y_56["Y-56: Skill CLI parity rides the shared corpus and MCP surfaces stay Rust only"]:::discovery
+  Y_57["Y-57: Branch names carry a commit-type prefix and an identifier"]:::discovery
+  Y_58["Y-58: Canonical node order compares family then number"]:::discovery
+  Y_59["Y-59: Markdown prose reflows to a hard 80-column limit"]:::discovery
   A_01["A-01: Evals"]:::area
   A_02["A-02: API"]:::area
   A_03["A-03: Rust core"]:::area
@@ -469,6 +240,7 @@ graph TD
   A_05["A-05: Desktop"]:::area
   A_06["A-06: Release"]:::area
   A_07["A-07: Agent integrations"]:::area
+  A_08["A-08: Tooling"]:::area
   B_06 -.->|targets| W_112
   B_07 -.->|targets| W_124
   B_08 -.->|targets| W_145
@@ -596,6 +368,7 @@ graph TD
   W_186 -->|implements| D_38
   W_188 -->|implements| D_39
   W_189 -->|implements| D_40
+  W_190 -->|produces| Y_59
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78
@@ -635,6 +408,41 @@ graph TD
   Y_22 -->|distills| D_39
   Y_23 -->|distills| D_40
   Y_23 -->|distills| Q_16
+  Y_24 -->|distills| D_12
+  Y_25 -->|distills| Q_05
+  Y_26 -->|distills| D_14
+  Y_27 -->|distills| D_15
+  Y_28 -->|distills| Q_06
+  Y_29 -->|distills| Q_08
+  Y_30 -->|distills| B_07
+  Y_31 -->|distills| D_18
+  Y_32 -->|distills| Q_09
+  Y_33 -->|distills| D_19
+  Y_34 -->|distills| Q_10
+  Y_35 -->|distills| B_08
+  Y_36 -->|distills| D_20
+  Y_37 -->|distills| D_21
+  Y_38 -->|distills| D_22
+  Y_39 -->|distills| D_23
+  Y_40 -->|distills| D_24
+  Y_41 -->|distills| D_25
+  Y_42 -->|distills| D_26
+  Y_43 -->|distills| D_27
+  Y_44 -->|distills| D_28
+  Y_45 -->|distills| D_29
+  Y_46 -->|distills| D_30
+  Y_47 -->|distills| D_31
+  Y_48 -->|distills| D_32
+  Y_49 -->|distills| B_11
+  Y_50 -->|distills| D_33
+  Y_51 -->|distills| D_35
+  Y_52 -->|distills| D_36
+  Y_53 -->|distills| D_37
+  Y_54 -->|distills| Q_12
+  Y_55 -->|distills| Q_13
+  Y_56 -->|distills| Q_14
+  Y_57 -->|distills| D_38
+  Y_58 -->|distills| D_39
   class W_04 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff

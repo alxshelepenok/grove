@@ -2,34 +2,45 @@
 
 ## Quickstart
 
-Requires `bash`, `curl`, and `openssl` (on Windows use Git Bash, which ships all three).
+Requires `bash`, `curl`, and `openssl` (on Windows use Git Bash, which ships all
+three).
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/alxshelepenok/grove/main/install.sh | bash
 ```
 
-Windows also has a native PowerShell installer with the same trust chain (RSA-PSS verified in-process via RSACng):
+Windows also has a native PowerShell installer with the same trust chain
+(RSA-PSS verified in-process via RSACng):
 
 ```powershell
 iwr https://raw.githubusercontent.com/alxshelepenok/grove/main/install.ps1 -UseBasicParsing | iex
 ```
 
-The installer downloads the signed release manifest, verifies its RSA-2048/PSS signature against the embedded release key *before parsing it*, then downloads the `grove` and `grove-mcp` binaries plus the `grove-desktop` app for your platform and checks their SHA-256 and size against the manifest *before installing* into `~/.local/grove` (`%USERPROFILE%\.local\grove` on Windows). Add `~/.local/grove/bin` to your `PATH`.
+The installer downloads the signed release manifest, verifies its RSA-2048/PSS
+signature against the embedded release key _before parsing it_, then downloads
+the `grove` and `grove-mcp` binaries plus the `grove-desktop` app for your
+platform and checks their SHA-256 and size against the manifest _before
+installing_ into `~/.local/grove` (`%USERPROFILE%\.local\grove` on Windows). Add
+`~/.local/grove/bin` to your `PATH`.
 
 ## Agent skill bundle
 
-The agent-facing workflow documentation ships as a signed archive, `grove-skill.tar.gz` (+ `grove-skill.tar.gz.sig`), attached to every release. The archive expands to a `grove/` directory (`SKILL.md`, `references/`, `diagrams/`), the layout skill-aware agents load natively:
+The agent-facing workflow documentation ships as a signed archive,
+`grove-skill.tar.gz` (+ `grove-skill.tar.gz.sig`), attached to every release.
+The archive expands to a `grove/` directory (`SKILL.md`, `references/`,
+`diagrams/`), the layout skill-aware agents load natively:
 
 ```bash
 tar -xzf grove-skill.tar.gz -C ~/.kimi-code/skills  # or your agent's skills directory
 ```
 
-Verify the archive first with the committed public key (`docs/security/artifacts/public-keys/grove-manifest-2026-08.pem`) if you fetched it outside the installer:
+Verify the archive first with the committed public key
+(`docs/security/artifacts/public-keys/grove-manifest-2026-08.pem`) if you
+fetched it outside the installer:
 
 ```bash
 bin/verify.sh docs/security/artifacts/public-keys/grove-manifest-2026-08.pem grove-skill.tar.gz grove-skill.tar.gz.sig
 ```
-
 
 ## Verify before you run
 
@@ -40,24 +51,50 @@ curl -fsSLO https://raw.githubusercontent.com/alxshelepenok/grove/main/install.s
 curl -fsSLO https://raw.githubusercontent.com/alxshelepenok/grove/main/install.sh.sig
 ```
 
-Verify install.sh.sig against docs/security/artifacts/public-keys/grove-manifest-2026-08.pem, then:
+Verify install.sh.sig against
+docs/security/artifacts/public-keys/grove-manifest-2026-08.pem, then:
 
 ```bash
 bash install.sh
 ```
 
-Useful options: `--only grove-mcp` (or `grove` / `grove-desktop`) installs a single component, `--version X.Y.Z` pins a specific release, `--self-test` exercises the verification logic against a local fixture. Updating uses the same command; the installer refuses manifests older than what is already installed (anti-rollback state in `~/.grove/.sequence`).
+Useful options: `--only grove-mcp` (or `grove` / `grove-desktop`) installs a
+single component, `--version X.Y.Z` pins a specific release, `--self-test`
+exercises the verification logic against a local fixture. Updating uses the same
+command; the installer refuses manifests older than what is already installed
+(anti-rollback state in `~/.grove/.sequence`).
 
-When `grove` or `grove-mcp` is installed, the bin directory is added to PATH automatically: an idempotent line in `~/.profile` (plus `~/.bashrc` / `~/.zshrc` when present) on Linux, in `~/.profile`, `~/.zshrc`, and `~/.zprofile` on macOS (the zsh files are created when missing, because a fresh Mac runs zsh without them and never reads `.profile`), and the per-user registry PATH on Windows. Open a new shell or terminal to pick it up.
+When `grove` or `grove-mcp` is installed, the bin directory is added to PATH
+automatically: an idempotent line in `~/.profile` (plus `~/.bashrc` / `~/.zshrc`
+when present) on Linux, in `~/.profile`, `~/.zshrc`, and `~/.zprofile` on macOS
+(the zsh files are created when missing, because a fresh Mac runs zsh without
+them and never reads `.profile`), and the per-user registry PATH on Windows.
+Open a new shell or terminal to pick it up.
 
-When `grove-desktop` is installed, the installer also creates a launcher entry: a desktop and Start Menu shortcut on Windows, `~/Applications/Grove.app` with the Grove icon on macOS, and `~/.local/share/applications/grove.desktop` on Linux. All entries point at the installed binary under `~/.local/grove` and are rewritten on every install.
+When `grove-desktop` is installed, the installer also creates a launcher entry:
+a desktop and Start Menu shortcut on Windows, `~/Applications/Grove.app` with
+the Grove icon on macOS, and `~/.local/share/applications/grove.desktop` on
+Linux. All entries point at the installed binary under `~/.local/grove` and are
+rewritten on every install.
 
 ## Platform notes
 
-- macOS: binaries are unsigned. Command-line downloads (`curl`) do not set the quarantine attribute, so the script path never touches Gatekeeper; if you download an artifact with a browser, clear it via `xattr -d com.apple.quarantine <file>`.
-- Desktop OS bundles (`.msi`, `.dmg`, `.deb`, `.AppImage`) on the Releases page are unsigned: Windows SmartScreen and macOS Gatekeeper will warn on browser downloads. The signed `SHA256SUMS.sig` and `manifest.json.sig` attached to every release are the verification path (see the release notes for the exact commands).
-- `grove-desktop` runtime prerequisites: Windows needs the WebView2 Runtime (preinstalled on Windows 11 and most Windows 10 installs); Linux needs `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` on Debian/Ubuntu); macOS works out of the box.
-- Manual: archives, `SHA256SUMS`, the signed manifest, and the SBOM are attached to every [GitHub Release](https://github.com/alxshelepenok/grove/releases) if you prefer to verify and unpack by hand.
+- macOS: binaries are unsigned. Command-line downloads (`curl`) do not set the
+  quarantine attribute, so the script path never touches Gatekeeper; if you
+  download an artifact with a browser, clear it via
+  `xattr -d com.apple.quarantine <file>`.
+- Desktop OS bundles (`.msi`, `.dmg`, `.deb`, `.AppImage`) on the Releases page
+  are unsigned: Windows SmartScreen and macOS Gatekeeper will warn on browser
+  downloads. The signed `SHA256SUMS.sig` and `manifest.json.sig` attached to
+  every release are the verification path (see the release notes for the exact
+  commands).
+- `grove-desktop` runtime prerequisites: Windows needs the WebView2 Runtime
+  (preinstalled on Windows 11 and most Windows 10 installs); Linux needs
+  `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` on Debian/Ubuntu);
+  macOS works out of the box.
+- Manual: archives, `SHA256SUMS`, the signed manifest, and the SBOM are attached
+  to every [GitHub Release](https://github.com/alxshelepenok/grove/releases) if
+  you prefer to verify and unpack by hand.
 
 ## From source (developers)
 
@@ -88,40 +125,48 @@ grove set W-01 status=done  # atomic close: deltas applied, goal re-derived, che
 
 ## MCP server
 
-`grove-mcp` exposes the full CLI as MCP tools over stdio (one tool per command, plus `grove://packet`, `grove://show/<id>`, and `grove://skill` resources - the last serves the embedded agent skill (SKILL.md root, per-page `grove://skill/<page>` reads), so an agent with only the MCP integration gets the full skill in-band). Build it from the repo root:
+`grove-mcp` exposes the full CLI as MCP tools over stdio (one tool per command,
+plus `grove://packet`, `grove://show/<id>`, and `grove://skill` resources - the
+last serves the embedded agent skill (SKILL.md root, per-page
+`grove://skill/<page>` reads), so an agent with only the MCP integration gets
+the full skill in-band). Build it from the repo root:
 
 ```bash
 cargo build --release
 ```
 
-The server serves the project containing the current directory (walking up to the nearest `.grove/state.lock`); `--root=<dir>` retargets it to a different project, and `--session=<token>` overrides the default per-process token.
+The server serves the project containing the current directory (walking up to
+the nearest `.grove/state.lock`); `--root=<dir>` retargets it to a different
+project, and `--session=<token>` overrides the default per-process token.
 
 Kimi Code CLI (`~/.kimi-code/mcp.json`):
 
 ```json
 {
-  "mcpServers": {
-    "grove": {
-      "transport": "stdio",
-      "command": "/absolute/path/to/grove-mcp",
-      "args": ["--root=/absolute/path/to/project"],
-      "cwd": "/absolute/path/to/project"
+    "mcpServers": {
+        "grove": {
+            "transport": "stdio",
+            "command": "/absolute/path/to/grove-mcp",
+            "args": ["--root=/absolute/path/to/project"],
+            "cwd": "/absolute/path/to/project"
+        }
     }
-  }
 }
 ```
 
-Claude Desktop (`%APPDATA%\Claude\claude_desktop_config.json` on Windows, `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+Claude Desktop (`%APPDATA%\Claude\claude_desktop_config.json` on Windows,
+`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
 ```json
 {
-  "mcpServers": {
-    "grove": {
-      "command": "/absolute/path/to/grove-mcp",
-      "args": ["--root=/absolute/path/to/project"]
+    "mcpServers": {
+        "grove": {
+            "command": "/absolute/path/to/grove-mcp",
+            "args": ["--root=/absolute/path/to/project"]
+        }
     }
-  }
 }
 ```
 
-Restart the client after editing the config; the `mcp__grove__*` tools appear in the next session.
+Restart the client after editing the config; the `mcp__grove__*` tools appear in
+the next session.

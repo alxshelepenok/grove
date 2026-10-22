@@ -1,6 +1,7 @@
 # `index.md` mermaid template
 
-`grove render` writes a `graph TD` block into `.grove/index.md`. Node classes follow the palette below; do not edit them by hand.
+`grove render` writes a `graph TD` block into `.grove/index.md`. Node classes
+follow the palette below; do not edit them by hand.
 
 ```mermaid
 graph TD
@@ -41,6 +42,8 @@ graph TD
   classDef critical stroke:#ff0,stroke-width:3px
 ```
 
-The longest unfinished `blocks` chain is annotated `:::critical`. When multiple work items are `ready`, `grove next` picks from this set first.
+The longest unfinished `blocks` chain is annotated `:::critical`. When multiple
+work items are `ready`, `grove next` picks from this set first.
 
-**Edge link styles (automatic):** thick `==>|blocks|`; dotted `-.->|targets|`; plain arrow `-->|label|` for all other labels (`produces`, `causes`, `asks`, …).
+**Edge link styles (automatic):** thick `==>|blocks|`; dotted `-.->|targets|`;
+plain arrow `-->|label|` for all other labels (`produces`, `causes`, `asks`, …).

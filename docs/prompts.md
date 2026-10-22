@@ -1,6 +1,10 @@
 # Prompts
 
-Self-contained prompts for driving a project through Grove. Paste one into a fresh agent session. Each assumes `.grove/state.lock` exists in the project, the agent has either the `mcp__grove__*` tools or the `grove` CLI on PATH, and the Grove skill is loaded. Values written into the state (titles, evidence, decision texts) should stay in English, ASCII.
+Self-contained prompts for driving a project through Grove. Paste one into a
+fresh agent session. Each assumes `.grove/state.lock` exists in the project, the
+agent has either the `mcp__grove__*` tools or the `grove` CLI on PATH, and the
+Grove skill is loaded. Values written into the state (titles, evidence, decision
+texts) should stay in English, ASCII.
 
 ## 1. Bootstrap a new project
 
@@ -54,7 +58,8 @@ or the grove CLI on PATH). This is a work session.
 
 ## 3. Plan a feature as a goal
 
-When: you have a feature in mind; turn it into a tracked goal instead of a todo list.
+When: you have a feature in mind; turn it into a tracked goal instead of a todo
+list.
 
 ```text
 You are working in <PROJECT DIR> with grove available. Turn the feature
@@ -79,7 +84,8 @@ Do not start implementing; this session is planning only.
 
 ## 4. Audit a plan or an implementation
 
-When: independent review of a design doc, a goal, or merged code; findings become grove nodes.
+When: independent review of a design doc, a goal, or merged code; findings
+become grove nodes.
 
 ```text
 You are working in <PROJECT DIR> with grove available. Audit <SUBJECT:
@@ -99,7 +105,8 @@ Rules:
 
 ## 5. Take over another session's work
 
-When: a provider or client switch, or a new agent continuing an in-progress goal.
+When: a provider or client switch, or a new agent continuing an in-progress
+goal.
 
 ```text
 You are working in <PROJECT DIR> with grove available. A previous agent

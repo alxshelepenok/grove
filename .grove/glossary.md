@@ -23,3 +23,9 @@
 | backdrop-ordering | Decorative transparent line layers in a three.js scene draw with an explicit low renderOrder and depthWrite=false, so backdrop grids composite first and can never win the depth test or darken semantic edges at crossings | W-172 |
 | natural-id-order | Node ids sort by their numeric suffix (W-99 before W-100), not byte-wise string order; byte-wise order comes from the BTreeMap key set and breaks once a family passes ninety-nine | Y-21 |
 | tdqs | The mcp-tdqs rubric (npx mcp-tdqs lint and score) grading MCP server tool descriptions on dimensions such as purpose clarity, usage guidelines, and contextual completeness | Y-23 |
+| macos-install-compat | macOS install compatibility adaptations: the launcher icon rides the portable archive as an icns, PATH lines land in created-on-demand zsh startup files, and a local uname shim exercises macos branches in Git Bash | Y-26 |
+| frame-budget | Per-frame work on the 3D graph and cone scenes stays inside the validated interaction budget: the quadratic layout at 1000 nodes and fragility rendering hold interactive rates | Y-30 |
+| ray-tracing | The experimental graph ray tracing mode is a bespoke GLSL3 brute-force tracer (ray-sphere plus ray-segment tests with shadow rays), adding zero supply-chain surface | Y-33 |
+| embedded-skill | docs/skills is the single corpus embedded into the grove binary and packed into the signed grove-skill.tar.gz archive; MCP-only surfaces stay Rust | Y-49 |
+| branch-naming | Branch names carry a commit-type prefix and a node or version identifier (feature/w-190, chore/version-vX.Y.Z) | Y-57 |
+| markdown-reflow | Tracked markdown prose is reflowed by prettier to a hard 80-column limit via bin/md-format.sh; machine-parsed markdown (vendored PROVENANCE.md) and .grove/ stay excluded | Y-59 |
