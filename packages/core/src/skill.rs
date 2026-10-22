@@ -12,6 +12,7 @@ pub fn skill_page(path: &str) -> Option<&'static str> {
         "references/typography.md" => include_str!("../../../docs/skills/grove/references/typography.md"),
         "references/checklist.md" => include_str!("../../../docs/skills/grove/references/checklist.md"),
         "diagrams/dual-track.md" => include_str!("../../../docs/skills/grove/diagrams/dual-track.md"),
+        "diagrams/graph-template.md" => include_str!("../../../docs/skills/grove/diagrams/graph-template.md"),
         "diagrams/workflow.md" => include_str!("../../../docs/skills/grove/diagrams/workflow.md"),
         _ => return None,
     })
