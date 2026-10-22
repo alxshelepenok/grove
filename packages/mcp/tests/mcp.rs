@@ -73,6 +73,17 @@ fn server(root: &Path) -> McpServer {
     )
 }
 
+fn bind_role(s: &mut McpServer, role: &str, tools: &[&str]) {
+    s.role = Some(role.to_string());
+    s.scope.roles.insert(
+        role.to_string(),
+        grove_core::RoleScope {
+            tools: tools.iter().map(|t| t.to_string()).collect(),
+            instructions: None,
+        },
+    );
+}
+
 fn rpc(s: &mut McpServer, msg: &str) -> serde_json::Value {
     let resp = handle_message(s, msg).expect("expected a response");
     serde_json::from_str(&resp).expect("response must parse as JSON")
@@ -662,5 +673,434 @@ fn binary_smoke_ndjson_session() {
             .as_str()
             .unwrap()
             .contains("ok")
+    );
+}
+
+#[test]
+fn roleless_instance_serves_every_tool_minus_disabled() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("roleless");
+    let mut s = server(&f.root);
+    handshake(&mut s);
+    s.scope.disabled = vec!["undo".to_string(), "repair".to_string()];
+    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"tools/list\"}");
+    let tools = v["result"]["tools"].as_array().unwrap();
+    assert_eq!(tools.len(), COMMAND_NAMES.len() - 2);
+    assert!(tools.iter().all(|t| t["name"] != "undo"));
+    assert!(tools.iter().all(|t| t["name"] != "repair"));
+    let v = call(&mut s, 10, "undo", serde_json::json!({}));
+    assert_eq!(v["error"]["code"], -32602);
+    let v = call(&mut s, 11, "zzbogus", serde_json::json!({}));
+    assert_eq!(v["error"]["code"], -32602);
+}
+
+#[test]
+fn role_allowlist_serves_allowlist_minus_disabled() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("roleallow");
+    let mut s = server(&f.root);
+    handshake(&mut s);
+    bind_role(&mut s, "worker", &["status", "check", "add"]);
+    s.scope.disabled = vec!["add".to_string()];
+    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"tools/list\"}");
+    let tools = v["result"]["tools"].as_array().unwrap();
+    let mut names: Vec<&str> = tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
+    names.sort_unstable();
+    assert_eq!(names, vec!["check", "status"]);
+    let v = call(&mut s, 10, "packet", serde_json::json!({}));
+    assert_eq!(
+        v["error"]["message"].as_str().unwrap(),
+        "unknown tool: packet; known tools: check, status"
+    );
+    s.role = Some("stranger".to_string());
+    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"tools/list\"}");
+    assert_eq!(
+        v["result"]["tools"].as_array().unwrap().len(),
+        0,
+        "{v}"
+    );
+}
+
+#[test]
+fn interdicted_call_mirrors_unknown_tool_error() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("interdict");
+    let mut s = server(&f.root);
+    handshake(&mut s);
+    bind_role(&mut s, "worker", &["status"]);
+    let hidden = call(&mut s, 10, "packet", serde_json::json!({}));
+    let bogus = call(&mut s, 11, "zzbogus", serde_json::json!({}));
+    assert_eq!(hidden["error"]["code"], -32602);
+    assert_eq!(bogus["error"]["code"], -32602);
+    assert_eq!(
+        hidden["error"]["message"].as_str().unwrap(),
+        "unknown tool: packet; known tools: status"
+    );
+    assert_eq!(
+        bogus["error"]["message"].as_str().unwrap(),
+        "unknown tool: zzbogus; known tools: status"
+    );
+}
+
+#[test]
+fn resource_predicate_follows_role_scope() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("roleres");
+    let mut s = server(&f.root);
+    handshake(&mut s);
+    init_project(&mut s, 10);
+    call(&mut s, 11, "add", serde_json::json!({"kind": "a", "title": "Role area"}));
+    call(
+        &mut s,
+        12,
+        "add",
+        serde_json::json!({"kind": "g", "title": "Role goal", "area": "A-01", "fitness_kind": "manual"}),
+    );
+    call(
+        &mut s,
+        13,
+        "add",
+        serde_json::json!({"kind": "w", "title": "Role work", "type": "feature", "cynefin": "clear", "goals": "G-01"}),
+    );
+    let list = |s: &mut McpServer, id: i64| rpc(
+        s,
+        &format!("{{\"jsonrpc\":\"2.0\",\"id\":{id},\"method\":\"resources/list\"}}"),
+    );
+    let read = |s: &mut McpServer, id: i64, uri: &str| {
+        let msg = format!(
+            "{{\"jsonrpc\":\"2.0\",\"id\":{id},\"method\":\"resources/read\",\"params\":{{\"uri\":\"{uri}\"}}}}"
+        );
+        rpc(s, &msg)
+    };
+    s.scope.disabled = vec!["packet".to_string()];
+    let v = list(&mut s, 20);
+    let resources = v["result"]["resources"].as_array().unwrap();
+    assert!(resources.iter().all(|r| r["uri"] != "grove://packet/W-01"));
+    assert!(resources.iter().any(|r| r["uri"] == "grove://show/W-01"));
+    assert!(resources.iter().any(|r| r["uri"] == "grove://skill"));
+    let hidden = read(&mut s, 21, "grove://packet/W-01");
+    assert_eq!(hidden["error"]["code"], -32602);
+    assert_eq!(
+        hidden["error"]["message"].as_str().unwrap(),
+        "malformed resource uri: grove://packet/W-01"
+    );
+    let bogus = read(&mut s, 22, "grove://mistkind/W-01");
+    assert_eq!(
+        bogus["error"]["message"].as_str().unwrap(),
+        "malformed resource uri: grove://mistkind/W-01"
+    );
+    s.scope.disabled.clear();
+    bind_role(&mut s, "worker", &["show"]);
+    let v = list(&mut s, 23);
+    let resources = v["result"]["resources"].as_array().unwrap();
+    assert!(
+        resources
+            .iter()
+            .all(|r| !r["uri"].as_str().unwrap().starts_with("grove://packet/")),
+        "{resources:?}"
+    );
+    assert_eq!(
+        resources
+            .iter()
+            .filter(|r| r["uri"].as_str().unwrap().starts_with("grove://show/"))
+            .count(),
+        3
+    );
+    let v = read(&mut s, 24, "grove://show/W-01");
+    assert_eq!(v["result"]["contents"][0]["mimeType"], "text/plain");
+    let v = read(&mut s, 25, "grove://packet/W-01");
+    assert_eq!(v["error"]["code"], -32602);
+}
+
+#[test]
+fn skill_resource_stays_available_to_every_role() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("roleskill");
+    let mut s = server(&f.root);
+    handshake(&mut s);
+    bind_role(&mut s, "witness", &[]);
+    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"resources/list\"}");
+    let resources = v["result"]["resources"].as_array().unwrap();
+    assert!(resources.iter().any(|r| r["uri"] == "grove://skill"));
+    let v = rpc(
+        &mut s,
+        "{\"jsonrpc\":\"2.0\",\"id\":10,\"method\":\"resources/read\",\"params\":{\"uri\":\"grove://skill\"}}",
+    );
+    assert_eq!(v["result"]["contents"][0]["mimeType"], "text/markdown");
+    let v = rpc(
+        &mut s,
+        "{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"resources/read\",\"params\":{\"uri\":\"grove://skill/references/rules.md\"}}",
+    );
+    assert_eq!(v["result"]["contents"][0]["mimeType"], "text/markdown");
+    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":12,\"method\":\"tools/list\"}");
+    assert_eq!(v["result"]["tools"].as_array().unwrap().len(), 0);
+}
+
+#[test]
+fn roleless_instructions_keep_default_text() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("instruct-none");
+    let mut s = server(&f.root);
+    handshake(&mut s);
+    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":30,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\"}}");
+    let t = v["result"]["instructions"].as_str().unwrap();
+    assert!(t.starts_with("Grove is a graph-driven workflow protocol."), "{t}");
+    assert!(!t.contains("Active grove role:"), "{t}");
+    assert!(t.contains("Binary v"), "{t}");
+}
+
+#[test]
+fn role_bound_instructions_carry_role_line_and_replacement() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("instruct-role");
+    let mut s = server(&f.root);
+    handshake(&mut s);
+    bind_role(&mut s, "keeper", &["check"]);
+    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":30,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\"}}");
+    let t = v["result"]["instructions"].as_str().unwrap();
+    assert!(t.starts_with("Active grove role: keeper.\n"), "{t}");
+    assert!(t.contains("Grove is a graph-driven workflow protocol."), "{t}");
+    let custom = "You only run invariant checks; do not mutate the graph.";
+    s.scope
+        .roles
+        .get_mut("keeper")
+        .unwrap()
+        .instructions = Some(custom.to_string());
+    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":31,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\"}}");
+    let t = v["result"]["instructions"].as_str().unwrap();
+    assert!(t.starts_with("Active grove role: keeper.\n"), "{t}");
+    assert!(t.contains(custom), "{t}");
+    assert!(!t.contains("Grove is a graph-driven workflow protocol."), "{t}");
+    assert!(t.contains("Binary v"), "{t}");
+}
+
+#[test]
+fn binary_serves_role_instructions_from_config() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("bininstruct");
+    let root = f.root.to_string_lossy().into_owned();
+    std::fs::create_dir_all(f.root.join(".grove")).unwrap();
+    std::fs::write(
+        f.root.join(".grove").join("mcp.toml"),
+        "[roles.keeper]\ntools = [\"check\"]\ninstructions = \"Guard the invariants.\"\n",
+    )
+    .unwrap();
+    let r = run_cli(&["init".to_string(), format!("--root={root}")]);
+    assert_eq!(r.code, 0, "{}", r.err);
+    let script = [
+        "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"smoke\",\"version\":\"0\"}}}",
+        "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",
+        "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"ping\"}",
+    ];
+    let mut child = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
+        .arg(format!("--root={root}"))
+        .arg("--role=keeper")
+        .env("GROVE_HOME", &f._home)
+        .env_remove("GROVE_PROJECT")
+        .env_remove("GROVE_SESSION")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .expect("spawn grove-mcp");
+    {
+        let mut stdin = child.stdin.take().unwrap();
+        use std::io::Write;
+        for line in &script {
+            writeln!(stdin, "{line}").unwrap();
+        }
+    }
+    let out = child.wait_with_output().unwrap();
+    assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+    let stdout = String::from_utf8(out.stdout).unwrap();
+    let lines: Vec<&str> = stdout.lines().filter(|l| !l.trim().is_empty()).collect();
+    assert_eq!(lines.len(), 2, "{stdout}");
+    let parsed: Vec<serde_json::Value> = lines
+        .iter()
+        .map(|l| serde_json::from_str(l).expect("each stdout line must parse as JSON"))
+        .collect();
+    let instructions = parsed[0]["result"]["instructions"].as_str().unwrap();
+    assert!(
+        instructions.starts_with("Active grove role: keeper.\nGuard the invariants."),
+        "{instructions}"
+    );
+    assert!(!instructions.contains("Grove is a graph-driven"), "{instructions}");
+}
+
+#[test]
+fn binary_rejects_unknown_role() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("binaryrole");
+    let root = f.root.to_string_lossy().into_owned();
+    let r = run_cli(&["init".to_string(), format!("--root={root}")]);
+    assert_eq!(r.code, 0, "{}", r.err);
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
+        .arg(format!("--root={root}"))
+        .arg("--role=stranger")
+        .env("GROVE_HOME", &f._home)
+        .env_remove("GROVE_PROJECT")
+        .env_remove("GROVE_SESSION")
+        .stdin(std::process::Stdio::null())
+        .output()
+        .expect("spawn grove-mcp");
+    assert!(!out.status.success(), "unknown role must refuse startup");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("unknown role stranger"), "{stderr}");
+    assert!(stderr.contains("configured roles: none"), "{stderr}");
+}
+
+#[test]
+fn binary_rejects_unknown_role_against_configured_set() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("binaryrole2");
+    let root = f.root.to_string_lossy().into_owned();
+    let cfg = f.root.join(".grove").join("mcp.toml");
+    std::fs::create_dir_all(f.root.join(".grove")).unwrap();
+    std::fs::write(&cfg, "[roles.keeper]\ntools = [\"check\"]\n").unwrap();
+    let r = run_cli(&["init".to_string(), format!("--root={root}")]);
+    assert_eq!(r.code, 0, "{}", r.err);
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
+        .arg(format!("--root={root}"))
+        .arg("--role=stranger")
+        .env("GROVE_HOME", &f._home)
+        .env_remove("GROVE_PROJECT")
+        .env_remove("GROVE_SESSION")
+        .stdin(std::process::Stdio::null())
+        .output()
+        .expect("spawn grove-mcp");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("configured roles: keeper"),
+        "{stderr}"
+    );
+}
+
+#[test]
+fn binary_warns_once_on_malformed_config_and_serves_all_tools() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("binmalformed");
+    let root = f.root.to_string_lossy().into_owned();
+    std::fs::create_dir_all(f.root.join(".grove")).unwrap();
+    std::fs::write(f.root.join(".grove").join("mcp.toml"), "not toml at all\n").unwrap();
+    let r = run_cli(&["init".to_string(), format!("--root={root}")]);
+    assert_eq!(r.code, 0, "{}", r.err);
+    let script = [
+        "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"smoke\",\"version\":\"0\"}}}",
+        "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",
+        "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+    ];
+    let mut child = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
+        .arg(format!("--root={root}"))
+        .env("GROVE_HOME", &f._home)
+        .env_remove("GROVE_PROJECT")
+        .env_remove("GROVE_SESSION")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .expect("spawn grove-mcp");
+    {
+        let mut stdin = child.stdin.take().unwrap();
+        use std::io::Write;
+        for line in &script {
+            writeln!(stdin, "{line}").unwrap();
+        }
+    }
+    let out = child.wait_with_output().unwrap();
+    let stderr = String::from_utf8_lossy(&out.stderr).into_owned();
+    assert!(out.status.success(), "stderr: {stderr}");
+    let warnings = stderr
+        .lines()
+        .filter(|l| l.contains("warning: malformed") && l.contains("mcp.toml"))
+        .count();
+    assert_eq!(warnings, 1, "exactly one malformed-config warning expected: {stderr}");
+    let stdout = String::from_utf8(out.stdout).unwrap();
+    let parsed: Vec<serde_json::Value> = stdout
+        .lines()
+        .filter(|l| !l.trim().is_empty())
+        .map(|l| serde_json::from_str(l).expect("each stdout line must parse as JSON"))
+        .collect();
+    assert!(parsed[1]["result"]["tools"].is_array(), "{stdout}");
+    assert_eq!(
+        parsed[1]["result"]["tools"].as_array().unwrap().len(),
+        COMMAND_NAMES.len(),
+        "fail open must serve the full tool set: {stdout}"
+    );
+}
+
+#[test]
+fn binary_malformed_config_warning_precedes_role_refusal() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("binmalformedrole");
+    let root = f.root.to_string_lossy().into_owned();
+    std::fs::create_dir_all(f.root.join(".grove")).unwrap();
+    std::fs::write(f.root.join(".grove").join("mcp.toml"), "not toml at all\n").unwrap();
+    let r = run_cli(&["init".to_string(), format!("--root={root}")]);
+    assert_eq!(r.code, 0, "{}", r.err);
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
+        .arg(format!("--root={root}"))
+        .arg("--role=worker")
+        .env("GROVE_HOME", &f._home)
+        .env_remove("GROVE_PROJECT")
+        .env_remove("GROVE_SESSION")
+        .stdin(std::process::Stdio::null())
+        .output()
+        .expect("spawn grove-mcp");
+    assert!(!out.status.success(), "unknown role must refuse startup");
+    let stderr = String::from_utf8_lossy(&out.stderr).into_owned();
+    let warn = stderr
+        .find("warning: malformed")
+        .unwrap_or_else(|| panic!("malformed warning must print\n{stderr}"));
+    let role = stderr
+        .find("unknown role worker")
+        .unwrap_or_else(|| panic!("role refusal must name the role\n{stderr}"));
+    assert!(warn < role, "config warning must precede the role refusal: {stderr}");
+}
+
+#[test]
+fn config_backed_role_flow_via_binary() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("binroleflow");
+    let root = f.root.to_string_lossy().into_owned();
+    let cfg = f.root.join(".grove").join("mcp.toml");
+    std::fs::create_dir_all(f.root.join(".grove")).unwrap();
+    std::fs::write(&cfg, "disabled = [\"add\"]\n\n[roles.keeper]\ntools = [\"check\"]\n").unwrap();
+    let r = run_cli(&["init".to_string(), format!("--root={root}")]);
+    assert_eq!(r.code, 0, "{}", r.err);
+    let script = [
+        "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"smoke\",\"version\":\"0\"}}}",
+        "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",
+        "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+    ];
+    let mut child = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
+        .arg(format!("--root={root}"))
+        .arg("--role=keeper")
+        .env("GROVE_HOME", &f._home)
+        .env_remove("GROVE_PROJECT")
+        .env_remove("GROVE_SESSION")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .expect("spawn grove-mcp");
+    {
+        let mut stdin = child.stdin.take().unwrap();
+        use std::io::Write;
+        for line in &script {
+            writeln!(stdin, "{line}").unwrap();
+        }
+    }
+    let out = child.wait_with_output().unwrap();
+    assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+    let stdout = String::from_utf8(out.stdout).unwrap();
+    let lines: Vec<&str> = stdout.lines().filter(|l| !l.trim().is_empty()).collect();
+    assert_eq!(lines.len(), 2, "{stdout}");
+    let parsed: Vec<serde_json::Value> = lines
+        .iter()
+        .map(|l| serde_json::from_str(l).expect("each stdout line must parse as JSON"))
+        .collect();
+    assert_eq!(parsed[1]["result"]["tools"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        parsed[1]["result"]["tools"][0]["name"], "check"
     );
 }

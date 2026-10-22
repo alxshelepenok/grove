@@ -1,9 +1,14 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:c37c15ca5a2a36d5dbfc1f3fc6499ae80eab0bfc9f9a29dcaf4e5d6543c9a619
+# checksum: sha256:68b428146bc12c3195e06d1489474145ce73e901fedcfddf3b29b4392923fa71
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
+
+g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-22T23:29:31Z "grove-mcp serves role-scoped tool sets"
+  area: A-04
+  fitness_target: 6
+  fitness_current: 4
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -25,6 +30,109 @@ w W-05 type=refactor status=proposed cynefin=complicated t_created=2026-07-19T01
     | lands after the benchmark suite (W-04) and before the 10k-node budget is enforced
   why:
     | Enabling work: clears the known scaling debt before the 10k-node budget applies
+
+w W-192 type=feature status=done cynefin=clear t_created=2026-10-22T22:44:03Z t_updated=2026-10-22T22:55:36Z "Parse mcp.toml tool config"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/projects.rs, packages/core/src/mcp.rs
+  ac:
+    | Parsing .grove/mcp.toml yields an optional tool config with a top-level disabled list and named [roles.NAME] tools allowlists, reusing the hand-written TOML machinery from projects.rs.
+    | A missing config file parses as no config and every tool stays enabled.
+    | A malformed config file parses as no config and prints one stderr warning naming the file path.
+    | A disabled or role entry naming a grove command that TOOL_SPECS does not know prints one stderr warning and the valid names stay effective.
+    | Unit tests cover the present, empty, malformed, and unknown-entry file shapes.
+  hypothesis:
+    | The TOML line parser in projects.rs already handles basic strings, inline string arrays, and table headers, so role configuration lands as a small registry-style extension with the same fail-open degradation.
+  evidence_strategy:
+    | Unit tests over the parser shapes in packages/core plus a clean cargo test run.
+  evidence:
+    | cargo test -p grove-core all suites green: mcp_config 9/9 (missing, present, empty, malformed x10, extra tolerant, non-role headers, empty allowlist, unknown entries, path layout)
+    | cargo build -p grove-mcp ok; clippy clean over mcp.rs and projects.rs changes (repo pre-existing warnings untouched)
+
+w W-193 type=feature status=done cynefin=clear t_created=2026-10-22T22:44:11Z t_updated=2026-10-22T23:18:11Z "Filter grove-mcp tools by role"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/mcp/src/main.rs, packages/core/src/mcp.rs
+  ac:
+    | grove-mcp accepts --role=NAME; an unknown role exits with an error naming the configured roles.
+    | tools/list serves exactly the role allowlist minus the disabled set, and a roleless instance serves every tool minus the disabled set.
+    | tools/call of a tool outside the served set answers the same unknown-tool error as an unregistered name.
+    | resources/list and resources/read honor the same predicate for grove://packet and grove://show entries, while grove://skill stays available to every role.
+    | Integration tests drive a stdio session through handle_message and assert the list, call, and resource behavior for roleless and role-bound servers.
+  hypothesis:
+    | One allowed predicate shared by tools/list, tools/call, and resources keeps allowlist enforcement at a single point inside the thin adapter, so tool schemas and client routing stay unchanged.
+  evidence_strategy:
+    | Integration tests through handle_message for roleless and role-bound sessions plus a clean cargo test run.
+  evidence:
+    | cargo test -p grove-mcp 21/21: tools/list serves the role allowlist minus disabled, interdicted calls mirror the unknown-tool error, resource list and read follow the predicate with grove skill always served, and the binary refuses an unknown role naming the configured roles
+    | config-backed stdio flow test drives the binary with mcp.toml and asserts the served set; cargo test -p grove-core all suites green including mcp_config 9/9 unchanged; cargo build -p grove-mcp ok; clippy clean over the touched code
+
+w W-194 type=feature status=done cynefin=clear t_created=2026-10-22T22:44:24Z t_updated=2026-10-22T23:22:56Z "Serve per-role instructions with role echo"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/mcp.rs
+  ac:
+    | The initialize instructions for a role-bound server replace the default workflow text with the per-role instructions value, prefixed by an automatic role line naming the active role.
+    | A roleless server keeps the current default instructions text unchanged.
+    | The instructions composition is covered by a unit test asserting the role line and the replacement behavior.
+  hypothesis:
+    | Instructions is the one initialize field clients are required to forward to the model, so composing it at server startup delivers role awareness over protocol with zero client-side configuration.
+  evidence_strategy:
+    | Unit tests over the composed instructions for roleless and role-bound servers plus a clean cargo test run.
+  evidence:
+    | initialize instructions composed in mcp_instructions: roleless servers keep the default text byte identical, role bound servers get the automatic Active grove role line naming the role with the per-role instructions replacing the default text while keeping the version suffix
+    | config parser accepts per-role instructions strings and rejects non string and duplicate values; cargo test -p grove-mcp 24/24 (role line, replacement, binary config flow) and cargo test --workspace all suites green; clippy clean over touched code
+
+w W-195 type=feature status=proposed cynefin=clear t_created=2026-10-22T22:44:31Z t_updated=2026-10-22T22:44:32Z "Add serverInfo.title to the initialize result"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/mcp.rs
+  ac:
+    | The initialize result carries serverInfo.title naming the active role, for example grove-mcp (worker), or the plain server name for a roleless instance.
+    | A unit test asserts the emitted title for roleless and role-bound servers.
+  hypothesis:
+    | serverInfo.title is optional display metadata in the MCP Implementation object, so emitting it cannot break older clients while giving the human per-instance taxonomy in client UI panels.
+  evidence_strategy:
+    | Unit tests over the initialize result payload plus a clean cargo test run.
+
+w W-196 type=refactor status=done cynefin=complicated t_created=2026-10-22T23:06:20Z t_updated=2026-10-22T23:09:21Z "Extract TOML parsing from projects into a toml module"
+  goals: G-44
+  theme: T-09
+  fitness: G-44=+0
+  surface: packages/core/src/toml.rs, packages/core/src/projects.rs, packages/core/src/mcp.rs, packages/core/src/lib.rs
+  ac:
+    | A new packages/core/src/toml.rs module owns the shared TOML lexer (values, bare keys, basic strings, scalars, inline arrays, inline tables) and a single line parser parameterized by a policy of bare or dotted table headers and allowed or denied arrays of tables.
+    | The registry keeps byte identical parse_toml_line behavior through a thin wrapper over the policy parser; tests/projects.rs stays green unchanged.
+    | The mcp tool config parser consumes the same module under the config policy; every test in tests/mcp_config.rs stays green unchanged.
+    | No TOML machinery remains on import paths between mcp.rs and projects.rs: mcp.rs imports from crate::toml and projects.rs exports only its registry layer.
+    | Inline unit tests inside the toml module pin the policy differences for header keys and arrays of tables.
+    | cargo test -p grove-core and cargo build -p grove-mcp pass with no new clippy findings in the touched files.
+  hypothesis:
+    | Both line parsers already share their implementation except the header key rule and arrays of tables handling, so one policy parameter merges them without behavior change and the extraction is a pure move.
+  evidence_strategy:
+    | cargo test -p grove-core with the registry and mcp config suites unchanged plus inline toml module tests, a clean cargo build -p grove-mcp, and clippy over the touched files.
+  evidence:
+    | cargo test -p grove-core all suites green: registry suite 32/32 unchanged (toml_parse_rules pinned), mcp_config 9/9 unchanged, inline toml policy tests 5/5
+    | cargo build -p grove-mcp ok; clippy reports no findings in toml.rs and no new findings in mcp.rs or projects.rs (line 1112 iter_cloned_collect finds predate this work)
+
+w W-197 type=bug status=done cynefin=clear t_created=2026-10-22T23:29:17Z t_updated=2026-10-22T23:34:57Z "grove-mcp degrades a malformed mcp.toml silently without the stderr warning"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/mcp.rs, packages/mcp/src/main.rs, packages/core/tests/mcp_config.rs, packages/mcp/tests/mcp.rs
+  ac:
+    | A malformed .grove/mcp.toml prints one stderr warning naming the file path, phrased in the established warning style, before any client request is served.
+    | The warning does not change the fail-open outcome: a parse failure still serves the default all-tools-enabled scope with no roles and no disabled set.
+    | The malformed-role compounding is gone: a startup with --role against a malformed config no longer conceals the config error behind 'unknown role; configured roles: none' — the config warning comes first.
+  repro:
+    | Build grove-mcp; inside a project root write a text that fails parse_tool_config (for example 'not toml at all') into .grove/mcp.toml; run the binary with --root and send an initialize line: no stderr warning is printed. Running with --role=worker additionally refuses startup with 'unknown role worker; configured roles: none', masking the config error.
+  exit:
+    | cargo test -p grove-mcp and cargo test -p grove-core green including the new warning assertions; the runtime probe from the G-44 review repeats clean with the warning line on stderr.
+  evidence_strategy:
+    | Integration test capturing stderr from a binary startup with a malformed config, plus a clean cargo test run over grove-mcp and grove-core.
+  evidence:
+    | load_tool_config prints 'grove-mcp: warning: malformed mcp.toml at <path>; serving all tools' on parse failure plus a could-not-read variant; the fail-open None return is unchanged (packages/core/src/mcp.rs)
+    | cargo test -p grove-mcp 26/26: binary_warns_once_on_malformed_config_and_serves_all_tools pins exactly one stderr warning naming the file path plus the full-set fail-open tools/list; binary_malformed_config_warning_precedes_role_refusal pins the warning before the 'unknown role worker' refusal
+    | cargo test -p grove-core all 27 suites green incl mcp_config 10/10; clippy clean over the touched files; runtime probe repeats clean: warning line names the temp mcp.toml path and precedes the role refusal line
 
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
@@ -136,6 +244,65 @@ d D-17 status=accepted t_created=2026-08-28T22:24:55Z t_updated=2026-08-28T23:07
   validation:
     | bun test green on the extracted module inside the ui tree.
 
+d D-41 status=accepted t_created=2026-10-22T22:42:33Z t_updated=2026-10-22T22:44:23Z "Role-scoped MCP tool access configured in .grove/mcp.toml"
+  context:
+    | grove-mcp serves the full TOOL_SPECS set to every client; project owners running narrow role skills need fixed per-instance tool subsets, and today the only control is client-side tool filtering.
+  options:
+    | Global disabled denylist only: it hides named tools but every new tool arrives enabled, which fits tool hygiene yet not role containment.
+    | Per-role allowlists in .grove/mcp.toml plus a global disabled denylist subtracted afterwards (block wins over allow).
+    | Manual mode without a role: it disables roleless instances for every project MCP entry at once, breaking per-project scoping.
+  decision:
+    | Tool scope is configured in .grove/mcp.toml: a top-level disabled list plus [roles.NAME] tools allowlists; the server picks its role with --role=NAME at startup; an unknown role refuses startup (fail closed); unknown tool names log a stderr warning; an absent or malformed config means all tools enabled (fail open, matching projects.toml degradation).
+  consequences:
+    | No config change is needed for existing projects; each role skill maps to its own MCP server entry in the client config; role filtering is a presentation layer inside the thin adapter (Y-03), not a security boundary against the same OS user, whose real enforcement remains grove guards (DoR, session claims, checksum).
+
+d D-42 status=accepted t_created=2026-10-22T22:42:45Z t_updated=2026-10-22T22:44:23Z "Role-interdicted tool calls mirror unknown-tool responses"
+  context:
+    | tools/list hides role-disallowed tools, yet a client may still call them by name; the response shape decides whether the capability stays invisible or becomes a visible blocked feature.
+  options:
+    | Answer with a dedicated tool-level isError payload naming the tool as disabled: it is discoverable and suggests retries that can never succeed.
+    | Answer with the same protocol error as an unknown tool name: once hidden, the tool is indistinguishable from nonexistent.
+  decision:
+    | A disallowed tools/call returns exactly the unknown-tool protocol error (invalid params, exit unchanged in kind), so role boundaries never leak a disable message and agents get no retry signal.
+  consequences:
+    | Debugging a config typo looks like a missing tool; the role echo in server instructions (D-43) and the stderr warnings keep the human side diagnosable.
+
+d D-43 status=accepted t_created=2026-10-22T22:43:01Z t_updated=2026-10-22T22:44:25Z "Per-role instructions replace the default text with automatic role echo"
+  context:
+    | The static MCP_INSTRUCTIONS line carries default workflow hints such as start with status and next, which mislead narrow role instances, and an agent learns its mandate nowhere else because MCP carries no per-call role metadata.
+  options:
+    | Echo the role only inside serverInfo: serverInfo is displayed to the client, never forwarded to the model, so the agent still misses its mandate.
+    | Compose instructions in mcp.rs from the default text plus a role line.
+  decision:
+    | initialize instructions are composed as a bulk default workflow text plus an automatic role line naming the active role, and an optional per-role instructions value replaces the default text; role membership stays discoverable by the agent, in protocol, with zero client configuration; serverInfo.title stays untouched in this change set.
+  consequences:
+    | Per-role instruction text lands in every system prompt, so values stay short; long role documentation belongs in the role skill served as client-side context, and instruct drafts such as per-role instructions strings should remain pointers rather than essays.
+
+d D-44 status=accepted t_created=2026-10-22T22:43:10Z t_updated=2026-10-22T22:43:44Z "Resource exposure honors the same role predicate"
+  context:
+    | resources/list and resources/read expose grove://packet/<id> and grove://show/<id>, which run the same commands as the packet and show tools; without symmetric filtering a role could reach a hidden tool through a resource uri.
+  options:
+    | Leave resources unfiltered: resource reads become a loophole around role scope.
+    | Hide resource entries from the list while keeping reads working: an agent holding a stale uri still gets around the scope.
+  decision:
+    | One tool_allowed predicate decides tools/list, tools/call, and resource exposure: the same predicate gates grove://packet and grove://show entries in resources/list and refuses their reads with the same unknown-tool response per D-42; grove://skill stays available to every role.
+  consequences:
+    | Role scope has one enforcement point, so packet and show cannot be bypassed through resources, and the per-project resource list shrinks consistently with the tool list.
+
+d D-45 status=accepted t_created=2026-10-22T22:43:42Z t_updated=2026-10-22T23:06:08Z "The grove skill resource is available to every role"
+
+d D-46 status=accepted t_created=2026-10-22T23:06:08Z t_updated=2026-10-22T23:06:20Z "TOML parsing machinery lives in a dedicated core toml module"
+  context:
+    | W-192 landed the mcp.toml parser with pub(crate) exports reaching back into projects.rs, so the registry module now owns the shared TOML lexer and every future config reader would extend the registry surface.
+  options:
+    | Status quo: keep the pub(crate) re-exports from projects.rs; coupling grows with each new config reader.
+    | Partial extraction: move only the lexer and the loose line parser; two line parsers remain in the codebase.
+    | Full extraction: a dedicated toml module with one lexer plus a single policy-aware line parser and thin wrappers for the registry and the mcp tool config.
+  decision:
+    | Full extraction option A: packages/core/src/toml.rs owns TomlVal, bare keys, strings, scalars, values, inline arrays and tables, and one policy parameterized line parser; projects.rs and mcp.rs keep thin wrappers with registry behavior pinned byte identical by tests/projects.rs.
+  consequences:
+    | mcp.rs imports TOML machinery from crate::toml instead of projects.rs; future config readers plug into the toml module without touching the registry; the merge of the two line parsers ships with the extraction so no follow-up refactor is pending.
+
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
     | attestations already give a GitHub-backed second path; cosign keyless would add a Sigstore-anchored one without storing another key, at the cost of another tool in the sign job; deferred from v1, revisit after the first releases
@@ -204,6 +371,8 @@ b B-05 status=validated cynefin=complicated t_created=2026-08-17T10:50:14Z t_upd
 t T-01 status=open t_created=2026-07-19T01:14:31Z t_updated=2026-07-19T01:14:31Z "Scaling performance"
 
 t T-06 status=open t_created=2026-08-28T23:06:23Z t_updated=2026-10-22T20:14:46Z "Graph view grows a 3D renderer"
+
+t T-09 status=done t_created=2026-10-22T23:06:08Z t_updated=2026-10-22T23:09:21Z "Shared TOML machinery concentrates inside the projects module"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-09-26T00:18:53Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -599,6 +768,7 @@ e T-08 causes W-174 t_created=2026-09-17T13:07:13Z
 e T-08 causes W-180 t_created=2026-09-17T15:12:18Z
 e T-08 causes W-182 t_created=2026-09-17T15:45:05Z
 e T-08 causes W-183 t_created=2026-09-17T15:57:35Z
+e T-09 causes W-196 t_created=2026-10-22T23:06:30Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z
@@ -680,6 +850,15 @@ e W-188 implements D-39 t_created=2026-09-17T23:27:25Z
 e W-189 implements D-40 t_created=2026-09-25T23:38:14Z
 e W-190 produces Y-59 t_created=2026-10-22T20:14:07Z
 e W-191 produces Y-60 t_created=2026-10-22T22:24:53Z
+e W-192 blocks W-193 t_created=2026-10-22T22:44:24Z
+e W-192 blocks W-194 t_created=2026-10-22T22:44:26Z
+e W-192 implements D-41 t_created=2026-10-22T22:44:04Z
+e W-193 implements D-41 t_created=2026-10-22T22:44:23Z
+e W-193 implements D-42 t_created=2026-10-22T22:44:23Z
+e W-193 implements D-45 t_created=2026-10-22T22:44:23Z
+e W-194 implements D-43 t_created=2026-10-22T22:44:25Z
+e W-196 blocks W-193 t_created=2026-10-22T23:06:30Z
+e W-196 blocks W-194 t_created=2026-10-22T23:06:30Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z

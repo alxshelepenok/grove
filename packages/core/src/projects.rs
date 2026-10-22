@@ -7,6 +7,7 @@ use crate::ops::{kw_get, OpResult, EXIT_ERR, EXIT_GUARD, EXIT_NOTFOUND};
 use crate::renumber::glossary_terms;
 use crate::status::listnodes;
 use crate::times::{stamp_new_node, utc_stamp_second};
+use crate::toml::{parse_line, Line, REGISTRY_LINE_POLICY, TomlVal};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
@@ -35,205 +36,6 @@ pub fn user_grove_dir() -> PathBuf {
 
 pub fn registry_path() -> PathBuf {
     user_grove_dir().join("projects.toml")
-}
-
-#[derive(Clone, Debug, PartialEq)]
-enum TomlVal {
-    Str(String),
-    Arr(Vec<TomlVal>),
-    Table(Vec<(String, TomlVal)>),
-    Other,
-}
-
-fn bare_key(s: &str) -> bool {
-    !s.is_empty()
-        && s.bytes()
-            .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')
-}
-
-fn parse_basic_string(s: &str) -> Result<(String, &str), ()> {
-    let b = s.as_bytes();
-    if b.first() != Some(&b'"') {
-        return Err(());
-    }
-    let mut out = String::new();
-    let mut i = 1;
-    while i < b.len() {
-        match b[i] {
-            b'"' => return Ok((out, &s[i + 1..])),
-            b'\\' => {
-                i += 1;
-                if i >= b.len() {
-                    return Err(());
-                }
-                match b[i] {
-                    b'"' => out.push('"'),
-                    b'\\' => out.push('\\'),
-                    b'n' => out.push('\n'),
-                    b't' => out.push('\t'),
-                    b'r' => out.push('\r'),
-                    b'b' => out.push('\u{8}'),
-                    b'f' => out.push('\u{c}'),
-                    b'u' | b'U' => {
-                        let n = if b[i] == b'u' { 4 } else { 8 };
-                        let lo = i + 1;
-                        let hi = lo + n;
-                        if hi > b.len() {
-                            return Err(());
-                        }
-                        let hex = &s[lo..hi];
-                        if !hex.bytes().all(|c| c.is_ascii_hexdigit()) {
-                            return Err(());
-                        }
-                        let cp = u32::from_str_radix(hex, 16).map_err(|_| ())?;
-                        out.push(char::from_u32(cp).ok_or(())?);
-                        i = hi - 1;
-                    }
-                    _ => return Err(()),
-                }
-                i += 1;
-            }
-            0x00..=0x08 | 0x0a..=0x1f | 0x7f => return Err(()),
-            _ => {
-                let ch = s[i..].chars().next().ok_or(())?;
-                out.push(ch);
-                i += ch.len_utf8();
-            }
-        }
-    }
-    Err(())
-}
-
-fn scalar_value(cand: &str) -> Result<TomlVal, ()> {
-    if cand.is_empty()
-        || !cand
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || "+-_.:".contains(c))
-    {
-        return Err(());
-    }
-    let ok = cand.chars().any(|c| c.is_ascii_digit())
-        || matches!(
-            cand,
-            "true" | "false" | "inf" | "nan" | "+inf" | "-inf" | "+nan" | "-nan"
-        );
-    if !ok {
-        return Err(());
-    }
-    Ok(TomlVal::Other)
-}
-
-fn parse_value(s: &str) -> Result<(TomlVal, &str), ()> {
-    let t = s.trim_start();
-    if t.starts_with('"') {
-        let (v, rest) = parse_basic_string(t)?;
-        return Ok((TomlVal::Str(v), rest));
-    }
-    if t.starts_with('[') {
-        return parse_inline_array(t);
-    }
-    if t.starts_with('{') {
-        return parse_inline_table(t);
-    }
-    let end = t.find([',', ']', '}', '#']).unwrap_or(t.len());
-    let v = scalar_value(t[..end].trim())?;
-    Ok((v, &t[end..]))
-}
-
-fn parse_inline_array(s: &str) -> Result<(TomlVal, &str), ()> {
-    let mut rest = s[1..].trim_start();
-    let mut items = Vec::new();
-    if let Some(r) = rest.strip_prefix(']') {
-        return Ok((TomlVal::Arr(items), r));
-    }
-    loop {
-        let (v, r) = parse_value(rest)?;
-        items.push(v);
-        rest = r.trim_start();
-        if let Some(r2) = rest.strip_prefix(',') {
-            rest = r2.trim_start();
-            if let Some(r3) = rest.strip_prefix(']') {
-                return Ok((TomlVal::Arr(items), r3));
-            }
-            continue;
-        }
-        if let Some(r2) = rest.strip_prefix(']') {
-            return Ok((TomlVal::Arr(items), r2));
-        }
-        return Err(());
-    }
-}
-
-fn parse_inline_table(s: &str) -> Result<(TomlVal, &str), ()> {
-    let mut rest = s[1..].trim_start();
-    let mut pairs: Vec<(String, TomlVal)> = Vec::new();
-    if let Some(r) = rest.strip_prefix('}') {
-        return Ok((TomlVal::Table(pairs), r));
-    }
-    loop {
-        let eq = rest.find('=').ok_or(())?;
-        let key = rest[..eq].trim();
-        if !bare_key(key) {
-            return Err(());
-        }
-        let (v, r) = parse_value(&rest[eq + 1..])?;
-        if pairs.iter().any(|(k, _)| k == key) {
-            return Err(());
-        }
-        pairs.push((key.to_string(), v));
-        rest = r.trim_start();
-        if let Some(r2) = rest.strip_prefix(',') {
-            rest = r2.trim_start();
-            continue;
-        }
-        if let Some(r2) = rest.strip_prefix('}') {
-            return Ok((TomlVal::Table(pairs), r2));
-        }
-        return Err(());
-    }
-}
-
-enum TomlLine {
-    Blank,
-    TableHeader(String),
-    ArrayHeader(String),
-    Assign(String, TomlVal),
-}
-
-fn parse_toml_line(line: &str) -> Result<TomlLine, ()> {
-    let t = line.trim();
-    if t.is_empty() || t.starts_with('#') {
-        return Ok(TomlLine::Blank);
-    }
-    if let Some(rest) = t.strip_prefix("[[") {
-        let close = rest.find("]]").ok_or(())?;
-        let key = rest[..close].trim();
-        let after = rest[close + 2..].trim();
-        if (!after.is_empty() && !after.starts_with('#')) || !bare_key(key) {
-            return Err(());
-        }
-        return Ok(TomlLine::ArrayHeader(key.to_string()));
-    }
-    if let Some(rest) = t.strip_prefix('[') {
-        let close = rest.find(']').ok_or(())?;
-        let key = rest[..close].trim();
-        let after = rest[close + 1..].trim();
-        if (!after.is_empty() && !after.starts_with('#')) || !bare_key(key) {
-            return Err(());
-        }
-        return Ok(TomlLine::TableHeader(key.to_string()));
-    }
-    let eq = t.find('=').ok_or(())?;
-    let key = t[..eq].trim();
-    if !bare_key(key) {
-        return Err(());
-    }
-    let (v, rest) = parse_value(&t[eq + 1..])?;
-    let after = rest.trim();
-    if !after.is_empty() && !after.starts_with('#') {
-        return Err(());
-    }
-    Ok(TomlLine::Assign(key.to_string(), v))
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -276,9 +78,9 @@ fn parse_registry_toml(text: &str) -> Option<Vec<ProjectEntry>> {
     let mut section = Section::Top;
     for raw in text.split('\n') {
         let line = raw.strip_suffix('\r').unwrap_or(raw);
-        match parse_toml_line(line).ok()? {
-            TomlLine::Blank => {}
-            TomlLine::ArrayHeader(k) => {
+        match parse_line(line, REGISTRY_LINE_POLICY).ok()? {
+            Line::Blank => {}
+            Line::ArrayHeader(k) => {
                 other_keys.clear();
                 if k == "projects" {
                     match kind {
@@ -298,7 +100,7 @@ fn parse_registry_toml(text: &str) -> Option<Vec<ProjectEntry>> {
                     section = Section::Other;
                 }
             }
-            TomlLine::TableHeader(k) => {
+            Line::Header(k) => {
                 other_keys.clear();
                 if k == "projects" {
                     if kind != ProjectsKind::Absent {
@@ -313,7 +115,7 @@ fn parse_registry_toml(text: &str) -> Option<Vec<ProjectEntry>> {
                 }
                 section = Section::Other;
             }
-            TomlLine::Assign(k, v) => match section {
+            Line::Assign(k, v) => match section {
                 Section::Projects(i) => {
                     if arr[i].iter().any(|(ek, _)| *ek == k) {
                         return None;
