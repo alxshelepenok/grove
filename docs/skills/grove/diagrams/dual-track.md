@@ -1,6 +1,6 @@
 # Dual-track loops
 
-Discovery and Delivery run concurrently, not as phases.
+Discovery and Delivery run concurrently.
 
 ```mermaid
 graph LR

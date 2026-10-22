@@ -3732,3 +3732,129 @@
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"glossary","ts":"2026-09-26T00:18:57Z","inv":{"new":"backdrop-ordering","glossary_changed":true,"old":"Backdrop ordering","tags":{"Y-20":["Backdrop ordering","causality-cone"]},"op":"glossary_rename_restore"}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"glossary","ts":"2026-09-26T00:18:57Z","inv":{"new":"natural-id-order","glossary_changed":true,"old":"Natural id order","tags":{"Y-21":["Natural id order"],"Y-22":["Natural id order"]},"op":"glossary_rename_restore"}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"glossary","ts":"2026-09-26T00:18:57Z","inv":{"new":"tdqs","glossary_changed":true,"old":"TDQS","tags":{"Y-23":["TDQS"]},"op":"glossary_rename_restore"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"gate","ts":"2026-10-22T17:47:24Z","inv":{"dones":89,"overflows":["W-172","W-173","W-174","W-175","W-176","W-177","W-178","W-179","W-180","W-181","W-182","W-183","W-184","W-185","W-186","W-187","W-188"],"invalidated":[],"op":"gate","tw":3,"empty":false,"overflow_counts":{"W-184":3,"W-186":3,"W-174":15,"W-187":5,"W-183":4,"W-177":10,"W-188":14,"W-173":7,"W-176":6,"W-181":7,"W-175":3,"W-179":12,"W-182":3,"W-178":16,"W-180":16,"W-185":3,"W-172":5}}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T19:48:43Z","inv":{"id":"A-08","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T19:48:47Z","inv":{"id":"G-42","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T19:48:47Z","inv":{"id":"W-190","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-22T19:49:01Z","inv":{"id":"W-190","field":"goals","lines":["G-41"],"op":"field_restore_lines"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-22T19:49:01Z","inv":{"id":"W-190","field":"goals","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-22T19:49:01Z","inv":{"id":"W-190","field":"ac","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-22T19:49:01Z","inv":{"id":"W-190","field":"ac","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-22T19:49:01Z","inv":{"id":"W-190","field":"ac","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-22T19:49:02Z","inv":{"id":"W-190","field":"hypothesis","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-22T19:49:02Z","inv":{"id":"W-190","field":"evidence_strategy","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"fitness","ts":"2026-10-22T19:49:02Z","inv":{"had_key":false,"wid":"W-190","gid":"G-42","previous":null,"op":"restore_fitness_key"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T19:49:11Z","inv":{"had_session_at_before":false,"old_w_status":"proposed","had_session_before":false,"id":"W-190","op":"set_w_status_with_goals","goal_statuses":{"G-42":"unverified"},"old_session_at":"","old_session":""}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"fitness","ts":"2026-10-22T20:01:16Z","inv":{"had_key":true,"wid":"W-190","gid":"G-42","previous":0,"op":"restore_fitness_key"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"fitness","ts":"2026-10-22T20:02:36Z","inv":{"had_key":true,"wid":"W-190","gid":"G-42","previous":1,"op":"restore_fitness_key"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-22T20:02:36Z","inv":{"id":"W-190","field":"evidence","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:02:37Z","inv":{"had_session_at_before":true,"old_w_status":"progress","had_session_before":true,"id":"W-190","op":"set_w_status_with_goals","goal_statuses":{"G-42":"unverified"},"old_session_at":"2026-10-22T19:49:11Z","old_session":"desktop-5a9h5ko:b9ace3ea3b856f36"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"undo","ts":"2026-10-22T20:12:57Z","inv":{"steps":3,"op":"undo"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:13:59Z","inv":{"id":"Y-24","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:13:59Z","inv":{"id":"Y-25","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:13:59Z","inv":{"id":"Y-26","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:00Z","inv":{"id":"Y-27","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:00Z","inv":{"id":"Y-28","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:00Z","inv":{"id":"Y-29","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:00Z","inv":{"id":"Y-30","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:00Z","inv":{"id":"Y-31","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:01Z","inv":{"id":"Y-32","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:01Z","inv":{"id":"Y-33","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:01Z","inv":{"id":"Y-34","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:01Z","inv":{"id":"Y-35","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:01Z","inv":{"id":"Y-36","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:02Z","inv":{"id":"Y-37","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:02Z","inv":{"id":"Y-38","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:02Z","inv":{"id":"Y-39","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:02Z","inv":{"id":"Y-40","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:03Z","inv":{"id":"Y-41","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:03Z","inv":{"id":"Y-42","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:03Z","inv":{"id":"Y-43","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:03Z","inv":{"id":"Y-44","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:03Z","inv":{"id":"Y-45","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:04Z","inv":{"id":"Y-46","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:04Z","inv":{"id":"Y-47","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:04Z","inv":{"id":"Y-48","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:04Z","inv":{"id":"Y-49","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:05Z","inv":{"id":"Y-50","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:05Z","inv":{"id":"Y-51","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:05Z","inv":{"id":"Y-52","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:05Z","inv":{"id":"Y-53","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:06Z","inv":{"id":"Y-54","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:06Z","inv":{"id":"Y-55","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:06Z","inv":{"id":"Y-56","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:06Z","inv":{"id":"Y-57","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:07Z","inv":{"id":"Y-58","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-22T20:14:07Z","inv":{"id":"Y-59","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:13Z","inv":{"goal":"G-21","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:13Z","inv":{"goal":"G-22","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:13Z","inv":{"goal":"G-23","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:14Z","inv":{"goal":"G-24","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:14Z","inv":{"goal":"G-31","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:14Z","inv":{"goal":"G-32","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:14Z","inv":{"goal":"G-33","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:14Z","inv":{"goal":"G-34","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:15Z","inv":{"goal":"G-35","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:15Z","inv":{"goal":"G-37","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:15Z","inv":{"goal":"G-39","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:19Z","inv":{"ids":["G-21","W-99"],"id":"G-21","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:20Z","inv":{"ids":["G-22","W-100"],"id":"G-22","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:20Z","inv":{"ids":["G-23","W-101"],"id":"G-23","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:20Z","inv":{"ids":["G-24","W-102"],"id":"G-24","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:20Z","inv":{"ids":["D-12","G-25","Q-05","T-04","W-103","W-104","W-105","W-106","W-107","W-108","W-109"],"id":"G-25","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:21Z","inv":{"ids":["B-06","D-14","D-15","G-26","Q-06","W-110","W-111","W-112","W-113"],"id":"G-26","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:21Z","inv":{"ids":["G-27","Q-08","T-05","W-114","W-115","W-116","W-117","W-118","W-119","W-120"],"id":"G-27","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:21Z","inv":{"ids":["B-07","D-18","G-28","Q-09","W-121","W-122","W-123","W-124","W-125","W-126","W-127","W-128","W-129","W-130","W-131","W-132"],"id":"G-28","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:21Z","inv":{"ids":["B-08","D-20","D-21","D-22","D-23","D-24","D-25","D-26","D-27","D-28","D-29","D-30","D-31","D-32","G-30","T-07","W-141","W-142","W-143","W-144","W-145","W-146","W-147","W-148","W-149","W-150","W-151","W-152","W-153","W-154","W-155","W-156","W-157","W-158","W-159","W-160","W-161","W-162","W-163","W-164","W-165","W-166","W-167"],"id":"G-30","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:22Z","inv":{"ids":["G-31","W-168"],"id":"G-31","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:22Z","inv":{"ids":["G-32","W-169"],"id":"G-32","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:22Z","inv":{"ids":["G-33","W-170"],"id":"G-33","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:22Z","inv":{"ids":["G-34","W-171"],"id":"G-34","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:23Z","inv":{"ids":["G-35","W-172"],"id":"G-35","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:23Z","inv":{"ids":["G-37","W-185"],"id":"G-37","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:23Z","inv":{"ids":["D-38","G-38","W-186"],"id":"G-38","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:24Z","inv":{"ids":["G-39","W-187"],"id":"G-39","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:46Z","inv":{"goal":"G-29","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:46Z","inv":{"ids":["D-19","G-29","Q-10","W-133","W-134","W-135","W-136","W-137","W-138","W-139","W-140"],"id":"G-29","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:47Z","inv":{"goal":"G-36","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:47Z","inv":{"ids":["B-09","B-10","B-11","D-33","D-34","D-35","D-36","D-37","G-36","Q-12","Q-13","Q-14","T-08","W-173","W-174","W-175","W-176","W-177","W-178","W-179","W-180","W-181","W-182","W-183","W-184"],"id":"G-36","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:47Z","inv":{"goal":"G-40","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:47Z","inv":{"ids":["D-39","G-40","W-188"],"id":"G-40","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"distill","ts":"2026-10-22T20:14:48Z","inv":{"goal":"G-42","op":"distill","empty":true}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"archive","ts":"2026-10-22T20:14:48Z","inv":{"ids":["G-42","W-190"],"id":"G-42","op":"archive"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:14Z","inv":{"id":"Y-11","old":"bun install on dsh packages fails on the unpublished peer @deepseek-ai/dsh-type-meta; a package.json overrides entry to a local stub resolves it","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:14Z","inv":{"id":"Y-14","old":"bun test runs plain-ESM unit tests without package.json","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:15Z","inv":{"id":"Y-23","old":"grove-mcp tool descriptions are dedicated TOOL_SPECS prose stating purpose, when to use, returns, and failure paths; parsed CLI help lines fail TDQS rubrics","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:15Z","inv":{"id":"Y-24","old":"dsh plugin is a thin CLI wrapper bundle","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:15Z","inv":{"id":"Y-25","old":"tool registration rides ctx.tools.register(defineTool(...)) in dsh 0.1","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:15Z","inv":{"id":"Y-26","old":"launcher icon ships as an icns in the portable archive","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:16Z","inv":{"id":"Y-28","old":"macOS installer fixes verify through a local uname shim and the CI matrix","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:16Z","inv":{"id":"Y-29","old":"graph view JS fixes verify through the served DOM harness and plain bun tests","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:16Z","inv":{"id":"Y-30","old":"quadratic 3D layout holds interactive rates at 1000 nodes","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:16Z","inv":{"id":"Y-32","old":"three.js vendoring follows provenance rows and SBOM purl dedupe","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:17Z","inv":{"id":"Y-33","old":"ray tracing is a bespoke GLSL cone tracer","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:17Z","inv":{"id":"Y-34","old":"brute-force GLSL sphere tracer adds zero supply-chain surface","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:17Z","inv":{"id":"Y-35","old":"cone fragility renders inside the frame budget","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:17Z","inv":{"id":"Y-36","old":"causality view computes cones in-process","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:17Z","inv":{"id":"Y-37","old":"the cone renders through the d3 force layout","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:18Z","inv":{"id":"Y-38","old":"the cone renders as a 3D instanced scene","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:18Z","inv":{"id":"Y-39","old":"the cone renders as a voxel matrix","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:18Z","inv":{"id":"Y-40","old":"matrix slices draw visible table grids","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:18Z","inv":{"id":"Y-41","old":"the cone renders as a wireframe cell volume","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:19Z","inv":{"id":"Y-42","old":"the cone renders as a semantic strata cube","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:19Z","inv":{"id":"Y-43","old":"the cone renders as a zoned column lattice","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:19Z","inv":{"id":"Y-44","old":"cone nodes encode kind by shape with in-scene axis labels","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:19Z","inv":{"id":"Y-45","old":"cone zones ride file colors and a typed label axis","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:20Z","inv":{"id":"Y-46","old":"cone labels ride screen space and side cards carry members","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:20Z","inv":{"id":"Y-47","old":"cone labels copy the identifier type and the zoom gate governs identifiers","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:20Z","inv":{"id":"Y-48","old":"the cone sidebar scrolls as one stack with one row anatomy","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:20Z","inv":{"id":"Y-49","old":"cargo embeds docs/skills from outside the crate","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:21Z","inv":{"id":"Y-50","old":"the skill artifact is a signed directory archive","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:21Z","inv":{"id":"Y-51","old":"skill discovery rides instructions, root resource, and status pointer","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:21Z","inv":{"id":"Y-53","old":"docs/skills is the single embedded source carrying protocol content only","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:21Z","inv":{"id":"Y-54","old":"the single-file skill artifact was cut over to the archive immediately","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:21Z","inv":{"id":"Y-55","old":"the skill archive format is tar.gz","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:22Z","inv":{"id":"Y-56","old":"skill CLI parity rides the shared corpus and MCP surfaces stay Rust only","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:22Z","inv":{"id":"Y-57","old":"branch names carry a commit-type prefix and an identifier","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:22Z","inv":{"id":"Y-58","old":"canonical node order compares family then number","op":"set_title"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-22T20:18:22Z","inv":{"id":"Y-59","old":"markdown prose reflows to a hard 80-column limit","op":"set_title"}}
