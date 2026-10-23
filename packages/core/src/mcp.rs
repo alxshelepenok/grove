@@ -1,7 +1,12 @@
-use crate::cli::{load, run_cli, CliCtx, COMMAND_NAMES, HELP, SESSION_MUTATE_COMMANDS};
+use crate::cli::{run_cli, HELP, SESSION_MUTATE_COMMANDS};
 use crate::json::{emit_jval, julia_num_repr, parse_json, JVal, Json};
 use crate::ops::{OpResult, EXIT_OK};
-
+use crate::toml::{
+    bare_key, line_bracket_delta, line_without_comment, parse_line, CONFIG_LINE_POLICY, Line,
+    TomlVal,
+};
+use std::collections::BTreeMap;
+use std::path::PathBuf;
 pub const MCP_PROTOCOL_VERSIONS: [&str; 3] = ["2024-11-05", "2025-03-26", "2025-06-18"];
 pub const MCP_SERVER_NAME: &str = "grove-mcp";
 pub const MCP_SERVER_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -11,13 +16,14 @@ pub const ERR_INVALID_REQUEST: i64 = -32600;
 pub const ERR_METHOD_NOT_FOUND: i64 = -32601;
 pub const ERR_INVALID_PARAMS: i64 = -32602;
 pub const ERR_SERVER_NOT_INITIALIZED: i64 = -32002;
-pub const ERR_SERVER: i64 = -32000;
 
 pub struct McpServer {
     pub root: String,
     pub session: String,
     pub protocol_version: String,
     pub initialized: bool,
+    pub role: Option<String>,
+    pub scope: ToolConfig,
 }
 
 impl McpServer {
@@ -27,6 +33,8 @@ impl McpServer {
             session,
             protocol_version: MCP_PROTOCOL_VERSIONS[MCP_PROTOCOL_VERSIONS.len() - 1].to_string(),
             initialized: false,
+            role: None,
+            scope: ToolConfig::default(),
         }
     }
 }
@@ -259,7 +267,7 @@ const TOOL_SPECS: &[ToolSpec] = &[
     ToolSpec {
         cmd: "next",
         title: "Propose next work item",
-        desc: "Propose the single next work item to execute and return its full execution packet: the same markdown bundle packet produces, prefixed by the skill banner. The start-of-session default; ready shows the whole queue instead, and packet fetches an arbitrary work item.",
+        desc: "Propose the single next work item to execute and return its full execution packet: the same markdown bundle packet produces. The start-of-session default; ready shows the whole queue instead, and packet fetches an arbitrary work item.",
         ann: RO,
         props: &[],
         required: &[],
@@ -506,7 +514,7 @@ const TOOL_SPECS: &[ToolSpec] = &[
     ToolSpec {
         cmd: "skill",
         title: "Embedded skill",
-        desc: "Print the embedded agent skill (the SKILL.md workflow guide with frontmatter), or install it as a skill directory when install names one. The same content is also readable as the grove://skill resource.",
+        desc: "Print the embedded agent skill (the SKILL.md workflow guide with frontmatter), or install it as a skill directory when install names one.",
         ann: IDEM,
         props: &[Prop {
             key: "install",
@@ -640,9 +648,195 @@ fn tool_json(spec: &ToolSpec) -> String {
     )
 }
 
-fn tools_list_json() -> String {
-    let tools: Vec<String> = TOOL_SPECS.iter().map(tool_json).collect();
+fn served_tools(server: &McpServer) -> Vec<&'static str> {
+    TOOL_SPECS
+        .iter()
+        .filter(|spec| tool_allowed(server, spec.cmd))
+        .map(|spec| spec.cmd)
+        .collect()
+}
+
+fn tool_allowed(server: &McpServer, name: &str) -> bool {
+    if server.scope.disabled.iter().any(|d| d == name) {
+        return false;
+    }
+    match &server.role {
+        Some(r) => server
+            .scope
+            .roles
+            .get(r)
+            .is_some_and(|scope| scope.tools.iter().any(|t| t == name)),
+        None => true,
+    }
+}
+
+fn tools_list_json(server: &McpServer) -> String {
+    let tools: Vec<String> = TOOL_SPECS
+        .iter()
+        .filter(|spec| tool_allowed(server, spec.cmd))
+        .map(tool_json)
+        .collect();
     format!("{{\"tools\":[{}]}}", tools.join(","))
+}
+
+#[derive(Default)]
+pub struct ToolConfig {
+    pub disabled: Vec<String>,
+    pub roles: BTreeMap<String, RoleScope>,
+}
+
+#[derive(Default)]
+pub struct RoleScope {
+    pub tools: Vec<String>,
+    pub instructions: Option<String>,
+}
+
+pub fn mcp_config_path() -> PathBuf {
+    crate::projects::user_grove_dir().join("mcp.toml")
+}
+
+fn string_list(v: &TomlVal) -> Option<Vec<String>> {
+    match v {
+        TomlVal::Arr(items) => {
+            let mut out = Vec::new();
+            for it in items {
+                match it {
+                    TomlVal::Str(s) => out.push(s.clone()),
+                    _ => return None,
+                }
+            }
+            Some(out)
+        }
+        _ => None,
+    }
+}
+
+fn step_config(
+    line: &str,
+    cfg: &mut ToolConfig,
+    seen_roles: &mut Vec<String>,
+    role: &mut Option<(String, RoleScope)>,
+) -> Option<()> {
+    match parse_line(line, CONFIG_LINE_POLICY).ok()? {
+        Line::Blank => {}
+        Line::ArrayHeader(_) => return None,
+        Line::Header(k) => {
+            if let Some((name, scope)) = role.take() {
+                cfg.roles.insert(name, scope);
+            }
+            if let Some(r) = k.strip_prefix("roles.") {
+                if !r.is_empty() && bare_key(r) && seen_roles.contains(&r.to_string()) {
+                    return None;
+                }
+                if !r.is_empty() && bare_key(r) {
+                    seen_roles.push(r.to_string());
+                    *role = Some((r.to_string(), RoleScope::default()));
+                }
+            }
+        }
+        Line::Assign(k, v) => {
+            if let Some((_, scope)) = role.as_mut() {
+                if k == "tools" {
+                    if !scope.tools.is_empty() {
+                        return None;
+                    }
+                    scope.tools = string_list(&v)?;
+                } else if k == "instructions" {
+                    if scope.instructions.is_some() {
+                        return None;
+                    }
+                    scope.instructions = match &v {
+                        TomlVal::Str(s) => Some(s.clone()),
+                        _ => return None,
+                    };
+                }
+            } else if k == "disabled" {
+                if !cfg.disabled.is_empty() {
+                    return None;
+                }
+                cfg.disabled = string_list(&v)?;
+            }
+        }
+    }
+    Some(())
+}
+
+fn parse_tool_config(text: &str) -> Option<ToolConfig> {
+    let mut cfg = ToolConfig::default();
+    let mut seen_roles: Vec<String> = Vec::new();
+    let mut role: Option<(String, RoleScope)> = None;
+    let mut acc = String::new();
+    let mut depth = 0i32;
+    for raw in text.split('\n') {
+        let raw = raw.strip_suffix('\r').unwrap_or(raw);
+        if depth > 0 {
+            depth += line_bracket_delta(raw);
+            acc.push('\n');
+            acc.push_str(line_without_comment(raw));
+            if depth > 0 {
+                continue;
+            }
+            if depth < 0 {
+                return None;
+            }
+            let joined = std::mem::take(&mut acc);
+            step_config(&joined, &mut cfg, &mut seen_roles, &mut role)?;
+            continue;
+        }
+        let d = line_bracket_delta(raw);
+        if d > 0 {
+            depth = d;
+            acc = line_without_comment(raw).to_string();
+            continue;
+        }
+        step_config(raw, &mut cfg, &mut seen_roles, &mut role)?;
+    }
+    if depth > 0 {
+        return None;
+    }
+    if let Some((name, scope)) = role.take() {
+        cfg.roles.insert(name, scope);
+    }
+    Some(cfg)
+}
+
+fn unknown_tool_names(cfg: &ToolConfig) -> Vec<String> {
+    let mut seen: Vec<String> = Vec::new();
+    for name in cfg.disabled.iter().chain(cfg.roles.values().flat_map(|r| r.tools.iter())) {
+        if spec_for(name).is_none() && !seen.contains(name) {
+            seen.push(name.clone());
+        }
+    }
+    seen
+}
+
+pub fn load_tool_config() -> Option<ToolConfig> {
+    let path = mcp_config_path();
+    if !path.is_file() {
+        return Some(ToolConfig::default());
+    }
+    let Ok(text) = std::fs::read_to_string(&path) else {
+        eprintln!(
+            "grove-mcp: warning: could not read mcp.toml at {}; serving all tools",
+            path.display()
+        );
+        return None;
+    };
+    let Some(cfg) = parse_tool_config(&text) else {
+        eprintln!(
+            "grove-mcp: warning: malformed mcp.toml at {}; serving all tools",
+            path.display()
+        );
+        return None;
+    };
+    let unknown = unknown_tool_names(&cfg);
+    if !unknown.is_empty() {
+        eprintln!(
+            "grove-mcp: warning: mcp.toml names unknown grove command(s): {}; ignoring them",
+            unknown.join(", ")
+        );
+    }
+    Some(cfg)
 }
 
 fn coerce_value(v: &Json, typ: PropType) -> Result<String, String> {
@@ -738,9 +932,8 @@ fn tool_result_json(r: &OpResult) -> String {
     let errt = r.err.trim_end();
     if !errt.is_empty() {
         if !text.is_empty() {
-            text.push_str("\n\n");
+            text.push_str("\n\n--- stderr ---\n");
         }
-        text.push_str("--- stderr ---\n");
         text.push_str(errt);
     }
     if r.code != EXIT_OK {
@@ -763,89 +956,6 @@ fn tool_error_json(message: &str) -> String {
     )
 }
 
-fn resources_list_json(server: &McpServer) -> String {
-    let ctx = CliCtx::new(server.root.clone());
-    let mut items: Vec<String> = vec![format!(
-        "{{\"uri\":{},\"name\":{},\"mimeType\":{}}}",
-        jstr("grove://skill"),
-        jstr("grove skill"),
-        jstr("text/markdown")
-    )];
-    if let Ok(st) = load(&ctx, true) {
-        for (nid, n) in &st.nodes {
-            for (cmd, mt) in [("packet", "text/markdown"), ("show", "text/plain")] {
-                items.push(format!(
-                    "{{\"uri\":{},\"name\":{},\"mimeType\":{}}}",
-                    jstr(&format!("grove://{cmd}/{nid}")),
-                    jstr(&format!("{nid} {}", n.title)),
-                    jstr(mt)
-                ));
-            }
-        }
-    }
-    format!("{{\"resources\":[{}]}}", items.join(","))
-}
-
-fn resource_read(server: &McpServer, uri: &str) -> Result<String, (i64, String)> {
-    if uri == "grove://skill" || uri.starts_with("grove://skill/") {
-        let page = uri
-            .strip_prefix("grove://skill")
-            .unwrap_or_default()
-            .trim_start_matches('/');
-        let page = if page.is_empty() { "SKILL.md" } else { page };
-        let text = if page == "SKILL.md" {
-            crate::skill::stamped_skill_md()
-        } else {
-            crate::skill::skill_page(page)
-                .ok_or_else(|| (ERR_INVALID_PARAMS, format!("unknown skill page: {page}")))?
-                .to_string()
-        };
-        return Ok(format!(
-            "{{\"contents\":[{{\"uri\":{},\"mimeType\":{},\"text\":{}}}]}}",
-            jstr(uri),
-            jstr("text/markdown"),
-            jstr(&text)
-        ));
-    }
-    let Some(path) = uri.strip_prefix("grove://") else {
-        return Err((
-            ERR_INVALID_PARAMS,
-            format!("unsupported resource uri: {uri}"),
-        ));
-    };
-    let Some((cmd, nid)) = path.split_once('/') else {
-        return Err((ERR_INVALID_PARAMS, format!("malformed resource uri: {uri}")));
-    };
-    if nid.is_empty() || (cmd != "packet" && cmd != "show") {
-        return Err((ERR_INVALID_PARAMS, format!("malformed resource uri: {uri}")));
-    }
-    let argv = vec![
-        cmd.to_string(),
-        nid.to_string(),
-        format!("--root={}", server.root),
-    ];
-    let r = run_cli(&argv);
-    if r.code != EXIT_OK {
-        let msg = r.err.trim_end();
-        let msg = if msg.is_empty() { r.out.trim_end() } else { msg };
-        return Err((
-            ERR_SERVER,
-            format!("grove {cmd} {nid} failed (exit {}): {msg}", r.code),
-        ));
-    }
-    let mt = if cmd == "packet" {
-        "text/markdown"
-    } else {
-        "text/plain"
-    };
-    Ok(format!(
-        "{{\"contents\":[{{\"uri\":{},\"mimeType\":{},\"text\":{}}}]}}",
-        jstr(uri),
-        jstr(mt),
-        jstr(&r.out)
-    ))
-}
-
 fn negotiate_version(params: Option<&Json>) -> String {
     let requested = params
         .and_then(|p| p.get("protocolVersion"))
@@ -856,24 +966,36 @@ fn negotiate_version(params: Option<&Json>) -> String {
     }
 }
 
-const MCP_INSTRUCTIONS: &str = "Grove is a graph-driven workflow protocol. Read the resource grove://skill (the SKILL.md root; per-page reads grove://skill/<page>) before driving work items. Start every session with the status and next tools; keep check green.";
+const MCP_INSTRUCTIONS: &str = "Grove is a graph-driven workflow protocol. Run the skill tool for the SKILL.md workflow guide before driving work items. Start every session with the status and next tools; keep check green.";
 
-fn mcp_instructions() -> String {
+fn mcp_instructions(server: &McpServer) -> String {
+    let base = match &server.role {
+        None => MCP_INSTRUCTIONS.to_string(),
+        Some(role) => {
+            let text = server
+                .scope
+                .roles
+                .get(role)
+                .and_then(|scope| scope.instructions.as_deref())
+                .unwrap_or(MCP_INSTRUCTIONS);
+            format!("Active grove role: {role}.\n{text}")
+        }
+    };
     format!(
         "{} Binary v{}; embedded skill v{}.",
-        MCP_INSTRUCTIONS,
+        base,
         MCP_SERVER_VERSION,
         crate::skill::skill_version()
     )
 }
 
-fn initialize_result_json(version: &str) -> String {
+fn initialize_result_json(server: &McpServer, version: &str) -> String {
     format!(
-        "{{\"protocolVersion\":{},\"capabilities\":{{\"tools\":{{\"listChanged\":false}},\"resources\":{{\"listChanged\":false,\"subscribe\":false}}}},\"serverInfo\":{{\"name\":{},\"version\":{}}},\"instructions\":{}}}",
+        "{{\"protocolVersion\":{},\"capabilities\":{{\"tools\":{{\"listChanged\":false}}}},\"serverInfo\":{{\"name\":{},\"version\":{}}},\"instructions\":{}}}",
         jstr(version),
         jstr(MCP_SERVER_NAME),
         jstr(MCP_SERVER_VERSION),
-        jstr(&mcp_instructions())
+        jstr(&mcp_instructions(server))
     )
 }
 
@@ -928,7 +1050,7 @@ pub fn handle_message(server: &mut McpServer, line: &str) -> Option<String> {
         "initialize" => {
             let version = negotiate_version(params.as_ref());
             server.protocol_version = version.clone();
-            Some(result_response(&id, &initialize_result_json(&version)))
+            Some(result_response(&id, &initialize_result_json(server, &version)))
         }
         "notifications/initialized" => {
             server.initialized = true;
@@ -943,7 +1065,7 @@ pub fn handle_message(server: &mut McpServer, line: &str) -> Option<String> {
                     "server not initialized: send `initialize` then `notifications/initialized`",
                 ));
             }
-            Some(result_response(&id, &tools_list_json()))
+            Some(result_response(&id, &tools_list_json(server)))
         }
         "tools/call" => {
             if !server.initialized {
@@ -954,42 +1076,6 @@ pub fn handle_message(server: &mut McpServer, line: &str) -> Option<String> {
                 ));
             }
             Some(handle_tools_call(server, &id, params.as_ref()))
-        }
-        "resources/list" => {
-            if !server.initialized {
-                return Some(error_response(
-                    &id,
-                    ERR_SERVER_NOT_INITIALIZED,
-                    "server not initialized: send `initialize` then `notifications/initialized`",
-                ));
-            }
-            Some(result_response(&id, &resources_list_json(server)))
-        }
-        "resources/read" => {
-            if !server.initialized {
-                return Some(error_response(
-                    &id,
-                    ERR_SERVER_NOT_INITIALIZED,
-                    "server not initialized: send `initialize` then `notifications/initialized`",
-                ));
-            }
-            let uri = params
-                .as_ref()
-                .and_then(|p| p.get("uri"))
-                .and_then(|u| u.as_str())
-                .unwrap_or("")
-                .to_string();
-            if uri.is_empty() {
-                return Some(error_response(
-                    &id,
-                    ERR_INVALID_PARAMS,
-                    "resources/read: missing params.uri",
-                ));
-            }
-            match resource_read(server, &uri) {
-                Ok(result) => Some(result_response(&id, &result)),
-                Err((code, msg)) => Some(error_response(&id, code, &msg)),
-            }
         }
         _ => Some(error_response(
             &id,
@@ -1007,13 +1093,16 @@ fn handle_tools_call(server: &McpServer, id: &Json, params: Option<&Json>) -> St
     if name.is_empty() {
         return error_response(id, ERR_INVALID_PARAMS, "tools/call: missing params.name");
     }
-    let Some(spec) = spec_for(name) else {
-        let known: Vec<&str> = COMMAND_NAMES.iter().copied().collect();
-        return error_response(
-            id,
-            ERR_INVALID_PARAMS,
-            &format!("unknown tool: {name}; known tools: {}", known.join(", ")),
-        );
+    let served = served_tools(server).join(", ");
+    let spec = match spec_for(name) {
+        Some(s) if tool_allowed(server, name) => s,
+        _ => {
+            return error_response(
+                id,
+                ERR_INVALID_PARAMS,
+                &format!("unknown tool: {name}; known tools: {served}"),
+            )
+        }
     };
     let empty: Vec<(String, Json)> = Vec::new();
     let args = match params.and_then(|p| p.get("arguments")) {

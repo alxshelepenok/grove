@@ -1,4 +1,4 @@
-use grove_core::{abspath, handle_message, McpServer};
+use grove_core::{abspath, handle_message, load_tool_config, McpServer};
 use sha2::{Digest, Sha256};
 use std::io::{BufRead, Write};
 use std::path::Path;
@@ -27,21 +27,28 @@ fn default_session(root: &str) -> String {
 }
 
 fn usage() -> String {
-    "usage: grove-mcp [--root=<dir>] [--session=<token>]".to_string()
+    "usage: grove-mcp [--root=<dir>] [--session=<token>] [--role=<name>]".to_string()
 }
 
 fn main() {
     let mut root: Option<String> = None;
     let mut session: Option<String> = None;
+    let mut role: Option<String> = None;
     for arg in std::env::args().skip(1) {
         if let Some(v) = arg.strip_prefix("--root=") {
             root = Some(v.to_string());
         } else if let Some(v) = arg.strip_prefix("--session=") {
             session = Some(v.to_string());
+        } else if let Some(v) = arg.strip_prefix("--role=") {
+            role = Some(v.to_string());
         } else {
             eprintln!("grove-mcp: unknown argument {arg}\n{}", usage());
             std::process::exit(1);
         }
+    }
+    if role.as_deref().map(str::trim).unwrap_or_default().is_empty() && role.is_some() {
+        eprintln!("grove-mcp: --role expects a non-empty name\n{}", usage());
+        std::process::exit(1);
     }
     let root = match root {
         Some(r) => abspath(&r),
@@ -60,10 +67,25 @@ fn main() {
             }
         }
     };
+    let scope = load_tool_config().unwrap_or_default();
+    if let Some(r) = &role {
+        if !scope.roles.contains_key(r) {
+            let names: Vec<&str> = scope.roles.keys().map(String::as_str).collect();
+            let listing = if names.is_empty() {
+                "none".to_string()
+            } else {
+                names.join(", ")
+            };
+            eprintln!("grove-mcp: unknown role {r}; configured roles: {listing}");
+            std::process::exit(1);
+        }
+    }
     let session = session
         .filter(|s| !s.trim().is_empty())
         .unwrap_or_else(|| default_session(&root));
     let mut server = McpServer::new(root, session);
+    server.role = role;
+    server.scope = scope;
     let stdin = std::io::stdin();
     let stdout = std::io::stdout();
     let mut out = stdout.lock();

@@ -160,7 +160,7 @@ pub fn packet_cone(st: &State, w: &Node, depth: usize, maxcount: usize) -> Strin
     let fwd = forward_cone(st, &w.id, depth, maxcount);
     let mut out = String::new();
     out.push('\n');
-    out.push_str("## Contraction order\n");
+    out.push_str("## Backward cone\n");
     out.push('\n');
     for (i, id) in contraction_order(st, &back.ids).iter().enumerate() {
         let Some(n) = st.nodes.get(id) else {
@@ -169,7 +169,7 @@ pub fn packet_cone(st: &State, w: &Node, depth: usize, maxcount: usize) -> Strin
         out.push_str(&format!("{}. {}  {}  {}\n", i + 1, id, n.status, n.title));
     }
     out.push('\n');
-    out.push_str("## Forward cone (impact)\n");
+    out.push_str("## Forward cone\n");
     out.push('\n');
     for id in &fwd.ids {
         let Some(n) = st.nodes.get(id) else {
@@ -276,13 +276,12 @@ pub fn cmd_next(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> OpRe
     if ctx.json {
         r.out = json_cli_out(JuliaDict::from_pairs(vec![
             ("command".to_string(), JVal::Str("next".to_string())),
-            ("skill".to_string(), JVal::Str("grove://skill".to_string())),
             ("work".to_string(), JVal::Str(pick.id.clone())),
             ("packet_markdown".to_string(), JVal::Str(pkt)),
         ]));
         return r;
     }
-    r.out = format!("{}\n\n{pkt}", crate::skill::pointer_line());
+    r.out = pkt;
     r
 }
 

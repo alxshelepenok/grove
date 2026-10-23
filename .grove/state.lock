@@ -1,9 +1,14 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:c37c15ca5a2a36d5dbfc1f3fc6499ae80eab0bfc9f9a29dcaf4e5d6543c9a619
+# checksum: sha256:4f8597e8d3189f8ba013fe794d54de35705c7ed66ad75e711db8cec783546d5c
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
+
+g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-23T18:20:12Z "grove-mcp serves role-scoped tool sets"
+  area: A-04
+  fitness_target: 12
+  fitness_current: 11
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -25,6 +30,237 @@ w W-05 type=refactor status=proposed cynefin=complicated t_created=2026-07-19T01
     | lands after the benchmark suite (W-04) and before the 10k-node budget is enforced
   why:
     | Enabling work: clears the known scaling debt before the 10k-node budget applies
+
+w W-192 type=feature status=done cynefin=clear t_created=2026-10-22T22:44:03Z t_updated=2026-10-22T22:55:36Z "Parse mcp.toml tool config"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/projects.rs, packages/core/src/mcp.rs
+  ac:
+    | Parsing .grove/mcp.toml yields an optional tool config with a top-level disabled list and named [roles.NAME] tools allowlists, reusing the hand-written TOML machinery from projects.rs.
+    | A missing config file parses as no config and every tool stays enabled.
+    | A malformed config file parses as no config and prints one stderr warning naming the file path.
+    | A disabled or role entry naming a grove command that TOOL_SPECS does not know prints one stderr warning and the valid names stay effective.
+    | Unit tests cover the present, empty, malformed, and unknown-entry file shapes.
+  hypothesis:
+    | The TOML line parser in projects.rs already handles basic strings, inline string arrays, and table headers, so role configuration lands as a small registry-style extension with the same fail-open degradation.
+  evidence_strategy:
+    | Unit tests over the parser shapes in packages/core plus a clean cargo test run.
+  evidence:
+    | cargo test -p grove-core all suites green: mcp_config 9/9 (missing, present, empty, malformed x10, extra tolerant, non-role headers, empty allowlist, unknown entries, path layout)
+    | cargo build -p grove-mcp ok; clippy clean over mcp.rs and projects.rs changes (repo pre-existing warnings untouched)
+
+w W-193 type=feature status=done cynefin=clear t_created=2026-10-22T22:44:11Z t_updated=2026-10-22T23:18:11Z "Filter grove-mcp tools by role"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/mcp/src/main.rs, packages/core/src/mcp.rs
+  ac:
+    | grove-mcp accepts --role=NAME; an unknown role exits with an error naming the configured roles.
+    | tools/list serves exactly the role allowlist minus the disabled set, and a roleless instance serves every tool minus the disabled set.
+    | tools/call of a tool outside the served set answers the same unknown-tool error as an unregistered name.
+    | resources/list and resources/read honor the same predicate for grove://packet and grove://show entries, while grove://skill stays available to every role.
+    | Integration tests drive a stdio session through handle_message and assert the list, call, and resource behavior for roleless and role-bound servers.
+  hypothesis:
+    | One allowed predicate shared by tools/list, tools/call, and resources keeps allowlist enforcement at a single point inside the thin adapter, so tool schemas and client routing stay unchanged.
+  evidence_strategy:
+    | Integration tests through handle_message for roleless and role-bound sessions plus a clean cargo test run.
+  evidence:
+    | cargo test -p grove-mcp 21/21: tools/list serves the role allowlist minus disabled, interdicted calls mirror the unknown-tool error, resource list and read follow the predicate with grove skill always served, and the binary refuses an unknown role naming the configured roles
+    | config-backed stdio flow test drives the binary with mcp.toml and asserts the served set; cargo test -p grove-core all suites green including mcp_config 9/9 unchanged; cargo build -p grove-mcp ok; clippy clean over the touched code
+
+w W-194 type=feature status=done cynefin=clear t_created=2026-10-22T22:44:24Z t_updated=2026-10-22T23:22:56Z "Serve per-role instructions with role echo"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/mcp.rs
+  ac:
+    | The initialize instructions for a role-bound server replace the default workflow text with the per-role instructions value, prefixed by an automatic role line naming the active role.
+    | A roleless server keeps the current default instructions text unchanged.
+    | The instructions composition is covered by a unit test asserting the role line and the replacement behavior.
+  hypothesis:
+    | Instructions is the one initialize field clients are required to forward to the model, so composing it at server startup delivers role awareness over protocol with zero client-side configuration.
+  evidence_strategy:
+    | Unit tests over the composed instructions for roleless and role-bound servers plus a clean cargo test run.
+  evidence:
+    | initialize instructions composed in mcp_instructions: roleless servers keep the default text byte identical, role bound servers get the automatic Active grove role line naming the role with the per-role instructions replacing the default text while keeping the version suffix
+    | config parser accepts per-role instructions strings and rejects non string and duplicate values; cargo test -p grove-mcp 24/24 (role line, replacement, binary config flow) and cargo test --workspace all suites green; clippy clean over touched code
+
+w W-195 type=feature status=proposed cynefin=clear t_created=2026-10-22T22:44:31Z t_updated=2026-10-22T22:44:32Z "Add serverInfo.title to the initialize result"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/mcp.rs
+  ac:
+    | The initialize result carries serverInfo.title naming the active role, for example grove-mcp (worker), or the plain server name for a roleless instance.
+    | A unit test asserts the emitted title for roleless and role-bound servers.
+  hypothesis:
+    | serverInfo.title is optional display metadata in the MCP Implementation object, so emitting it cannot break older clients while giving the human per-instance taxonomy in client UI panels.
+  evidence_strategy:
+    | Unit tests over the initialize result payload plus a clean cargo test run.
+
+w W-196 type=refactor status=done cynefin=complicated t_created=2026-10-22T23:06:20Z t_updated=2026-10-22T23:09:21Z "Extract TOML parsing from projects into a toml module"
+  goals: G-44
+  theme: T-09
+  fitness: G-44=+0
+  surface: packages/core/src/toml.rs, packages/core/src/projects.rs, packages/core/src/mcp.rs, packages/core/src/lib.rs
+  ac:
+    | A new packages/core/src/toml.rs module owns the shared TOML lexer (values, bare keys, basic strings, scalars, inline arrays, inline tables) and a single line parser parameterized by a policy of bare or dotted table headers and allowed or denied arrays of tables.
+    | The registry keeps byte identical parse_toml_line behavior through a thin wrapper over the policy parser; tests/projects.rs stays green unchanged.
+    | The mcp tool config parser consumes the same module under the config policy; every test in tests/mcp_config.rs stays green unchanged.
+    | No TOML machinery remains on import paths between mcp.rs and projects.rs: mcp.rs imports from crate::toml and projects.rs exports only its registry layer.
+    | Inline unit tests inside the toml module pin the policy differences for header keys and arrays of tables.
+    | cargo test -p grove-core and cargo build -p grove-mcp pass with no new clippy findings in the touched files.
+  hypothesis:
+    | Both line parsers already share their implementation except the header key rule and arrays of tables handling, so one policy parameter merges them without behavior change and the extraction is a pure move.
+  evidence_strategy:
+    | cargo test -p grove-core with the registry and mcp config suites unchanged plus inline toml module tests, a clean cargo build -p grove-mcp, and clippy over the touched files.
+  evidence:
+    | cargo test -p grove-core all suites green: registry suite 32/32 unchanged (toml_parse_rules pinned), mcp_config 9/9 unchanged, inline toml policy tests 5/5
+    | cargo build -p grove-mcp ok; clippy reports no findings in toml.rs and no new findings in mcp.rs or projects.rs (line 1112 iter_cloned_collect finds predate this work)
+
+w W-197 type=bug status=done cynefin=clear t_created=2026-10-22T23:29:17Z t_updated=2026-10-22T23:34:57Z "grove-mcp degrades a malformed mcp.toml silently without the stderr warning"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/mcp.rs, packages/mcp/src/main.rs, packages/core/tests/mcp_config.rs, packages/mcp/tests/mcp.rs
+  ac:
+    | A malformed .grove/mcp.toml prints one stderr warning naming the file path, phrased in the established warning style, before any client request is served.
+    | The warning does not change the fail-open outcome: a parse failure still serves the default all-tools-enabled scope with no roles and no disabled set.
+    | The malformed-role compounding is gone: a startup with --role against a malformed config no longer conceals the config error behind 'unknown role; configured roles: none' — the config warning comes first.
+  repro:
+    | Build grove-mcp; inside a project root write a text that fails parse_tool_config (for example 'not toml at all') into .grove/mcp.toml; run the binary with --root and send an initialize line: no stderr warning is printed. Running with --role=worker additionally refuses startup with 'unknown role worker; configured roles: none', masking the config error.
+  exit:
+    | cargo test -p grove-mcp and cargo test -p grove-core green including the new warning assertions; the runtime probe from the G-44 review repeats clean with the warning line on stderr.
+  evidence_strategy:
+    | Integration test capturing stderr from a binary startup with a malformed config, plus a clean cargo test run over grove-mcp and grove-core.
+  evidence:
+    | load_tool_config prints 'grove-mcp: warning: malformed mcp.toml at <path>; serving all tools' on parse failure plus a could-not-read variant; the fail-open None return is unchanged (packages/core/src/mcp.rs)
+    | cargo test -p grove-mcp 26/26: binary_warns_once_on_malformed_config_and_serves_all_tools pins exactly one stderr warning naming the file path plus the full-set fail-open tools/list; binary_malformed_config_warning_precedes_role_refusal pins the warning before the 'unknown role worker' refusal
+    | cargo test -p grove-core all 27 suites green incl mcp_config 10/10; clippy clean over the touched files; runtime probe repeats clean: warning line names the temp mcp.toml path and precedes the role refusal line
+
+w W-198 type=bug status=done cynefin=clear t_created=2026-10-23T10:03:25Z t_updated=2026-10-23T10:06:48Z "grove-mcp reads mcp.toml at the project root instead of the grove home directory"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/mcp.rs, packages/mcp/src/main.rs, packages/core/tests/mcp_config.rs, packages/mcp/tests/mcp.rs
+  ac:
+    | grove-mcp reads mcp.toml from the grove home directory returned by user_grove_dir, sitting next to projects.toml.
+    | The parse, warnings, role allowlists, instructions and resource behavior keep their current shape; every existing role and config test passes after the relocation.
+    | Tests pin the config placement through GROVE_HOME temporary homes instead of per project .grove directories, and an explicit test asserts mcp.toml and projects.toml share the directory.
+    | cargo test --workspace is green and clippy is clean over the touched files.
+  hypothesis:
+    | The loader reaches the config path through one call site and the config content references grove command names only, so switching mcp_config_path to user_grove_dir is a small move plus test relocation with no behavior change elsewhere.
+  repro:
+    | Point GROVE_HOME at a directory that also holds projects.toml and place mcp.toml there; grove-mcp ignores it and reads the per project <root>/.grove/mcp.toml if present, so the central config has no effect and every project needs its own copy.
+  evidence_strategy:
+    | Unit tests over the moved config path in packages/core plus binary tests driving GROVE_HOME temp homes, a clean cargo test run, and clippy over the touched files.
+  evidence:
+    | mcp_config_path resolves user_grove_dir next to projects.toml; load_tool_config drops the root argument and main.rs loads before role validation, keeping the warning before the refusal; explicit test asserts mcp.toml and projects.toml share the directory
+    | core mcp_config 10/10 rewritten over GROVE_HOME temp homes incl present, empty, malformed x11, instructions, path co-location; all packages/mcp tests 24/24 green with config writes moved to the home; runtime probe: unknown role names configured roles from the home config, bound role serves its allowlist minus disabled, roleless serves 37 of 39; cargo test --workspace green; clippy clean over touched files
+
+w W-199 type=feature status=done cynefin=clear t_created=2026-10-23T10:33:38Z t_updated=2026-10-23T10:48:22Z "Remove the skill pointer line from CLI and MCP output"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/skill.rs, packages/core/src/packet.rs, packages/core/src/report.rs, packages/grove/src/cli.jl, packages/grove/conformance/corpus, packages/core/tests/fixtures
+  ac:
+    | The next and status outputs no longer contain the skill pointer line in either track; the Rust and Julia outputs keep the same shape otherwise.
+    | The skill command, the grove://skill resource and the machine readable skill key in JSON output stay untouched.
+    | The conformance corpus drops the pointer line and the corpus replay suites pass for the primary fixtures and the wave2b fallback.
+    | cargo test --workspace is green and clippy is clean over the touched files; the Julia suite runs when available.
+  hypothesis:
+    | The pointer line is composed at one helper per track with two call sites each (next and status), so deleting the composition keeps every other surface byte identical while the corpus strips one deterministic line.
+  evidence_strategy:
+    | Corpus replay suites over the updated fixtures, a full cargo test run with clippy over the touched files, and the Julia unit suite plus the conformance runner.
+  evidence:
+    | pointer_line and skill_pointer_line deleted together with both call sites per track: cmd_next emits the packet bare (packet.rs, cli.jl) and cmd_status opens with "# grove status" (report.rs, cli.jl); the skill command, the grove://skill resource and the JSON "skill" key stay untouched, repo grep shows zero remaining references
+    | conformance corpus stripped of all 5 pointer lines (sessions 3, wip-i4 1, wave2b next-log 1) with zero leftovers; cargo test --workspace green, clippy clean over touched files with only pre-existing lints at report.rs 324 and 353; julia runtests green including conformance: 27 scenarios green and corpus replays byte-identical; home probe shows status and next without the pointer line
+
+w W-200 type=feature status=done cynefin=clear t_created=2026-10-23T12:51:49Z t_updated=2026-10-23T12:52:07Z "MCP presents info-only tool output without the stderr header"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/mcp.rs, packages/mcp/tests/mcp.rs
+  ac:
+    | A successful tool result whose stdout body is empty renders the stderr content as the text body with no "--- stderr ---" marker, so the check call returns exactly "ok".
+    | Results with both nonempty stdout and stderr keep the marker separating the body from the stderr section; the exit code annotation is unchanged.
+    | The binary smoke test pins the new shapes: the check text equals "ok" exactly and the add result contains no stderr marker.
+    | cargo test --workspace is green and clippy is clean over the touched files.
+  hypothesis:
+    | The marker is composed in one function, tool_result_json, so gating it on a nonempty stdout body fixes the info only display without touching CLI channels, the conformance corpus or the Julia track.
+  evidence_strategy:
+    | The binary smoke MCP script over check and add tool calls, a live probe of the check call, a full cargo test run and clippy over the touched files.
+  evidence:
+    | tool_result_json gates the stderr marker on a nonempty stdout body: info only results render as plain text (check returns "ok"), mixed results keep the marker; CLI channels, conformance corpus and the Julia track untouched
+    | binary_smoke_ndjson_session pinned to check text exactly "ok" and add output without the marker; cargo test -p grove-mcp 26/26 and cargo test --workspace green; live probe of the check tool call returned {"content":[{"text":"ok"}],"isError":false}; clippy clean over the touched files
+
+w W-201 type=feature status=done cynefin=clear t_created=2026-10-23T12:56:31Z t_updated=2026-10-23T13:01:03Z "Support multiline arrays in mcp.toml"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/toml.rs, packages/core/src/mcp.rs, packages/core/tests/mcp_config.rs
+  ac:
+    | Role tools lists and the top level disabled list accept arrays spanning multiple lines: lines are buffered until bracket depth returns to zero and then parsed as one value.
+    | Blank lines and comments are tolerated around and inside a multiline segment: a comment is cut at the hash outside strings, a blank segment contributes only whitespace.
+    | Bracket characters inside quoted strings do not open a multiline segment, so values like an instruction mentioning a left bracket keep parsing intact.
+    | An array left unterminated at EOF is malformed: the config fails closed with the established warning and the default all tools scope.
+    | Registry parsing stays single line: REGISTRY_LINE_POLICY is untouched and the projects and lock suites pass unchanged.
+    | cargo test --workspace is green and clippy is clean over the touched files.
+  hypothesis:
+    | parse_inline_array already treats newlines as ordinary whitespace between tokens, so buffering lines until the bracket depth returns to zero and joining them reuses the engine without changing parse_line.
+  evidence_strategy:
+    | toml unit tests for the quote aware depth helper, config unit tests over GROVE_HOME homes covering multiline shapes and unterminated input, the unchanged registry suite, a full cargo test run with clippy, and a runtime probe serving a multiline role allowlist.
+  evidence:
+    | line_bracket_delta scans brackets outside strings and line_without_comment cuts at the hash outside strings, both in packages/core/src/toml.rs with inline units; parse_tool_config buffers lines until depth returns to zero and joins them, so the unchanged parse_inline_array handles newlines as whitespace; registry parsing untouched
+    | mcp_config 13/13 with multiline_tool_arrays_parse, bracket_inside_string_does_not_open_multiline and unterminated_multiline_array_is_malformed; malformed unit includes the old unterminated single line shape and stays green; cargo test --workspace green, clippy clean over touched files; runtime probe: multiline keeper allowlist serves exactly check and status with no warning, unterminated array warns and serves all tools
+
+w W-202 type=feature status=done cynefin=complicated t_created=2026-10-23T15:24:02Z t_updated=2026-10-23T17:10:39Z "Unify terminology across the CLI outputs, the MCP surface and the skill"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src, packages/grove/src, packages/mcp/src, docs/skills/grove, packages/grove/conformance/corpus, packages/core/tests/fixtures, packages/grove/test
+  ac:
+    | Every user facing concept carries one name everywhere it appears: CLI human output, CLI JSON keys, MCP tool descriptions and tool text, the skill pages and the conformance fixtures.
+    | Renames follow the cone rename pattern already in the working tree: the descriptive term replaces the algebra manual term in both tracks, the skill, the fixtures and the corpus in one move.
+    | The corpus replay suites stay byte identical in both tracks after each rename.
+    | The glossary records only names it genuinely introduces rather than names already established in the skill.
+    | cargo test --workspace is green, the Julia suite is green and clippy is clean over the touched files.
+  hypothesis:
+    | A survey of the user facing strings in both tracks, the MCP descriptions and the skill pages surfaces a bounded list of divergent term pairs; each rename is mechanical once the canonical name is picked.
+  evidence_strategy:
+    | A terminology inventory by grepping CLI strings in both tracks, the MCP surface, the skill pages and the glossary, followed by a divergence report and term by term confirmation with replayed suites over updated fixtures.
+  evidence:
+    | terminology survey delivered: divergences reported are the stale skill banner claims in the next and status MCP descriptions, the causality-cone glossary row keeping contraction order and impact wording, the cone JSON key order, the contraction_order identifier and the fitness contribution versus fitness deltas pair; the user deferred every one of these, no surfaces changed
+    | the survey verified the cone rename is complete and grounded, caught the missed pin at packages/mcp/tests/mcp.rs:401 expecting "Contraction order" and reworded it to "Backward cone"; cargo test -p grove-mcp 26/26 and cargo test --workspace green after the fix; julia suite runs solo green on the same file that flaked under parallel cargo, suspected cross suite windows flake documented
+
+w W-203 type=bug status=done cynefin=clear t_created=2026-10-23T17:19:56Z t_updated=2026-10-23T18:13:34Z "Remove the machine readable skill key from next and status JSON output"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/grove/conformance/corpus, packages/core/tests/fixtures
+  ac:
+    | The next and status JSON output carries no skill key in either track, and the human outputs of those commands stay byte identical to the corpus.
+    | The skill command, the MCP instructions mention and the grove://skill resource stay as decided in D-43, D-45 and the W-199 follow-up; only the machine readable key is dropped.
+    | The conformance fixtures drop the key and both corpus replay suites pass byte identical.
+    | cargo test --workspace is green, the Julia suite runs green solo and clippy stays clean over the touched files; the installed release binary refresh remains deferred by the user.
+  hypothesis:
+    | The dev tree already dropped the pointer line in W-199, so the only surviving source is the stale release install and refreshing it delivers the fix with no further code change.
+  repro:
+    | Run next from the installed release binary at C:\Users\Alexander\.local\grove\bin\grove.exe (v0.2.1) in a project holding a ready work item: the output opens with "skill: grove://skill (skill v0.2.1, binary v0.2.1)"; the dev build against the same project opens with the execution packet outright.
+  evidence_strategy:
+    | Live probes of the Rust and Julia tracks and the installed binary, the conformance corpus replays, and the user confirmed refresh of the installed binary path.
+  evidence:
+    | The user chose to keep the installation untouched: no new way of refreshing is picked yet, so the installed release binaries at the grove bin path still serve the pointer line and the item stays in progress
+    | the machine readable skill key is removed from cmd_next and cmd_status JSON output in both tracks (packet.rs, report.rs, cli.jl x2); human outputs of those commands remain byte identical to the corpus; the skill command, the MCP instructions mention and the grove://skill resource stay as decided
+    | wave2b next-log.json and three exact JSON pins in packages/core/tests/report.rs dropped the key with zero leftovers in fixtures; cargo test --workspace green, cargo clippy clean over touched files beyond pre-existing report.rs lints, julia runtests green solo with corpus replays byte-identical; live probe shows next --json and status --json with zero skill occurrences; installed binary refresh stays deferred by user
+
+w W-204 type=feature status=done cynefin=clear t_created=2026-10-23T18:20:23Z t_updated=2026-10-23T18:40:11Z "Remove the resources subsystem from the MCP server"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/mcp.rs, packages/mcp/tests/mcp.rs
+  ac:
+    | The initialize result announces no resources capability and the responses to resources list and resources read are method not found errors in the established shape.
+    | The handler code, the resource builder and the resource reader are deleted; packet and show keep carrying their fetch role as tools and the skill tool keeps printing the guide.
+    | The default and role instructions no longer mention any resource and point clients at the skill tool instead; the skill tool description drops the resource wording.
+    | The MCP test suite drops the resources regions: capabilities and role tests assert the tool only surface, the smoke test stops counting resources and the instructions tests match the new wording.
+    | cargo test --workspace is green, clippy is clean over the touched files, and a runtime probe confirms no resources capability with the skill tool still serving.
+  hypothesis:
+    | The resources handlers are two dispatcher arms over two private builders, so deleting the arms, the builders, the capability entry and the tests regions reuses the established method not found path with no protocol ripple.
+  evidence_strategy:
+    | Closer reading of the deleted region, a rewritten MCP integration suite, a full cargo test run with clippy and a live binary probe of initialize, resources and skill tool.
+  evidence:
+    | the resources handlers, the list and read dispatcher arms, the resources capability entry, the ERR_SERVER code and the resource wording in instructions and the skill tool description are deleted from packages/core/src/mcp.rs; the initialize result announces tools only, resources list and resources read fall through the existing underscore arm to method not found -32601, the instructions point clients at the skill tool and the mcp smoke instructions pin changed with them; cargo test --workspace green, clippy clean over grove core and grove mcp with the tests profile beyond the pre-existing archive and dor lints
+    | the MCP integration suite drops the resources regions: the cli parity test is removed, the smoke script stops listing resources with five scripted lines, the capability pin asserts no resources key and the role tests were replaced by resources_methods_are_gone_for_every_scope asserting -32601 for both methods roleless and under the witness role with the empty allowlist tools pin kept; julia runtests green solo with corpus replays byte identical; a live ndjson probe shows a tools only capabilities object, instructions carrying Run the skill tool with no resource mention, both resources methods answering method not found and the skill tool still serving with 39 tools listed
 
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
@@ -136,6 +372,98 @@ d D-17 status=accepted t_created=2026-08-28T22:24:55Z t_updated=2026-08-28T23:07
   validation:
     | bun test green on the extracted module inside the ui tree.
 
+d D-41 status=accepted t_created=2026-10-22T22:42:33Z t_updated=2026-10-23T10:01:57Z "Role-scoped MCP tool access configured in .grove/mcp.toml"
+  context:
+    | grove-mcp serves the full TOOL_SPECS set to every client; project owners running narrow role skills need fixed per-instance tool subsets, and today the only control is client-side tool filtering.
+  options:
+    | Global disabled denylist only: it hides named tools but every new tool arrives enabled, which fits tool hygiene yet not role containment.
+    | Per-role allowlists in .grove/mcp.toml plus a global disabled denylist subtracted afterwards (block wins over allow).
+    | Manual mode without a role: it disables roleless instances for every project MCP entry at once, breaking per-project scoping.
+  decision:
+    | Tool scope is configured in .grove/mcp.toml: a top-level disabled list plus [roles.NAME] tools allowlists; the server picks its role with --role=NAME at startup; an unknown role refuses startup (fail closed); unknown tool names log a stderr warning; an absent or malformed config means all tools enabled (fail open, matching projects.toml degradation).
+  consequences:
+    | No config change is needed for existing projects; each role skill maps to its own MCP server entry in the client config; role filtering is a presentation layer inside the thin adapter (Y-03), not a security boundary against the same OS user, whose real enforcement remains grove guards (DoR, session claims, checksum).
+
+d D-42 status=accepted t_created=2026-10-22T22:42:45Z t_updated=2026-10-22T22:44:23Z "Role-interdicted tool calls mirror unknown-tool responses"
+  context:
+    | tools/list hides role-disallowed tools, yet a client may still call them by name; the response shape decides whether the capability stays invisible or becomes a visible blocked feature.
+  options:
+    | Answer with a dedicated tool-level isError payload naming the tool as disabled: it is discoverable and suggests retries that can never succeed.
+    | Answer with the same protocol error as an unknown tool name: once hidden, the tool is indistinguishable from nonexistent.
+  decision:
+    | A disallowed tools/call returns exactly the unknown-tool protocol error (invalid params, exit unchanged in kind), so role boundaries never leak a disable message and agents get no retry signal.
+  consequences:
+    | Debugging a config typo looks like a missing tool; the role echo in server instructions (D-43) and the stderr warnings keep the human side diagnosable.
+
+d D-43 status=accepted t_created=2026-10-22T22:43:01Z t_updated=2026-10-22T22:44:25Z "Per-role instructions replace the default text with automatic role echo"
+  context:
+    | The static MCP_INSTRUCTIONS line carries default workflow hints such as start with status and next, which mislead narrow role instances, and an agent learns its mandate nowhere else because MCP carries no per-call role metadata.
+  options:
+    | Echo the role only inside serverInfo: serverInfo is displayed to the client, never forwarded to the model, so the agent still misses its mandate.
+    | Compose instructions in mcp.rs from the default text plus a role line.
+  decision:
+    | initialize instructions are composed as a bulk default workflow text plus an automatic role line naming the active role, and an optional per-role instructions value replaces the default text; role membership stays discoverable by the agent, in protocol, with zero client configuration; serverInfo.title stays untouched in this change set.
+  consequences:
+    | Per-role instruction text lands in every system prompt, so values stay short; long role documentation belongs in the role skill served as client-side context, and instruct drafts such as per-role instructions strings should remain pointers rather than essays.
+
+d D-44 status=accepted t_created=2026-10-22T22:43:10Z t_updated=2026-10-22T22:43:44Z "Resource exposure honors the same role predicate"
+  context:
+    | resources/list and resources/read expose grove://packet/<id> and grove://show/<id>, which run the same commands as the packet and show tools; without symmetric filtering a role could reach a hidden tool through a resource uri.
+  options:
+    | Leave resources unfiltered: resource reads become a loophole around role scope.
+    | Hide resource entries from the list while keeping reads working: an agent holding a stale uri still gets around the scope.
+  decision:
+    | One tool_allowed predicate decides tools/list, tools/call, and resource exposure: the same predicate gates grove://packet and grove://show entries in resources/list and refuses their reads with the same unknown-tool response per D-42; grove://skill stays available to every role.
+  consequences:
+    | Role scope has one enforcement point, so packet and show cannot be bypassed through resources, and the per-project resource list shrinks consistently with the tool list.
+
+d D-45 status=accepted t_created=2026-10-22T22:43:42Z t_updated=2026-10-23T18:20:12Z "The grove skill resource is available to every role"
+
+d D-46 status=accepted t_created=2026-10-22T23:06:08Z t_updated=2026-10-22T23:06:20Z "TOML parsing machinery lives in a dedicated core toml module"
+  context:
+    | W-192 landed the mcp.toml parser with pub(crate) exports reaching back into projects.rs, so the registry module now owns the shared TOML lexer and every future config reader would extend the registry surface.
+  options:
+    | Status quo: keep the pub(crate) re-exports from projects.rs; coupling grows with each new config reader.
+    | Partial extraction: move only the lexer and the loose line parser; two line parsers remain in the codebase.
+    | Full extraction: a dedicated toml module with one lexer plus a single policy-aware line parser and thin wrappers for the registry and the mcp tool config.
+  decision:
+    | Full extraction option A: packages/core/src/toml.rs owns TomlVal, bare keys, strings, scalars, values, inline arrays and tables, and one policy parameterized line parser; projects.rs and mcp.rs keep thin wrappers with registry behavior pinned byte identical by tests/projects.rs.
+  consequences:
+    | mcp.rs imports TOML machinery from crate::toml instead of projects.rs; future config readers plug into the toml module without touching the registry; the merge of the two line parsers ships with the extraction so no follow-up refactor is pending.
+
+d D-47 status=accepted t_created=2026-10-23T10:01:57Z t_updated=2026-10-23T10:03:41Z "The mcp.toml tool config lives in the grove home directory next to projects.toml"
+  context:
+    | W-192 wired the tool config at <root>/.grove so every project MCP entry repeats a per project mcp.toml, while grove keeps the registry projects.toml in the grove home directory; config content references grove command names only and never project paths, so per project placement carries no scoping value.
+  options:
+    | Status quo: keep one mcp.toml per project under <root>/.grove and duplicate the role segments in every project.
+    | Move mcp.toml into the grove home directory next to projects.toml with the same parse and warning behavior.
+  decision:
+    | grove-mcp reads mcp.toml from user_grove_dir next to projects.toml; the parser, fail-open warning style, role semantics (D-42, D-43, D-44, D-45) and the --role startup behavior stay unchanged; the config path argument drops from the loader.
+  consequences:
+    | One central tool scope per grove home without per project duplication; per project scoping is traded away, and the location is discoverable next to the registry; temp homes in tests pin the path through GROVE_HOME.
+
+d D-48 status=accepted t_created=2026-10-23T10:32:39Z t_updated=2026-10-23T10:33:45Z "CLI and MCP output carries no skill pointer line"
+  context:
+    | The skill pointer line "skill: grove://skill (skill v, binary v)" is prepended to the next and status outputs through pointer_line in packages/core/src/skill.rs and skill_pointer_line in packages/grove/src/cli.jl, wedging every CLI and MCP consumer to the skill module version stamp; agents already discover the skill through the MCP instructions block and the skill command and resource, so the line carries no discovery value.
+  options:
+    | Status quo: keep the pointer line in next and status outputs in both tracks and regenerate the conformance corpus around it.
+    | Remove the pointer line composition from both tracks and keep the skill command, the grove://skill resource and the machine readable skill key in JSON output untouched.
+  decision:
+    | The pointer line is removed from CLI and MCP output in both tracks: pointer_line and its call sites in packages/core/src/packet.rs and packages/core/src/report.rs disappear, skill_pointer_line and its call sites in packages/grove/src/cli.jl disappear; the skill command stays as is.
+  consequences:
+    | Narrower CLI and MCP output with no skill version stamp; skill discovery stays with the instructions block and the skill command and resource; the conformance corpus drops the line and is regenerated.
+
+d D-49 status=accepted t_created=2026-10-23T18:20:12Z t_updated=2026-10-23T18:20:37Z "The MCP server serves no resources subsystem"
+  context:
+    | W-193 and W-194 built role filtering over grove://packet and grove://show resources and D-45 kept grove://skill always servable, and the instructions told every client to read the resource before driving work items; packet and show fetch the same content as their tools, the skill tool prints the same SKILL.md, so the resource layer duplicates the tool layer and every role scenario grows an extra hidden surface to police.
+  options:
+    | Status quo: keep the resources subsystem with role filtering and the always available skill resource.
+    | Remove resources and resources list entirely: no capability announcement, method not found for resources slash handlers, instructions point at the skill tool; per page reads ride the skill command install path when needed.
+  decision:
+    | The MCP server announces no resources capability, responds method not found to resources list and resources read, the packet and show tools carry the fetch role, the skill tool carries the guide role, and the instructions drop the resource wording; the tool_allowed role filtering keeps governing tools only.
+  consequences:
+    | One less surface to filter by role: hidden resources vanish with their identical malformed uri errors, clients discover content through tools only; the per page deep reads of the embedded skill leave the protocol and the serverInfo.body of instructions names the skill tool instead.
+
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
     | attestations already give a GitHub-backed second path; cosign keyless would add a Sigstore-anchored one without storing another key, at the cost of another tool in the sign job; deferred from v1, revisit after the first releases
@@ -204,6 +532,8 @@ b B-05 status=validated cynefin=complicated t_created=2026-08-17T10:50:14Z t_upd
 t T-01 status=open t_created=2026-07-19T01:14:31Z t_updated=2026-07-19T01:14:31Z "Scaling performance"
 
 t T-06 status=open t_created=2026-08-28T23:06:23Z t_updated=2026-10-22T20:14:46Z "Graph view grows a 3D renderer"
+
+t T-09 status=done t_created=2026-10-22T23:06:08Z t_updated=2026-10-22T23:09:21Z "Shared TOML machinery concentrates inside the projects module"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-09-26T00:18:53Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -569,6 +899,8 @@ e D-30 supersedes D-29 t_created=2026-08-30T21:21:09Z
 e D-31 supersedes D-30 t_created=2026-08-30T21:35:40Z
 e D-32 supersedes D-31 t_created=2026-08-30T21:48:11Z
 e D-37 supersedes D-34 t_created=2026-09-17T15:44:19Z
+e D-47 supersedes D-41 t_created=2026-10-23T10:01:57Z
+e D-49 supersedes D-45 t_created=2026-10-23T18:20:12Z
 e Q-01 asks W-06 t_created=2026-07-19T01:19:10Z
 e Q-02 asks W-09 t_created=2026-07-19T01:19:17Z
 e Q-05 asks W-103 t_created=2026-08-17T10:53:14Z
@@ -599,6 +931,7 @@ e T-08 causes W-174 t_created=2026-09-17T13:07:13Z
 e T-08 causes W-180 t_created=2026-09-17T15:12:18Z
 e T-08 causes W-182 t_created=2026-09-17T15:45:05Z
 e T-08 causes W-183 t_created=2026-09-17T15:57:35Z
+e T-09 causes W-196 t_created=2026-10-22T23:06:30Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z
@@ -680,6 +1013,18 @@ e W-188 implements D-39 t_created=2026-09-17T23:27:25Z
 e W-189 implements D-40 t_created=2026-09-25T23:38:14Z
 e W-190 produces Y-59 t_created=2026-10-22T20:14:07Z
 e W-191 produces Y-60 t_created=2026-10-22T22:24:53Z
+e W-192 blocks W-193 t_created=2026-10-22T22:44:24Z
+e W-192 blocks W-194 t_created=2026-10-22T22:44:26Z
+e W-192 implements D-41 t_created=2026-10-22T22:44:04Z
+e W-193 implements D-41 t_created=2026-10-22T22:44:23Z
+e W-193 implements D-42 t_created=2026-10-22T22:44:23Z
+e W-193 implements D-45 t_created=2026-10-22T22:44:23Z
+e W-194 implements D-43 t_created=2026-10-22T22:44:25Z
+e W-196 blocks W-193 t_created=2026-10-22T23:06:30Z
+e W-196 blocks W-194 t_created=2026-10-22T23:06:30Z
+e W-198 implements D-47 t_created=2026-10-23T10:03:41Z
+e W-199 implements D-48 t_created=2026-10-23T10:33:45Z
+e W-204 implements D-49 t_created=2026-10-23T18:20:37Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z

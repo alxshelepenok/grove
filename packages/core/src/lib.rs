@@ -34,6 +34,7 @@ mod skill;
 mod stats;
 mod status;
 mod times;
+mod toml;
 
 pub use checksum::{checksum_of, verify_checksum};
 pub use model::{Edge, FieldValue, Form, Kind, Node, State};

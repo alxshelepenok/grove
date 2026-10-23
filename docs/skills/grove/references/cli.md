@@ -48,9 +48,9 @@ any `Ready` member if the intersection is empty. Prints the same packet as
 lockfile change). Horizon: `--cone-depth=N` (BFS hops, default 4),
 `--cone-max=N` (node cap, default 50). Sections:
 
-- `## Contraction order`: backward cone in topological order:
+- `## Backward cone`: backward cone in topological order:
   `1. W-NN  status  title`.
-- `## Forward cone (impact)`: blast radius, same columns, unordered.
+- `## Forward cone`: blast radius, same columns, unordered.
 - `## Fragility`: per goal, vertex-disjoint `blocks`-paths G→W:
   `G-NN: k disjoint blocks-paths`, `G-NN: 1 (brittle)`, or
   `G-NN: no blocks-path`.

@@ -657,7 +657,7 @@ function packet_cone(st::State, w::Node; depth::Int=4, maxcount::Int=50)::String
     fwd = forward_cone(st, w.id; depth=depth, maxcount=maxcount)
     io = IOBuffer()
     println(io)
-    println(io, "## Contraction order")
+    println(io, "## Backward cone")
     println(io)
     for (i, id) in enumerate(contraction_order(st, back.ids))
         n = get(st.nodes, id, nothing)
@@ -665,7 +665,7 @@ function packet_cone(st::State, w::Node; depth::Int=4, maxcount::Int=50)::String
         println(io, i, ". ", id, "  ", n.status, "  ", n.title)
     end
     println(io)
-    println(io, "## Forward cone (impact)")
+    println(io, "## Forward cone")
     println(io)
     for id in fwd.ids
         n = get(st.nodes, id, nothing)

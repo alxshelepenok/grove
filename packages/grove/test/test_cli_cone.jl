@@ -41,10 +41,10 @@ end
         cone_fixture(tmp)
         rc, md = cone_run_cli(["packet", "W-04", "--cone", "--root=$tmp"])
         @test rc == 0
-        @test occursin("## Contraction order", md)
+        @test occursin("## Backward cone", md)
         order = [m.captures[1] for m in eachmatch(r"(?m)^\d+\.\s+(\S+)", md)]
         @test order == ["G-01", "W-01", "W-02", "W-03"]
-        @test occursin("## Forward cone (impact)", md)
+        @test occursin("## Forward cone", md)
         @test occursin("## Fragility", md)
         @test !occursin("## Relevant discoveries", md)
         @test !occursin("cone truncated", md)
@@ -59,7 +59,7 @@ end
         cone_fixture(tmp)
         rc, md = cone_run_cli(["packet", "W-01", "--cone", "--root=$tmp"])
         @test rc == 0
-        fwd = cone_md_section(md, "## Forward cone (impact)", "## Fragility")
+        fwd = cone_md_section(md, "## Forward cone", "## Fragility")
         @test occursin("- W-03  ", fwd)
         @test occursin("- W-04  ", fwd)
     finally
@@ -115,7 +115,7 @@ end
         @test cone["truncated"] == false
         @test cone["depth"] == 4
         @test cone["max"] == 50
-        @test occursin("## Contraction order", d["packet_markdown"])
+        @test occursin("## Backward cone", d["packet_markdown"])
     finally
         rm(tmp; recursive=true, force=true)
     end
@@ -131,7 +131,7 @@ end
                       "--title=Solo", "--root=$tmp", "--quiet"]) == 0
         rc, md = cone_run_cli(["packet", "W-01", "--cone", "--root=$tmp"])
         @test rc == 0
-        @test occursin("## Contraction order", md)
+        @test occursin("## Backward cone", md)
         @test occursin("- G-01: no blocks-path", md)
     finally
         rm(tmp; recursive=true, force=true)

@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 31 | validated B 1 · answered Q 3 · accepted D 8 · active Discovery 19 |
+| C (content) | 40 | validated B 1 · answered Q 3 · accepted D 17 · active Discovery 19 |
 | V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
@@ -16,7 +16,7 @@
 | A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-02 | API | 0 | 3 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-04 | MCP server | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-04 | MCP server | 10 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-07 | Agent integrations | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -29,6 +29,7 @@
 | ID | Outcome | Fitness function | Status |
 | --- | --- | --- | --- |
 | G-17 | Scaling and performance budget | count; current= target=2 | unverified |
+| G-44 | grove-mcp serves role-scoped tool sets | count; current=11 target=12 | partial |
 
 ## Work items
 
@@ -36,6 +37,19 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed | ★ |
 | W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-17 | complicated | ⊥ | proposed |  |
+| W-192 | feature | Parse mcp.toml tool config | G-44 | clear | ⊤ | done |  |
+| W-193 | feature | Filter grove-mcp tools by role | G-44 | clear | ⊤ | done |  |
+| W-194 | feature | Serve per-role instructions with role echo | G-44 | clear | ⊤ | done |  |
+| W-195 | feature | Add serverInfo.title to the initialize result | G-44 | clear | ⊤ | proposed |  |
+| W-196 | refactor | Extract TOML parsing from projects into a toml module | G-44 | complicated | ⊤ | done |  |
+| W-197 | bug | grove-mcp degrades a malformed mcp.toml silently without the stderr warning | G-44 | clear | ⊤ | done |  |
+| W-198 | bug | grove-mcp reads mcp.toml at the project root instead of the grove home directory | G-44 | clear | ⊤ | done |  |
+| W-199 | feature | Remove the skill pointer line from CLI and MCP output | G-44 | clear | ⊤ | done |  |
+| W-200 | feature | MCP presents info-only tool output without the stderr header | G-44 | clear | ⊤ | done |  |
+| W-201 | feature | Support multiline arrays in mcp.toml | G-44 | clear | ⊤ | done |  |
+| W-202 | feature | Unify terminology across the CLI outputs, the MCP surface and the skill | G-44 | complicated | ⊤ | done |  |
+| W-203 | bug | Remove the machine readable skill key from next and status JSON output | G-44 | clear | ⊤ | done |  |
+| W-204 | feature | Remove the resources subsystem from the MCP server | G-44 | clear | ⊤ | done |  |
 
 ## Decisions
 
@@ -50,6 +64,15 @@
 | D-13 | Bun toolchain and project code style for the dsh plugin | accepted |  |
 | D-16 | Neo4j integrates as a read-only Cypher projection of state.lock | proposed |  |
 | D-17 | Graph view geometry lives in a DOM-free module | accepted |  |
+| D-41 | Role-scoped MCP tool access configured in .grove/mcp.toml | accepted |  |
+| D-42 | Role-interdicted tool calls mirror unknown-tool responses | accepted |  |
+| D-43 | Per-role instructions replace the default text with automatic role echo | accepted |  |
+| D-44 | Resource exposure honors the same role predicate | accepted |  |
+| D-45 | The grove skill resource is available to every role | accepted |  |
+| D-46 | TOML parsing machinery lives in a dedicated core toml module | accepted |  |
+| D-47 | The mcp.toml tool config lives in the grove home directory next to projects.toml | accepted | D-41 |
+| D-48 | CLI and MCP output carries no skill pointer line | accepted |  |
+| D-49 | The MCP server serves no resources subsystem | accepted | D-45 |
 
 ## Open questions
 
@@ -77,6 +100,7 @@
 | --- | --- | --- | --- | --- |
 | T-01 | Scaling performance | open | – | W-04, W-05 |
 | T-06 | Graph view grows a 3D renderer | open | W-122, W-139 | – |
+| T-09 | Shared TOML machinery concentrates inside the projects module | done | W-196 | W-196 |
 
 ## Discoveries
 
@@ -148,8 +172,22 @@
 ```mermaid
 graph TD
   G_17["G-17: Scaling and performance budget"]:::goal
+  G_44["G-44: grove-mcp serves role-scoped tool sets"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
+  W_192["W-192: Parse mcp.toml tool config"]:::done
+  W_193["W-193: Filter grove-mcp tools by role"]:::done
+  W_194["W-194: Serve per-role instructions with role echo"]:::done
+  W_195["W-195: Add serverInfo.title to the initialize result"]:::feature
+  W_196["W-196: Extract TOML parsing from projects into a toml module"]:::done
+  W_197["W-197: grove-mcp degrades a malformed mcp.toml silently without the stderr warning"]:::done
+  W_198["W-198: grove-mcp reads mcp.toml at the project root instead of the grove home directory"]:::done
+  W_199["W-199: Remove the skill pointer line from CLI and MCP output"]:::done
+  W_200["W-200: MCP presents info-only tool output without the stderr header"]:::done
+  W_201["W-201: Support multiline arrays in mcp.toml"]:::done
+  W_202["W-202: Unify terminology across the CLI outputs, the MCP surface and the skill"]:::done
+  W_203["W-203: Remove the machine readable skill key from next and status JSON output"]:::done
+  W_204["W-204: Remove the resources subsystem from the MCP server"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
@@ -159,6 +197,15 @@ graph TD
   D_13["D-13: Bun toolchain and project code style for the dsh plugin"]:::decision
   D_16["D-16: Neo4j integrates as a read-only Cypher projection of state.lock"]:::decision
   D_17["D-17: Graph view geometry lives in a DOM-free module"]:::decision
+  D_41["D-41: Role-scoped MCP tool access configured in .grove/mcp.toml"]:::decision
+  D_42["D-42: Role-interdicted tool calls mirror unknown-tool responses"]:::decision
+  D_43["D-43: Per-role instructions replace the default text with automatic role echo"]:::decision
+  D_44["D-44: Resource exposure honors the same role predicate"]:::decision
+  D_45["D-45: The grove skill resource is available to every role"]:::decision
+  D_46["D-46: TOML parsing machinery lives in a dedicated core toml module"]:::decision
+  D_47["D-47: The mcp.toml tool config lives in the grove home directory next to projects.toml"]:::decision
+  D_48["D-48: CLI and MCP output carries no skill pointer line"]:::decision
+  D_49["D-49: The MCP server serves no resources subsystem"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_07["Q-07: How Neo4j integrates into Grove: role, pattern, and boundaries"]:::question
@@ -171,6 +218,7 @@ graph TD
   B_05["B-05: The dsh plugin runtime permits spawning the grove CLI as a child process"]:::assumption
   T_01["T-01: Scaling performance"]:::theme
   T_06["T-06: Graph view grows a 3D renderer"]:::theme
+  T_09["T-09: Shared TOML machinery concentrates inside the projects module"]:::theme
   Y_01["Y-01: Normalize at capture, never inject test clocks"]:::discovery
   Y_02["Y-02: Never gate a validation task on the hypotheses it validates"]:::discovery
   Y_03["Y-03: Integration surfaces are thin adapters over the core CLI contract"]:::discovery
@@ -257,6 +305,8 @@ graph TD
   D_31 -->|supersedes| D_30
   D_32 -->|supersedes| D_31
   D_37 -->|supersedes| D_34
+  D_47 -->|supersedes| D_41
+  D_49 -->|supersedes| D_45
   Q_01 -->|asks| W_06
   Q_02 -->|asks| W_09
   Q_05 -->|asks| W_103
@@ -287,6 +337,7 @@ graph TD
   T_08 -->|causes| W_180
   T_08 -->|causes| W_182
   T_08 -->|causes| W_183
+  T_09 -->|causes| W_196
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
   W_03 -->|produces| D_11
@@ -368,6 +419,18 @@ graph TD
   W_189 -->|implements| D_40
   W_190 -->|produces| Y_59
   W_191 -->|produces| Y_60
+  W_192 ==>|blocks| W_193
+  W_192 ==>|blocks| W_194
+  W_192 -->|implements| D_41
+  W_193 -->|implements| D_41
+  W_193 -->|implements| D_42
+  W_193 -->|implements| D_45
+  W_194 -->|implements| D_43
+  W_196 ==>|blocks| W_193
+  W_196 ==>|blocks| W_194
+  W_198 -->|implements| D_47
+  W_199 -->|implements| D_48
+  W_204 -->|implements| D_49
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78
