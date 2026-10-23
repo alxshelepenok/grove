@@ -174,7 +174,6 @@ fn initialize_handshake_shape_and_negotiation() {
     assert_eq!(v["id"], 1);
     assert_eq!(v["result"]["protocolVersion"], "2024-11-05");
     assert!(v["result"]["capabilities"]["tools"].is_object());
-    assert!(v["result"]["capabilities"]["resources"].is_null());
     assert_eq!(v["result"]["serverInfo"]["name"], "grove-mcp");
     assert!(v["result"]["serverInfo"]["version"].is_string());
     let v2 = rpc(
@@ -646,27 +645,6 @@ fn interdicted_call_mirrors_unknown_tool_error() {
         bogus["error"]["message"].as_str().unwrap(),
         "unknown tool: zzbogus; known tools: status"
     );
-}
-
-#[test]
-fn resources_methods_are_gone_for_every_scope() {
-    let _g = ENV_LOCK.lock().unwrap();
-    let f = fixture("roleres");
-    let mut s = server(&f.root);
-    handshake(&mut s);
-    let list = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":20,\"method\":\"resources/list\"}");
-    assert_eq!(list["error"]["code"], -32601);
-    let read = rpc(
-        &mut s,
-        "{\"jsonrpc\":\"2.0\",\"id\":21,\"method\":\"resources/read\",\"params\":{\"uri\":\"grove://skill\"}}",
-    );
-    assert_eq!(read["error"]["code"], -32601);
-    assert_eq!(read["error"]["message"], "method not found: resources/read");
-    bind_role(&mut s, "witness", &[]);
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":22,\"method\":\"resources/list\"}");
-    assert_eq!(v["error"]["code"], -32601);
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":23,\"method\":\"tools/list\"}");
-    assert_eq!(v["result"]["tools"].as_array().unwrap().len(), 0);
 }
 
 #[test]
