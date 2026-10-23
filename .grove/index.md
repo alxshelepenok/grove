@@ -7,14 +7,14 @@
 | Measure | Count | Composition |
 | --- | --- | --- |
 | C (content) | 42 | validated B 1 · answered Q 3 · accepted D 19 · active Discovery 19 |
-| V (uncertainty) | 11 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 3 |
+| V (uncertainty) | 10 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 2 |
 
 ## Areas
 
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
 | A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-02 | API | 1 | 5 | C: validated B 0 · answered Q 0 · accepted D 1; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 3 |
+| A-02 | API | 1 | 4 | C: validated B 0 · answered Q 0 · accepted D 1; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 2 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 10 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -30,13 +30,13 @@
 | --- | --- | --- | --- |
 | G-17 | Scaling and performance budget | count; current= target=2 | unverified |
 | G-44 | grove-mcp serves role-scoped tool sets | count; current=11 target=12 | partial |
-| G-45 | Decision immutability holds for accepted decisions across CLI mutations in both implementations | count; current=1 target=3 | partial |
+| G-45 | Decision immutability holds for accepted decisions across CLI mutations in both implementations | count; current=2 target=3 | partial |
 
 ## Work items
 
 | ID | Type | Title | Goals | Cynefin | DoR | Status | Critical |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed |  |
+| W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed | ★ |
 | W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-17 | complicated | ⊥ | proposed |  |
 | W-192 | feature | Parse mcp.toml tool config | G-44 | clear | ⊤ | done |  |
 | W-193 | feature | Filter grove-mcp tools by role | G-44 | clear | ⊤ | done |  |
@@ -52,8 +52,8 @@
 | W-203 | bug | Remove the machine readable skill key from next and status JSON output | G-44 | clear | ⊤ | done |  |
 | W-204 | feature | Remove the resources subsystem from the MCP server | G-44 | clear | ⊤ | done |  |
 | W-205 | bug | Rust core rejects field and title mutations on accepted decisions | G-45 | clear | ⊤ | done |  |
-| W-206 | bug | Julia reference rejects field and title mutations on accepted decisions | G-45 | clear | ⊤ | ready | ★ |
-| W-207 | bug | Pin accepted-decision immutability in the conformance corpus | G-45 | clear | ⊤ | ready | ★ |
+| W-206 | bug | Julia reference rejects field and title mutations on accepted decisions | G-45 | clear | ⊤ | done |  |
+| W-207 | bug | Pin accepted-decision immutability in the conformance corpus | G-45 | clear | ⊤ | ready |  |
 
 ## Decisions
 
@@ -180,7 +180,7 @@ graph TD
   G_17["G-17: Scaling and performance budget"]:::goal
   G_44["G-44: grove-mcp serves role-scoped tool sets"]:::goal
   G_45["G-45: Decision immutability holds for accepted decisions across CLI mutations in both implementations"]:::goal
-  W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature
+  W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_192["W-192: Parse mcp.toml tool config"]:::done
   W_193["W-193: Filter grove-mcp tools by role"]:::done
@@ -196,8 +196,8 @@ graph TD
   W_203["W-203: Remove the machine readable skill key from next and status JSON output"]:::done
   W_204["W-204: Remove the resources subsystem from the MCP server"]:::done
   W_205["W-205: Rust core rejects field and title mutations on accepted decisions"]:::done
-  W_206["W-206: Julia reference rejects field and title mutations on accepted decisions"]:::ready,critical
-  W_207["W-207: Pin accepted-decision immutability in the conformance corpus"]:::ready,critical
+  W_206["W-206: Julia reference rejects field and title mutations on accepted decisions"]:::done
+  W_207["W-207: Pin accepted-decision immutability in the conformance corpus"]:::ready
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
@@ -522,7 +522,7 @@ graph TD
   Y_56 -->|distills| Q_14
   Y_57 -->|distills| D_38
   Y_58 -->|distills| D_39
-  class W_206,W_207 critical
+  class W_04 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff
 classDef theme fill:#2a4a3a,color:#fff

@@ -509,6 +509,10 @@ function cmd_set(ctx::CliCtx, pos, kw)
         msg = session_denial_progress_mutate(n, eff)
         msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
     end
+    if n.kind === :d && n.status === :accepted
+        println(stderr, accepted_decision_msg(id))
+        return EXIT_GUARD
+    end
 
     if key == "cynefin"
         jr = wrap_journal_record("set", Dict{String,Any}(
@@ -608,6 +612,9 @@ function cmd_set(ctx::CliCtx, pos, kw)
     EXIT_OK
 end
 
+accepted_decision_msg(id::AbstractString)::String =
+    "decision $(id) is accepted; create a new D with --supersedes"
+
 function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, kw)::Int
     valid = STATUS[n.kind]
     new in valid || (println(stderr, "invalid status `$new` for $(n.kind)"); return EXIT_ERR)
@@ -643,7 +650,7 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
         end
     end
     if n.kind === :d && n.status === :accepted && new !== :superseded
-        println(stderr, "decision $(n.id) is accepted; create a new D with --supersedes")
+        println(stderr, accepted_decision_msg(n.id))
         return EXIT_GUARD
     end
     if n.kind === :y
@@ -680,6 +687,10 @@ function cmd_field(ctx::CliCtx, pos, kw)
     if n.kind === :w && n.status === :progress
         msg = session_denial_progress_mutate(n, eff)
         msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+    end
+    if n.kind === :d && n.status === :accepted
+        println(stderr, accepted_decision_msg(id))
+        return EXIT_GUARD
     end
     form = get(FIELD_CATALOG, (n.kind, fname), nothing)
     form === nothing && (println(stderr, "unknown field $fname on $(n.kind)"); return EXIT_ERR)

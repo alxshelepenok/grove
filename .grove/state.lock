@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:7c140104522dcdcc3b58de85500cb22fab393f286f00b79260d38080d81b2df4
+# checksum: sha256:d5de80d5d2600d4083c81c72456f66707f46aca6deb83d0fc6400a1657d86763
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -13,7 +13,7 @@ g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_update
 g G-45 status=partial fitness_kind=count t_created=2026-10-23T21:25:55Z t_updated=2026-10-23T21:41:41Z "Decision immutability holds for accepted decisions across CLI mutations in both implementations"
   area: A-02
   fitness_target: 3
-  fitness_current: 1
+  fitness_current: 2
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -286,7 +286,7 @@ w W-205 type=bug status=done cynefin=clear t_created=2026-10-23T21:26:24Z t_upda
   evidence:
     | cargo test -p grove-core: 319 passed / 0 failed (guards suite 27/27, includes 4 new tests: field add/rm/clear on every D-catalog field, set title/cynefin/type rejection with empty journal, status path paid through guard_status_transition, undo inverse replay bypasses the guard); issue #70 sandbox repro with locally built CLI: field decision clear/add/rm and set title/cynefin all exit 4 with "decision D-01 is accepted; create a new D with --supersedes" and content intact; supersedes flow exits 0 (D-02 created and accepted); undo reverted the latest mutation next to an accepted D; check --json ok.
 
-w W-206 type=bug status=ready cynefin=clear t_created=2026-10-23T21:26:24Z t_updated=2026-10-23T21:34:29Z "Julia reference rejects field and title mutations on accepted decisions"
+w W-206 type=bug status=done cynefin=clear t_created=2026-10-23T21:26:24Z t_updated=2026-10-23T22:11:01Z "Julia reference rejects field and title mutations on accepted decisions"
   goals: G-45
   fitness: G-45=+1
   surface: packages/grove/src/cli.jl, packages/grove/test/test_cli_core.jl
@@ -301,6 +301,8 @@ w W-206 type=bug status=ready cynefin=clear t_created=2026-10-23T21:26:24Z t_upd
     | Same command sequence under the Julia reference (packages/grove): after `grove set D-01 status=accepted`, `field D-01 decision clear/add` and `set D-01 title=…` exit 0, showing the same gap cmd_set/cmd_field share with Rust.
   evidence_strategy:
     | Julia test suite (test_cli_core and related) green; conformance run recorded after the guard lands.
+  evidence:
+    | Julia suite green (julia Pkg.test: full runtests, conformance 27 scenarios green, corpus replay byte-identical; includes the new testset "cli: accepted decision rejects field and set title mutations" 35/35 tests in test_cli_core.jl); issue #70 repro through bin/grove.jl: field decision clear/add/rm and set title all exit 4 with identical message "decision D-01 is accepted; create a new D with --supersedes", content intact; supersedes flow exit 0; undo reverted the latest mutation next to an accepted D; guard text now shared from accepted_decision_msg() in cli.jl used by guard_status_transition, cmd_set and cmd_field.
 
 w W-207 type=bug status=ready cynefin=clear t_created=2026-10-23T21:26:24Z t_updated=2026-10-23T21:27:06Z "Pin accepted-decision immutability in the conformance corpus"
   goals: G-45
