@@ -664,16 +664,13 @@ fn binary_smoke_ndjson_session() {
     assert_eq!(parsed[2]["result"]["tools"].as_array().unwrap().len(), 39);
     let add_text = parsed[3]["result"]["content"][0]["text"].as_str().unwrap();
     assert!(add_text.contains("A-01"), "{add_text}");
+    assert!(!add_text.contains("--- stderr ---"), "{add_text}");
     let resources = parsed[4]["result"]["resources"].as_array().unwrap();
     assert_eq!(resources.len(), 3, "{resources:?}");
     let check = &parsed[5];
     assert_eq!(check["result"]["isError"], false);
-    assert!(
-        check["result"]["content"][0]["text"]
-            .as_str()
-            .unwrap()
-            .contains("ok")
-    );
+    let check_text = check["result"]["content"][0]["text"].as_str().unwrap();
+    assert_eq!(check_text, "ok");
 }
 
 #[test]

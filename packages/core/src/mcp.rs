@@ -895,9 +895,8 @@ fn tool_result_json(r: &OpResult) -> String {
     let errt = r.err.trim_end();
     if !errt.is_empty() {
         if !text.is_empty() {
-            text.push_str("\n\n");
+            text.push_str("\n\n--- stderr ---\n");
         }
-        text.push_str("--- stderr ---\n");
         text.push_str(errt);
     }
     if r.code != EXIT_OK {

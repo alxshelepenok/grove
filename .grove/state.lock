@@ -1,14 +1,14 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:7a126dd23c3a9adb50c0632f6d39e0b24d1790b57fd40cc0e4f4287d6ababa44
+# checksum: sha256:890d13a6f8fba1a4282cdc819ea0d9ccd833901949a90d54e37ba726e26b6018
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
 
-g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-23T10:32:39Z "grove-mcp serves role-scoped tool sets"
+g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-23T12:51:49Z "grove-mcp serves role-scoped tool sets"
   area: A-04
-  fitness_target: 7
-  fitness_current: 6
+  fitness_target: 8
+  fitness_current: 7
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -169,6 +169,23 @@ w W-199 type=feature status=done cynefin=clear t_created=2026-10-23T10:33:38Z t_
   evidence:
     | pointer_line and skill_pointer_line deleted together with both call sites per track: cmd_next emits the packet bare (packet.rs, cli.jl) and cmd_status opens with "# grove status" (report.rs, cli.jl); the skill command, the grove://skill resource and the JSON "skill" key stay untouched, repo grep shows zero remaining references
     | conformance corpus stripped of all 5 pointer lines (sessions 3, wip-i4 1, wave2b next-log 1) with zero leftovers; cargo test --workspace green, clippy clean over touched files with only pre-existing lints at report.rs 324 and 353; julia runtests green including conformance: 27 scenarios green and corpus replays byte-identical; home probe shows status and next without the pointer line
+
+w W-200 type=feature status=done cynefin=clear t_created=2026-10-23T12:51:49Z t_updated=2026-10-23T12:52:07Z "MCP presents info-only tool output without the stderr header"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/mcp.rs, packages/mcp/tests/mcp.rs
+  ac:
+    | A successful tool result whose stdout body is empty renders the stderr content as the text body with no "--- stderr ---" marker, so the check call returns exactly "ok".
+    | Results with both nonempty stdout and stderr keep the marker separating the body from the stderr section; the exit code annotation is unchanged.
+    | The binary smoke test pins the new shapes: the check text equals "ok" exactly and the add result contains no stderr marker.
+    | cargo test --workspace is green and clippy is clean over the touched files.
+  hypothesis:
+    | The marker is composed in one function, tool_result_json, so gating it on a nonempty stdout body fixes the info only display without touching CLI channels, the conformance corpus or the Julia track.
+  evidence_strategy:
+    | The binary smoke MCP script over check and add tool calls, a live probe of the check call, a full cargo test run and clippy over the touched files.
+  evidence:
+    | tool_result_json gates the stderr marker on a nonempty stdout body: info only results render as plain text (check returns "ok"), mixed results keep the marker; CLI channels, conformance corpus and the Julia track untouched
+    | binary_smoke_ndjson_session pinned to check text exactly "ok" and add output without the marker; cargo test -p grove-mcp 26/26 and cargo test --workspace green; live probe of the check tool call returned {"content":[{"text":"ok"}],"isError":false}; clippy clean over the touched files
 
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:

@@ -459,7 +459,7 @@ pub fn cmd_status(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpR
         r.out = json_cli_out(d);
         return r;
     }
-    let mut out = String::from("# grove status\n\n## Work in `progress`\n\n");
+    let mut out = String::from("# Status\n\n## Work in `progress`\n\n");
     if prog.is_empty() {
         out.push_str("(none)\n");
     } else {

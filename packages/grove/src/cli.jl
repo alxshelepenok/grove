@@ -1527,7 +1527,7 @@ function cmd_status(ctx::CliCtx, pos, kw)
         ))
         return EXIT_OK
     end
-    println("# grove status")
+    println("# Status")
     println()
     println("## Work in `progress`")
     println()
