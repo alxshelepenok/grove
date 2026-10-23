@@ -1,14 +1,14 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:07eeb8595dcd7ad72f5c26dc91499ec45d3da5a44a3808e073247f02faa565ac
+# checksum: sha256:bdb3ccb42be752afa55aaf1296bf20acd9b06b15fc6ff88a01b4653eb440d007
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
 
-g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-23T15:24:02Z "grove-mcp serves role-scoped tool sets"
+g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-23T17:19:56Z "grove-mcp serves role-scoped tool sets"
   area: A-04
-  fitness_target: 10
-  fitness_current: 9
+  fitness_target: 11
+  fitness_current: 10
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -223,6 +223,26 @@ w W-202 type=feature status=done cynefin=complicated t_created=2026-10-23T15:24:
   evidence:
     | terminology survey delivered: divergences reported are the stale skill banner claims in the next and status MCP descriptions, the causality-cone glossary row keeping contraction order and impact wording, the cone JSON key order, the contraction_order identifier and the fitness contribution versus fitness deltas pair; the user deferred every one of these, no surfaces changed
     | the survey verified the cone rename is complete and grounded, caught the missed pin at packages/mcp/tests/mcp.rs:401 expecting "Contraction order" and reworded it to "Backward cone"; cargo test -p grove-mcp 26/26 and cargo test --workspace green after the fix; julia suite runs solo green on the same file that flaked under parallel cargo, suspected cross suite windows flake documented
+
+w W-203 type=bug status=done cynefin=clear t_created=2026-10-23T17:19:56Z t_updated=2026-10-23T18:13:34Z "Remove the machine readable skill key from next and status JSON output"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/grove/conformance/corpus, packages/core/tests/fixtures
+  ac:
+    | The next and status JSON output carries no skill key in either track, and the human outputs of those commands stay byte identical to the corpus.
+    | The skill command, the MCP instructions mention and the grove://skill resource stay as decided in D-43, D-45 and the W-199 follow-up; only the machine readable key is dropped.
+    | The conformance fixtures drop the key and both corpus replay suites pass byte identical.
+    | cargo test --workspace is green, the Julia suite runs green solo and clippy stays clean over the touched files; the installed release binary refresh remains deferred by the user.
+  hypothesis:
+    | The dev tree already dropped the pointer line in W-199, so the only surviving source is the stale release install and refreshing it delivers the fix with no further code change.
+  repro:
+    | Run next from the installed release binary at C:\Users\Alexander\.local\grove\bin\grove.exe (v0.2.1) in a project holding a ready work item: the output opens with "skill: grove://skill (skill v0.2.1, binary v0.2.1)"; the dev build against the same project opens with the execution packet outright.
+  evidence_strategy:
+    | Live probes of the Rust and Julia tracks and the installed binary, the conformance corpus replays, and the user confirmed refresh of the installed binary path.
+  evidence:
+    | The user chose to keep the installation untouched: no new way of refreshing is picked yet, so the installed release binaries at the grove bin path still serve the pointer line and the item stays in progress
+    | the machine readable skill key is removed from cmd_next and cmd_status JSON output in both tracks (packet.rs, report.rs, cli.jl x2); human outputs of those commands remain byte identical to the corpus; the skill command, the MCP instructions mention and the grove://skill resource stay as decided
+    | wave2b next-log.json and three exact JSON pins in packages/core/tests/report.rs dropped the key with zero leftovers in fixtures; cargo test --workspace green, cargo clippy clean over touched files beyond pre-existing report.rs lints, julia runtests green solo with corpus replays byte-identical; live probe shows next --json and status --json with zero skill occurrences; installed binary refresh stays deferred by user
 
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:

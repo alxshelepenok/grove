@@ -965,12 +965,14 @@ fn resources_list_json(server: &McpServer) -> String {
         jstr("grove skill"),
         jstr("text/markdown")
     )];
+
     if let Ok(st) = load(&ctx, true) {
         for (nid, n) in &st.nodes {
             for (cmd, mt) in [("packet", "text/markdown"), ("show", "text/plain")] {
                 if !tool_allowed(server, cmd) {
                     continue;
                 }
+
                 items.push(format!(
                     "{{\"uri\":{},\"name\":{},\"mimeType\":{}}}",
                     jstr(&format!("grove://{cmd}/{nid}")),
@@ -980,6 +982,7 @@ fn resources_list_json(server: &McpServer) -> String {
             }
         }
     }
+
     format!("{{\"resources\":[{}]}}", items.join(","))
 }
 
