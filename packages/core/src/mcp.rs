@@ -1,4 +1,4 @@
-use crate::cli::{load, run_cli, CliCtx, HELP, SESSION_MUTATE_COMMANDS};
+use crate::cli::{run_cli, HELP, SESSION_MUTATE_COMMANDS};
 use crate::json::{emit_jval, julia_num_repr, parse_json, JVal, Json};
 use crate::ops::{OpResult, EXIT_OK};
 use crate::toml::{
@@ -16,7 +16,6 @@ pub const ERR_INVALID_REQUEST: i64 = -32600;
 pub const ERR_METHOD_NOT_FOUND: i64 = -32601;
 pub const ERR_INVALID_PARAMS: i64 = -32602;
 pub const ERR_SERVER_NOT_INITIALIZED: i64 = -32002;
-pub const ERR_SERVER: i64 = -32000;
 
 pub struct McpServer {
     pub root: String,
@@ -515,7 +514,7 @@ const TOOL_SPECS: &[ToolSpec] = &[
     ToolSpec {
         cmd: "skill",
         title: "Embedded skill",
-        desc: "Print the embedded agent skill (the SKILL.md workflow guide with frontmatter), or install it as a skill directory when install names one. The same content is also readable as the grove://skill resource.",
+        desc: "Print the embedded agent skill (the SKILL.md workflow guide with frontmatter), or install it as a skill directory when install names one.",
         ann: IDEM,
         props: &[Prop {
             key: "install",
@@ -957,95 +956,6 @@ fn tool_error_json(message: &str) -> String {
     )
 }
 
-fn resources_list_json(server: &McpServer) -> String {
-    let ctx = CliCtx::new(server.root.clone());
-    let mut items: Vec<String> = vec![format!(
-        "{{\"uri\":{},\"name\":{},\"mimeType\":{}}}",
-        jstr("grove://skill"),
-        jstr("grove skill"),
-        jstr("text/markdown")
-    )];
-
-    if let Ok(st) = load(&ctx, true) {
-        for (nid, n) in &st.nodes {
-            for (cmd, mt) in [("packet", "text/markdown"), ("show", "text/plain")] {
-                if !tool_allowed(server, cmd) {
-                    continue;
-                }
-
-                items.push(format!(
-                    "{{\"uri\":{},\"name\":{},\"mimeType\":{}}}",
-                    jstr(&format!("grove://{cmd}/{nid}")),
-                    jstr(&format!("{nid} {}", n.title)),
-                    jstr(mt)
-                ));
-            }
-        }
-    }
-
-    format!("{{\"resources\":[{}]}}", items.join(","))
-}
-
-fn resource_read(server: &McpServer, uri: &str) -> Result<String, (i64, String)> {
-    if uri == "grove://skill" || uri.starts_with("grove://skill/") {
-        let page = uri
-            .strip_prefix("grove://skill")
-            .unwrap_or_default()
-            .trim_start_matches('/');
-        let page = if page.is_empty() { "SKILL.md" } else { page };
-        let text = if page == "SKILL.md" {
-            crate::skill::stamped_skill_md()
-        } else {
-            crate::skill::skill_page(page)
-                .ok_or_else(|| (ERR_INVALID_PARAMS, format!("unknown skill page: {page}")))?
-                .to_string()
-        };
-        return Ok(format!(
-            "{{\"contents\":[{{\"uri\":{},\"mimeType\":{},\"text\":{}}}]}}",
-            jstr(uri),
-            jstr("text/markdown"),
-            jstr(&text)
-        ));
-    }
-    let Some(path) = uri.strip_prefix("grove://") else {
-        return Err((
-            ERR_INVALID_PARAMS,
-            format!("unsupported resource uri: {uri}"),
-        ));
-    };
-    let Some((cmd, nid)) = path.split_once('/') else {
-        return Err((ERR_INVALID_PARAMS, format!("malformed resource uri: {uri}")));
-    };
-    if nid.is_empty() || (cmd != "packet" && cmd != "show") || !tool_allowed(server, cmd) {
-        return Err((ERR_INVALID_PARAMS, format!("malformed resource uri: {uri}")));
-    }
-    let argv = vec![
-        cmd.to_string(),
-        nid.to_string(),
-        format!("--root={}", server.root),
-    ];
-    let r = run_cli(&argv);
-    if r.code != EXIT_OK {
-        let msg = r.err.trim_end();
-        let msg = if msg.is_empty() { r.out.trim_end() } else { msg };
-        return Err((
-            ERR_SERVER,
-            format!("grove {cmd} {nid} failed (exit {}): {msg}", r.code),
-        ));
-    }
-    let mt = if cmd == "packet" {
-        "text/markdown"
-    } else {
-        "text/plain"
-    };
-    Ok(format!(
-        "{{\"contents\":[{{\"uri\":{},\"mimeType\":{},\"text\":{}}}]}}",
-        jstr(uri),
-        jstr(mt),
-        jstr(&r.out)
-    ))
-}
-
 fn negotiate_version(params: Option<&Json>) -> String {
     let requested = params
         .and_then(|p| p.get("protocolVersion"))
@@ -1056,7 +966,7 @@ fn negotiate_version(params: Option<&Json>) -> String {
     }
 }
 
-const MCP_INSTRUCTIONS: &str = "Grove is a graph-driven workflow protocol. Read the resource grove://skill (the SKILL.md root; per-page reads grove://skill/<page>) before driving work items. Start every session with the status and next tools; keep check green.";
+const MCP_INSTRUCTIONS: &str = "Grove is a graph-driven workflow protocol. Run the skill tool for the SKILL.md workflow guide before driving work items. Start every session with the status and next tools; keep check green.";
 
 fn mcp_instructions(server: &McpServer) -> String {
     let base = match &server.role {
@@ -1081,7 +991,7 @@ fn mcp_instructions(server: &McpServer) -> String {
 
 fn initialize_result_json(server: &McpServer, version: &str) -> String {
     format!(
-        "{{\"protocolVersion\":{},\"capabilities\":{{\"tools\":{{\"listChanged\":false}},\"resources\":{{\"listChanged\":false,\"subscribe\":false}}}},\"serverInfo\":{{\"name\":{},\"version\":{}}},\"instructions\":{}}}",
+        "{{\"protocolVersion\":{},\"capabilities\":{{\"tools\":{{\"listChanged\":false}}}},\"serverInfo\":{{\"name\":{},\"version\":{}}},\"instructions\":{}}}",
         jstr(version),
         jstr(MCP_SERVER_NAME),
         jstr(MCP_SERVER_VERSION),
@@ -1166,42 +1076,6 @@ pub fn handle_message(server: &mut McpServer, line: &str) -> Option<String> {
                 ));
             }
             Some(handle_tools_call(server, &id, params.as_ref()))
-        }
-        "resources/list" => {
-            if !server.initialized {
-                return Some(error_response(
-                    &id,
-                    ERR_SERVER_NOT_INITIALIZED,
-                    "server not initialized: send `initialize` then `notifications/initialized`",
-                ));
-            }
-            Some(result_response(&id, &resources_list_json(server)))
-        }
-        "resources/read" => {
-            if !server.initialized {
-                return Some(error_response(
-                    &id,
-                    ERR_SERVER_NOT_INITIALIZED,
-                    "server not initialized: send `initialize` then `notifications/initialized`",
-                ));
-            }
-            let uri = params
-                .as_ref()
-                .and_then(|p| p.get("uri"))
-                .and_then(|u| u.as_str())
-                .unwrap_or("")
-                .to_string();
-            if uri.is_empty() {
-                return Some(error_response(
-                    &id,
-                    ERR_INVALID_PARAMS,
-                    "resources/read: missing params.uri",
-                ));
-            }
-            match resource_read(server, &uri) {
-                Ok(result) => Some(result_response(&id, &result)),
-                Err((code, msg)) => Some(error_response(&id, code, &msg)),
-            }
         }
         _ => Some(error_response(
             &id,

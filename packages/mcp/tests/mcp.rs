@@ -103,7 +103,7 @@ fn handshake(s: &mut McpServer) {
     );
     assert_eq!(r["result"]["serverInfo"]["name"], "grove-mcp");
     let instructions = r["result"]["instructions"].as_str().unwrap();
-    assert!(instructions.contains("grove://skill"));
+    assert!(instructions.contains("Run the skill tool"));
     assert!(
         handle_message(s, "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}").is_none()
     );
@@ -174,7 +174,7 @@ fn initialize_handshake_shape_and_negotiation() {
     assert_eq!(v["id"], 1);
     assert_eq!(v["result"]["protocolVersion"], "2024-11-05");
     assert!(v["result"]["capabilities"]["tools"].is_object());
-    assert!(v["result"]["capabilities"]["resources"].is_object());
+    assert!(v["result"]["capabilities"]["resources"].is_null());
     assert_eq!(v["result"]["serverInfo"]["name"], "grove-mcp");
     assert!(v["result"]["serverInfo"]["version"].is_string());
     let v2 = rpc(
@@ -528,94 +528,6 @@ fn scripted_session_drives_full_work_loop() {
 }
 
 #[test]
-fn resources_list_and_read_match_cli_output() {
-    let _g = ENV_LOCK.lock().unwrap();
-    let f = fixture("resources");
-    let mut s = server(&f.root);
-    handshake(&mut s);
-    init_project(&mut s, 10);
-    call(&mut s, 11, "add", serde_json::json!({"kind": "a", "title": "Res area"}));
-    call(
-        &mut s,
-        12,
-        "add",
-        serde_json::json!({"kind": "g", "title": "Res goal", "area": "A-01", "fitness_kind": "manual"}),
-    );
-    call(
-        &mut s,
-        13,
-        "add",
-        serde_json::json!({"kind": "w", "title": "Res work", "type": "feature", "cynefin": "clear", "goals": "G-01"}),
-    );
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":20,\"method\":\"resources/list\"}");
-    let resources = v["result"]["resources"].as_array().unwrap();
-    assert_eq!(resources.len(), 7, "{resources:?}");
-    let find_uri = |u: &str| {
-        resources
-            .iter()
-            .find(|r| r["uri"] == u)
-            .unwrap_or_else(|| panic!("missing {u}"))
-            .clone()
-    };
-    let skill = find_uri("grove://skill");
-    assert_eq!(skill["mimeType"], "text/markdown");
-    assert_eq!(skill["name"], "grove skill");
-    let skill_entries = resources
-        .iter()
-        .filter(|r| r["uri"].as_str().unwrap().starts_with("grove://skill"))
-        .count();
-    assert_eq!(skill_entries, 1, "skill must advertise the root only");
-    let pw = find_uri("grove://packet/W-01");
-    assert_eq!(pw["mimeType"], "text/markdown");
-    assert_eq!(pw["name"], "W-01 Res work");
-    let sw = find_uri("grove://show/W-01");
-    assert_eq!(sw["mimeType"], "text/plain");
-    find_uri("grove://packet/G-01");
-    find_uri("grove://show/A-01");
-    let root = f.root.to_string_lossy().into_owned();
-    let read = |s: &mut McpServer, id: i64, uri: &str| -> serde_json::Value {
-        let msg = format!(
-            "{{\"jsonrpc\":\"2.0\",\"id\":{id},\"method\":\"resources/read\",\"params\":{{\"uri\":\"{uri}\"}}}}"
-        );
-        rpc(s, &msg)
-    };
-    let v = read(&mut s, 21, "grove://show/W-01");
-    let cli = run_cli(&["show".to_string(), "W-01".to_string(), format!("--root={root}")]);
-    assert_eq!(cli.code, 0);
-    assert_eq!(v["result"]["contents"][0]["text"], cli.out);
-    assert_eq!(v["result"]["contents"][0]["mimeType"], "text/plain");
-    let v = read(&mut s, 22, "grove://packet/W-01");
-    let cli = run_cli(&["packet".to_string(), "W-01".to_string(), format!("--root={root}")]);
-    assert_eq!(cli.code, 0);
-    assert_eq!(v["result"]["contents"][0]["text"], cli.out);
-    assert_eq!(v["result"]["contents"][0]["mimeType"], "text/markdown");
-    let v = read(&mut s, 23, "grove://bogus/W-01");
-    assert_eq!(v["error"]["code"], -32602);
-    let v = read(&mut s, 24, "grove://show/W-99");
-    assert_eq!(v["error"]["code"], -32000);
-    let v = read(&mut s, 25, "grove://skill");
-    assert_eq!(v["result"]["contents"][0]["mimeType"], "text/markdown");
-    let skill_text = v["result"]["contents"][0]["text"].as_str().unwrap();
-    assert!(skill_text.starts_with("---\n"));
-    assert!(
-        skill_text
-            .lines()
-            .take(3)
-            .any(|l| l.starts_with("version: ")),
-        "served skill frontmatter must carry the version stamp"
-    );
-    for keyword in ["name: grove", "dual-track", "Definition of Ready", "Reading order"] {
-        assert!(skill_text.contains(keyword), "skill root misses {keyword}");
-    }
-    let v = read(&mut s, 26, "grove://skill/references/rules.md");
-    assert_eq!(v["result"]["contents"][0]["mimeType"], "text/markdown");
-    let rules_text = v["result"]["contents"][0]["text"].as_str().unwrap();
-    assert!(rules_text.contains("# 6. Rules"), "rules page missing");
-    let v = read(&mut s, 27, "grove://skill/nope.md");
-    assert_eq!(v["error"]["code"], -32602);
-}
-
-#[test]
 fn binary_smoke_ndjson_session() {
     let _g = ENV_LOCK.lock().unwrap();
     let f = fixture("binsmoke");
@@ -629,8 +541,7 @@ fn binary_smoke_ndjson_session() {
         "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"ping\"}",
         "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/list\"}",
         "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"add\",\"arguments\":{\"kind\":\"a\",\"title\":\"Smoke area\"}}}",
-        "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"resources/list\"}",
-        "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{\"name\":\"check\",\"arguments\":{}}}",
+        "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{\"name\":\"check\",\"arguments\":{}}}",
     ];
     let mut child = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
         .arg(format!("--root={root}"))
@@ -654,7 +565,7 @@ fn binary_smoke_ndjson_session() {
     assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
     let stdout = String::from_utf8(out.stdout).unwrap();
     let lines: Vec<&str> = stdout.lines().filter(|l| !l.trim().is_empty()).collect();
-    assert_eq!(lines.len(), 6, "{stdout}");
+    assert_eq!(lines.len(), 5, "{stdout}");
     let parsed: Vec<serde_json::Value> = lines
         .iter()
         .map(|l| serde_json::from_str(l).expect("each stdout line must parse as JSON"))
@@ -665,9 +576,7 @@ fn binary_smoke_ndjson_session() {
     let add_text = parsed[3]["result"]["content"][0]["text"].as_str().unwrap();
     assert!(add_text.contains("A-01"), "{add_text}");
     assert!(!add_text.contains("--- stderr ---"), "{add_text}");
-    let resources = parsed[4]["result"]["resources"].as_array().unwrap();
-    assert_eq!(resources.len(), 3, "{resources:?}");
-    let check = &parsed[5];
+    let check = &parsed[4];
     assert_eq!(check["result"]["isError"], false);
     let check_text = check["result"]["content"][0]["text"].as_str().unwrap();
     assert_eq!(check_text, "ok");
@@ -740,96 +649,23 @@ fn interdicted_call_mirrors_unknown_tool_error() {
 }
 
 #[test]
-fn resource_predicate_follows_role_scope() {
+fn resources_methods_are_gone_for_every_scope() {
     let _g = ENV_LOCK.lock().unwrap();
     let f = fixture("roleres");
     let mut s = server(&f.root);
     handshake(&mut s);
-    init_project(&mut s, 10);
-    call(&mut s, 11, "add", serde_json::json!({"kind": "a", "title": "Role area"}));
-    call(
+    let list = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":20,\"method\":\"resources/list\"}");
+    assert_eq!(list["error"]["code"], -32601);
+    let read = rpc(
         &mut s,
-        12,
-        "add",
-        serde_json::json!({"kind": "g", "title": "Role goal", "area": "A-01", "fitness_kind": "manual"}),
+        "{\"jsonrpc\":\"2.0\",\"id\":21,\"method\":\"resources/read\",\"params\":{\"uri\":\"grove://skill\"}}",
     );
-    call(
-        &mut s,
-        13,
-        "add",
-        serde_json::json!({"kind": "w", "title": "Role work", "type": "feature", "cynefin": "clear", "goals": "G-01"}),
-    );
-    let list = |s: &mut McpServer, id: i64| rpc(
-        s,
-        &format!("{{\"jsonrpc\":\"2.0\",\"id\":{id},\"method\":\"resources/list\"}}"),
-    );
-    let read = |s: &mut McpServer, id: i64, uri: &str| {
-        let msg = format!(
-            "{{\"jsonrpc\":\"2.0\",\"id\":{id},\"method\":\"resources/read\",\"params\":{{\"uri\":\"{uri}\"}}}}"
-        );
-        rpc(s, &msg)
-    };
-    s.scope.disabled = vec!["packet".to_string()];
-    let v = list(&mut s, 20);
-    let resources = v["result"]["resources"].as_array().unwrap();
-    assert!(resources.iter().all(|r| r["uri"] != "grove://packet/W-01"));
-    assert!(resources.iter().any(|r| r["uri"] == "grove://show/W-01"));
-    assert!(resources.iter().any(|r| r["uri"] == "grove://skill"));
-    let hidden = read(&mut s, 21, "grove://packet/W-01");
-    assert_eq!(hidden["error"]["code"], -32602);
-    assert_eq!(
-        hidden["error"]["message"].as_str().unwrap(),
-        "malformed resource uri: grove://packet/W-01"
-    );
-    let bogus = read(&mut s, 22, "grove://mistkind/W-01");
-    assert_eq!(
-        bogus["error"]["message"].as_str().unwrap(),
-        "malformed resource uri: grove://mistkind/W-01"
-    );
-    s.scope.disabled.clear();
-    bind_role(&mut s, "worker", &["show"]);
-    let v = list(&mut s, 23);
-    let resources = v["result"]["resources"].as_array().unwrap();
-    assert!(
-        resources
-            .iter()
-            .all(|r| !r["uri"].as_str().unwrap().starts_with("grove://packet/")),
-        "{resources:?}"
-    );
-    assert_eq!(
-        resources
-            .iter()
-            .filter(|r| r["uri"].as_str().unwrap().starts_with("grove://show/"))
-            .count(),
-        3
-    );
-    let v = read(&mut s, 24, "grove://show/W-01");
-    assert_eq!(v["result"]["contents"][0]["mimeType"], "text/plain");
-    let v = read(&mut s, 25, "grove://packet/W-01");
-    assert_eq!(v["error"]["code"], -32602);
-}
-
-#[test]
-fn skill_resource_stays_available_to_every_role() {
-    let _g = ENV_LOCK.lock().unwrap();
-    let f = fixture("roleskill");
-    let mut s = server(&f.root);
-    handshake(&mut s);
+    assert_eq!(read["error"]["code"], -32601);
+    assert_eq!(read["error"]["message"], "method not found: resources/read");
     bind_role(&mut s, "witness", &[]);
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"resources/list\"}");
-    let resources = v["result"]["resources"].as_array().unwrap();
-    assert!(resources.iter().any(|r| r["uri"] == "grove://skill"));
-    let v = rpc(
-        &mut s,
-        "{\"jsonrpc\":\"2.0\",\"id\":10,\"method\":\"resources/read\",\"params\":{\"uri\":\"grove://skill\"}}",
-    );
-    assert_eq!(v["result"]["contents"][0]["mimeType"], "text/markdown");
-    let v = rpc(
-        &mut s,
-        "{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"resources/read\",\"params\":{\"uri\":\"grove://skill/references/rules.md\"}}",
-    );
-    assert_eq!(v["result"]["contents"][0]["mimeType"], "text/markdown");
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":12,\"method\":\"tools/list\"}");
+    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":22,\"method\":\"resources/list\"}");
+    assert_eq!(v["error"]["code"], -32601);
+    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":23,\"method\":\"tools/list\"}");
     assert_eq!(v["result"]["tools"].as_array().unwrap().len(), 0);
 }
 

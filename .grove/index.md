@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 39 | validated B 1 · answered Q 3 · accepted D 16 · active Discovery 19 |
+| C (content) | 40 | validated B 1 · answered Q 3 · accepted D 17 · active Discovery 19 |
 | V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
@@ -16,7 +16,7 @@
 | A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-02 | API | 0 | 3 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-04 | MCP server | 9 | 0 | C: validated B 0 · answered Q 0 · accepted D 6 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-04 | MCP server | 10 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-07 | Agent integrations | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -29,7 +29,7 @@
 | ID | Outcome | Fitness function | Status |
 | --- | --- | --- | --- |
 | G-17 | Scaling and performance budget | count; current= target=2 | unverified |
-| G-44 | grove-mcp serves role-scoped tool sets | count; current=10 target=11 | partial |
+| G-44 | grove-mcp serves role-scoped tool sets | count; current=11 target=12 | partial |
 
 ## Work items
 
@@ -49,6 +49,7 @@
 | W-201 | feature | Support multiline arrays in mcp.toml | G-44 | clear | ⊤ | done |  |
 | W-202 | feature | Unify terminology across the CLI outputs, the MCP surface and the skill | G-44 | complicated | ⊤ | done |  |
 | W-203 | bug | Remove the machine readable skill key from next and status JSON output | G-44 | clear | ⊤ | done |  |
+| W-204 | feature | Remove the resources subsystem from the MCP server | G-44 | clear | ⊤ | done |  |
 
 ## Decisions
 
@@ -71,6 +72,7 @@
 | D-46 | TOML parsing machinery lives in a dedicated core toml module | accepted |  |
 | D-47 | The mcp.toml tool config lives in the grove home directory next to projects.toml | accepted | D-41 |
 | D-48 | CLI and MCP output carries no skill pointer line | accepted |  |
+| D-49 | The MCP server serves no resources subsystem | accepted | D-45 |
 
 ## Open questions
 
@@ -185,6 +187,7 @@ graph TD
   W_201["W-201: Support multiline arrays in mcp.toml"]:::done
   W_202["W-202: Unify terminology across the CLI outputs, the MCP surface and the skill"]:::done
   W_203["W-203: Remove the machine readable skill key from next and status JSON output"]:::done
+  W_204["W-204: Remove the resources subsystem from the MCP server"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
@@ -202,6 +205,7 @@ graph TD
   D_46["D-46: TOML parsing machinery lives in a dedicated core toml module"]:::decision
   D_47["D-47: The mcp.toml tool config lives in the grove home directory next to projects.toml"]:::decision
   D_48["D-48: CLI and MCP output carries no skill pointer line"]:::decision
+  D_49["D-49: The MCP server serves no resources subsystem"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_07["Q-07: How Neo4j integrates into Grove: role, pattern, and boundaries"]:::question
@@ -302,6 +306,7 @@ graph TD
   D_32 -->|supersedes| D_31
   D_37 -->|supersedes| D_34
   D_47 -->|supersedes| D_41
+  D_49 -->|supersedes| D_45
   Q_01 -->|asks| W_06
   Q_02 -->|asks| W_09
   Q_05 -->|asks| W_103
@@ -425,6 +430,7 @@ graph TD
   W_196 ==>|blocks| W_194
   W_198 -->|implements| D_47
   W_199 -->|implements| D_48
+  W_204 -->|implements| D_49
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78

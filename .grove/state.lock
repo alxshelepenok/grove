@@ -1,14 +1,14 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:bdb3ccb42be752afa55aaf1296bf20acd9b06b15fc6ff88a01b4653eb440d007
+# checksum: sha256:4f8597e8d3189f8ba013fe794d54de35705c7ed66ad75e711db8cec783546d5c
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
 
-g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-23T17:19:56Z "grove-mcp serves role-scoped tool sets"
+g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-23T18:20:12Z "grove-mcp serves role-scoped tool sets"
   area: A-04
-  fitness_target: 11
-  fitness_current: 10
+  fitness_target: 12
+  fitness_current: 11
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -244,6 +244,24 @@ w W-203 type=bug status=done cynefin=clear t_created=2026-10-23T17:19:56Z t_upda
     | the machine readable skill key is removed from cmd_next and cmd_status JSON output in both tracks (packet.rs, report.rs, cli.jl x2); human outputs of those commands remain byte identical to the corpus; the skill command, the MCP instructions mention and the grove://skill resource stay as decided
     | wave2b next-log.json and three exact JSON pins in packages/core/tests/report.rs dropped the key with zero leftovers in fixtures; cargo test --workspace green, cargo clippy clean over touched files beyond pre-existing report.rs lints, julia runtests green solo with corpus replays byte-identical; live probe shows next --json and status --json with zero skill occurrences; installed binary refresh stays deferred by user
 
+w W-204 type=feature status=done cynefin=clear t_created=2026-10-23T18:20:23Z t_updated=2026-10-23T18:40:11Z "Remove the resources subsystem from the MCP server"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/mcp.rs, packages/mcp/tests/mcp.rs
+  ac:
+    | The initialize result announces no resources capability and the responses to resources list and resources read are method not found errors in the established shape.
+    | The handler code, the resource builder and the resource reader are deleted; packet and show keep carrying their fetch role as tools and the skill tool keeps printing the guide.
+    | The default and role instructions no longer mention any resource and point clients at the skill tool instead; the skill tool description drops the resource wording.
+    | The MCP test suite drops the resources regions: capabilities and role tests assert the tool only surface, the smoke test stops counting resources and the instructions tests match the new wording.
+    | cargo test --workspace is green, clippy is clean over the touched files, and a runtime probe confirms no resources capability with the skill tool still serving.
+  hypothesis:
+    | The resources handlers are two dispatcher arms over two private builders, so deleting the arms, the builders, the capability entry and the tests regions reuses the established method not found path with no protocol ripple.
+  evidence_strategy:
+    | Closer reading of the deleted region, a rewritten MCP integration suite, a full cargo test run with clippy and a live binary probe of initialize, resources and skill tool.
+  evidence:
+    | the resources handlers, the list and read dispatcher arms, the resources capability entry, the ERR_SERVER code and the resource wording in instructions and the skill tool description are deleted from packages/core/src/mcp.rs; the initialize result announces tools only, resources list and resources read fall through the existing underscore arm to method not found -32601, the instructions point clients at the skill tool and the mcp smoke instructions pin changed with them; cargo test --workspace green, clippy clean over grove core and grove mcp with the tests profile beyond the pre-existing archive and dor lints
+    | the MCP integration suite drops the resources regions: the cli parity test is removed, the smoke script stops listing resources with five scripted lines, the capability pin asserts no resources key and the role tests were replaced by resources_methods_are_gone_for_every_scope asserting -32601 for both methods roleless and under the witness role with the empty allowlist tools pin kept; julia runtests green solo with corpus replays byte identical; a live ndjson probe shows a tools only capabilities object, instructions carrying Run the skill tool with no resource mention, both resources methods answering method not found and the skill tool still serving with 39 tools listed
+
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
     | the reference system's strongest invariant was 'CI never sees the signing key' (offline hardware host, PIV slots); Grove is a single-maintainer OSS project with no paid certificate story
@@ -399,7 +417,7 @@ d D-44 status=accepted t_created=2026-10-22T22:43:10Z t_updated=2026-10-22T22:43
   consequences:
     | Role scope has one enforcement point, so packet and show cannot be bypassed through resources, and the per-project resource list shrinks consistently with the tool list.
 
-d D-45 status=accepted t_created=2026-10-22T22:43:42Z t_updated=2026-10-22T23:06:08Z "The grove skill resource is available to every role"
+d D-45 status=accepted t_created=2026-10-22T22:43:42Z t_updated=2026-10-23T18:20:12Z "The grove skill resource is available to every role"
 
 d D-46 status=accepted t_created=2026-10-22T23:06:08Z t_updated=2026-10-22T23:06:20Z "TOML parsing machinery lives in a dedicated core toml module"
   context:
@@ -434,6 +452,17 @@ d D-48 status=accepted t_created=2026-10-23T10:32:39Z t_updated=2026-10-23T10:33
     | The pointer line is removed from CLI and MCP output in both tracks: pointer_line and its call sites in packages/core/src/packet.rs and packages/core/src/report.rs disappear, skill_pointer_line and its call sites in packages/grove/src/cli.jl disappear; the skill command stays as is.
   consequences:
     | Narrower CLI and MCP output with no skill version stamp; skill discovery stays with the instructions block and the skill command and resource; the conformance corpus drops the line and is regenerated.
+
+d D-49 status=accepted t_created=2026-10-23T18:20:12Z t_updated=2026-10-23T18:20:37Z "The MCP server serves no resources subsystem"
+  context:
+    | W-193 and W-194 built role filtering over grove://packet and grove://show resources and D-45 kept grove://skill always servable, and the instructions told every client to read the resource before driving work items; packet and show fetch the same content as their tools, the skill tool prints the same SKILL.md, so the resource layer duplicates the tool layer and every role scenario grows an extra hidden surface to police.
+  options:
+    | Status quo: keep the resources subsystem with role filtering and the always available skill resource.
+    | Remove resources and resources list entirely: no capability announcement, method not found for resources slash handlers, instructions point at the skill tool; per page reads ride the skill command install path when needed.
+  decision:
+    | The MCP server announces no resources capability, responds method not found to resources list and resources read, the packet and show tools carry the fetch role, the skill tool carries the guide role, and the instructions drop the resource wording; the tool_allowed role filtering keeps governing tools only.
+  consequences:
+    | One less surface to filter by role: hidden resources vanish with their identical malformed uri errors, clients discover content through tools only; the per page deep reads of the embedded skill leave the protocol and the serverInfo.body of instructions names the skill tool instead.
 
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
@@ -871,6 +900,7 @@ e D-31 supersedes D-30 t_created=2026-08-30T21:35:40Z
 e D-32 supersedes D-31 t_created=2026-08-30T21:48:11Z
 e D-37 supersedes D-34 t_created=2026-09-17T15:44:19Z
 e D-47 supersedes D-41 t_created=2026-10-23T10:01:57Z
+e D-49 supersedes D-45 t_created=2026-10-23T18:20:12Z
 e Q-01 asks W-06 t_created=2026-07-19T01:19:10Z
 e Q-02 asks W-09 t_created=2026-07-19T01:19:17Z
 e Q-05 asks W-103 t_created=2026-08-17T10:53:14Z
@@ -994,6 +1024,7 @@ e W-196 blocks W-193 t_created=2026-10-22T23:06:30Z
 e W-196 blocks W-194 t_created=2026-10-22T23:06:30Z
 e W-198 implements D-47 t_created=2026-10-23T10:03:41Z
 e W-199 implements D-48 t_created=2026-10-23T10:33:45Z
+e W-204 implements D-49 t_created=2026-10-23T18:20:37Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z
