@@ -509,6 +509,8 @@ function cmd_set(ctx::CliCtx, pos, kw)
         msg = session_denial_progress_mutate(n, eff)
         msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
     end
+    set_key_supported(n.kind, key) ||
+        (println(stderr, "unsupported key: $key"); return EXIT_ERR)
     if n.kind === :d && n.status === :accepted
         println(stderr, accepted_decision_msg(id))
         return EXIT_GUARD
@@ -612,6 +614,11 @@ function cmd_set(ctx::CliCtx, pos, kw)
     EXIT_OK
 end
 
+set_key_supported(kind::Symbol, key::AbstractString)::Bool =
+    key in ("cynefin", "type", "title") ||
+    (kind === :g && key in ("fitness", "fitness_target", "fitness_kind", "area")) ||
+    (kind in (:g, :t) && key == "requires_coverage")
+
 accepted_decision_msg(id::AbstractString)::String =
     "decision $(id) is accepted; create a new D with --supersedes"
 
@@ -688,12 +695,12 @@ function cmd_field(ctx::CliCtx, pos, kw)
         msg = session_denial_progress_mutate(n, eff)
         msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
     end
+    form = get(FIELD_CATALOG, (n.kind, fname), nothing)
+    form === nothing && (println(stderr, "unknown field $fname on $(n.kind)"); return EXIT_ERR)
     if n.kind === :d && n.status === :accepted
         println(stderr, accepted_decision_msg(id))
         return EXIT_GUARD
     end
-    form = get(FIELD_CATALOG, (n.kind, fname), nothing)
-    form === nothing && (println(stderr, "unknown field $fname on $(n.kind)"); return EXIT_ERR)
     if n.kind === :g && fname === :fitness_current
         kg = goal_structured_kind(n)
         if kg !== nothing && kg !== :manual

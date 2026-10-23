@@ -237,6 +237,32 @@ fn guard_set_status_on_accepted_decision_still_paid_through_status_guard() {
 }
 
 #[test]
+fn precise_diagnostics_precede_accepted_decision_guard() {
+    let mut st = State::default();
+    let d = accepted_decision_with_catalog();
+    put(&mut st, d);
+    let r = op_field(&mut st, "D-01", "nosuch", "add", Some("x"), "testsession");
+    assert_eq!(r.code, 1, "unknown field must be EXIT_ERR, not the guard");
+    assert_eq!(r.err.trim(), "unknown field nosuch on d");
+    assert!(r.journal.is_empty());
+    let r = op_set(&mut st, "D-01", "nosuchkey", "V", "testsession");
+    assert_eq!(r.code, 1, "unsupported key must be EXIT_ERR, not the guard");
+    assert_eq!(r.err.trim(), "unsupported key: nosuchkey");
+    assert!(r.journal.is_empty());
+    let r = op_field(&mut st, "D-01", "decision", "add", Some("x"), "testsession");
+    assert_eq!(r.code, 4);
+    assert_eq!(r.err.trim(), DECISION_IMMUTABLE_MSG);
+    let r = op_set(&mut st, "D-01", "title", "Replacement", "testsession");
+    assert_eq!(r.code, 4);
+    assert_eq!(r.err.trim(), DECISION_IMMUTABLE_MSG);
+    let mut st = State::default();
+    put(&mut st, plain(Kind::D, "D-01", "proposed"));
+    let r = op_field(&mut st, "D-01", "nosuch", "add", Some("x"), "testsession");
+    assert_eq!(r.code, 1);
+    assert_eq!(r.err.trim(), "unknown field nosuch on d");
+}
+
+#[test]
 fn undo_of_field_mutation_bypasses_accepted_decision_guard() {
     let mut st = State::default();
     let mut d = plain(Kind::D, "D-01", "accepted");

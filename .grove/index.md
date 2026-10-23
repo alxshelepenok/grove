@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 42 | validated B 1 · answered Q 3 · accepted D 19 · active Discovery 19 |
+| C (content) | 41 | validated B 1 · answered Q 3 · accepted D 18 · active Discovery 19 |
 | V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
@@ -54,6 +54,7 @@
 | W-205 | bug | Rust core rejects field and title mutations on accepted decisions | G-45 | clear | ⊤ | done |  |
 | W-206 | bug | Julia reference rejects field and title mutations on accepted decisions | G-45 | clear | ⊤ | done |  |
 | W-207 | bug | Pin accepted-decision immutability in the conformance corpus | G-45 | clear | ⊤ | done |  |
+| W-208 | bug | Unknown field and unsupported key diagnostics precede the accepted-decision guard | G-45 | clear | ⊤ | done |  |
 
 ## Decisions
 
@@ -78,7 +79,6 @@
 | D-48 | CLI and MCP output carries no skill pointer line | accepted |  |
 | D-49 | The MCP server serves no resources subsystem | accepted | D-45 |
 | D-50 | Lock accepted decisions against field and title mutations | accepted |  |
-| D-51 | Lock accepted decisions against field and title mutations | accepted | D-50 |
 
 ## Open questions
 
@@ -198,6 +198,7 @@ graph TD
   W_205["W-205: Rust core rejects field and title mutations on accepted decisions"]:::done
   W_206["W-206: Julia reference rejects field and title mutations on accepted decisions"]:::done
   W_207["W-207: Pin accepted-decision immutability in the conformance corpus"]:::done
+  W_208["W-208: Unknown field and unsupported key diagnostics precede the accepted-decision guard"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
@@ -217,7 +218,6 @@ graph TD
   D_48["D-48: CLI and MCP output carries no skill pointer line"]:::decision
   D_49["D-49: The MCP server serves no resources subsystem"]:::decision
   D_50["D-50: Lock accepted decisions against field and title mutations"]:::decision
-  D_51["D-51: Lock accepted decisions against field and title mutations"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_07["Q-07: How Neo4j integrates into Grove: role, pattern, and boundaries"]:::question
@@ -319,7 +319,6 @@ graph TD
   D_37 -->|supersedes| D_34
   D_47 -->|supersedes| D_41
   D_49 -->|supersedes| D_45
-  D_51 -->|supersedes| D_50
   Q_01 -->|asks| W_06
   Q_02 -->|asks| W_09
   Q_05 -->|asks| W_103

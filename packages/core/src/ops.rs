@@ -388,6 +388,15 @@ fn guard_sessions_for_progress_endpoints(
     None
 }
 
+fn op_set_key_supported(kind: Kind, key: &str) -> bool {
+    match key {
+        "cynefin" | "type" | "title" => true,
+        "fitness" | "fitness_target" | "fitness_kind" | "area" => kind == Kind::G,
+        "requires_coverage" => kind == Kind::G || kind == Kind::T,
+        _ => false,
+    }
+}
+
 pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpResult {
     if !st.nodes.contains_key(id) {
         return OpResult::fail(EXIT_NOTFOUND, &format!("not found: {id}"));
@@ -504,6 +513,9 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
     }
 
     let kind = st.nodes.get(id).map(|n| n.kind).expect("checked");
+    if !op_set_key_supported(kind, key) {
+        return OpResult::fail(EXIT_ERR, &format!("unsupported key: {key}"));
+    }
     if kind == Kind::D && st.nodes.get(id).expect("checked").status == "accepted" {
         return OpResult::fail(EXIT_GUARD, &accepted_decision_msg(id));
     }
@@ -648,12 +660,6 @@ pub fn op_field(
             }
         }
     }
-    {
-        let n = st.nodes.get(id).expect("checked");
-        if n.kind == Kind::D && n.status == "accepted" {
-            return OpResult::fail(EXIT_GUARD, &accepted_decision_msg(id));
-        }
-    }
     let kind = st.nodes.get(id).map(|n| n.kind).expect("checked");
     let Some(form) = field_form(kind, fname) else {
         return OpResult::fail(
@@ -661,6 +667,12 @@ pub fn op_field(
             &format!("unknown field {fname} on {}", kind.as_str()),
         );
     };
+    {
+        let n = st.nodes.get(id).expect("checked");
+        if n.kind == Kind::D && n.status == "accepted" {
+            return OpResult::fail(EXIT_GUARD, &accepted_decision_msg(id));
+        }
+    }
     if kind == Kind::G && fname == "fitness_current" {
         let n = st.nodes.get(id).expect("checked");
         if let Some(kg) = goal_structured_kind(n) {

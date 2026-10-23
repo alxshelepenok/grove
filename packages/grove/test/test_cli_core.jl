@@ -162,3 +162,23 @@ end
         rm(tmp; recursive=true, force=true)
     end
 end
+
+@testset "cli: unknown field and unsupported key diagnostics precede the accepted-decision guard" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "d", "--title=T", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["field", "D-01", "decision", "add", "B", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "D-01", "status=accepted", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["field", "D-01", "nosuch", "add", "x", "--root=$tmp", "--quiet"]) == 1
+        @test M.main(["set", "D-01", "nosuchkey=V", "--root=$tmp", "--quiet"]) == 1
+        @test M.main(["field", "D-01", "decision", "add", "x", "--root=$tmp", "--quiet"]) == 4
+        @test M.main(["set", "D-01", "title=Replacement", "--root=$tmp", "--quiet"]) == 4
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["D-01"].fields[:decision] == ["B"]
+        @test st.nodes["D-01"].title == "T"
+        @test st.nodes["D-01"].status == :accepted
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end

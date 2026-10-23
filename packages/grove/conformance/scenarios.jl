@@ -78,6 +78,8 @@ const SCENARIOS = Scenario[
         ["field", "D-01", "decision", "rm", "1"],
         ["set", "D-01", "title=Replacement title"],
         ["set", "D-01", "cynefin=complicated"],
+        ["field", "D-01", "nosuch", "add", "x"],
+        ["set", "D-01", "nosuchkey=V"],
         ["show", "D-01"],
         ["add", "d", "--title=Replacement decision", "--supersedes=D-01", "--quiet"],
         ["field", "D-02", "decision", "add", "New body.", "--quiet"],
