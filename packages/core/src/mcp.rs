@@ -3,7 +3,7 @@ use crate::json::{emit_jval, julia_num_repr, parse_json, JVal, Json};
 use crate::ops::{OpResult, EXIT_OK};
 use crate::toml::{bare_key, parse_line, CONFIG_LINE_POLICY, Line, TomlVal};
 use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 pub const MCP_PROTOCOL_VERSIONS: [&str; 3] = ["2024-11-05", "2025-03-26", "2025-06-18"];
 pub const MCP_SERVER_NAME: &str = "grove-mcp";
 pub const MCP_SERVER_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -689,8 +689,8 @@ pub struct RoleScope {
     pub instructions: Option<String>,
 }
 
-pub fn mcp_config_path(root: &str) -> PathBuf {
-    Path::new(root).join(".grove").join("mcp.toml")
+pub fn mcp_config_path() -> PathBuf {
+    crate::projects::user_grove_dir().join("mcp.toml")
 }
 
 fn string_list(v: &TomlVal) -> Option<Vec<String>> {
@@ -773,8 +773,8 @@ fn unknown_tool_names(cfg: &ToolConfig) -> Vec<String> {
     seen
 }
 
-pub fn load_tool_config(root: &str) -> Option<ToolConfig> {
-    let path = mcp_config_path(root);
+pub fn load_tool_config() -> Option<ToolConfig> {
+    let path = mcp_config_path();
     if !path.is_file() {
         return Some(ToolConfig::default());
     }

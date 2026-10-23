@@ -38,14 +38,6 @@ pub fn stamped_skill_md() -> String {
     out
 }
 
-pub fn pointer_line() -> String {
-    format!(
-        "skill: grove://skill (skill v{}, binary v{})",
-        skill_version(),
-        skill_version()
-    )
-}
-
 pub const PAGES: [&str; 13] = [
     "SKILL.md",
     "references/model.md",

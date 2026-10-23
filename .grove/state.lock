@@ -1,14 +1,14 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:68b428146bc12c3195e06d1489474145ce73e901fedcfddf3b29b4392923fa71
+# checksum: sha256:7a126dd23c3a9adb50c0632f6d39e0b24d1790b57fd40cc0e4f4287d6ababa44
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
 
-g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-22T23:29:31Z "grove-mcp serves role-scoped tool sets"
+g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-23T10:32:39Z "grove-mcp serves role-scoped tool sets"
   area: A-04
-  fitness_target: 6
-  fitness_current: 4
+  fitness_target: 7
+  fitness_current: 6
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -134,6 +134,42 @@ w W-197 type=bug status=done cynefin=clear t_created=2026-10-22T23:29:17Z t_upda
     | cargo test -p grove-mcp 26/26: binary_warns_once_on_malformed_config_and_serves_all_tools pins exactly one stderr warning naming the file path plus the full-set fail-open tools/list; binary_malformed_config_warning_precedes_role_refusal pins the warning before the 'unknown role worker' refusal
     | cargo test -p grove-core all 27 suites green incl mcp_config 10/10; clippy clean over the touched files; runtime probe repeats clean: warning line names the temp mcp.toml path and precedes the role refusal line
 
+w W-198 type=bug status=done cynefin=clear t_created=2026-10-23T10:03:25Z t_updated=2026-10-23T10:06:48Z "grove-mcp reads mcp.toml at the project root instead of the grove home directory"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/mcp.rs, packages/mcp/src/main.rs, packages/core/tests/mcp_config.rs, packages/mcp/tests/mcp.rs
+  ac:
+    | grove-mcp reads mcp.toml from the grove home directory returned by user_grove_dir, sitting next to projects.toml.
+    | The parse, warnings, role allowlists, instructions and resource behavior keep their current shape; every existing role and config test passes after the relocation.
+    | Tests pin the config placement through GROVE_HOME temporary homes instead of per project .grove directories, and an explicit test asserts mcp.toml and projects.toml share the directory.
+    | cargo test --workspace is green and clippy is clean over the touched files.
+  hypothesis:
+    | The loader reaches the config path through one call site and the config content references grove command names only, so switching mcp_config_path to user_grove_dir is a small move plus test relocation with no behavior change elsewhere.
+  repro:
+    | Point GROVE_HOME at a directory that also holds projects.toml and place mcp.toml there; grove-mcp ignores it and reads the per project <root>/.grove/mcp.toml if present, so the central config has no effect and every project needs its own copy.
+  evidence_strategy:
+    | Unit tests over the moved config path in packages/core plus binary tests driving GROVE_HOME temp homes, a clean cargo test run, and clippy over the touched files.
+  evidence:
+    | mcp_config_path resolves user_grove_dir next to projects.toml; load_tool_config drops the root argument and main.rs loads before role validation, keeping the warning before the refusal; explicit test asserts mcp.toml and projects.toml share the directory
+    | core mcp_config 10/10 rewritten over GROVE_HOME temp homes incl present, empty, malformed x11, instructions, path co-location; all packages/mcp tests 24/24 green with config writes moved to the home; runtime probe: unknown role names configured roles from the home config, bound role serves its allowlist minus disabled, roleless serves 37 of 39; cargo test --workspace green; clippy clean over touched files
+
+w W-199 type=feature status=done cynefin=clear t_created=2026-10-23T10:33:38Z t_updated=2026-10-23T10:48:22Z "Remove the skill pointer line from CLI and MCP output"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/skill.rs, packages/core/src/packet.rs, packages/core/src/report.rs, packages/grove/src/cli.jl, packages/grove/conformance/corpus, packages/core/tests/fixtures
+  ac:
+    | The next and status outputs no longer contain the skill pointer line in either track; the Rust and Julia outputs keep the same shape otherwise.
+    | The skill command, the grove://skill resource and the machine readable skill key in JSON output stay untouched.
+    | The conformance corpus drops the pointer line and the corpus replay suites pass for the primary fixtures and the wave2b fallback.
+    | cargo test --workspace is green and clippy is clean over the touched files; the Julia suite runs when available.
+  hypothesis:
+    | The pointer line is composed at one helper per track with two call sites each (next and status), so deleting the composition keeps every other surface byte identical while the corpus strips one deterministic line.
+  evidence_strategy:
+    | Corpus replay suites over the updated fixtures, a full cargo test run with clippy over the touched files, and the Julia unit suite plus the conformance runner.
+  evidence:
+    | pointer_line and skill_pointer_line deleted together with both call sites per track: cmd_next emits the packet bare (packet.rs, cli.jl) and cmd_status opens with "# grove status" (report.rs, cli.jl); the skill command, the grove://skill resource and the JSON "skill" key stay untouched, repo grep shows zero remaining references
+    | conformance corpus stripped of all 5 pointer lines (sessions 3, wip-i4 1, wave2b next-log 1) with zero leftovers; cargo test --workspace green, clippy clean over touched files with only pre-existing lints at report.rs 324 and 353; julia runtests green including conformance: 27 scenarios green and corpus replays byte-identical; home probe shows status and next without the pointer line
+
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
     | the reference system's strongest invariant was 'CI never sees the signing key' (offline hardware host, PIV slots); Grove is a single-maintainer OSS project with no paid certificate story
@@ -244,7 +280,7 @@ d D-17 status=accepted t_created=2026-08-28T22:24:55Z t_updated=2026-08-28T23:07
   validation:
     | bun test green on the extracted module inside the ui tree.
 
-d D-41 status=accepted t_created=2026-10-22T22:42:33Z t_updated=2026-10-22T22:44:23Z "Role-scoped MCP tool access configured in .grove/mcp.toml"
+d D-41 status=accepted t_created=2026-10-22T22:42:33Z t_updated=2026-10-23T10:01:57Z "Role-scoped MCP tool access configured in .grove/mcp.toml"
   context:
     | grove-mcp serves the full TOOL_SPECS set to every client; project owners running narrow role skills need fixed per-instance tool subsets, and today the only control is client-side tool filtering.
   options:
@@ -302,6 +338,28 @@ d D-46 status=accepted t_created=2026-10-22T23:06:08Z t_updated=2026-10-22T23:06
     | Full extraction option A: packages/core/src/toml.rs owns TomlVal, bare keys, strings, scalars, values, inline arrays and tables, and one policy parameterized line parser; projects.rs and mcp.rs keep thin wrappers with registry behavior pinned byte identical by tests/projects.rs.
   consequences:
     | mcp.rs imports TOML machinery from crate::toml instead of projects.rs; future config readers plug into the toml module without touching the registry; the merge of the two line parsers ships with the extraction so no follow-up refactor is pending.
+
+d D-47 status=accepted t_created=2026-10-23T10:01:57Z t_updated=2026-10-23T10:03:41Z "The mcp.toml tool config lives in the grove home directory next to projects.toml"
+  context:
+    | W-192 wired the tool config at <root>/.grove so every project MCP entry repeats a per project mcp.toml, while grove keeps the registry projects.toml in the grove home directory; config content references grove command names only and never project paths, so per project placement carries no scoping value.
+  options:
+    | Status quo: keep one mcp.toml per project under <root>/.grove and duplicate the role segments in every project.
+    | Move mcp.toml into the grove home directory next to projects.toml with the same parse and warning behavior.
+  decision:
+    | grove-mcp reads mcp.toml from user_grove_dir next to projects.toml; the parser, fail-open warning style, role semantics (D-42, D-43, D-44, D-45) and the --role startup behavior stay unchanged; the config path argument drops from the loader.
+  consequences:
+    | One central tool scope per grove home without per project duplication; per project scoping is traded away, and the location is discoverable next to the registry; temp homes in tests pin the path through GROVE_HOME.
+
+d D-48 status=accepted t_created=2026-10-23T10:32:39Z t_updated=2026-10-23T10:33:45Z "CLI and MCP output carries no skill pointer line"
+  context:
+    | The skill pointer line "skill: grove://skill (skill v, binary v)" is prepended to the next and status outputs through pointer_line in packages/core/src/skill.rs and skill_pointer_line in packages/grove/src/cli.jl, wedging every CLI and MCP consumer to the skill module version stamp; agents already discover the skill through the MCP instructions block and the skill command and resource, so the line carries no discovery value.
+  options:
+    | Status quo: keep the pointer line in next and status outputs in both tracks and regenerate the conformance corpus around it.
+    | Remove the pointer line composition from both tracks and keep the skill command, the grove://skill resource and the machine readable skill key in JSON output untouched.
+  decision:
+    | The pointer line is removed from CLI and MCP output in both tracks: pointer_line and its call sites in packages/core/src/packet.rs and packages/core/src/report.rs disappear, skill_pointer_line and its call sites in packages/grove/src/cli.jl disappear; the skill command stays as is.
+  consequences:
+    | Narrower CLI and MCP output with no skill version stamp; skill discovery stays with the instructions block and the skill command and resource; the conformance corpus drops the line and is regenerated.
 
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
@@ -738,6 +796,7 @@ e D-30 supersedes D-29 t_created=2026-08-30T21:21:09Z
 e D-31 supersedes D-30 t_created=2026-08-30T21:35:40Z
 e D-32 supersedes D-31 t_created=2026-08-30T21:48:11Z
 e D-37 supersedes D-34 t_created=2026-09-17T15:44:19Z
+e D-47 supersedes D-41 t_created=2026-10-23T10:01:57Z
 e Q-01 asks W-06 t_created=2026-07-19T01:19:10Z
 e Q-02 asks W-09 t_created=2026-07-19T01:19:17Z
 e Q-05 asks W-103 t_created=2026-08-17T10:53:14Z
@@ -859,6 +918,8 @@ e W-193 implements D-45 t_created=2026-10-22T22:44:23Z
 e W-194 implements D-43 t_created=2026-10-22T22:44:25Z
 e W-196 blocks W-193 t_created=2026-10-22T23:06:30Z
 e W-196 blocks W-194 t_created=2026-10-22T23:06:30Z
+e W-198 implements D-47 t_created=2026-10-23T10:03:41Z
+e W-199 implements D-48 t_created=2026-10-23T10:33:45Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z

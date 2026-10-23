@@ -459,7 +459,7 @@ pub fn cmd_status(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpR
         r.out = json_cli_out(d);
         return r;
     }
-    let mut out = format!("{}\n\n# grove status\n\n## Work in `progress`\n\n", crate::skill::pointer_line());
+    let mut out = String::from("# grove status\n\n## Work in `progress`\n\n");
     if prog.is_empty() {
         out.push_str("(none)\n");
     } else {
@@ -485,7 +485,7 @@ pub fn cmd_status(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpR
             }
         }
     }
-    out.push_str("\n## Alignment triggers (protocol 2.5)\n\n");
+    out.push_str("\n## Alignment triggers\n\n");
     let al = alignment_triggers(&st);
     if al.is_empty() {
         out.push_str("(none)\n");
@@ -496,7 +496,7 @@ pub fn cmd_status(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpR
             out.push('\n');
         }
     }
-    out.push_str("\n## Structure / invariants (same as `check`, non-blocking here)\n\n");
+    out.push_str("\n## Invariants\n\n");
     let inv = crate::invariants::check_all(&st);
     if inv.is_empty() {
         out.push_str("ok\n");

@@ -67,7 +67,7 @@ fn main() {
             }
         }
     };
-    let scope = load_tool_config(&root).unwrap_or_default();
+    let scope = load_tool_config().unwrap_or_default();
     if let Some(r) = &role {
         if !scope.roles.contains_key(r) {
             let names: Vec<&str> = scope.roles.keys().map(String::as_str).collect();

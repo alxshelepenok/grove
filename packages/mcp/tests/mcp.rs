@@ -879,9 +879,8 @@ fn binary_serves_role_instructions_from_config() {
     let _g = ENV_LOCK.lock().unwrap();
     let f = fixture("bininstruct");
     let root = f.root.to_string_lossy().into_owned();
-    std::fs::create_dir_all(f.root.join(".grove")).unwrap();
     std::fs::write(
-        f.root.join(".grove").join("mcp.toml"),
+        f._home.join("mcp.toml"),
         "[roles.keeper]\ntools = [\"check\"]\ninstructions = \"Guard the invariants.\"\n",
     )
     .unwrap();
@@ -954,8 +953,7 @@ fn binary_rejects_unknown_role_against_configured_set() {
     let _g = ENV_LOCK.lock().unwrap();
     let f = fixture("binaryrole2");
     let root = f.root.to_string_lossy().into_owned();
-    let cfg = f.root.join(".grove").join("mcp.toml");
-    std::fs::create_dir_all(f.root.join(".grove")).unwrap();
+    let cfg = f._home.join("mcp.toml");
     std::fs::write(&cfg, "[roles.keeper]\ntools = [\"check\"]\n").unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
     assert_eq!(r.code, 0, "{}", r.err);
@@ -980,8 +978,7 @@ fn binary_warns_once_on_malformed_config_and_serves_all_tools() {
     let _g = ENV_LOCK.lock().unwrap();
     let f = fixture("binmalformed");
     let root = f.root.to_string_lossy().into_owned();
-    std::fs::create_dir_all(f.root.join(".grove")).unwrap();
-    std::fs::write(f.root.join(".grove").join("mcp.toml"), "not toml at all\n").unwrap();
+    std::fs::write(f._home.join("mcp.toml"), "not toml at all\n").unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
     assert_eq!(r.code, 0, "{}", r.err);
     let script = [
@@ -1033,8 +1030,7 @@ fn binary_malformed_config_warning_precedes_role_refusal() {
     let _g = ENV_LOCK.lock().unwrap();
     let f = fixture("binmalformedrole");
     let root = f.root.to_string_lossy().into_owned();
-    std::fs::create_dir_all(f.root.join(".grove")).unwrap();
-    std::fs::write(f.root.join(".grove").join("mcp.toml"), "not toml at all\n").unwrap();
+    std::fs::write(f._home.join("mcp.toml"), "not toml at all\n").unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
     assert_eq!(r.code, 0, "{}", r.err);
     let out = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
@@ -1062,8 +1058,7 @@ fn config_backed_role_flow_via_binary() {
     let _g = ENV_LOCK.lock().unwrap();
     let f = fixture("binroleflow");
     let root = f.root.to_string_lossy().into_owned();
-    let cfg = f.root.join(".grove").join("mcp.toml");
-    std::fs::create_dir_all(f.root.join(".grove")).unwrap();
+    let cfg = f._home.join("mcp.toml");
     std::fs::write(&cfg, "disabled = [\"add\"]\n\n[roles.keeper]\ntools = [\"check\"]\n").unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
     assert_eq!(r.code, 0, "{}", r.err);

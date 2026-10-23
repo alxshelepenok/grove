@@ -22,8 +22,6 @@ function grove_version()::String
     return "unknown"
 end
 
-skill_pointer_line() = "skill: grove://skill (skill v$(grove_version()), binary v$(grove_version()))"
-
 const SKILL_PAGES = (
     "SKILL.md",
     "references/model.md",
@@ -1177,7 +1175,7 @@ function cmd_next(ctx::CliCtx, pos, kw)
         json_cli_out(Dict("command" => "next", "skill" => "grove://skill", "work" => pick.id, "packet_markdown" => pkt))
         return EXIT_OK
     end
-    print(skill_pointer_line(), "\n\n", pkt)
+    print(pkt)
     EXIT_OK
 end
 
@@ -1529,8 +1527,6 @@ function cmd_status(ctx::CliCtx, pos, kw)
         ))
         return EXIT_OK
     end
-    println(skill_pointer_line())
-    println()
     println("# grove status")
     println()
     println("## Work in `progress`")
@@ -1557,7 +1553,7 @@ function cmd_status(ctx::CliCtx, pos, kw)
         end
     end
     println()
-    println("## Alignment triggers (protocol 2.5)")
+    println("## Alignment triggers")
     println()
     al = alignment_triggers(st)
     if isempty(al)
@@ -1568,7 +1564,7 @@ function cmd_status(ctx::CliCtx, pos, kw)
         end
     end
     println()
-    println("## Structure / invariants (same as `check`, non-blocking here)")
+    println("## Invariants")
     println()
     inv = check_all(st)
     if isempty(inv)
