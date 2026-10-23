@@ -1,7 +1,7 @@
 use crate::algebra::rederive_artifacts;
 use crate::dor::{dor, dor_breakdown, parse_requires_coverage};
 use crate::fitness::{goal_structured_kind, rederive_goals, refresh_goal_structured_fitness, GOAL_FITNESS_KINDS};
-use crate::guards::{guard_status_transition, GuardVerdict};
+use crate::guards::{accepted_decision_msg, guard_status_transition, GuardVerdict};
 use crate::ids::id_cmp;
 use crate::json::{parse_json, JuliaDict};
 use crate::journal::*;
@@ -502,7 +502,12 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
             }
         }
     }
+
     let kind = st.nodes.get(id).map(|n| n.kind).expect("checked");
+    if kind == Kind::D && st.nodes.get(id).expect("checked").status == "accepted" {
+        return OpResult::fail(EXIT_GUARD, &accepted_decision_msg(id));
+    }
+
     let line: String;
     match key {
         "cynefin" => {
@@ -641,6 +646,12 @@ pub fn op_field(
             if let Some(msg) = session_denial_progress_mutate(n, eff) {
                 return OpResult::fail(EXIT_GUARD, &msg);
             }
+        }
+    }
+    {
+        let n = st.nodes.get(id).expect("checked");
+        if n.kind == Kind::D && n.status == "accepted" {
+            return OpResult::fail(EXIT_GUARD, &accepted_decision_msg(id));
         }
     }
     let kind = st.nodes.get(id).map(|n| n.kind).expect("checked");

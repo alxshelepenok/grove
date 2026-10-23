@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:4f8597e8d3189f8ba013fe794d54de35705c7ed66ad75e711db8cec783546d5c
+# checksum: sha256:7c140104522dcdcc3b58de85500cb22fab393f286f00b79260d38080d81b2df4
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -9,6 +9,11 @@ g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_update
   area: A-04
   fitness_target: 12
   fitness_current: 11
+
+g G-45 status=partial fitness_kind=count t_created=2026-10-23T21:25:55Z t_updated=2026-10-23T21:41:41Z "Decision immutability holds for accepted decisions across CLI mutations in both implementations"
+  area: A-02
+  fitness_target: 3
+  fitness_current: 1
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -262,6 +267,55 @@ w W-204 type=feature status=done cynefin=clear t_created=2026-10-23T18:20:23Z t_
     | the resources handlers, the list and read dispatcher arms, the resources capability entry, the ERR_SERVER code and the resource wording in instructions and the skill tool description are deleted from packages/core/src/mcp.rs; the initialize result announces tools only, resources list and resources read fall through the existing underscore arm to method not found -32601, the instructions point clients at the skill tool and the mcp smoke instructions pin changed with them; cargo test --workspace green, clippy clean over grove core and grove mcp with the tests profile beyond the pre-existing archive and dor lints
     | the MCP integration suite drops the resources regions: the cli parity test is removed, the smoke script stops listing resources with five scripted lines, the capability pin asserts no resources key and the role tests were replaced by resources_methods_are_gone_for_every_scope asserting -32601 for both methods roleless and under the witness role with the empty allowlist tools pin kept; julia runtests green solo with corpus replays byte identical; a live ndjson probe shows a tools only capabilities object, instructions carrying Run the skill tool with no resource mention, both resources methods answering method not found and the skill tool still serving with 39 tools listed
 
+w W-205 type=bug status=done cynefin=clear t_created=2026-10-23T21:26:24Z t_updated=2026-10-23T21:41:41Z "Rust core rejects field and title mutations on accepted decisions"
+  goals: G-45
+  fitness: G-45=+1
+  surface: packages/core/src/ops.rs, packages/core/tests/guards.rs
+  ac:
+    | grove field D-NN decision add|rm|clear on an accepted decision exits 4 with no lock change for every accepted-D field in FIELD_CATALOG.
+    | grove set D-NN title=… on an accepted decision exits 4 and leaves title unchanged; the guard fires before any journal record is appended.
+    | set status on an accepted D stays guarded (proposed/rejected exit 4, superseded allowed) and `grove add d --supersedes=D-NN` still succeeds and is accepted afterwards.
+    | Unit tests in packages/core/tests/guards.rs cover the new guard and `cargo test -p grove-core` is green.
+    | After the fix, `grove undo` still rolls back mutations around an accepted decision: inverse replay (packages/core/src/journal.rs:608) applies at model level and must not be blocked by the new guard.
+  hypothesis:
+    | A kind+status check at the top of op_field and in the non-status branch of op_set (ops.rs:496+) blocks every listed mutation without touching the status transition path.
+  repro:
+    | Sandbox per issue #70: `grove init; grove add d --title=…; grove field D-01 decision add "B"; grove set D-01 status=accepted; grove field D-01 decision clear` then `grove field D-01 decision add "R"` and `grove set D-01 title=Replaced` — currently exit 0 (v0.2.1 and main@859922a), must be exit 4 after the fix.
+  evidence_strategy:
+    | cargo test -p grove-core (guards suite) plus the issue #70 reproduction script turning from exit 0 to exit 4; grove check green.
+  evidence:
+    | cargo test -p grove-core: 319 passed / 0 failed (guards suite 27/27, includes 4 new tests: field add/rm/clear on every D-catalog field, set title/cynefin/type rejection with empty journal, status path paid through guard_status_transition, undo inverse replay bypasses the guard); issue #70 sandbox repro with locally built CLI: field decision clear/add/rm and set title/cynefin all exit 4 with "decision D-01 is accepted; create a new D with --supersedes" and content intact; supersedes flow exits 0 (D-02 created and accepted); undo reverted the latest mutation next to an accepted D; check --json ok.
+
+w W-206 type=bug status=ready cynefin=clear t_created=2026-10-23T21:26:24Z t_updated=2026-10-23T21:34:29Z "Julia reference rejects field and title mutations on accepted decisions"
+  goals: G-45
+  fitness: G-45=+1
+  surface: packages/grove/src/cli.jl, packages/grove/test/test_cli_core.jl
+  ac:
+    | grove field D-NN decision add|rm|clear on an accepted decision exits 4 with no lock change in the Julia CLI.
+    | grove set D-NN title=… on an accepted decision exits 4 and leaves title unchanged; error text and exit code match the Rust implementation.
+    | Supersession (`grove add d --supersedes=D-NN` and status=superseded) still succeeds.
+    | After the fix, `grove undo` still rolls back mutations around an accepted decision: inverse replay (journal_apply_inverse!, cli.jl call chain from cmd_undo:1093) applies at model level and must not be blocked by the new guard.
+  hypothesis:
+    | The same guard text in cmd_field (cli.jl:680) and the non-status branch of cmd_set (cli.jl:508+) keeps Julia the golden source for the corpus.
+  repro:
+    | Same command sequence under the Julia reference (packages/grove): after `grove set D-01 status=accepted`, `field D-01 decision clear/add` and `set D-01 title=…` exit 0, showing the same gap cmd_set/cmd_field share with Rust.
+  evidence_strategy:
+    | Julia test suite (test_cli_core and related) green; conformance run recorded after the guard lands.
+
+w W-207 type=bug status=ready cynefin=clear t_created=2026-10-23T21:26:24Z t_updated=2026-10-23T21:27:06Z "Pin accepted-decision immutability in the conformance corpus"
+  goals: G-45
+  fitness: G-45=+1
+  surface: packages/grove/conformance/scenarios.jl, packages/grove/conformance/corpus/decision-immutability.json
+  ac:
+    | A new `decision-immutability` scenario exists in scenarios.jl covering field add/rm/clear and set title on an accepted decision (exit 4 steps) plus the full supersession flow (exit 0 steps).
+    | The corpus file packages/grove/conformance/corpus/decision-immutability.json is recorded from the fixed Julia implementation and matches a verify run.
+  hypothesis:
+    | The corpus is the single parity contract (recorded from Julia, replayed by Rust tests/corpus_replay.rs), so pinning the scenario there closes the regression gap the issue notes.
+  repro:
+    | Existing conformance scenarios init an accepted D (`init-lifecycle`, `distill-archive`) yet none mutates it afterwards, so the drift suite cannot catch the guard gap — the missing scenario is the repro.
+  evidence_strategy:
+    | conformance run prints "conformance: N scenarios green" including the new scenario after re-recording.
+
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
     | the reference system's strongest invariant was 'CI never sees the signing key' (offline hardware host, PIV slots); Grove is a single-maintainer OSS project with no paid certificate story
@@ -463,6 +517,34 @@ d D-49 status=accepted t_created=2026-10-23T18:20:12Z t_updated=2026-10-23T18:20
     | The MCP server announces no resources capability, responds method not found to resources list and resources read, the packet and show tools carry the fetch role, the skill tool carries the guide role, and the instructions drop the resource wording; the tool_allowed role filtering keeps governing tools only.
   consequences:
     | One less surface to filter by role: hidden resources vanish with their identical malformed uri errors, clients discover content through tools only; the per page deep reads of the embedded skill leave the protocol and the serverInfo.body of instructions names the skill tool instead.
+
+d D-50 status=accepted t_created=2026-10-23T21:25:59Z t_updated=2026-10-23T21:27:22Z "Lock accepted decisions against field and title mutations"
+  context:
+    | GitHub issue #70: `grove field D-NN …` and `grove set D-NN title=…` mutate an accepted decision with exit 0 in both Rust and Julia while docs/promise locks (`cli.md:279`) and only the status transition is guarded (guards.rs:80, cli.jl:645).
+  options:
+    | 1. Guard only further status transitions (status quo) — leaves the documented immutability broken.
+    | 2. Allow-list mutations (e.g. events or triage) on an accepted D — weakens the rule and widens the audit surface.
+    | 3. Reject every `field` add/rm/clear and every non-status `set` key (title included) on a `d` with status=accepted; revision goes through `grove add d --supersedes=D-NN`.
+  decision:
+    | Option 3, mirroring the rule cli.md already documents: "D status=accepted: locks the record from further field edits". The same guard is placed in both implementations — op_field plus the non-status branch of op_set (Rust, guards.rs/ops.rs) and cmd_field plus the non-status branch of cmd_set (Julia, cli.jl) — with identical messages and exit 4.
+  consequences:
+    | An accepted decision loses side-channel edits; field mistakes now require a superseding decision, matching the README. Extra: `check` invariant violation "decision-immutability" is fixed before any other work is submitted. Back-compat: any pipeline relying on the silent edit path now fails explicitly with exit 4; corpus scenarios recorded before the guard need to be re-recorded.
+  validation:
+    | Guard tests in packages/core/tests/guards.rs (unit, Rust) and the Julia test suite re-exercising the commands above; the new conformance scenario `decision-immutability` (recorded from Julia, replayed for Rust) pins exit codes, messages and lock state for `field add/rm/clear`, `set title` and the supersession flow on accepted decisions.
+
+d D-51 status=accepted t_created=2026-10-23T21:27:22Z t_updated=2026-10-23T21:27:32Z "Lock accepted decisions against field and title mutations"
+  context:
+    | GitHub issue #70: `grove field D-NN …` and `grove set D-NN title=…` mutate an accepted decision with exit 0 in both Rust and Julia while cli.md:279 documents "D status=accepted: locks the record from further field edits"; only the status transition is guarded (guards.rs:80, cli.jl:645).
+  options:
+    | 1. Guard only further status transitions (status quo) — leaves the documented immutability broken.
+    | 2. Allow-list mutations (e.g. forms or events) on an accepted D — weakens the rule and widens the audit surface.
+    | 3. Reject every `field` add/rm/clear and every non-status `set` key (title included) on a `d` with status=accepted; revision goes through `grove add d --supersedes=D-NN`.
+  decision:
+    | Option 3, mirroring the rule cli.md already documents. The same guard is placed in both implementations — op_field plus the non-status branch of op_set (Rust, guards.rs/ops.rs) and cmd_field plus the non-status branch of cmd_set (Julia, cli.jl) — with identical messages and exit 4.
+  consequences:
+    | Accepted decisions lose side-channel edits: any later change requires a superseding decision, matching the README. Pipelines relying on the silent edit path fail explicitly with exit 4; conformance corpus scenarios recorded before the guard need a re-record.
+  validation:
+    | Guard tests in packages/core/tests/guards.rs (Rust unit) and the Julia suite re-exercising the commands above; the new conformance scenario `decision-immutability` (recorded from Julia, replayed by the Rust corpora) pins exit codes, messages and lock state for `field add/rm/clear`, `set title` and the supersession flow on accepted decisions.
 
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
@@ -901,6 +983,7 @@ e D-32 supersedes D-31 t_created=2026-08-30T21:48:11Z
 e D-37 supersedes D-34 t_created=2026-09-17T15:44:19Z
 e D-47 supersedes D-41 t_created=2026-10-23T10:01:57Z
 e D-49 supersedes D-45 t_created=2026-10-23T18:20:12Z
+e D-51 supersedes D-50 t_created=2026-10-23T21:27:22Z
 e Q-01 asks W-06 t_created=2026-07-19T01:19:10Z
 e Q-02 asks W-09 t_created=2026-07-19T01:19:17Z
 e Q-05 asks W-103 t_created=2026-08-17T10:53:14Z
@@ -1025,6 +1108,10 @@ e W-196 blocks W-194 t_created=2026-10-22T23:06:30Z
 e W-198 implements D-47 t_created=2026-10-23T10:03:41Z
 e W-199 implements D-48 t_created=2026-10-23T10:33:45Z
 e W-204 implements D-49 t_created=2026-10-23T18:20:37Z
+e W-205 implements D-50 t_created=2026-10-23T21:26:42Z
+e W-206 blocks W-207 t_created=2026-10-23T21:26:42Z
+e W-206 implements D-50 t_created=2026-10-23T21:26:42Z
+e W-207 implements D-50 t_created=2026-10-23T21:26:43Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z

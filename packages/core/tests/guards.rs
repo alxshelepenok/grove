@@ -165,6 +165,92 @@ fn guard_decision_accepted_only_supersedes() {
     expect_ok(&v);
 }
 
+fn accepted_decision_with_catalog() -> Node {
+    let mut d = plain(Kind::D, "D-01", "accepted");
+    reflist(&mut d, "tags", &["auth"]);
+    for fname in ["context", "options", "decision", "consequences", "validation"] {
+        prose(&mut d, fname, &["Original body."]);
+    }
+    d
+}
+
+const DECISION_CATALOG: [&str; 6] = ["tags", "context", "options", "decision", "consequences", "validation"];
+const DECISION_IMMUTABLE_MSG: &str = "decision D-01 is accepted; create a new D with --supersedes";
+
+fn field_mutation_ops(fname: &str) -> Vec<(String, String, Option<String>)> {
+    vec![
+        ("clear".to_string(), fname.to_string(), None),
+        (
+            "add".to_string(),
+            fname.to_string(),
+            Some("Replacement body.".to_string()),
+        ),
+        ("rm".to_string(), fname.to_string(), Some("1".to_string())),
+    ]
+}
+
+#[test]
+fn guard_field_ops_reject_accepted_decision() {
+    for fname in DECISION_CATALOG {
+        for (op, field, value) in field_mutation_ops(fname) {
+            let mut st = State::default();
+            let d = accepted_decision_with_catalog();
+            let expected_lines = d.lines(fname);
+            put(&mut st, d);
+            let r = op_field(&mut st, "D-01", &field, &op, value.as_deref(), "testsession");
+            assert_eq!(r.code, 4, "field {field} {op} must be rejected");
+            assert_eq!(r.err.trim(), DECISION_IMMUTABLE_MSG);
+            assert!(r.journal.is_empty(), "guard must fire before journaling {field} {op}");
+            assert_eq!(st.nodes["D-01"].lines(fname), expected_lines, "field {field} {op} must not mutate");
+        }
+    }
+}
+
+#[test]
+fn guard_set_non_status_keys_reject_accepted_decision() {
+    for key in ["title", "cynefin", "type"] {
+        let mut st = State::default();
+        let d = accepted_decision_with_catalog();
+        let old_title = d.title.clone();
+        put(&mut st, d);
+        let old_cynefin = st.nodes["D-01"].cynefin.clone();
+        let r = op_set(&mut st, "D-01", key, "Replacement", "testsession");
+        assert_eq!(r.code, 4, "set {key} on accepted D must be rejected");
+        assert_eq!(r.err.trim(), DECISION_IMMUTABLE_MSG);
+        assert!(r.journal.is_empty(), "guard must fire before journaling set {key}");
+        assert_eq!(st.nodes["D-01"].title, old_title);
+        assert_eq!(st.nodes["D-01"].cynefin, old_cynefin);
+    }
+}
+
+#[test]
+fn guard_set_status_on_accepted_decision_still_paid_through_status_guard() {
+    let mut st = State::default();
+    put(&mut st, plain(Kind::D, "D-01", "accepted"));
+    let r = op_set(&mut st, "D-01", "status", "proposed", "testsession");
+    assert_eq!(r.code, 4);
+    assert_eq!(r.err.trim(), DECISION_IMMUTABLE_MSG);
+    assert_eq!(st.nodes["D-01"].status, "accepted");
+    let r = op_set(&mut st, "D-01", "status", "superseded", "testsession");
+    assert_eq!(r.code, 0);
+    assert_eq!(st.nodes["D-01"].status, "superseded");
+}
+
+#[test]
+fn undo_of_field_mutation_bypasses_accepted_decision_guard() {
+    let mut st = State::default();
+    let mut d = plain(Kind::D, "D-01", "accepted");
+    d.fields.remove("decision");
+    put(&mut st, d);
+    let inv = parse_json(
+        "{\"op\":\"field_restore_lines\",\"id\":\"D-01\",\"field\":\"decision\",\"lines\":[\"Original body.\"]}",
+    )
+    .expect("inverse record parses");
+    let msg = journal_apply_inverse(&mut st, &inv);
+    assert_eq!(msg, None, "model-level undo replay must not be blocked");
+    assert_eq!(st.nodes["D-01"].lines("decision"), vec!["Original body."]);
+}
+
 #[test]
 fn guard_y_proposed_to_active_rejects_unmet_anchors() {
     let mut st = State::default();
