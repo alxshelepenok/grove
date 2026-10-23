@@ -1,14 +1,14 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:5ab38af90d7e077c055ba65c7fda455ce07c2f34d0aa1af6c36782ecc5b14968
+# checksum: sha256:07eeb8595dcd7ad72f5c26dc91499ec45d3da5a44a3808e073247f02faa565ac
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
 
-g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-23T12:56:31Z "grove-mcp serves role-scoped tool sets"
+g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-23T15:24:02Z "grove-mcp serves role-scoped tool sets"
   area: A-04
-  fitness_target: 9
-  fitness_current: 8
+  fitness_target: 10
+  fitness_current: 9
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -205,6 +205,24 @@ w W-201 type=feature status=done cynefin=clear t_created=2026-10-23T12:56:31Z t_
   evidence:
     | line_bracket_delta scans brackets outside strings and line_without_comment cuts at the hash outside strings, both in packages/core/src/toml.rs with inline units; parse_tool_config buffers lines until depth returns to zero and joins them, so the unchanged parse_inline_array handles newlines as whitespace; registry parsing untouched
     | mcp_config 13/13 with multiline_tool_arrays_parse, bracket_inside_string_does_not_open_multiline and unterminated_multiline_array_is_malformed; malformed unit includes the old unterminated single line shape and stays green; cargo test --workspace green, clippy clean over touched files; runtime probe: multiline keeper allowlist serves exactly check and status with no warning, unterminated array warns and serves all tools
+
+w W-202 type=feature status=done cynefin=complicated t_created=2026-10-23T15:24:02Z t_updated=2026-10-23T17:10:39Z "Unify terminology across the CLI outputs, the MCP surface and the skill"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src, packages/grove/src, packages/mcp/src, docs/skills/grove, packages/grove/conformance/corpus, packages/core/tests/fixtures, packages/grove/test
+  ac:
+    | Every user facing concept carries one name everywhere it appears: CLI human output, CLI JSON keys, MCP tool descriptions and tool text, the skill pages and the conformance fixtures.
+    | Renames follow the cone rename pattern already in the working tree: the descriptive term replaces the algebra manual term in both tracks, the skill, the fixtures and the corpus in one move.
+    | The corpus replay suites stay byte identical in both tracks after each rename.
+    | The glossary records only names it genuinely introduces rather than names already established in the skill.
+    | cargo test --workspace is green, the Julia suite is green and clippy is clean over the touched files.
+  hypothesis:
+    | A survey of the user facing strings in both tracks, the MCP descriptions and the skill pages surfaces a bounded list of divergent term pairs; each rename is mechanical once the canonical name is picked.
+  evidence_strategy:
+    | A terminology inventory by grepping CLI strings in both tracks, the MCP surface, the skill pages and the glossary, followed by a divergence report and term by term confirmation with replayed suites over updated fixtures.
+  evidence:
+    | terminology survey delivered: divergences reported are the stale skill banner claims in the next and status MCP descriptions, the causality-cone glossary row keeping contraction order and impact wording, the cone JSON key order, the contraction_order identifier and the fitness contribution versus fitness deltas pair; the user deferred every one of these, no surfaces changed
+    | the survey verified the cone rename is complete and grounded, caught the missed pin at packages/mcp/tests/mcp.rs:401 expecting "Contraction order" and reworded it to "Backward cone"; cargo test -p grove-mcp 26/26 and cargo test --workspace green after the fix; julia suite runs solo green on the same file that flaked under parallel cargo, suspected cross suite windows flake documented
 
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:

@@ -268,7 +268,7 @@ const TOOL_SPECS: &[ToolSpec] = &[
     ToolSpec {
         cmd: "next",
         title: "Propose next work item",
-        desc: "Propose the single next work item to execute and return its full execution packet: the same markdown bundle packet produces, prefixed by the skill banner. The start-of-session default; ready shows the whole queue instead, and packet fetches an arbitrary work item.",
+        desc: "Propose the single next work item to execute and return its full execution packet: the same markdown bundle packet produces. The start-of-session default; ready shows the whole queue instead, and packet fetches an arbitrary work item.",
         ann: RO,
         props: &[],
         required: &[],

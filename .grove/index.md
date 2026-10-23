@@ -29,7 +29,7 @@
 | ID | Outcome | Fitness function | Status |
 | --- | --- | --- | --- |
 | G-17 | Scaling and performance budget | count; current= target=2 | unverified |
-| G-44 | grove-mcp serves role-scoped tool sets | count; current=8 target=9 | partial |
+| G-44 | grove-mcp serves role-scoped tool sets | count; current=9 target=10 | partial |
 
 ## Work items
 
@@ -47,6 +47,7 @@
 | W-199 | feature | Remove the skill pointer line from CLI and MCP output | G-44 | clear | ⊤ | done |  |
 | W-200 | feature | MCP presents info-only tool output without the stderr header | G-44 | clear | ⊤ | done |  |
 | W-201 | feature | Support multiline arrays in mcp.toml | G-44 | clear | ⊤ | done |  |
+| W-202 | feature | Unify terminology across the CLI outputs, the MCP surface and the skill | G-44 | complicated | ⊤ | done |  |
 
 ## Decisions
 
@@ -181,6 +182,7 @@ graph TD
   W_199["W-199: Remove the skill pointer line from CLI and MCP output"]:::done
   W_200["W-200: MCP presents info-only tool output without the stderr header"]:::done
   W_201["W-201: Support multiline arrays in mcp.toml"]:::done
+  W_202["W-202: Unify terminology across the CLI outputs, the MCP surface and the skill"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision

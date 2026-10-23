@@ -248,7 +248,7 @@ fn packet_cone_fragility_lines_for_zero_one_two_paths() {
     reflist(&mut w2, "goals", &["G-01"]);
     put(&mut st, w2);
     let cone = packet_cone(&st, st.nodes.get("W-02").unwrap(), 4, 50);
-    assert!(cone.starts_with("\n## Contraction order\n\n"), "{cone}");
+    assert!(cone.starts_with("\n## Backward cone\n\n"), "{cone}");
     assert!(cone.contains("- G-01: no blocks-path\n"), "{cone}");
     edge(&mut st, "G-01", "blocks", "W-01");
     edge(&mut st, "W-01", "blocks", "W-02");

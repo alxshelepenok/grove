@@ -398,7 +398,7 @@ fn tools_call_maps_arguments_to_cli() {
         serde_json::json!({"id": "W-01", "cone": true, "cone_depth": 2, "cone_max": 10}),
     );
     assert!(!is_error(&v), "{}", text_of(&v));
-    assert!(text_of(&v).contains("Contraction order"), "{}", text_of(&v));
+    assert!(text_of(&v).contains("Backward cone"), "{}", text_of(&v));
     let v = call(&mut s, 21, "check", serde_json::json!({}));
     assert!(!is_error(&v), "{}", text_of(&v));
     assert!(text_of(&v).contains("ok"), "{}", text_of(&v));
