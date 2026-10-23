@@ -477,6 +477,7 @@ macro_rules! scenario {
 scenario!(init, "init");
 scenario!(add_kinds, "add-kinds");
 scenario!(field_ops, "field-ops");
+scenario!(decision_immutability, "decision-immutability");
 scenario!(link_cycle, "link-cycle");
 scenario!(w_lifecycle, "w-lifecycle");
 scenario!(dor_refusal, "dor-refusal");

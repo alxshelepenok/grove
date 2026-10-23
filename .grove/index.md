@@ -7,14 +7,14 @@
 | Measure | Count | Composition |
 | --- | --- | --- |
 | C (content) | 42 | validated B 1 · answered Q 3 · accepted D 19 · active Discovery 19 |
-| V (uncertainty) | 10 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 2 |
+| V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
 
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
 | A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-02 | API | 1 | 4 | C: validated B 0 · answered Q 0 · accepted D 1; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 2 |
+| A-02 | API | 1 | 3 | C: validated B 0 · answered Q 0 · accepted D 1; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 10 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -30,7 +30,7 @@
 | --- | --- | --- | --- |
 | G-17 | Scaling and performance budget | count; current= target=2 | unverified |
 | G-44 | grove-mcp serves role-scoped tool sets | count; current=11 target=12 | partial |
-| G-45 | Decision immutability holds for accepted decisions across CLI mutations in both implementations | count; current=2 target=3 | partial |
+| G-45 | Decision immutability holds for accepted decisions across CLI mutations in both implementations | count; current=3 target=3 | verified |
 
 ## Work items
 
@@ -53,7 +53,7 @@
 | W-204 | feature | Remove the resources subsystem from the MCP server | G-44 | clear | ⊤ | done |  |
 | W-205 | bug | Rust core rejects field and title mutations on accepted decisions | G-45 | clear | ⊤ | done |  |
 | W-206 | bug | Julia reference rejects field and title mutations on accepted decisions | G-45 | clear | ⊤ | done |  |
-| W-207 | bug | Pin accepted-decision immutability in the conformance corpus | G-45 | clear | ⊤ | ready |  |
+| W-207 | bug | Pin accepted-decision immutability in the conformance corpus | G-45 | clear | ⊤ | done |  |
 
 ## Decisions
 
@@ -197,7 +197,7 @@ graph TD
   W_204["W-204: Remove the resources subsystem from the MCP server"]:::done
   W_205["W-205: Rust core rejects field and title mutations on accepted decisions"]:::done
   W_206["W-206: Julia reference rejects field and title mutations on accepted decisions"]:::done
-  W_207["W-207: Pin accepted-decision immutability in the conformance corpus"]:::ready
+  W_207["W-207: Pin accepted-decision immutability in the conformance corpus"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
