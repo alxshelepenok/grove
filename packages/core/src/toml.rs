@@ -44,6 +44,44 @@ fn header_key(key: &str, policy: LinePolicy) -> bool {
     }
 }
 
+fn scan_string_brackets(line: &str) -> (i32, Option<usize>) {
+    let mut depth = 0i32;
+    let mut in_string = false;
+    let mut escaped = false;
+    for (i, ch) in line.char_indices() {
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_string = false;
+            }
+            continue;
+        }
+        match ch {
+            '"' => in_string = true,
+            '[' => depth += 1,
+            ']' => depth -= 1,
+            '#' => return (depth, Some(i)),
+            _ => {}
+        }
+    }
+    (depth, None)
+}
+
+pub(crate) fn line_bracket_delta(line: &str) -> i32 {
+    scan_string_brackets(line).0
+}
+
+pub(crate) fn line_without_comment(line: &str) -> &str {
+    let (_, cut) = scan_string_brackets(line);
+    match cut {
+        Some(i) => line[..i].trim_end(),
+        None => line,
+    }
+}
+
 fn parse_basic_string(s: &str) -> Result<(String, &str), ()> {
     let b = s.as_bytes();
     if b.first() != Some(&b'"') {
@@ -274,5 +312,26 @@ mod tests {
         );
         assert!(parse_line("bad = [\"x\"", CONFIG_LINE_POLICY).is_err());
         assert!(parse_line("bad key = 1", REGISTRY_LINE_POLICY).is_err());
+    }
+
+    #[test]
+    fn bracket_delta_counts_only_outside_strings() {
+        assert_eq!(line_bracket_delta("tools = [\"a\", \"b\"]"), 0);
+        assert_eq!(line_bracket_delta("tools = ["), 1);
+        assert_eq!(line_bracket_delta("[[projects]]"), 0);
+        assert_eq!(line_bracket_delta("]"), -1);
+        assert_eq!(line_bracket_delta("msg = \"bracket [ inside\""), 0);
+        assert_eq!(line_bracket_delta("m = \"esc \\\" in [\" end"), 0);
+        assert_eq!(line_bracket_delta("t = \"a\" # tail ["), 0);
+        assert_eq!(line_bracket_delta("# whole line ["), 0);
+    }
+
+    #[test]
+    fn comment_cut_tolerates_strings() {
+        assert_eq!(line_without_comment("a = 1 # c"), "a = 1");
+        assert_eq!(line_without_comment("k = \"v # stays\""), "k = \"v # stays\"");
+        assert_eq!(line_without_comment("\"esc \\\" # stays\""), "\"esc \\\" # stays\"");
+        assert_eq!(line_without_comment("# whole"), "");
+        assert_eq!(line_without_comment("  \"check\",   # why  "), "  \"check\",");
     }
 }

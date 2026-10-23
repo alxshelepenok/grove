@@ -1,7 +1,10 @@
 use crate::cli::{load, run_cli, CliCtx, HELP, SESSION_MUTATE_COMMANDS};
 use crate::json::{emit_jval, julia_num_repr, parse_json, JVal, Json};
 use crate::ops::{OpResult, EXIT_OK};
-use crate::toml::{bare_key, parse_line, CONFIG_LINE_POLICY, Line, TomlVal};
+use crate::toml::{
+    bare_key, line_bracket_delta, line_without_comment, parse_line, CONFIG_LINE_POLICY, Line,
+    TomlVal,
+};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 pub const MCP_PROTOCOL_VERSIONS: [&str; 3] = ["2024-11-05", "2025-03-26", "2025-06-18"];
@@ -709,53 +712,88 @@ fn string_list(v: &TomlVal) -> Option<Vec<String>> {
     }
 }
 
+fn step_config(
+    line: &str,
+    cfg: &mut ToolConfig,
+    seen_roles: &mut Vec<String>,
+    role: &mut Option<(String, RoleScope)>,
+) -> Option<()> {
+    match parse_line(line, CONFIG_LINE_POLICY).ok()? {
+        Line::Blank => {}
+        Line::ArrayHeader(_) => return None,
+        Line::Header(k) => {
+            if let Some((name, scope)) = role.take() {
+                cfg.roles.insert(name, scope);
+            }
+            if let Some(r) = k.strip_prefix("roles.") {
+                if !r.is_empty() && bare_key(r) && seen_roles.contains(&r.to_string()) {
+                    return None;
+                }
+                if !r.is_empty() && bare_key(r) {
+                    seen_roles.push(r.to_string());
+                    *role = Some((r.to_string(), RoleScope::default()));
+                }
+            }
+        }
+        Line::Assign(k, v) => {
+            if let Some((_, scope)) = role.as_mut() {
+                if k == "tools" {
+                    if !scope.tools.is_empty() {
+                        return None;
+                    }
+                    scope.tools = string_list(&v)?;
+                } else if k == "instructions" {
+                    if scope.instructions.is_some() {
+                        return None;
+                    }
+                    scope.instructions = match &v {
+                        TomlVal::Str(s) => Some(s.clone()),
+                        _ => return None,
+                    };
+                }
+            } else if k == "disabled" {
+                if !cfg.disabled.is_empty() {
+                    return None;
+                }
+                cfg.disabled = string_list(&v)?;
+            }
+        }
+    }
+    Some(())
+}
+
 fn parse_tool_config(text: &str) -> Option<ToolConfig> {
     let mut cfg = ToolConfig::default();
     let mut seen_roles: Vec<String> = Vec::new();
     let mut role: Option<(String, RoleScope)> = None;
+    let mut acc = String::new();
+    let mut depth = 0i32;
     for raw in text.split('\n') {
-        let line = raw.strip_suffix('\r').unwrap_or(raw);
-        match parse_line(line, CONFIG_LINE_POLICY).ok()? {
-            Line::Blank => {}
-            Line::ArrayHeader(_) => return None,
-            Line::Header(k) => {
-                if let Some((name, scope)) = role.take() {
-                    cfg.roles.insert(name, scope);
-                }
-                if let Some(r) = k.strip_prefix("roles.") {
-                    if !r.is_empty() && bare_key(r) && seen_roles.contains(&r.to_string()) {
-                        return None;
-                    }
-                    if !r.is_empty() && bare_key(r) {
-                        seen_roles.push(r.to_string());
-                        role = Some((r.to_string(), RoleScope::default()));
-                    }
-                }
+        let raw = raw.strip_suffix('\r').unwrap_or(raw);
+        if depth > 0 {
+            depth += line_bracket_delta(raw);
+            acc.push('\n');
+            acc.push_str(line_without_comment(raw));
+            if depth > 0 {
+                continue;
             }
-            Line::Assign(k, v) => {
-                if let Some((_, scope)) = role.as_mut() {
-                    if k == "tools" {
-                        if !scope.tools.is_empty() {
-                            return None;
-                        }
-                        scope.tools = string_list(&v)?;
-                    } else if k == "instructions" {
-                        if scope.instructions.is_some() {
-                            return None;
-                        }
-                        scope.instructions = match &v {
-                            TomlVal::Str(s) => Some(s.clone()),
-                            _ => return None,
-                        };
-                    }
-                } else if k == "disabled" {
-                    if !cfg.disabled.is_empty() {
-                        return None;
-                    }
-                    cfg.disabled = string_list(&v)?;
-                }
+            if depth < 0 {
+                return None;
             }
+            let joined = std::mem::take(&mut acc);
+            step_config(&joined, &mut cfg, &mut seen_roles, &mut role)?;
+            continue;
         }
+        let d = line_bracket_delta(raw);
+        if d > 0 {
+            depth = d;
+            acc = line_without_comment(raw).to_string();
+            continue;
+        }
+        step_config(raw, &mut cfg, &mut seen_roles, &mut role)?;
+    }
+    if depth > 0 {
+        return None;
     }
     if let Some((name, scope)) = role.take() {
         cfg.roles.insert(name, scope);

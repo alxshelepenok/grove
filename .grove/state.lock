@@ -1,14 +1,14 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:890d13a6f8fba1a4282cdc819ea0d9ccd833901949a90d54e37ba726e26b6018
+# checksum: sha256:5ab38af90d7e077c055ba65c7fda455ce07c2f34d0aa1af6c36782ecc5b14968
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
 
-g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-23T12:51:49Z "grove-mcp serves role-scoped tool sets"
+g G-44 status=partial fitness_kind=count t_created=2026-10-22T22:42:23Z t_updated=2026-10-23T12:56:31Z "grove-mcp serves role-scoped tool sets"
   area: A-04
-  fitness_target: 8
-  fitness_current: 7
+  fitness_target: 9
+  fitness_current: 8
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -186,6 +186,25 @@ w W-200 type=feature status=done cynefin=clear t_created=2026-10-23T12:51:49Z t_
   evidence:
     | tool_result_json gates the stderr marker on a nonempty stdout body: info only results render as plain text (check returns "ok"), mixed results keep the marker; CLI channels, conformance corpus and the Julia track untouched
     | binary_smoke_ndjson_session pinned to check text exactly "ok" and add output without the marker; cargo test -p grove-mcp 26/26 and cargo test --workspace green; live probe of the check tool call returned {"content":[{"text":"ok"}],"isError":false}; clippy clean over the touched files
+
+w W-201 type=feature status=done cynefin=clear t_created=2026-10-23T12:56:31Z t_updated=2026-10-23T13:01:03Z "Support multiline arrays in mcp.toml"
+  goals: G-44
+  fitness: G-44=+1
+  surface: packages/core/src/toml.rs, packages/core/src/mcp.rs, packages/core/tests/mcp_config.rs
+  ac:
+    | Role tools lists and the top level disabled list accept arrays spanning multiple lines: lines are buffered until bracket depth returns to zero and then parsed as one value.
+    | Blank lines and comments are tolerated around and inside a multiline segment: a comment is cut at the hash outside strings, a blank segment contributes only whitespace.
+    | Bracket characters inside quoted strings do not open a multiline segment, so values like an instruction mentioning a left bracket keep parsing intact.
+    | An array left unterminated at EOF is malformed: the config fails closed with the established warning and the default all tools scope.
+    | Registry parsing stays single line: REGISTRY_LINE_POLICY is untouched and the projects and lock suites pass unchanged.
+    | cargo test --workspace is green and clippy is clean over the touched files.
+  hypothesis:
+    | parse_inline_array already treats newlines as ordinary whitespace between tokens, so buffering lines until the bracket depth returns to zero and joining them reuses the engine without changing parse_line.
+  evidence_strategy:
+    | toml unit tests for the quote aware depth helper, config unit tests over GROVE_HOME homes covering multiline shapes and unterminated input, the unchanged registry suite, a full cargo test run with clippy, and a runtime probe serving a multiline role allowlist.
+  evidence:
+    | line_bracket_delta scans brackets outside strings and line_without_comment cuts at the hash outside strings, both in packages/core/src/toml.rs with inline units; parse_tool_config buffers lines until depth returns to zero and joins them, so the unchanged parse_inline_array handles newlines as whitespace; registry parsing untouched
+    | mcp_config 13/13 with multiline_tool_arrays_parse, bracket_inside_string_does_not_open_multiline and unterminated_multiline_array_is_malformed; malformed unit includes the old unterminated single line shape and stays green; cargo test --workspace green, clippy clean over touched files; runtime probe: multiline keeper allowlist serves exactly check and status with no warning, unterminated array warns and serves all tools
 
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:

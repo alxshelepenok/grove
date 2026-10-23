@@ -214,6 +214,63 @@ fn per_role_instructions_parse_on_accepts_and_dups_reject() {
 }
 
 #[test]
+fn multiline_tool_arrays_parse() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let home = home_dir("multiline");
+    {
+        let _h = HomeGuard::set(&home);
+        write_cfg(
+            "disabled = [\r\n  \"undo\",\r\n# why not\r\n  \"repair\",\r\n]\r\n\r\n[roles.keeper]\r\ntools = [\r\n  \"check\",  # invariants\r\n  \"status\",\r\n]\r\ninstructions = \"Keep the invariants.\"\r\n",
+        );
+        let got = load_tool_config().unwrap();
+        assert_eq!(got.disabled, vec!["undo".to_string(), "repair".to_string()]);
+        assert_eq!(got.roles.len(), 1);
+        let scope = got.roles.get("keeper").unwrap();
+        assert_eq!(
+            scope.tools,
+            vec!["check".to_string(), "status".to_string()]
+        );
+        assert_eq!(scope.instructions.as_deref(), Some("Keep the invariants."));
+    }
+    std::fs::remove_dir_all(&home).ok();
+}
+
+#[test]
+fn bracket_inside_string_does_not_open_multiline() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let home = home_dir("bracket-string");
+    {
+        let _h = HomeGuard::set(&home);
+        write_cfg(
+            "[roles.ghost]\ntools = [\"check\"]\ninstructions = \"mention a left [ bracket and stay on one line\"\n\n[roles.keeper]\ntools = [\"status\"]\n",
+        );
+        let got = load_tool_config().unwrap();
+        assert_eq!(got.roles.len(), 2);
+        assert_eq!(
+            got.roles.get("ghost").unwrap().instructions.as_deref(),
+            Some("mention a left [ bracket and stay on one line")
+        );
+        assert_eq!(
+            got.roles.get("keeper").unwrap().tools,
+            vec!["status".to_string()]
+        );
+    }
+    std::fs::remove_dir_all(&home).ok();
+}
+
+#[test]
+fn unterminated_multiline_array_is_malformed() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let home = home_dir("unterminated");
+    {
+        let _h = HomeGuard::set(&home);
+        write_cfg("[roles.keeper]\ntools = [\"check\",\n  \"status\"\n");
+        assert!(load_tool_config().is_none());
+    }
+    std::fs::remove_dir_all(&home).ok();
+}
+
+#[test]
 fn config_path_sits_next_to_projects_registry() {
     let _g = ENV_LOCK.lock().unwrap();
     let home = home_dir("path");
