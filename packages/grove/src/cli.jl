@@ -649,6 +649,20 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
         println(stderr, "goal $(n.id) status is derived from fitness deltas; cannot set manually (only fitness_kind=manual goals take a human verdict)")
         return EXIT_GUARD
     end
+    if n.kind === :w && new === :ready && n.type === :feature
+        bad = filter(b -> begin
+            bn = get(st.nodes, b, nothing)
+            bn === nothing || !(bn.status === :validated || bn.status === :invalidated_acceptable)
+        end, bchain(st, n))
+        if !isempty(bad)
+            detail = join(map(b -> begin
+                bn = get(st.nodes, b, nothing)
+                "$b ($(bn === nothing ? "missing" : bn.status))"
+            end, bad), ", ")
+            println(stderr, "I9: $(n.id) cannot enter `ready`; assumption chain must be validated or invalidated_acceptable: $detail")
+            return EXIT_GUARD
+        end
+    end
     if n.kind === :w && new === :progress
         if !dor(st, n)
             println(stderr, "DoR ≢ ⊤ for $(n.id); see `grove dor $(n.id)`")

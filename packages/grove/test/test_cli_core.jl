@@ -354,3 +354,38 @@ end
         rm(tmp; recursive=true, force=true)
     end
 end
+
+@testset "cli: ready transition gates the feature assumption chain (I9 at entry)" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1",
+                      "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "b", "--title=Assumption", "--cynefin=complicated",
+                      "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "w", "--type=feature", "--cynefin=complicated", "--goals=G-01",
+                      "--title=Feature", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["link", "B-01", "targets", "W-01", "--root=$tmp", "--quiet"]) == 0
+        # proposed assumption blocks the ready door
+        rc, err = capture_stderr_core(["set", "W-01", "status=ready", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("I9: W-01 cannot enter `ready`", err)
+        @test occursin("B-01 (proposed)", err)
+        # validation opens the door
+        @test M.main(["set", "B-01", "status=validated", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "W-01", "status=ready", "--root=$tmp", "--quiet"]) == 0
+        # late devalidation of a validated assumption is itself frozen by I14;
+        # the revision lane is a successor assumption node (or grove undo)
+        rc, err = capture_stderr_core(["set", "B-01", "status=proposed", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("B-01 is terminal (validated)", err)
+        # non-feature work never needed the chain
+        @test M.main(["add", "w", "--type=bug", "--cynefin=clear", "--goals=G-01",
+                      "--title=Bugfix", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["link", "B-01", "targets", "W-02", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "W-02", "status=ready", "--root=$tmp", "--quiet"]) == 0
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end

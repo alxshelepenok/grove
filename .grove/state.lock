@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:9e150180ad097bbbbce12e5a9bf42237830a7259a878e319ea8111469ce98fc0
+# checksum: sha256:e96df425349af1418765aa904ceb688163b067f6252c57fee2f110aeb7d90c15
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -33,9 +33,10 @@ g G-49 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_update
   fitness_target: 5
   fitness_current: 2
 
-g G-50 status=unverified fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T15:34:47Z "Goal status derivation stays truthful across work transitions in both implementations"
+g G-50 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T20:29:47Z "Goal status derivation stays truthful across work transitions in both implementations"
   area: A-01
   fitness_target: 5
+  fitness_current: 1
 
 g G-51 status=unverified fitness_kind=count t_created=2026-10-24T15:45:33Z t_updated=2026-10-24T15:45:33Z "Archive cascade completes across shared resources in both implementations"
   area: A-01
@@ -469,7 +470,7 @@ w W-215 type=refactor status=done cynefin=clear t_created=2026-10-24T15:34:51Z t
   evidence:
     | julia: terminal_freeze_msg helper (isterminal + accepted-D lane message + shared freeze text 'X is terminal (status); create a successor node or use grove undo'); guard_status_transition rejects terminal targets before all other branches except the accepted-to-superseded lane; the pointwise accepted-decision branches collapsed in guard, cmd_set and cmd_field with byte-identical preserved messages; cmd_fitness gained the freeze; cmd_evidence covered via cmd_field delegation; sanctioned lanes untouched (undo/repair/renumber/derivations verified by suite). I14 testset in test_cli_core.jl: freeze across set/field/evidence/fitness on done W, undo reverts the done transition (proposed, direct-lifecycle inverse), rejected-D frozen, accepted-D keeps supersede message, superseded transition legal, answered Q frozen; test_gate.jl surface-overflow scenario restructured to declare surface pre-done (planning-time info). Full suite green across batched runs except the two expected conformance drifts (discovery-lifecycle step 20, gate step 17) - corpus re-record deferred to W-220 per family sequencing so the rust replay stays stable until the W-218 port; three Windows ENOTEMPTY teardown flakes hit during full-suite runs (test_projects:246, test_cli_distill_prompt:45, test_cli_core:134 - different files each time, 0 failed assertions, all pass standalone, pre-existing class).
 
-w W-216 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:52Z t_updated=2026-10-24T15:34:54Z "Julia reference gates feature ready transitions on a validated assumption chain"
+w W-216 type=bug status=done cynefin=clear t_created=2026-10-24T15:34:52Z t_updated=2026-10-24T20:29:47Z "Julia reference gates feature ready transitions on a validated assumption chain"
   goals: G-50
   fitness: G-50=+1
   surface: packages/grove/src/cli.jl, packages/grove/test/test_dor.jl
@@ -477,10 +478,14 @@ w W-216 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:52Z t_
     | grove set W status=ready exits 4 for feature items whose assumption chain contains B not in validated/invalidated_acceptable; non-feature work is unaffected; progress entry behavior unchanged; grove check remains the backstop for post-ready chain invalidation.
   hypothesis:
     | gating ready mirrors the DoR bchain conjunct so no transition builds an I9 state; check keeps covering later devalidation
+  repro:
+    | P3 research demo: feature with B-01 proposed enters ready with exit 0 (no ready branch in guard), check flags I9 only post-fact; DoR saves only the progress entry - ready must be gated the same way (entry-time enforcement of the bchain conjunct).
   evidence_strategy:
     | julia runtests ready-gate testset; corpus ready-gate scenario.
+  evidence:
+    | julia: guard_status_transition gains the :w ready branch - feature items with chain members not in validated/invalidated_acceptable are rejected at the ready door with message 'I9: <id> cannot enter ready; assumption chain must be validated or invalidated_acceptable: B-01 (proposed)'; non-feature work unaffected; progress entry unchanged; the I9 check invariant remains the backstop for states reached via undo or pre-freeze locks (unit-covered in test_invariants_guards.jl). Finding recorded: under the uniform I14 freeze a validated assumption cannot be devalidated via set (validated is terminal) - the revision lane is a successor assumption node or grove undo; the ready-gate testset asserts that freeze interaction explicitly. 16-assertion testset in test_cli_core.jl green; full file-level reruns green.
 
-w W-217 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:54Z t_updated=2026-10-24T15:34:55Z "Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals"
+w W-217 type=bug status=progress cynefin=clear session=desktop-5a9h5ko:b9ace3ea3b856f36 session_at=2026-10-24T20:14:09Z t_created=2026-10-24T15:34:54Z t_updated=2026-10-24T20:14:09Z "Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals"
   goals: G-50
   fitness: G-50=+1
   surface: packages/grove/src/goal_fitness.jl, packages/grove/src/status.jl
@@ -488,6 +493,8 @@ w W-217 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:54Z t_
     | rejecting or archiving a done contributor immediately re-derives every goal it cites (the early return on non-done work is removed); an aggregate that falls below target demotes verified to partial and an empty aggregate demotes per kind; grove status gains an alignment trigger line for a verified goal that dropped below its target.
   hypothesis:
     | with both derivation windows and demotion strict, a verified badge can only be stale inside a single mutation, and the trigger surfaces that case loudly
+  repro:
+    | Q1 research findings: rederive_goals early-returns on non-done work (goal_fitness.jl mirrors fitness.rs:175-183) so rejecting or archiving a done contributor leaves goal fitness_current and verified status stale; refresh else-branch keeps verified when aggregate drops to zero; alignment triggers never surface the rot.
   evidence_strategy:
     | julia runtests testsets for reject/archive re-derivation and trigger visibility.
 
