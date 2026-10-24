@@ -1,0 +1,163 @@
+{
+  "name": "manual-tunnel",
+  "steps": [
+    {
+      "args": [
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
+      "journal": null
+    },
+    {
+      "args": [
+        "add",
+        "a",
+        "--title=Area",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "A-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Counted",
+        "--fitness-kind=count",
+        "--fitness-target=1",
+        "--area=A-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "G-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=count t_created=<ts> t_updated=<ts> \"Counted\"\n  area: A-01\n  fitness_target: 1\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Judged",
+        "--fitness-kind=manual",
+        "--area=A-01",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "G-02\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=count t_created=<ts> t_updated=<ts> \"Counted\"\n  area: A-01\n  fitness_target: 1\n\ng G-02 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judged\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "G-01",
+        "status=verified"
+      ],
+      "exit": 4,
+      "stdout": "",
+      "stderr": "goal G-01 status is derived from fitness deltas; cannot set manually (only fitness_kind=manual goals take a human verdict)\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=count t_created=<ts> t_updated=<ts> \"Counted\"\n  area: A-01\n  fitness_target: 1\n\ng G-02 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judged\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "G-02",
+        "status=verified",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=count t_created=<ts> t_updated=<ts> \"Counted\"\n  area: A-01\n  fitness_target: 1\n\ng G-02 status=verified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judged\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"unverified\",\"id\":\"G-02\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "undo",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=count t_created=<ts> t_updated=<ts> \"Counted\"\n  area: A-01\n  fitness_target: 1\n\ng G-02 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judged\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n"
+    },
+    {
+      "args": [
+        "set",
+        "G-01",
+        "status=declined",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=declined fitness_kind=count t_created=<ts> t_updated=<ts> \"Counted\"\n  area: A-01\n  fitness_target: 1\n\ng G-02 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judged\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"unverified\",\"id\":\"G-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Sneaky",
+        "--fitness-kind=count",
+        "--fitness-target=3",
+        "--area=A-01",
+        "--status=verified"
+      ],
+      "exit": 4,
+      "stdout": "",
+      "stderr": "add g: --status=verified is derived from fitness deltas; only fitness_kind=manual goals take a human verdict\n",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=declined fitness_kind=count t_created=<ts> t_updated=<ts> \"Counted\"\n  area: A-01\n  fitness_target: 1\n\ng G-02 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judged\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"unverified\",\"id\":\"G-01\",\"op\":\"set_status_plain\"}}\n"
+    },
+    {
+      "args": [
+        "add",
+        "g",
+        "--title=Judge2",
+        "--fitness-kind=manual",
+        "--area=A-01",
+        "--status=verified",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "G-03\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=declined fitness_kind=count t_created=<ts> t_updated=<ts> \"Counted\"\n  area: A-01\n  fitness_target: 1\n\ng G-02 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judged\"\n  area: A-01\n\ng G-03 status=verified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judge2\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"unverified\",\"id\":\"G-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-03\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "show",
+        "G-03"
+      ],
+      "exit": 0,
+      "stdout": "g G-03 status=verified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judge2\"\n  area: A-01\n",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=declined fitness_kind=count t_created=<ts> t_updated=<ts> \"Counted\"\n  area: A-01\n  fitness_target: 1\n\ng G-02 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judged\"\n  area: A-01\n\ng G-03 status=verified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judge2\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"unverified\",\"id\":\"G-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-03\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
+        "check",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=declined fitness_kind=count t_created=<ts> t_updated=<ts> \"Counted\"\n  area: A-01\n  fitness_target: 1\n\ng G-02 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judged\"\n  area: A-01\n\ng G-03 status=verified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Judge2\"\n  area: A-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"unverified\",\"id\":\"G-01\",\"op\":\"set_status_plain\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-03\",\"op\":\"rm_node\"}}\n"
+    }
+  ]
+}

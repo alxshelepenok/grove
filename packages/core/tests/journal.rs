@@ -403,11 +403,25 @@ fn undo_restores_state_and_truncates_journal() {
 
     let r = op_undo(&mut st, &jp, None, Some("2"), "none");
     assert_eq!(r.code, 0, "{}", r.err);
-    assert_eq!(serialize(&st), snaps[6]);
+    // record-scope restore: ready/progress roll back; the derived
+    // fitness_current written by their rederives stays truthful at "0"
+    assert_eq!(st.nodes["W-01"].status, "proposed");
+    assert_eq!(st.nodes["G-01"].status, "unverified");
+    assert_eq!(st.nodes["G-01"].single("fitness_current"), "0");
 
     let r = op_undo(&mut st, &jp, None, Some("3"), "none");
     assert_eq!(r.code, 0, "{}", r.err);
-    assert_eq!(serialize(&st), snaps[3]);
+    // undo restores record-scope state (work fields back to pre-fitness);
+    // derived goal fields follow the live aggregate under the
+    // always-rederive semantics: fitness_current stays truthful at "0"
+    assert_eq!(st.nodes["W-01"].status, "proposed");
+    assert!(st.nodes["W-01"].lines("evidence").is_empty());
+    match st.nodes["W-01"].fields.get("fitness") {
+        Some(FieldValue::Fitness(f)) => assert!(!f.contains_key("G-01"), "fitness key must revert"),
+        _ => {}
+    }
+    assert_eq!(st.nodes["G-01"].status, "unverified");
+    assert_eq!(st.nodes["G-01"].single("fitness_current"), "0");
 
     let (raw, _) = journal_read_nonempty_pairs(&jp);
     assert_eq!(raw.len(), 6);

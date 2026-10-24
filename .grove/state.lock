@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:c87c2261439a7da90e22ce9cf4b7d04616482abfe101775e4a5f14b7024441cb
+# checksum: sha256:bfe98f4949c301473f59d92ebe832f7887693d3fcb410ad6d8d32f46640d1f1f
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -26,17 +26,17 @@ g G-47 status=unverified fitness_kind=count t_created=2026-10-24T00:32:10Z t_upd
 g G-48 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T17:11:13Z "Completion guards cover blocks clearance and spike outputs at status=done in both implementations"
   area: A-01
   fitness_target: 4
-  fitness_current: 2
+  fitness_current: 3
 
 g G-49 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T17:30:46Z "Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations"
   area: A-01
   fitness_target: 5
-  fitness_current: 3
+  fitness_current: 4
 
 g G-50 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T20:29:47Z "Goal status derivation stays truthful across work transitions in both implementations"
   area: A-01
   fitness_target: 5
-  fitness_current: 3
+  fitness_current: 4
 
 g G-51 status=unverified fitness_kind=count t_created=2026-10-24T15:45:33Z t_updated=2026-10-24T15:45:33Z "Archive cascade completes across shared resources in both implementations"
   area: A-01
@@ -530,7 +530,7 @@ w W-219 type=bug status=done cynefin=clear t_created=2026-10-24T15:34:58Z t_upda
   evidence:
     | rust: guards.rs ready branch rejects feature ready entry with 'I9: <id> cannot enter ready; assumption chain must be validated or invalidated_acceptable: B-01 (proposed)' (bchain import), non-feature unaffected; fitness.rs redivide... rederive_goals drops the done-only early return, structured refresh demotes per kind (boolean below 1 to unverified; count/metric/ratio zero to unverified, below target partial) with declined protection, refresh_goal_legacy mirrors the zero case; status.rs alignment_triggers gains 'verified goal below target: G (title) total=X target=Y' (parse_nonneg_int now pub(crate)); tests/guards.rs ready-gate testset (3 phases), tests/fitness.rs +4 (rejection demotion, below-target partial, declined survival, trigger line); guards 12/12, fitness 33/33 green; known interim: cargo corpus_replay drifts on seven scenarios pending the W-220 re-record (rust replay now matches julia post-freeze behavior, corpus pins pre-freeze).
 
-w W-220 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:34:59Z t_updated=2026-10-24T20:50:05Z "Conformance corpus pins completion guards, terminal immutability and derivation truthfulness"
+w W-220 type=refactor status=done cynefin=clear t_created=2026-10-24T15:34:59Z t_updated=2026-10-24T22:50:30Z "Conformance corpus pins completion guards, terminal immutability and derivation truthfulness"
   goals: G-48, G-49, G-50
   fitness: G-48=+1, G-49=+1, G-50=+1
   surface: packages/grove/conformance/scenarios.jl, packages/grove/conformance/corpus
@@ -543,6 +543,8 @@ w W-220 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:34:5
     | the corpus is the single parity contract, so pinning the fixed semantics keeps engines aligned without per-suite drift (W-207 pattern)
   evidence_strategy:
     | conformance run prints N scenarios green including the new ones; rust corpus_replay byte-identical.
+  evidence:
+    | conformance: 34 scenarios (28 + 6 new: next-log ported from wave2b with the bchain fix, i5-done, manual-tunnel, terminal-immutability, ready-gate, derivation-demotion); drifted scenarios restructured for the new guards: w-lifecycle canonical bchain validation before ready, staging-overwrite/distill-archive switched to bug type (feature-ness not load-bearing), stats-scripted bchain added while preserving the deliberate DoR-reject step, gate surface moved pre-done; recorded from the fixed julia (run.jl record); julia verify green x5 (one intermittent next-log log-ordering drift root-caused to missing step spacing - fixed with !sleep guards like the rest of the scenario); rust corpus_replay 34/34 byte-identical; rust fixture tests adapted: gate.rs stats/gate step indices shifted (+3 bchain steps), stats.rs corpus test indices (pre-stats state at the gate step, records 16), journal.rs undo assertions now assert record-scope restore plus truthful derived fitness_current (always-rederive semantics), report.rs golden indices shifted and LOG_TS extended to 20 with per-edge record-position retiming and B-01 added to the retime table; full cargo test 24 binaries green, full julia runtests exit 0.
 
 w W-221 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:35:02Z t_updated=2026-10-24T15:35:04Z "Skill docs sync for the terminal-immutability family"
   goals: G-48, G-49, G-50
@@ -962,7 +964,7 @@ t T-10 status=open t_created=2026-10-24T00:32:10Z t_updated=2026-10-24T00:32:41Z
 
 t T-11 status=open t_created=2026-10-24T00:32:11Z t_updated=2026-10-24T00:32:43Z "Test suites restate the production field catalog"
 
-t T-12 status=open t_created=2026-10-24T18:57:59Z t_updated=2026-10-24T18:59:00Z "Terminal integrity and completion gates across engines"
+t T-12 status=open t_created=2026-10-24T18:57:59Z t_updated=2026-10-24T20:51:59Z "Terminal integrity and completion gates across engines"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-09-26T00:18:53Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -1366,6 +1368,7 @@ e T-09 causes W-196 t_created=2026-10-22T23:06:30Z
 e T-10 causes W-211 t_created=2026-10-24T00:32:41Z
 e T-11 causes W-212 t_created=2026-10-24T00:32:43Z
 e T-12 causes W-215 t_created=2026-10-24T18:59:00Z
+e T-12 causes W-220 t_created=2026-10-24T20:51:59Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z

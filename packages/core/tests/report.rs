@@ -6,7 +6,7 @@ use std::path::PathBuf;
 
 const T_UNIFORM: &str = "2026-01-01T00:00:00Z";
 const SESSION_PH: &str = "tokplaceholder";
-const LOG_TS: [&str; 16] = [
+const LOG_TS: [&str; 20] = [
     "2026-01-01T00:00:00Z",
     "2026-01-01T00:00:01Z",
     "2026-01-01T00:00:02Z",
@@ -23,6 +23,10 @@ const LOG_TS: [&str; 16] = [
     "2026-01-01T00:00:13Z",
     "2026-01-01T00:00:14Z",
     "2026-01-01T00:00:15Z",
+    "2026-01-01T00:00:16Z",
+    "2026-01-01T00:00:17Z",
+    "2026-01-01T00:00:18Z",
+    "2026-01-01T00:00:19Z",
 ];
 
 fn tmpdir(tag: &str) -> PathBuf {
@@ -134,16 +138,25 @@ fn retime_next_log(st: &mut State) {
     let cases = [
         ("A-01", LOG_TS[1], LOG_TS[1]),
         ("G-01", LOG_TS[2], LOG_TS[2]),
-        ("W-01", LOG_TS[3], LOG_TS[15]),
-        ("W-02", LOG_TS[8], LOG_TS[14]),
+        ("B-01", LOG_TS[14], LOG_TS[17]),
+        ("W-01", LOG_TS[3], LOG_TS[19]),
+        ("W-02", LOG_TS[8], LOG_TS[18]),
     ];
     for (id, tc, tu) in cases {
         let n = st.nodes.get_mut(id).unwrap();
         n.attrs.insert("t_created".to_string(), tc.to_string());
         n.attrs.insert("t_updated".to_string(), tu.to_string());
     }
+    // per-edge record positions: link blocks = record 13, targets W-01 = 15, targets W-02 = 16
+    let edge_ts: [(&str, &str, usize); 3] = [
+        ("W-01", "W-02", 13),
+        ("B-01", "W-01", 15),
+        ("B-01", "W-02", 16),
+    ];
     for e in &mut st.edges {
-        e.t_created = Some(LOG_TS[13].to_string());
+        if let Some((_, _, idx)) = edge_ts.iter().find(|(f, t, _)| f == &e.from && t == &e.to) {
+            e.t_created = Some(LOG_TS[*idx].to_string());
+        }
     }
 }
 
@@ -219,14 +232,14 @@ fn golden_show_staging_overwrite() {
 #[test]
 fn golden_show_w_lifecycle() {
     let sc = corpus_json("w-lifecycle");
-    run_golden(&sc, 13, "wlc-show-g13", &[]);
-    run_golden(&sc, 15, "wlc-show-g15", &[]);
+    run_golden(&sc, 16, "wlc-show-g13", &[]);
+    run_golden(&sc, 18, "wlc-show-g15", &[]);
 }
 
 #[test]
 fn golden_wave2b_next_log_readonly_steps() {
     let sc = corpus_json("next-log");
-    for i in 37..45 {
+    for i in 45..53 {
         run_golden(&sc, i, &format!("next-log-{i}"), &[]);
     }
 }
@@ -234,7 +247,7 @@ fn golden_wave2b_next_log_readonly_steps() {
 #[test]
 fn golden_wave2b_next_log_log_steps() {
     let sc = corpus_json("next-log");
-    for i in 45..scenario_len(&sc) {
+    for i in 53..scenario_len(&sc) {
         run_next_log_golden(&sc, i, &format!("next-log-{i}"));
     }
 }

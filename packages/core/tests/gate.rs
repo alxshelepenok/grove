@@ -66,9 +66,9 @@ fn stats_scripted_gate_step_matches_fixture() {
     pin(TS);
     let sc = corpus_json("stats-scripted");
     let dir = tmpdir("stats_scripted");
-    let lock = step_field(&sc, 12, "lock").replace("<ts>", TS);
+    let lock = step_field(&sc, 15, "lock").replace("<ts>", TS);
     let st = parse_fixture(&lock).expect("parse step 12 lock");
-    let journal = step_field(&sc, 12, "journal")
+    let journal = step_field(&sc, 15, "journal")
         .replace("<ts>", TS)
         .replace("<session>", "testsession");
     write_project(&dir, &serialize(&st), &journal);
@@ -77,10 +77,10 @@ fn stats_scripted_gate_step_matches_fixture() {
     let r = cmd_gate(&ctx, &[], &[]);
     assert_eq!(r.code, 0);
     assert_eq!(r.err, "");
-    assert_eq!(r.out, step_field(&sc, 13, "stdout"));
+    assert_eq!(r.out, step_field(&sc, 16, "stdout"));
     let lines = journal_lines(&dir);
-    assert_eq!(lines.len(), 13);
-    let want_last = step_field(&sc, 13, "journal");
+    assert_eq!(lines.len(), 16);
+    let want_last = step_field(&sc, 16, "journal");
     let tok = journal_session_token(&ctx, &[]);
     assert_eq!(
         lines
@@ -114,9 +114,9 @@ fn gate_scenario_two_runs_match_fixture() {
         ],
         Some(TS),
     );
-    let lock = step_field(&sc, 16, "lock").replace("<ts>", TS);
+    let lock = step_field(&sc, 19, "lock").replace("<ts>", TS);
     let st = parse_fixture(&lock).expect("parse step 16 lock");
-    let journal = step_field(&sc, 16, "journal")
+    let journal = step_field(&sc, 19, "journal")
         .replace("<ts>", TS)
         .replace("<session>", "testsession");
     write_project(&dir, &serialize(&st), &journal);
@@ -142,8 +142,8 @@ fn gate_scenario_two_runs_match_fixture() {
     let r1 = cmd_gate(&ctx, &[], &kw(&[("theta", "0")]));
     assert_eq!(r1.code, 0);
     assert_eq!(r1.err, "");
-    assert_eq!(r1.out, step_field(&sc, 22, "stdout"));
-    let want_last1 = step_field(&sc, 22, "journal");
+    assert_eq!(r1.out, step_field(&sc, 25, "stdout"));
+    let want_last1 = step_field(&sc, 25, "journal");
     let tok = journal_session_token(&ctx, &kw(&[("theta", "0")]));
     assert_eq!(
         journal_lines(&dir)
@@ -159,7 +159,7 @@ fn gate_scenario_two_runs_match_fixture() {
     assert_eq!(r2.err, "");
     assert_eq!(
         r2.out,
-        step_field(&sc, 23, "stdout").replace("<ts>", "2031-01-02T00:00:00Z")
+        step_field(&sc, 26, "stdout").replace("<ts>", "2031-01-02T00:00:00Z")
     );
     let got = journal_lines(&dir)
         .join("\n")
@@ -168,7 +168,7 @@ fn gate_scenario_two_runs_match_fixture() {
         .replace("2031-01-03T00:00:00Z", "<ts>")
         .replace(&tok, "<session>")
         .replace("testsession", "<session>");
-    assert_eq!(got, step_field(&sc, 23, "journal").trim_end());
+    assert_eq!(got, step_field(&sc, 26, "journal").trim_end());
     let _ = std::fs::remove_dir_all(&dir);
 }
 

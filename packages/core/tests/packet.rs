@@ -70,7 +70,7 @@ fn corpus_packet_cone_steps_byte_identical() {
 #[test]
 fn wave2b_next_log_cmd_steps_byte_identical() {
     let sc = corpus_json("next-log");
-    for i in 31..=36usize {
+    for i in 39..=44usize {
         let st = parse_fixture(&step_field(&sc, i - 1, "lock")).unwrap();
         let args = step_args(&sc, i);
         let mut ctx = ctx_with_state("nextlog", &st);

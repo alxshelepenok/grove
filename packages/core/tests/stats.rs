@@ -74,8 +74,8 @@ fn mask_ts(s: &str) -> String {
 #[test]
 fn corpus_stats_scripted_text_and_json() {
     let sc = corpus_json("stats-scripted");
-    let st = parse_fixture(&step_field(&sc, 13, "lock")).expect("fixture lock parses");
-    let journal = step_field(&sc, 13, "journal");
+    let st = parse_fixture(&step_field(&sc, 17, "lock")).expect("fixture lock parses");
+    let journal = step_field(&sc, 17, "journal");
     let mut recs = Vec::new();
     for (i, line) in journal.lines().enumerate() {
         let retimed = line.replacen(
@@ -86,10 +86,10 @@ fn corpus_stats_scripted_text_and_json() {
         recs.push(parse_json(&retimed).expect("retimed line parses"));
     }
     let out = compute_stats(&st, &recs, NOW);
-    assert_eq!(mask_ts(&out.text), step_field(&sc, 15, "stdout"));
+    assert_eq!(mask_ts(&out.text), step_field(&sc, 18, "stdout"));
     assert_eq!(
         mask_ts(&json_cli_out(out.payload)),
-        step_field(&sc, 16, "stdout")
+        step_field(&sc, 19, "stdout")
     );
 }
 
