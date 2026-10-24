@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:0e12c520066d5f7739e6d0747c9c19c3ca4a17849a7bb42672c35e2eb2936f2c
+# checksum: sha256:d8cbbd3bbf15e6b5c5d159f9cc872de21d6b1e989bce64ff765158f1af29ce9b
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -14,6 +14,14 @@ g G-45 status=verified fitness_kind=count t_created=2026-10-23T21:25:55Z t_updat
   area: A-02
   fitness_target: 3
   fitness_current: 3
+
+g G-46 status=unverified fitness_kind=count t_created=2026-10-24T00:32:10Z t_updated=2026-10-24T00:32:10Z "Supersession completes the old decision in one command"
+  area: A-02
+  fitness_target: 1
+
+g G-47 status=unverified fitness_kind=count t_created=2026-10-24T00:32:10Z t_updated=2026-10-24T00:32:10Z "Accepted-decision guard texts are precise and single-sourced"
+  area: A-02
+  fitness_target: 2
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -339,6 +347,64 @@ w W-208 type=bug status=done cynefin=clear t_created=2026-10-23T23:15:11Z t_upda
   evidence:
     | Rust: accepted-decision guard moved after the field_form lookup in op_field and after the new op_set_key_supported predicate in op_set; unknown field and unsupported key now exit 1 with precise texts before the guard, known fields and keys on an accepted D still exit 4 before any journal record; guards suite 28/28 incl. precise_diagnostics_precede_accepted_decision_guard. Julia: same reorder in cmd_field plus set_key_supported in cmd_set; test_cli_core testsets 35/35 and 11/11. Conformance: decision-immutability scenario extended with field D-01 nosuch add x and set D-01 nosuchkey=V, corpus re-recorded from Julia (28 scenarios green on verify), Rust corpus replay byte-identical; cargo test -p grove-core 321 passed / 0 failed.
 
+w W-209 type=bug status=ready cynefin=clear t_created=2026-10-24T00:32:36Z t_updated=2026-10-24T00:32:48Z "add --supersedes flips the old decision automatically"
+  goals: G-46
+  fitness: G-46=+1
+  ac:
+    | `grove add d --supersedes=D-NN` on an accepted D-NN leaves D-NN with status=superseded in the same mutation in the Rust core and the Julia CLI.
+    | The mutation journals an inverse record so `grove undo` restores the previous status of the old decision while removing the new node.
+    | The accepted-decision guard message needs no rewording: one command completes the flow it describes.
+    | Superseding a decision whose current status rejects the superseded transition keeps failing with the existing guard text, with no new bypass.
+    | The conformance corpus supersession scenario is re-recorded from Julia with an undo step, the Rust corpus replay stays byte-identical, and cargo test plus Pkg.test are green.
+  hypothesis:
+    | The add path can write the referenced decision status through the same guarded journal mechanism as set status: accepted to superseded is a legal transition, the inverse record restores it on undo, and the conformance corpus pins the behavior for both implementations.
+  repro:
+    | On the fix/G-45 build: `grove add d --title=Old; grove set D-01 status=accepted; grove add d --title=New --supersedes=D-01; grove show D-01 --json` returns D-01 with status=accepted and only `t_updated` changed, exit 0.
+  evidence_strategy:
+    | Rust: unit tests around the add supersedes path plus the byte-identical corpus replay; Julia: a test_cli_core testset re-recording the flow; conformance corpus re-recorded from Julia.
+
+w W-210 type=bug status=ready cynefin=clear t_created=2026-10-24T00:32:38Z t_updated=2026-10-24T00:32:49Z "Guard text for rejected attempts stops advising supersession"
+  goals: G-47
+  fitness: G-47=+1
+  ac:
+    | `grove set D-NN status=rejected` on an accepted decision exits 4 with a rejection-specific text that does not advise supersession.
+    | Attempts targeting any other non-superseded status keep the existing supersession advice text.
+    | The accepted to superseded transition stays legal and exits 0.
+    | Rust and Julia produce byte-identical texts for both branches from the single message helper.
+    | The conformance corpus pins both texts; cargo test and Pkg.test are green.
+  hypothesis:
+    | Branching the single message helper on the attempted target status keeps one message site per implementation, preserves the superseded-only rule, and lets the conformance corpus pin both texts without lifecycle changes.
+  repro:
+    | With D-01 accepted, `grove set D-01 status=rejected` exits 4 with `decision D-01 is accepted; create a new D with --supersedes`, although `rejected` is in the decision status set and the supersession advice does not answer a rejection attempt.
+  evidence_strategy:
+    | Rust: guards-suite cases asserting both texts and exit codes; Julia: a test_cli_core parity testset; the corpus scenario extended and re-recorded from Julia with the Rust replay byte-identical.
+
+w W-211 type=refactor status=ready cynefin=clear t_created=2026-10-24T00:32:40Z t_updated=2026-10-24T00:32:49Z "Accepted-decision predicate collapses into a single helper"
+  goals: G-47
+  fitness: G-47=+1
+  ac:
+    | A single accepted-decision predicate exists per implementation and replaces the five inline Rust occurrences and the inline Julia checks.
+    | No behavior change: cargo test -p grove-core is green and the corpus replay stays byte-identical.
+    | Julia Pkg.test stays green.
+  hypothesis:
+    | Extracting one predicate per implementation and replacing the five inline Rust occurrences in distill.rs, guards.rs, ops.rs (twice) and status.rs plus the inline Julia checks in cli.jl is behavior-neutral, which the byte-identical corpus replay proves.
+  evidence_strategy:
+    | cargo test -p grove-core with the byte-identical corpus replay as the behavior-freeze proof, plus Julia Pkg.test.
+
+w W-212 type=refactor status=done cynefin=clear t_created=2026-10-24T00:32:42Z t_updated=2026-10-24T01:05:27Z "Test catalogs derive from production field catalogs"
+  goals: G-45
+  fitness: G-45=+0
+  ac:
+    | tests/guards.rs iterates field_order(Kind::D) instead of the hardcoded DECISION_CATALOG constant.
+    | test_cli_core.jl derives the decision field tuple from FIELD_CATALOG instead of the hardcoded tuple.
+    | Coverage is unchanged today: cargo test -p grove-core and Pkg.test are green with no test lost.
+  hypothesis:
+    | Iterating field_order(Kind::D) in the Rust guards suite and deriving the field list from FIELD_CATALOG in the Julia testset keeps coverage identical today and extends automatically when a decision field is added.
+  evidence_strategy:
+    | cargo test -p grove-core (guards suite and corpus replay) and Julia Pkg.test before and after; the diff shows no test lost.
+  evidence:
+    | Rust: guards suite 28/28 with the field loop now iterating field_order(Kind::D) and the setup deriving forms via field_form; corpus replay 29/29 byte-identical; cargo test -p grove-core green. Julia: test_cli_core derives the tuple from FIELD_ORDER[:d], the ordered catalog the lock writer iterates; Pkg.test passed with conformance 28 scenarios green and the decision-immutability replay byte-identical. lib.rs re-exports field_form and field_order so integration tests reach the production catalog; the diff removes no tests (28 guards tests before and after).
+
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
     | the reference system's strongest invariant was 'CI never sees the signing key' (offline hardware host, PIV slots); Grove is a single-maintainer OSS project with no paid certificate story
@@ -555,6 +621,30 @@ d D-50 status=accepted t_created=2026-10-23T21:27:22Z t_updated=2026-10-23T23:40
   validation:
     | Guard tests in packages/core/tests/guards.rs (Rust unit) and the Julia suite re-exercising the commands above; the new conformance scenario `decision-immutability` (recorded from Julia, replayed by the Rust corpora) pins exit codes, messages and lock state for `field add/rm/clear`, `set title` and the supersession flow on accepted decisions.
 
+d D-51 status=accepted t_created=2026-10-24T00:32:11Z t_updated=2026-10-24T00:32:37Z "add --supersedes flips the old decision to superseded"
+  context:
+    | The guard message for accepted decisions says to create a new D with `--supersedes`, and the cli reference describes supersession as the way to revise, yet runtime verification on the fix/G-45 build shows the command leaves the old decision accepted and only `t_updated` changes.
+  options:
+    | Flip the referenced decision to superseded inside the same `add --supersedes` mutation; undo restores both nodes through journal inverse records.
+    | Flip the old decision only when the new decision becomes accepted; lifecycle-strict but leaves a window with two accepted decisions and still rewords the guard text.
+    | Keep the manual two-step flow and reword the guard message to spell out both commands.
+  decision:
+    | Auto-flip: `add --supersedes` moves the referenced decision to superseded in the same mutation whenever that transition is legal under the status guard, so the guard message stays literally true and one command completes the documented flow.
+  consequences:
+    | Both implementations change the add path; the journal gains an inverse record restoring the previous status so `grove undo` reverts both nodes; the conformance corpus is re-recorded from Julia with the Rust replay staying byte-identical.
+
+d D-52 status=accepted t_created=2026-10-24T00:32:12Z t_updated=2026-10-24T00:32:40Z "Rejected transition attempts get a status-aware guard text"
+  context:
+    | `status_set` admits `rejected` for decisions, but the accepted-decision guard passes only `superseded`, so with D-01 accepted the command `grove set D-01 status=rejected` answers with the supersession advice, which does not answer a rejection attempt.
+  options:
+    | Keep the guard as is and branch the message on the attempted target status, so rejected attempts get a dedicated text.
+    | Legalise accepted to rejected in the guard and keep the generic text for the remaining targets.
+    | Keep the current single text and document the superseded-only rule in the cli reference.
+  decision:
+    | Keep the guard as is: from accepted only superseded is legal, and the message helper becomes status-aware so a rejected attempt explains that an accepted decision cannot be rejected and points to supersession instead.
+  consequences:
+    | One message site per implementation gains a target-status parameter; Rust and Julia texts stay byte-identical; the conformance corpus pins both texts; no lifecycle change.
+
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
     | attestations already give a GitHub-backed second path; cosign keyless would add a Sigstore-anchored one without storing another key, at the cost of another tool in the sign job; deferred from v1, revisit after the first releases
@@ -625,6 +715,10 @@ t T-01 status=open t_created=2026-07-19T01:14:31Z t_updated=2026-07-19T01:14:31Z
 t T-06 status=open t_created=2026-08-28T23:06:23Z t_updated=2026-10-22T20:14:46Z "Graph view grows a 3D renderer"
 
 t T-09 status=done t_created=2026-10-22T23:06:08Z t_updated=2026-10-22T23:09:21Z "Shared TOML machinery concentrates inside the projects module"
+
+t T-10 status=open t_created=2026-10-24T00:32:10Z t_updated=2026-10-24T00:32:41Z "Accepted-decision rule is duplicated across core call sites"
+
+t T-11 status=open t_created=2026-10-24T00:32:11Z t_updated=2026-10-24T00:32:43Z "Test suites restate the production field catalog"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-09-26T00:18:53Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -1023,6 +1117,8 @@ e T-08 causes W-180 t_created=2026-09-17T15:12:18Z
 e T-08 causes W-182 t_created=2026-09-17T15:45:05Z
 e T-08 causes W-183 t_created=2026-09-17T15:57:35Z
 e T-09 causes W-196 t_created=2026-10-22T23:06:30Z
+e T-10 causes W-211 t_created=2026-10-24T00:32:41Z
+e T-11 causes W-212 t_created=2026-10-24T00:32:43Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z
@@ -1120,6 +1216,8 @@ e W-205 implements D-50 t_created=2026-10-23T23:15:39Z
 e W-206 blocks W-207 t_created=2026-10-23T21:26:42Z
 e W-206 implements D-50 t_created=2026-10-23T23:15:39Z
 e W-207 implements D-50 t_created=2026-10-23T23:15:40Z
+e W-209 implements D-51 t_created=2026-10-24T00:32:37Z
+e W-210 implements D-52 t_created=2026-10-24T00:32:40Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z

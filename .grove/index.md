@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 41 | validated B 1 · answered Q 3 · accepted D 18 · active Discovery 19 |
+| C (content) | 43 | validated B 1 · answered Q 3 · accepted D 20 · active Discovery 19 |
 | V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
@@ -14,7 +14,7 @@
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
 | A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-02 | API | 1 | 3 | C: validated B 0 · answered Q 0 · accepted D 1; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
+| A-02 | API | 3 | 3 | C: validated B 0 · answered Q 0 · accepted D 3; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 10 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -31,6 +31,8 @@
 | G-17 | Scaling and performance budget | count; current= target=2 | unverified |
 | G-44 | grove-mcp serves role-scoped tool sets | count; current=11 target=12 | partial |
 | G-45 | Decision immutability holds for accepted decisions across CLI mutations in both implementations | count; current=3 target=3 | verified |
+| G-46 | Supersession completes the old decision in one command | count; current= target=1 | unverified |
+| G-47 | Accepted-decision guard texts are precise and single-sourced | count; current= target=2 | unverified |
 
 ## Work items
 
@@ -55,6 +57,10 @@
 | W-206 | bug | Julia reference rejects field and title mutations on accepted decisions | G-45 | clear | ⊤ | done |  |
 | W-207 | bug | Pin accepted-decision immutability in the conformance corpus | G-45 | clear | ⊤ | done |  |
 | W-208 | bug | Unknown field and unsupported key diagnostics precede the accepted-decision guard | G-45 | clear | ⊤ | done |  |
+| W-209 | bug | add --supersedes flips the old decision automatically | G-46 | clear | ⊤ | ready |  |
+| W-210 | bug | Guard text for rejected attempts stops advising supersession | G-47 | clear | ⊤ | ready |  |
+| W-211 | refactor | Accepted-decision predicate collapses into a single helper | G-47 | clear | ⊤ | ready |  |
+| W-212 | refactor | Test catalogs derive from production field catalogs | G-45 | clear | ⊤ | done |  |
 
 ## Decisions
 
@@ -79,6 +85,8 @@
 | D-48 | CLI and MCP output carries no skill pointer line | accepted |  |
 | D-49 | The MCP server serves no resources subsystem | accepted | D-45 |
 | D-50 | Lock accepted decisions against field and title mutations | accepted |  |
+| D-51 | add --supersedes flips the old decision to superseded | accepted |  |
+| D-52 | Rejected transition attempts get a status-aware guard text | accepted |  |
 
 ## Open questions
 
@@ -107,6 +115,8 @@
 | T-01 | Scaling performance | open | – | W-04, W-05 |
 | T-06 | Graph view grows a 3D renderer | open | W-122, W-139 | – |
 | T-09 | Shared TOML machinery concentrates inside the projects module | done | W-196 | W-196 |
+| T-10 | Accepted-decision rule is duplicated across core call sites | open | W-211 | – |
+| T-11 | Test suites restate the production field catalog | open | W-212 | – |
 
 ## Discoveries
 
@@ -180,6 +190,8 @@ graph TD
   G_17["G-17: Scaling and performance budget"]:::goal
   G_44["G-44: grove-mcp serves role-scoped tool sets"]:::goal
   G_45["G-45: Decision immutability holds for accepted decisions across CLI mutations in both implementations"]:::goal
+  G_46["G-46: Supersession completes the old decision in one command"]:::goal
+  G_47["G-47: Accepted-decision guard texts are precise and single-sourced"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_192["W-192: Parse mcp.toml tool config"]:::done
@@ -199,6 +211,10 @@ graph TD
   W_206["W-206: Julia reference rejects field and title mutations on accepted decisions"]:::done
   W_207["W-207: Pin accepted-decision immutability in the conformance corpus"]:::done
   W_208["W-208: Unknown field and unsupported key diagnostics precede the accepted-decision guard"]:::done
+  W_209["W-209: add --supersedes flips the old decision automatically"]:::ready
+  W_210["W-210: Guard text for rejected attempts stops advising supersession"]:::ready
+  W_211["W-211: Accepted-decision predicate collapses into a single helper"]:::ready
+  W_212["W-212: Test catalogs derive from production field catalogs"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
@@ -218,6 +234,8 @@ graph TD
   D_48["D-48: CLI and MCP output carries no skill pointer line"]:::decision
   D_49["D-49: The MCP server serves no resources subsystem"]:::decision
   D_50["D-50: Lock accepted decisions against field and title mutations"]:::decision
+  D_51["D-51: add --supersedes flips the old decision to superseded"]:::decision
+  D_52["D-52: Rejected transition attempts get a status-aware guard text"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_07["Q-07: How Neo4j integrates into Grove: role, pattern, and boundaries"]:::question
@@ -231,6 +249,8 @@ graph TD
   T_01["T-01: Scaling performance"]:::theme
   T_06["T-06: Graph view grows a 3D renderer"]:::theme
   T_09["T-09: Shared TOML machinery concentrates inside the projects module"]:::theme
+  T_10["T-10: Accepted-decision rule is duplicated across core call sites"]:::theme
+  T_11["T-11: Test suites restate the production field catalog"]:::theme
   Y_01["Y-01: Normalize at capture, never inject test clocks"]:::discovery
   Y_02["Y-02: Never gate a validation task on the hypotheses it validates"]:::discovery
   Y_03["Y-03: Integration surfaces are thin adapters over the core CLI contract"]:::discovery
@@ -350,6 +370,8 @@ graph TD
   T_08 -->|causes| W_182
   T_08 -->|causes| W_183
   T_09 -->|causes| W_196
+  T_10 -->|causes| W_211
+  T_11 -->|causes| W_212
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
   W_03 -->|produces| D_11
@@ -447,6 +469,8 @@ graph TD
   W_206 ==>|blocks| W_207
   W_206 -->|implements| D_50
   W_207 -->|implements| D_50
+  W_209 -->|implements| D_51
+  W_210 -->|implements| D_52
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78

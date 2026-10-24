@@ -138,7 +138,7 @@ end
         @test M.main(["add", "d", "--title=Original decision", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["field", "D-01", "decision", "add", "Original body.", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "D-01", "status=accepted", "--root=$tmp", "--quiet"]) == 0
-        for fn in ("tags", "context", "options", "decision", "consequences", "validation")
+        for fn in string.(M.FIELD_ORDER[:d])
             @test M.main(["field", "D-01", fn, "add", "Replacement", "--root=$tmp", "--quiet"]) == 4
             @test M.main(["field", "D-01", fn, "clear", "--root=$tmp", "--quiet"]) == 4
             @test M.main(["field", "D-01", fn, "rm", "1", "--root=$tmp", "--quiet"]) == 4

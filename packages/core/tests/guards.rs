@@ -165,16 +165,21 @@ fn guard_decision_accepted_only_supersedes() {
     expect_ok(&v);
 }
 
+fn decision_fields() -> impl Iterator<Item = &'static str> {
+    field_order(Kind::D).iter().copied()
+}
+
 fn accepted_decision_with_catalog() -> Node {
     let mut d = plain(Kind::D, "D-01", "accepted");
-    reflist(&mut d, "tags", &["auth"]);
-    for fname in ["context", "options", "decision", "consequences", "validation"] {
-        prose(&mut d, fname, &["Original body."]);
+    for fname in decision_fields() {
+        match field_form(Kind::D, fname) {
+            Some(Form::Prose) => prose(&mut d, fname, &["Original body."]),
+            Some(Form::RefList) => reflist(&mut d, fname, &["auth"]),
+            _ => {}
+        }
     }
     d
 }
-
-const DECISION_CATALOG: [&str; 6] = ["tags", "context", "options", "decision", "consequences", "validation"];
 const DECISION_IMMUTABLE_MSG: &str = "decision D-01 is accepted; create a new D with --supersedes";
 
 fn field_mutation_ops(fname: &str) -> Vec<(String, String, Option<String>)> {
@@ -191,7 +196,7 @@ fn field_mutation_ops(fname: &str) -> Vec<(String, String, Option<String>)> {
 
 #[test]
 fn guard_field_ops_reject_accepted_decision() {
-    for fname in DECISION_CATALOG {
+    for fname in decision_fields() {
         for (op, field, value) in field_mutation_ops(fname) {
             let mut st = State::default();
             let d = accepted_decision_with_catalog();
