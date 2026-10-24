@@ -157,6 +157,24 @@ pub fn alignment_triggers(st: &State) -> Vec<String> {
         }
         out.push(format!("verified goal: {} ({})", g.id, g.title));
     }
+    for g in listnodes(st, Kind::G, false) {
+        let kind = crate::fitness::goal_structured_kind(g);
+        if kind.is_none() || kind == Some("manual") {
+            continue;
+        }
+        let tgt_txt = g.single("fitness_target").trim().to_string();
+        let ntar = match crate::fitness::parse_nonneg_int(&tgt_txt) {
+            Some(v) if v > 0 => v,
+            _ => continue,
+        };
+        let total = crate::fitness::aggregate_fitness_delta(st, &g.id);
+        if total < ntar && g.status == "verified" {
+            out.push(format!(
+                "verified goal below target: {} ({}) total={} target={}",
+                g.id, g.title, total, ntar
+            ));
+        }
+    }
     let rs = crate::dor::ready(st);
     if rs.is_empty() {
         let mut has_open_gap = false;

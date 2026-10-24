@@ -339,14 +339,14 @@ fn guard_y_stale_to_superseded_ok() {
 }
 
 #[test]
-fn guard_y_superseded_to_superseded_is_illegal() {
+fn guard_y_superseded_is_frozen_by_terminal_immutability() {
     let mut st = State::default();
     put(&mut st, plain(Kind::Y, "Y-01", "superseded"));
     let n = st.nodes.get("Y-01").expect("Y-01 present");
     let v = guard_status_transition(&st, n, "superseded");
     assert_eq!(
         expect_reject(&v),
-        &vec!["illegal y transition superseded → superseded (allowed: proposed→active, active→stale, non-terminal→superseded; stale→active only via `grove revalidate`)".to_string()]
+        &vec!["Y-01 is terminal (superseded); create a successor node or use grove undo".to_string()]
     );
 }
 
@@ -435,4 +435,134 @@ fn assign_and_clear_w_session_attrs_roundtrip() {
     assert_eq!(w.attr("session"), "");
     assert_eq!(w.attr("session_at"), "");
     assert!(!progress_has_session_record(&w));
+}
+
+fn goal_count(id: &str, target: &str) -> Node {
+    let mut g = plain(Kind::G, id, "unverified");
+    g.attrs
+        .insert("fitness_kind".to_string(), "count".to_string());
+    g.set_single("fitness_target", target.to_string());
+    g
+}
+
+#[test]
+fn guard_done_rejects_open_blocks_predecessor_then_allows_after_clearance() {
+    let mut st = State::default();
+    put(&mut st, plain(Kind::Q, "Q-01", "open"));
+    let mut w = dor_ready_feature("W-01", "proposed");
+    prose(&mut w, "evidence", &["e"]);
+    put(&mut st, w);
+    put(&mut st, plain(Kind::G, "G-01", "verified"));
+    st.edges
+        .push(Edge::new("Q-01", "blocks", "W-01"));
+    let n = st.nodes.get("W-01").expect("W-01 present");
+    let v = guard_status_transition(&st, n, "done");
+    assert_eq!(
+        expect_reject(&v),
+        &vec!["I5: predecessors not cleared (goal blockers must be verified, not merely declined/partial/unverified)".to_string()]
+    );
+    st.nodes.get_mut("Q-01").expect("Q-01").status = "answered".to_string();
+    let n = st.nodes.get("W-01").expect("W-01 present");
+    expect_ok(&guard_status_transition(&st, n, "done"));
+}
+
+#[test]
+fn guard_done_spike_requires_produces_before_evidence() {
+    let mut st = State::default();
+    put(&mut st, plain(Kind::G, "G-01", "verified"));
+    let mut w = dor_ready_feature("W-01", "proposed");
+    w.wtype = Some("spike".to_string());
+    put(&mut st, w);
+    let n = st.nodes.get("W-01").expect("W-01 present");
+    let v = guard_status_transition(&st, n, "done");
+    assert_eq!(
+        expect_reject(&v),
+        &vec!["I2: W-01 is a done spike but `produces` is empty (no outgoing `produces` edges)".to_string()]
+    );
+    put(&mut st, plain(Kind::D, "D-01", "proposed"));
+    st.edges
+        .push(Edge::new("W-01", "produces", "D-01"));
+    prose(st.nodes.get_mut("W-01").expect("W-01"), "evidence", &["e"]);
+    let n = st.nodes.get("W-01").expect("W-01 present");
+    expect_ok(&guard_status_transition(&st, n, "done"));
+}
+
+#[test]
+fn guard_manual_goal_verification_restricted_to_manual_kind() {
+    let mut st = State::default();
+    put(&mut st, goal_count("G-01", "1"));
+    let n = st.nodes.get("G-01").expect("G-01 present");
+    let v = guard_status_transition(&st, n, "verified");
+    assert_eq!(
+        expect_reject(&v),
+        &vec!["goal G-01 status is derived from fitness deltas; cannot set manually (only fitness_kind=manual goals take a human verdict)".to_string()]
+    );
+    let mut manual = plain(Kind::G, "G-02", "unverified");
+    manual
+        .attrs
+        .insert("fitness_kind".to_string(), "manual".to_string());
+    put(&mut st, manual);
+    let n = st.nodes.get("G-02").expect("G-02 present");
+    expect_ok(&guard_status_transition(&st, n, "verified"));
+    let n = st.nodes.get("G-01").expect("G-01 present");
+    expect_ok(&guard_status_transition(&st, n, "declined"));
+}
+
+#[test]
+fn guard_freezes_terminal_nodes_except_supersede_lane() {
+    let mut st = State::default();
+    put(&mut st, plain(Kind::W, "W-01", "done"));
+    let n = st.nodes.get("W-01").expect("W-01 present");
+    let v = guard_status_transition(&st, n, "archived");
+    assert_eq!(
+        expect_reject(&v),
+        &vec!["W-01 is terminal (done); create a successor node or use grove undo".to_string()]
+    );
+    // rejected decision freezes with the shared text
+    put(&mut st, plain(Kind::D, "D-01", "rejected"));
+    let n = st.nodes.get("D-01").expect("D-01 present");
+    let v = guard_status_transition(&st, n, "proposed");
+    assert_eq!(
+        expect_reject(&v),
+        &vec!["D-01 is terminal (rejected); create a successor node or use grove undo".to_string()]
+    );
+    // accepted decision keeps its supersede-lane message for non-lane targets
+    put(&mut st, plain(Kind::D, "D-02", "accepted"));
+    let n = st.nodes.get("D-02").expect("D-02 present");
+    let v = guard_status_transition(&st, n, "rejected");
+    assert_eq!(
+        expect_reject(&v),
+        &vec!["decision D-02 is accepted; create a new D with --supersedes".to_string()]
+    );
+    // the one sanctioned transition still passes
+    expect_ok(&guard_status_transition(&st, n, "superseded"));
+}
+
+#[test]
+fn guard_ready_gates_feature_assumption_chain() {
+    let mut st = State::default();
+    put(&mut st, plain(Kind::G, "G-01", "verified"));
+    put(&mut st, plain(Kind::B, "B-01", "proposed"));
+    let mut w = work("W-01", "feature", "proposed", "complicated");
+    reflist(&mut w, "goals", &["G-01"]);
+    put(&mut st, w);
+    st.edges
+        .push(Edge::new("B-01", "targets", "W-01"));
+    let n = st.nodes.get("W-01").expect("W-01 present");
+    let v = guard_status_transition(&st, n, "ready");
+    assert_eq!(
+        expect_reject(&v),
+        &vec!["I9: W-01 cannot enter `ready`; assumption chain must be validated or invalidated_acceptable: B-01 (proposed)".to_string()]
+    );
+    st.nodes.get_mut("B-01").expect("B-01").status = "validated".to_string();
+    let n = st.nodes.get("W-01").expect("W-01 present");
+    expect_ok(&guard_status_transition(&st, n, "ready"));
+    // non-feature work never needed the chain
+    let mut bug = work("W-02", "bug", "proposed", "clear");
+    reflist(&mut bug, "goals", &["G-01"]);
+    put(&mut st, bug);
+    st.edges
+        .push(Edge::new("B-01", "targets", "W-02"));
+    let n = st.nodes.get("W-02").expect("W-02 present");
+    expect_ok(&guard_status_transition(&st, n, "ready"));
 }

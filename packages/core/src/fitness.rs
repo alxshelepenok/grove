@@ -66,7 +66,7 @@ pub fn aggregate_fitness_delta(st: &State, gid: &str) -> i64 {
     t
 }
 
-fn parse_nonneg_int(val: &str) -> Option<i64> {
+pub(crate) fn parse_nonneg_int(val: &str) -> Option<i64> {
     match val.trim().parse::<i64>() {
         Ok(v) if v >= 0 => Some(v),
         _ => None,
@@ -100,6 +100,8 @@ fn refresh_goal_legacy(g: &mut Node, total: i64) {
         g.status = "verified".to_string();
     } else if total > 0 {
         g.status = "partial".to_string();
+    } else if g.status != "declined" {
+        g.status = "unverified".to_string();
     }
     if g.status != prev {
         stamp_touch_node(g);
@@ -136,6 +138,8 @@ pub fn refresh_goal_structured_fitness(st: &mut State, gid: &str) {
         "boolean" => {
             if total >= 1 {
                 g.status = "verified".to_string();
+            } else if g.status != "declined" {
+                g.status = "unverified".to_string();
             }
         }
         "count" | "metric" => {
@@ -149,6 +153,8 @@ pub fn refresh_goal_structured_fitness(st: &mut State, gid: &str) {
                     g.status = "verified".to_string();
                 } else if total > 0 {
                     g.status = "partial".to_string();
+                } else if g.status != "declined" {
+                    g.status = "unverified".to_string();
                 }
             }
         }
@@ -162,6 +168,8 @@ pub fn refresh_goal_structured_fitness(st: &mut State, gid: &str) {
                     g.status = "verified".to_string();
                 } else if total > 0 {
                     g.status = "partial".to_string();
+                } else if g.status != "declined" {
+                    g.status = "unverified".to_string();
                 }
             }
         }
@@ -175,12 +183,7 @@ pub fn refresh_goal_structured_fitness(st: &mut State, gid: &str) {
 pub fn rederive_goals(st: &mut State, wid: &str) {
     let gids = match st.nodes.get(wid) {
         None => return,
-        Some(w) => {
-            if w.status != "done" {
-                return;
-            }
-            w.lines("goals")
-        }
+        Some(w) => w.lines("goals"),
     };
     let mut seen = BTreeSet::new();
     for gid0 in gids {

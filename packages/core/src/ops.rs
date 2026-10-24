@@ -1,7 +1,7 @@
 use crate::algebra::rederive_artifacts;
 use crate::dor::{dor, dor_breakdown, parse_requires_coverage};
 use crate::fitness::{goal_structured_kind, rederive_goals, refresh_goal_structured_fitness, GOAL_FITNESS_KINDS};
-use crate::guards::{accepted_decision_msg, guard_status_transition, GuardVerdict};
+use crate::guards::{guard_status_transition, terminal_freeze_msg, GuardVerdict};
 use crate::ids::id_cmp;
 use crate::json::{parse_json, JuliaDict};
 use crate::journal::*;
@@ -133,6 +133,12 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
             }
             if let Some(ft) = kw_get(kw, "fitness-target") {
                 n.set_single("fitness_target", ft.to_string());
+            }
+            if n.status == "verified" && goal_structured_kind(&n) != Some("manual") {
+                bail!(
+                    EXIT_GUARD,
+                    "add g: --status=verified is derived from fitness deltas; only fitness_kind=manual goals take a human verdict"
+                );
             }
             let aref = kw_get(kw, "area").unwrap_or("").trim().to_string();
             if aref.is_empty() {
@@ -516,8 +522,8 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
     if !op_set_key_supported(kind, key) {
         return OpResult::fail(EXIT_ERR, &format!("unsupported key: {key}"));
     }
-    if kind == Kind::D && st.nodes.get(id).expect("checked").status == "accepted" {
-        return OpResult::fail(EXIT_GUARD, &accepted_decision_msg(id));
+    if let Some(msg) = terminal_freeze_msg(st.nodes.get(id).expect("checked")) {
+        return OpResult::fail(EXIT_GUARD, &msg);
     }
 
     let line: String;
@@ -669,8 +675,8 @@ pub fn op_field(
     };
     {
         let n = st.nodes.get(id).expect("checked");
-        if n.kind == Kind::D && n.status == "accepted" {
-            return OpResult::fail(EXIT_GUARD, &accepted_decision_msg(id));
+        if let Some(msg) = terminal_freeze_msg(n) {
+            return OpResult::fail(EXIT_GUARD, &msg);
         }
     }
     if kind == Kind::G && fname == "fitness_current" {
@@ -855,6 +861,9 @@ pub fn op_fitness(st: &mut State, wid: &str, gid: &str, delta: i64, eff: &str) -
     }
     if !st.nodes.contains_key(gid) {
         return OpResult::fail(EXIT_NOTFOUND, &format!("missing: {gid}"));
+    }
+    if let Some(msg) = terminal_freeze_msg(st.nodes.get(wid).expect("checked")) {
+        return OpResult::fail(EXIT_GUARD, &msg);
     }
     {
         let w = st.nodes.get(wid).expect("checked");

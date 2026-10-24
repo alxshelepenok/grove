@@ -1,8 +1,8 @@
-use crate::algebra::preds_clear;
+use crate::algebra::{bchain, preds_clear};
 use crate::dor::dor;
 use crate::invariants::{discovery_anchor_issues, WIP_LIMIT_DEFAULT};
 use crate::model::{Kind, Node, State};
-use crate::status::{listnodes, status_set};
+use crate::status::{is_terminal, listnodes, status_set};
 
 pub enum GuardVerdict {
     Ok,
@@ -24,6 +24,19 @@ pub fn accepted_decision_msg(id: &str) -> String {
     format!("decision {id} is accepted; create a new D with --supersedes")
 }
 
+pub fn terminal_freeze_msg(n: &Node) -> Option<String> {
+    if !is_terminal(n.kind, &n.status) {
+        return None;
+    }
+    if n.kind == Kind::D && n.status == "accepted" {
+        return Some(accepted_decision_msg(&n.id));
+    }
+    Some(format!(
+        "{} is terminal ({}); create a successor node or use grove undo",
+        n.id, n.status
+    ))
+}
+
 pub fn guard_status_transition(st: &State, n: &Node, new: &str) -> GuardVerdict {
     if !status_set(n.kind).contains(&new) {
         return GuardVerdict::Invalid(vec![format!(
@@ -31,6 +44,40 @@ pub fn guard_status_transition(st: &State, n: &Node, new: &str) -> GuardVerdict 
             new,
             n.kind.as_str()
         )]);
+    }
+    if !(n.kind == Kind::D && n.status == "accepted" && new == "superseded") {
+        if let Some(msg) = terminal_freeze_msg(n) {
+            return GuardVerdict::Reject(vec![msg]);
+        }
+    }
+    if n.kind == Kind::G && new == "verified" && crate::fitness::goal_structured_kind(n) != Some("manual") {
+        return GuardVerdict::Reject(vec![format!(
+            "goal {} status is derived from fitness deltas; cannot set manually (only fitness_kind=manual goals take a human verdict)",
+            n.id
+        )]);
+    }
+    if n.kind == Kind::W && new == "ready" && n.wtype.as_deref() == Some("feature") {
+        let bad: Vec<String> = bchain(st, n)
+            .into_iter()
+            .filter(|b| match st.nodes.get(b) {
+                None => true,
+                Some(bn) => !(bn.status == "validated" || bn.status == "invalidated_acceptable"),
+            })
+            .collect();
+        if !bad.is_empty() {
+            let detail = bad
+                .iter()
+                .map(|b| match st.nodes.get(b) {
+                    None => format!("{b} (missing)"),
+                    Some(bn) => format!("{} ({})", b, bn.status),
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            return GuardVerdict::Reject(vec![format!(
+                "I9: {} cannot enter `ready`; assumption chain must be validated or invalidated_acceptable: {}",
+                n.id, detail
+            )]);
+        }
     }
     if n.kind == Kind::T {
         return GuardVerdict::Reject(vec![
@@ -65,6 +112,20 @@ pub fn guard_status_transition(st: &State, n: &Node, new: &str) -> GuardVerdict 
         }
     }
     if n.kind == Kind::W && new == "done" {
+        if !preds_clear(st, &n.id) {
+            return GuardVerdict::Reject(vec![
+                "I5: predecessors not cleared (goal blockers must be verified, not merely declined/partial/unverified)".to_string(),
+            ]);
+        }
+        if n.wtype.as_deref() == Some("spike") {
+            let has_produces = st.edges.iter().any(|e| e.label == "produces" && e.from == n.id);
+            if !has_produces {
+                return GuardVerdict::Reject(vec![format!(
+                    "I2: {} is a done spike but `produces` is empty (no outgoing `produces` edges)",
+                    n.id
+                )]);
+            }
+        }
         if n.lines("evidence").is_empty() {
             return GuardVerdict::Reject(vec![format!(
                 "I3: {} has no evidence; use `grove evidence {} \"…\"`",
@@ -80,9 +141,6 @@ pub fn guard_status_transition(st: &State, n: &Node, new: &str) -> GuardVerdict 
                 )]);
             }
         }
-    }
-    if n.kind == Kind::D && n.status == "accepted" && new != "superseded" {
-        return GuardVerdict::Reject(vec![accepted_decision_msg(&n.id)]);
     }
     if n.kind == Kind::Y {
         let cur = n.status.as_str();

@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:1193f274bf95f5efd18e5b64ede56b6cb3c94a102048e344eaec2bbe6d02ed71
+# checksum: sha256:c87c2261439a7da90e22ce9cf4b7d04616482abfe101775e4a5f14b7024441cb
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -26,17 +26,17 @@ g G-47 status=unverified fitness_kind=count t_created=2026-10-24T00:32:10Z t_upd
 g G-48 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T17:11:13Z "Completion guards cover blocks clearance and spike outputs at status=done in both implementations"
   area: A-01
   fitness_target: 4
-  fitness_current: 1
+  fitness_current: 2
 
 g G-49 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T17:30:46Z "Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations"
   area: A-01
   fitness_target: 5
-  fitness_current: 2
+  fitness_current: 3
 
 g G-50 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T20:29:47Z "Goal status derivation stays truthful across work transitions in both implementations"
   area: A-01
   fitness_target: 5
-  fitness_current: 2
+  fitness_current: 3
 
 g G-51 status=unverified fitness_kind=count t_created=2026-10-24T15:45:33Z t_updated=2026-10-24T15:45:33Z "Archive cascade completes across shared resources in both implementations"
   area: A-01
@@ -500,7 +500,7 @@ w W-217 type=bug status=done cynefin=clear t_created=2026-10-24T15:34:54Z t_upda
   evidence:
     | julia: rederive_goals! drops the done-only early return - any cited goal re-derives on every work status transition, so rejecting a done contributor immediately updates fitness_current and demotes the goal; refresh_goal_structured_fitness! demotes per kind (boolean: below 1 to unverified; count/metric/ratio: zero aggregate to unverified, below target stays partial) and _refresh_goal_legacy! mirrors the zero case; demotion never overwrites a declined human verdict; status.jl alignment_triggers gains 'verified goal below target: G (title) total=X target=Y' for structured kinds (count/metric + integer ratio targets); 7-assertion unit testset in test_goal_fitness.jl covers rejection demotion, below-target partial demotion, declined protection and the trigger; known residue documented for W-222: the archive sweep must call rederive for swept contributors (grove archive writes archived flags without a rederive pass today).
 
-w W-218 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:55Z t_updated=2026-10-24T15:34:57Z "Rust core ports completion guards, the manual-verify tunnel and the terminal freeze"
+w W-218 type=bug status=done cynefin=clear t_created=2026-10-24T15:34:55Z t_updated=2026-10-24T20:50:06Z "Rust core ports completion guards, the manual-verify tunnel and the terminal freeze"
   goals: G-48, G-49
   fitness: G-48=+1, G-49=+1
   surface: packages/core/src/guards.rs, packages/core/src/ops.rs
@@ -508,10 +508,14 @@ w W-218 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:55Z t_
     | guards.rs done branch runs preds_clear and the spike produces check with byte-identical stderr wording; set/field/fitness/evidence entry points reject terminal-node mutations with the shared message text; the manual-verify tunnel restriction is included; the port stays byte-identical to the julia reference.
   hypothesis:
     | the rust port keeps both engines parity-locked as the W-205/W-206 wave established
+  repro:
+    | rust mirrors julia W-213/W-214/W-215: done branch lacks preds_clear and spike-produces checks (issue alxshelepenok/grove#71); set/add G verified ungated; terminal nodes mutable by user commands.
   evidence_strategy:
     | cargo test -p grove-core full suite; corpus_replay scenarios byte-identical on first pass.
+  evidence:
+    | rust: guards.rs gains terminal_freeze_msg (isterminal + accepted-D lane + shared freeze text), the freeze branch before all other branches except accepted-to-superseded, the :g manual-tunnel branch, and I5 preds_clear + I2 spike-produces in the done branch before I3/I10 (order mirrors julia); the pointwise accepted-D branch collapsed; ops.rs op_set and op_field replace accepted-D checks with the freeze, op_fitness freezes after gid lookup, add g rejects --status=verified for non-manual kinds (EXIT_GUARD); stderr texts byte-identical to the julia reference; tests/guards.rs +4 (issue-71 I5 pair, spike I2, manual tunnel, freeze matrix with supersede lane), tests/ops.rs +1 op-level freeze matrix; replay_truth_scenario restructured: evidence carries the W-01 id pre-done (feeds the renumber refusal), post-done evidence step now asserts the freeze (exit 4 + exact text, no journal), fixtures lock_after_done/lock_after_renumber/lock_before_undo/lock_after_undo3/lock_after_undo1 updated with recomputed checksums; guards 32/32, ops 8/8 green.
 
-w W-219 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:58Z t_updated=2026-10-24T15:34:59Z "Rust core ports the ready-transition gate and derivation truthfulness fixes"
+w W-219 type=bug status=done cynefin=clear t_created=2026-10-24T15:34:58Z t_updated=2026-10-24T20:50:06Z "Rust core ports the ready-transition gate and derivation truthfulness fixes"
   goals: G-50
   fitness: G-50=+1
   surface: packages/core/src/guards.rs, packages/core/src/fitness.rs
@@ -519,16 +523,22 @@ w W-219 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:58Z t_
     | guards.rs gains the ready gate; rederive_goals no longer early-returns on non-done transitions; refresh demotes below-target verified goals; grove status lists the demotion alignment trigger with the same text as julia; stderr byte-identical.
   hypothesis:
     | porting after the julia reference keeps the two engines behaviorally identical
+  repro:
+    | rust mirrors julia W-216/W-217: no ready gate for feature bchain; rederive early-returns on non-done work; no demotion below target; no alignment trigger.
   evidence_strategy:
     | cargo test full suite; corpus replay byte-identical.
+  evidence:
+    | rust: guards.rs ready branch rejects feature ready entry with 'I9: <id> cannot enter ready; assumption chain must be validated or invalidated_acceptable: B-01 (proposed)' (bchain import), non-feature unaffected; fitness.rs redivide... rederive_goals drops the done-only early return, structured refresh demotes per kind (boolean below 1 to unverified; count/metric/ratio zero to unverified, below target partial) with declined protection, refresh_goal_legacy mirrors the zero case; status.rs alignment_triggers gains 'verified goal below target: G (title) total=X target=Y' (parse_nonneg_int now pub(crate)); tests/guards.rs ready-gate testset (3 phases), tests/fitness.rs +4 (rejection demotion, below-target partial, declined survival, trigger line); guards 12/12, fitness 33/33 green; known interim: cargo corpus_replay drifts on seven scenarios pending the W-220 re-record (rust replay now matches julia post-freeze behavior, corpus pins pre-freeze).
 
-w W-220 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:34:59Z t_updated=2026-10-24T20:09:16Z "Conformance corpus pins completion guards, terminal immutability and derivation truthfulness"
+w W-220 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:34:59Z t_updated=2026-10-24T20:50:05Z "Conformance corpus pins completion guards, terminal immutability and derivation truthfulness"
   goals: G-48, G-49, G-50
   fitness: G-48=+1, G-49=+1, G-50=+1
   surface: packages/grove/conformance/scenarios.jl, packages/grove/conformance/corpus
   ac:
     | new scenarios recorded from the fixed julia: i5-done (open-blocker reject with control steps), i2-spike-done reject, manual-tunnel reject/allow, terminal-immutability exit-4 steps across kinds plus sanctioned-lane exit-0 steps, ready-gate reject, derivation-demotion steps; rust corpus_replay runs byte-identical on first pass.
     | re-record the two scenarios that pin pre-freeze behavior: discovery-lifecycle step 20 (set Y-01 status=active on superseded now yields the terminal-freeze text instead of the illegal-y-transition text) and gate step 17 (surface declaration moves before the done transition per I14, mirroring the test_gate.jl adaptation); decision-immutability stays byte-identical because the accepted-D supersede-lane message is preserved.
+    | post-W216/W217 drift map (verified via conformance/run.jl verify): w-lifecycle steps 10-12, staging-overwrite steps 12-13 and distill-archive step 10 now expect the ready-gate rejection on features without a validated assumption chain (record surface diverges from the step-10 rejection onward); re-record these from the fixed julia alongside the two pre-freeze drifts (discovery-lifecycle step 20, gate step 17).
+    | rust-side drift confirmed by cargo corpus_replay after the W-218/W-219 ports - seven scenarios: discovery-lifecycle, distill-archive, gate, next-log, staging-overwrite, stats-scripted, w-lifecycle; the julia list (5) plus next-log and stats-scripted from the ready-gate ripple; re-record all seven from the fixed julia in this work item.
   hypothesis:
     | the corpus is the single parity contract, so pinning the fixed semantics keeps engines aligned without per-suite drift (W-207 pattern)
   evidence_strategy:

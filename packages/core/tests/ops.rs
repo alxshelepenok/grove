@@ -226,7 +226,7 @@ fn replay_truth_scenario() {
         &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"had_session_at_before":false,"old_w_status":"proposed","had_session_before":false,"id":"W-01","op":"set_w_status_with_goals","goal_statuses":{"G-01":"unverified","G-02":"unverified"},"old_session_at":"","old_session":""}}"#]);
     step!(ctx, "set_w_progress", op_set(&mut ctx.st, "W-01", "status", "progress", EFF), 0, "", "",
         &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"had_session_at_before":false,"old_w_status":"ready","had_session_before":false,"id":"W-01","op":"set_w_status_with_goals","goal_statuses":{"G-01":"unverified","G-02":"unverified"},"old_session_at":"","old_session":""}}"#]);
-    step!(ctx, "evidence_add", op_evidence(&mut ctx.st, "W-01", "did the thing", EFF), 0, "", "",
+    step!(ctx, "evidence_add", op_evidence(&mut ctx.st, "W-01", "did the thing for W-01", EFF), 0, "", "",
         &[r#"{"v":1,"cmd":"field","ts":"2031-01-01T00:00:00Z","inv":{"id":"W-01","field":"evidence","op":"field_pop_last"}}"#]);
     step!(ctx, "fitness_progress", op_fitness(&mut ctx.st, "W-01", "G-01", 3, EFF), 0, "", "",
         &[r#"{"v":1,"cmd":"fitness","ts":"2031-01-01T00:00:00Z","inv":{"had_key":true,"wid":"W-01","gid":"G-01","previous":1,"op":"restore_fitness_key"}}"#]);
@@ -241,8 +241,9 @@ fn replay_truth_scenario() {
         &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"missing":["goals(w) ≠ ∅","AC(w) ≠ ∅","fitness deltas set ∀ g","evidence_strategy ≠ ∅","hypothesis ≠ ⊥"],"id":"W-02","op":"dor_reject"}}"#]);
     step!(ctx, "renumber", op_renumber(&mut ctx.st, "W-02", "W-05", EFF), 0, "", "",
         &[r#"{"v":1,"cmd":"renumber","ts":"2031-01-01T00:00:00Z","inv":{"to":"W-02","op":"renumber_swap","from":"W-05"}}"#]);
-    step!(ctx, "evidence_w01", op_evidence(&mut ctx.st, "W-01", "verified W-01 behavior", EFF), 0, "", "",
-        &[r#"{"v":1,"cmd":"field","ts":"2031-01-01T00:00:00Z","inv":{"id":"W-01","field":"evidence","op":"field_pop_last"}}"#]);
+    step!(ctx, "evidence_w01_frozen", op_evidence(&mut ctx.st, "W-01", "late add", EFF), 4, "",
+        "W-01 is terminal (done); create a successor node or use grove undo
+", &[]);
     step!(ctx, "renumber_refused", op_renumber(&mut ctx.st, "W-01", "W-09", EFF), 4, "",
         "grove renumber: refusing; id occurs in evidence on a done W\n", &[]);
 
@@ -366,7 +367,7 @@ fn replay_truth_scenario() {
     step!(ctx, "set_w3_done_noev", op_set(&mut ctx.st, "W-06", "status", "done", "crashgrabber"), 4, "",
         "I3: W-06 has no evidence; use `grove evidence W-06 \"…\"`\n", &[]);
 
-    assert_eq!(ctx.mirror.len(), 67, "final journal line count");
+    assert_eq!(ctx.mirror.len(), 66, "final journal line count");
     ctx.assert_file_mirror();
 
     let _ = std::fs::remove_dir_all(&dir);
@@ -668,4 +669,23 @@ fn handoff_requires_existing_claim() {
     let r = op_handoff(&mut st, "W-01", Some("tok"), EFF);
     assert_eq!(r.code, 4);
     assert_eq!(r.err, "W-01 has no session claim; use `grove resume`\n");
+}
+
+#[test]
+fn op_level_mutations_freeze_terminal_nodes() {
+    let mut st = State::default();
+    put(&mut st, plain(Kind::W, "W-01", "done"));
+    put(&mut st, plain(Kind::G, "G-01", "verified"));
+    let r = op_set(&mut st, "W-01", "title", "X", EFF);
+    assert_eq!(r.code, EXIT_GUARD);
+    assert!(r.err.contains("W-01 is terminal (done); create a successor node or use grove undo"));
+    let r = op_field(&mut st, "W-01", "ac", "add", Some("y"), EFF);
+    assert_eq!(r.code, EXIT_GUARD);
+    assert!(r.err.contains("W-01 is terminal (done)"));
+    let r = op_evidence(&mut st, "W-01", "more", EFF);
+    assert_eq!(r.code, EXIT_GUARD);
+    assert!(r.err.contains("W-01 is terminal (done)"));
+    let r = op_fitness(&mut st, "W-01", "G-01", 1, EFF);
+    assert_eq!(r.code, EXIT_GUARD);
+    assert!(r.err.contains("W-01 is terminal (done)"));
 }
