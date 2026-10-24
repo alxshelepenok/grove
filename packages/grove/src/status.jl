@@ -34,6 +34,16 @@ function alignment_triggers(st::State)::Vector{String}
         g.status !== :verified && continue
         push!(out, "verified goal: $(g.id) ($(g.title))")
     end
+    for g in listnodes(st, :g)
+        kind = goal_structured_kind(g)
+        (kind === nothing || kind === :manual) && continue
+        ntar = _parse_nonneg_int(strip(string(get(g.fields, :fitness_target, ""))))
+        (ntar === nothing || ntar <= 0) && continue
+        total = aggregate_fitness_delta(st, g.id)
+        if total < ntar && g.status === :verified
+            push!(out, "verified goal below target: $(g.id) ($(g.title)) total=$total target=$ntar")
+        end
+    end
     rs = ready(st)
     if isempty(rs)
         has_open_gap = false

@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:e96df425349af1418765aa904ceb688163b067f6252c57fee2f110aeb7d90c15
+# checksum: sha256:1193f274bf95f5efd18e5b64ede56b6cb3c94a102048e344eaec2bbe6d02ed71
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -36,7 +36,7 @@ g G-49 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_update
 g G-50 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T20:29:47Z "Goal status derivation stays truthful across work transitions in both implementations"
   area: A-01
   fitness_target: 5
-  fitness_current: 1
+  fitness_current: 2
 
 g G-51 status=unverified fitness_kind=count t_created=2026-10-24T15:45:33Z t_updated=2026-10-24T15:45:33Z "Archive cascade completes across shared resources in both implementations"
   area: A-01
@@ -485,7 +485,7 @@ w W-216 type=bug status=done cynefin=clear t_created=2026-10-24T15:34:52Z t_upda
   evidence:
     | julia: guard_status_transition gains the :w ready branch - feature items with chain members not in validated/invalidated_acceptable are rejected at the ready door with message 'I9: <id> cannot enter ready; assumption chain must be validated or invalidated_acceptable: B-01 (proposed)'; non-feature work unaffected; progress entry unchanged; the I9 check invariant remains the backstop for states reached via undo or pre-freeze locks (unit-covered in test_invariants_guards.jl). Finding recorded: under the uniform I14 freeze a validated assumption cannot be devalidated via set (validated is terminal) - the revision lane is a successor assumption node or grove undo; the ready-gate testset asserts that freeze interaction explicitly. 16-assertion testset in test_cli_core.jl green; full file-level reruns green.
 
-w W-217 type=bug status=progress cynefin=clear session=desktop-5a9h5ko:b9ace3ea3b856f36 session_at=2026-10-24T20:14:09Z t_created=2026-10-24T15:34:54Z t_updated=2026-10-24T20:14:09Z "Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals"
+w W-217 type=bug status=done cynefin=clear t_created=2026-10-24T15:34:54Z t_updated=2026-10-24T20:29:57Z "Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals"
   goals: G-50
   fitness: G-50=+1
   surface: packages/grove/src/goal_fitness.jl, packages/grove/src/status.jl
@@ -497,6 +497,8 @@ w W-217 type=bug status=progress cynefin=clear session=desktop-5a9h5ko:b9ace3ea3
     | Q1 research findings: rederive_goals early-returns on non-done work (goal_fitness.jl mirrors fitness.rs:175-183) so rejecting or archiving a done contributor leaves goal fitness_current and verified status stale; refresh else-branch keeps verified when aggregate drops to zero; alignment triggers never surface the rot.
   evidence_strategy:
     | julia runtests testsets for reject/archive re-derivation and trigger visibility.
+  evidence:
+    | julia: rederive_goals! drops the done-only early return - any cited goal re-derives on every work status transition, so rejecting a done contributor immediately updates fitness_current and demotes the goal; refresh_goal_structured_fitness! demotes per kind (boolean: below 1 to unverified; count/metric/ratio: zero aggregate to unverified, below target stays partial) and _refresh_goal_legacy! mirrors the zero case; demotion never overwrites a declined human verdict; status.jl alignment_triggers gains 'verified goal below target: G (title) total=X target=Y' for structured kinds (count/metric + integer ratio targets); 7-assertion unit testset in test_goal_fitness.jl covers rejection demotion, below-target partial demotion, declined protection and the trigger; known residue documented for W-222: the archive sweep must call rederive for swept contributors (grove archive writes archived flags without a rederive pass today).
 
 w W-218 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:55Z t_updated=2026-10-24T15:34:57Z "Rust core ports completion guards, the manual-verify tunnel and the terminal freeze"
   goals: G-48, G-49

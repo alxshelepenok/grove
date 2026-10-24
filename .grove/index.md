@@ -7,13 +7,13 @@
 | Measure | Count | Composition |
 | --- | --- | --- |
 | C (content) | 47 | validated B 1 · answered Q 3 · accepted D 24 · active Discovery 19 |
-| V (uncertainty) | 26 | open Q 2 · pending B 4 · W below DoR 10 · uncovered surface 10 |
+| V (uncertainty) | 25 | open Q 2 · pending B 4 · W below DoR 10 · uncovered surface 9 |
 
 ## Areas
 
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
-| A-01 | Evals | 0 | 17 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 8 · uncovered surface 9 |
+| A-01 | Evals | 0 | 16 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 8 · uncovered surface 8 |
 | A-02 | API | 3 | 3 | C: validated B 0 · answered Q 0 · accepted D 3; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 10 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -35,7 +35,7 @@
 | G-47 | Accepted-decision guard texts are precise and single-sourced | count; current= target=2 | unverified |
 | G-48 | Completion guards cover blocks clearance and spike outputs at status=done in both implementations | count; current=1 target=4 | partial |
 | G-49 | Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations | count; current=2 target=5 | partial |
-| G-50 | Goal status derivation stays truthful across work transitions in both implementations | count; current=1 target=5 | partial |
+| G-50 | Goal status derivation stays truthful across work transitions in both implementations | count; current=2 target=5 | partial |
 | G-51 | Archive cascade completes across shared resources in both implementations | count; current= target=4 | unverified |
 
 ## Work items
@@ -69,7 +69,7 @@
 | W-214 | bug | Julia reference restricts manual goal verification to manual-fitness goals | G-49 | clear | ⊤ | done |  |
 | W-215 | refactor | Julia reference freezes terminal nodes behind one immutability predicate (I14) | G-49 | clear | ⊤ | done |  |
 | W-216 | bug | Julia reference gates feature ready transitions on a validated assumption chain | G-50 | clear | ⊤ | done |  |
-| W-217 | bug | Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals | G-50 | clear | ⊤ | progress |  |
+| W-217 | bug | Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals | G-50 | clear | ⊤ | done |  |
 | W-218 | bug | Rust core ports completion guards, the manual-verify tunnel and the terminal freeze | G-48, G-49 | clear | ⊥ | proposed |  |
 | W-219 | bug | Rust core ports the ready-transition gate and derivation truthfulness fixes | G-50 | clear | ⊥ | proposed |  |
 | W-220 | refactor | Conformance corpus pins completion guards, terminal immutability and derivation truthfulness | G-48, G-49, G-50 | clear | ⊥ | proposed |  |
@@ -245,7 +245,7 @@ graph TD
   W_214["W-214: Julia reference restricts manual goal verification to manual-fitness goals"]:::done
   W_215["W-215: Julia reference freezes terminal nodes behind one immutability predicate (I14)"]:::done
   W_216["W-216: Julia reference gates feature ready transitions on a validated assumption chain"]:::done
-  W_217["W-217: Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals"]:::progress
+  W_217["W-217: Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals"]:::done
   W_218["W-218: Rust core ports completion guards, the manual-verify tunnel and the terminal freeze"]:::feature
   W_219["W-219: Rust core ports the ready-transition gate and derivation truthfulness fixes"]:::feature
   W_220["W-220: Conformance corpus pins completion guards, terminal immutability and derivation truthfulness"]:::feature
