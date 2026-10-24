@@ -648,6 +648,11 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
         wip >= WIP_LIMIT_DEFAULT && (println(stderr, "I4: WIP limit ($(WIP_LIMIT_DEFAULT)) reached"); return EXIT_GUARD)
     end
     if n.kind === :w && new === :done
+        preds_clear(st, n.id) || (println(stderr, "I5: predecessors not cleared (goal blockers must be verified, not merely declined/partial/unverified)"); return EXIT_GUARD)
+        if n.type === :spike
+            has_produces = any(e -> e.label === :produces && e.from == n.id, st.edges)
+            has_produces || (println(stderr, "I2: $(n.id) is a done spike but `produces` is empty (no outgoing `produces` edges)"); return EXIT_GUARD)
+        end
         ev = get(n.fields, :evidence, String[])
         isempty(ev) && (println(stderr, "I3: $(n.id) has no evidence; use `grove evidence $(n.id) \"…\"`"); return EXIT_GUARD)
         gs = get(n.fields, :goals, String[])

@@ -182,3 +182,78 @@ end
         rm(tmp; recursive=true, force=true)
     end
 end
+
+function capture_stderr_core(args)
+    out_path, out_io = mktemp()
+    close(out_io)
+    rc = Ref(-1)
+    open(out_path, "w") do f
+        redirect_stderr(f) do
+            rc[] = M.main(args)
+        end
+    end
+    txt = read(out_path, String)
+    rm(out_path, force=true)
+    rc[], txt
+end
+
+@testset "cli: status=done guards blocks clearance and spike outputs (issue 71)" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1",
+                      "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "q", "--title=Unresolved prerequisite", "--cynefin=complicated",
+                      "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
+                      "--title=Dependent work", "--root=$tmp", "--quiet"]) == 0
+        for fn = ("ac", "hypothesis", "evidence_strategy")
+            @test M.main(["field", "W-01", fn, "add", "x", "--root=$tmp", "--quiet"]) == 0
+        end
+        @test M.main(["fitness", "W-01", "G-01", "+1", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["link", "Q-01", "blocks", "W-01", "--root=$tmp", "--quiet"]) == 0
+        # control: progress entry rejects with I5 (issue 71 setup)
+        rc, err = capture_stderr_core(["set", "W-01", "status=progress", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("I5: predecessors not cleared", err)
+        # the fix: done rejects with the same I5 text before evidence validation
+        rc, err = capture_stderr_core(["set", "W-01", "status=done", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("I5: predecessors not cleared", err)
+        # completion succeeds after legitimate predecessor clearance
+        @test M.main(["set", "Q-01", "status=answered", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["evidence", "W-01", "e", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "W-01", "status=done", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["W-01"].status == :done
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end
+
+@testset "cli: done spike without produces rejects with I2 before evidence" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1",
+                      "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "w", "--type=spike", "--cynefin=complex", "--goals=G-01",
+                      "--title=Probe", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["fitness", "W-01", "G-01", "+1", "--root=$tmp", "--quiet"]) == 0
+        # I2 precedes I3: no evidence staged yet, message must still be I2
+        rc, err = capture_stderr_core(["set", "W-01", "status=done", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("I2: W-01 is a done spike but `produces` is empty", err)
+        # producing a decision clears the gate
+        @test M.main(["add", "d", "--title=Finding", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["link", "W-01", "produces", "D-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["evidence", "W-01", "e", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "W-01", "status=done", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["W-01"].status == :done
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end

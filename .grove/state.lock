@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:d8cbbd3bbf15e6b5c5d159f9cc872de21d6b1e989bce64ff765158f1af29ce9b
+# checksum: sha256:e2b377e730bd634982aa685395bf0ebcdf7de145f2c650fbe421acae8f8bd723
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -22,6 +22,23 @@ g G-46 status=unverified fitness_kind=count t_created=2026-10-24T00:32:10Z t_upd
 g G-47 status=unverified fitness_kind=count t_created=2026-10-24T00:32:10Z t_updated=2026-10-24T00:32:10Z "Accepted-decision guard texts are precise and single-sourced"
   area: A-02
   fitness_target: 2
+
+g G-48 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T17:11:13Z "Completion guards cover blocks clearance and spike outputs at status=done in both implementations"
+  area: A-01
+  fitness_target: 4
+  fitness_current: 1
+
+g G-49 status=unverified fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T15:34:47Z "Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations"
+  area: A-01
+  fitness_target: 5
+
+g G-50 status=unverified fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T15:34:47Z "Goal status derivation stays truthful across work transitions in both implementations"
+  area: A-01
+  fitness_target: 5
+
+g G-51 status=unverified fitness_kind=count t_created=2026-10-24T15:45:33Z t_updated=2026-10-24T15:45:33Z "Archive cascade completes across shared resources in both implementations"
+  area: A-01
+  fitness_target: 4
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -405,6 +422,153 @@ w W-212 type=refactor status=done cynefin=clear t_created=2026-10-24T00:32:42Z t
   evidence:
     | Rust: guards suite 28/28 with the field loop now iterating field_order(Kind::D) and the setup deriving forms via field_form; corpus replay 29/29 byte-identical; cargo test -p grove-core green. Julia: test_cli_core derives the tuple from FIELD_ORDER[:d], the ordered catalog the lock writer iterates; Pkg.test passed with conformance 28 scenarios green and the decision-immutability replay byte-identical. lib.rs re-exports field_form and field_order so integration tests reach the production catalog; the diff removes no tests (28 guards tests before and after).
 
+w W-213 type=bug status=done cynefin=clear t_created=2026-10-24T15:34:48Z t_updated=2026-10-24T17:11:13Z "Julia reference rejects status=done with unmet blocks clearance (I5) and produces-less spikes (I2)"
+  goals: G-48
+  fitness: G-48=+1
+  surface: packages/grove/src/cli.jl, packages/grove/test/test_invariants_guards.jl
+  ac:
+    | grove set W status=done from any non-terminal status with an open blocks predecessor (Q open, G partial/unverified/declined, B proposed/testing, W ready/progress/done) exits 4 with the I5 predecessor text; a done spike without any outgoing produces edge exits 4 with the I2 text; both rejects precede evidence and fitness validation in message order; completion succeeds after legitimate predecessor clearance (issue #71 scenario).
+  hypothesis:
+    | the done branch can reuse the progress-branch predicates (preds_clear plus a spike produces check) without touching the progress path
+  repro:
+    | issue alxshelepenok/grove#71 scenario: shared W with an open Q blocks-edge; set status=progress rejects with I5 (exit 4) while set status=done succeeded (bug); plus a done spike without any produces edge must reject with I2.
+  evidence_strategy:
+    | julia runtests new testsets; conformance corpus scenario i5-done recorded from the fixed julia and replayed byte-identical by rust fit.
+  evidence:
+    | julia: guard_status_transition done branch now runs I5 preds_clear and the spike produces check before I3/I10 (message texts single-sourced with the progress branch and the i2 invariant); order I5->I2->I3->I10 per AC; two new CLI testsets in test_cli_core.jl (issue-71 scenario: progress and done both reject I5, done succeeds after answering the blocker; spike: I2 precedes I3, produces edge clears the gate) - 30 assertions green; full runtests green x2 (one flake run hit a pre-existing Windows ENOTEMPTY cleanup race in test_projects.jl:246 promote testset, unrelated subsystem, 0 failed); conformance 28 scenarios still green (rust port and corpus pinning are W-218/W-220).
+
+w W-214 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:49Z t_updated=2026-10-24T15:34:50Z "Julia reference restricts manual goal verification to manual-fitness goals"
+  goals: G-49
+  fitness: G-49=+1
+  surface: packages/grove/src/cli.jl, packages/grove/test/test_cli_core.jl
+  ac:
+    | grove set G status=verified exits 4 for count/ratio/metric/boolean goals at any fitness level with a derived-status message mirroring the theme guard text; it still exits 0 for fitness_kind=manual goals (human verdict) and for declined; grove undo reverts a manual verify as today.
+  hypothesis:
+    | gating set-status by goal fitness kind forces machine-evaluated verification to flow through aggregate deltas, which the refresh code already assumes
+  evidence_strategy:
+    | julia runtests manual-tunnel testset; corpus manual-tunnel scenario.
+
+w W-215 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:34:51Z t_updated=2026-10-24T15:34:52Z "Julia reference freezes terminal nodes behind one immutability predicate (I14)"
+  goals: G-49
+  fitness: G-49=+1
+  surface: packages/grove/src/cli.jl, packages/grove/test/test_cli_core.jl
+  ac:
+    | set, field, fitness and evidence commands exit 4 against any node in a terminal status of any kind with one shared message text; grove undo, grove repair --confirm, grove renumber and system derivations (rederive_goals, refresh_goal_structured_fitness, rederive_artifacts) still mutate terminal nodes; the pointwise accepted-decision predicate collapses into the shared guard; rename of the legacy guard messages happens once.
+  hypothesis:
+    | a single predicate at mutation entry subsumes the accepted-decision guard and closes the latent mutation surface on terminal W/Q/B/Y/D/G nodes in one move
+  evidence_strategy:
+    | julia runtests cross-kind testset + corpus terminal-immutability scenario with sanctioned-lane exit-0 steps.
+
+w W-216 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:52Z t_updated=2026-10-24T15:34:54Z "Julia reference gates feature ready transitions on a validated assumption chain"
+  goals: G-50
+  fitness: G-50=+1
+  surface: packages/grove/src/cli.jl, packages/grove/test/test_dor.jl
+  ac:
+    | grove set W status=ready exits 4 for feature items whose assumption chain contains B not in validated/invalidated_acceptable; non-feature work is unaffected; progress entry behavior unchanged; grove check remains the backstop for post-ready chain invalidation.
+  hypothesis:
+    | gating ready mirrors the DoR bchain conjunct so no transition builds an I9 state; check keeps covering later devalidation
+  evidence_strategy:
+    | julia runtests ready-gate testset; corpus ready-gate scenario.
+
+w W-217 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:54Z t_updated=2026-10-24T15:34:55Z "Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals"
+  goals: G-50
+  fitness: G-50=+1
+  surface: packages/grove/src/goal_fitness.jl, packages/grove/src/status.jl
+  ac:
+    | rejecting or archiving a done contributor immediately re-derives every goal it cites (the early return on non-done work is removed); an aggregate that falls below target demotes verified to partial and an empty aggregate demotes per kind; grove status gains an alignment trigger line for a verified goal that dropped below its target.
+  hypothesis:
+    | with both derivation windows and demotion strict, a verified badge can only be stale inside a single mutation, and the trigger surfaces that case loudly
+  evidence_strategy:
+    | julia runtests testsets for reject/archive re-derivation and trigger visibility.
+
+w W-218 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:55Z t_updated=2026-10-24T15:34:57Z "Rust core ports completion guards, the manual-verify tunnel and the terminal freeze"
+  goals: G-48, G-49
+  fitness: G-48=+1, G-49=+1
+  surface: packages/core/src/guards.rs, packages/core/src/ops.rs
+  ac:
+    | guards.rs done branch runs preds_clear and the spike produces check with byte-identical stderr wording; set/field/fitness/evidence entry points reject terminal-node mutations with the shared message text; the manual-verify tunnel restriction is included; the port stays byte-identical to the julia reference.
+  hypothesis:
+    | the rust port keeps both engines parity-locked as the W-205/W-206 wave established
+  evidence_strategy:
+    | cargo test -p grove-core full suite; corpus_replay scenarios byte-identical on first pass.
+
+w W-219 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:58Z t_updated=2026-10-24T15:34:59Z "Rust core ports the ready-transition gate and derivation truthfulness fixes"
+  goals: G-50
+  fitness: G-50=+1
+  surface: packages/core/src/guards.rs, packages/core/src/fitness.rs
+  ac:
+    | guards.rs gains the ready gate; rederive_goals no longer early-returns on non-done transitions; refresh demotes below-target verified goals; grove status lists the demotion alignment trigger with the same text as julia; stderr byte-identical.
+  hypothesis:
+    | porting after the julia reference keeps the two engines behaviorally identical
+  evidence_strategy:
+    | cargo test full suite; corpus replay byte-identical.
+
+w W-220 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:34:59Z t_updated=2026-10-24T15:35:01Z "Conformance corpus pins completion guards, terminal immutability and derivation truthfulness"
+  goals: G-48, G-49, G-50
+  fitness: G-48=+1, G-49=+1, G-50=+1
+  surface: packages/grove/conformance/scenarios.jl, packages/grove/conformance/corpus
+  ac:
+    | new scenarios recorded from the fixed julia: i5-done (open-blocker reject with control steps), i2-spike-done reject, manual-tunnel reject/allow, terminal-immutability exit-4 steps across kinds plus sanctioned-lane exit-0 steps, ready-gate reject, derivation-demotion steps; rust corpus_replay runs byte-identical on first pass.
+  hypothesis:
+    | the corpus is the single parity contract, so pinning the fixed semantics keeps engines aligned without per-suite drift (W-207 pattern)
+  evidence_strategy:
+    | conformance run prints N scenarios green including the new ones; rust corpus_replay byte-identical.
+
+w W-221 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:35:02Z t_updated=2026-10-24T15:35:04Z "Skill docs sync for the terminal-immutability family"
+  goals: G-48, G-49, G-50
+  fitness: G-48=+1, G-49=+1, G-50=+1
+  surface: docs/skills/grove/references/model.md, docs/skills/grove/references/cli.md, docs/skills/grove/references/rules.md
+  ac:
+    | model.md adds I14 with the manual-verify tunnel and states transition-time enforcement for I2 and I5; cli.md guarded-transition table gains I2/I5 on the done line and documents terminal-node rejection plus sanctioned lanes; rules.md documents system-derivation exceptions and the demotion alignment trigger; reflow stays at width 80.
+  hypothesis:
+    | updating the formal model, the cli table and guard texts inside one family keeps doc drift zero
+  evidence_strategy:
+    | docs diff review; skill sync note in the family evidence.
+
+w W-222 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:45:33Z t_updated=2026-10-24T16:18:01Z "Julia reference completes the archive cascade for shared resources"
+  goals: G-51
+  fitness: G-51=+1
+  surface: packages/grove/src/archive.jl, packages/grove/test/test_archive_exclusive.jl
+  ac:
+    | cmd_archive keeps the exclusive mass computation unchanged and runs the completion sweep over non-archived w/d/q/b: raw goal-reference set non-empty and live citations empty marks the node archived and lists it in the archive journal record; themes, discoveries, areas and goal-less nodes are never swept; the sweep set is computed before mutations and the progress-session guard extends to it (a foreign-session swept progress work item rejects the whole archive atomically); the goals fields of citing nodes are never rewritten.
+  hypothesis:
+    | a completion sweep inside the existing archive command takes the shared resource with the last goal without rewriting citations and without moving the mass predicate
+  evidence_strategy:
+    | julia runtests archive-cascade testsets; corpus scenario recorded from the fixed julia.
+
+w W-223 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:45:35Z t_updated=2026-10-24T16:18:03Z "Rust core ports the archive-cascade completion fix"
+  goals: G-51
+  fitness: G-51=+1
+  surface: packages/core/src/archive.rs
+  ac:
+    | cmd_archive gains the completion sweep with byte-identical stderr wording to the julia reference; goal_reference_sets is not modified, so distill pools and stats archive pools stay byte-stable; swept ids join the archive journal record identically; same pre-mutation session-guard extension as julia.
+  hypothesis:
+    | the port keeps both engines parity-locked on the sweep path while leaving the shared predicate and its downstream consumers untouched
+  evidence_strategy:
+    | cargo test -p grove-core suite; corpus_replay archive-cascade scenario byte-identical on first pass.
+
+w W-224 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:45:36Z t_updated=2026-10-24T16:18:03Z "Conformance corpus pins the archive cascade scenario"
+  goals: G-51
+  fitness: G-51=+1
+  surface: packages/grove/conformance/scenarios.jl, packages/grove/conformance/corpus
+  ac:
+    | new scenario archive-cascade.json recorded from the fixed julia: shared W citing two verified goals, distill-null both; after archive G-01 the W stays active and its goals field still reads both citations (field-intactness assertion); after archive G-02 the W is archived and the goals field is still intact; a legacy-orphan step shows a node citing only archived goals converging at the next archive; rust corpus_replay byte-identical on first pass.
+  hypothesis:
+    | the corpus is the single parity contract for the cascade semantics (W-207 pattern)
+  evidence_strategy:
+    | conformance run prints N scenarios green including archive-cascade; rust corpus_replay byte-identical.
+
+w W-225 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:45:38Z t_updated=2026-10-24T16:18:04Z "Skill docs sync for the archive cascade semantics"
+  goals: G-51
+  fitness: G-51=+1
+  surface: docs/skills/grove/references/cli.md, docs/skills/grove/references/rules.md
+  ac:
+    | cli.md archive section documents the completion sweep (raw reference set non-empty, live citations empty), states that goals fields are never rewritten and that dangling citations are a legal transitional state, and lists the sweep among sanctioned system lanes; rules.md notes the sweep lane and the atomic session-guard extension; reflow stays at width 80.
+  hypothesis:
+    | updating the archive section and the sanctioned-lane list inside the same decision supersedes stale wording in cli.md: archive sweeps nodes exclusive to that goal
+  evidence_strategy:
+    | docs diff review against the fixed behavior and the superseding decision.
+
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
     | the reference system's strongest invariant was 'CI never sees the signing key' (offline hardware host, PIV slots); Grove is a single-maintainer OSS project with no paid certificate story
@@ -644,6 +808,54 @@ d D-52 status=accepted t_created=2026-10-24T00:32:12Z t_updated=2026-10-24T00:32
     | Keep the guard as is: from accepted only superseded is legal, and the message helper becomes status-aware so a rejected attempt explains that an accepted decision cannot be rejected and points to supersession instead.
   consequences:
     | One message site per implementation gains a target-status parameter; Rust and Julia texts stay byte-identical; the conformance corpus pins both texts; no lifecycle change.
+
+d D-53 status=accepted t_created=2026-10-24T15:34:42Z t_updated=2026-10-24T15:45:30Z "Terminal statuses impose uniform immutability with sanctioned lanes"
+  context:
+    | Terminal statuses exist for every kind (model.md terminality, status is_terminal). Today only accepted decisions are mutation-blocked (fixes W-205/W-206); done/rejected/archived work, verified goals, terminal Q/B/Y and rejected decisions stay editable by set, field, fitness and evidence: post-done fitness/evidence/field/title on a done W all exit 0 in both implementations (verified on v0.2.1). Completion-side bypass of issue #71 (alxshelepenok/grove#71) lives in the same state machine.
+  options:
+    | (A) one uniform terminal-mutation guard with a fixed list of sanctioned lanes; (B) per-kind mutation table expanding the accepted-decision predicate; (C) no user-command guard, rely on post-hoc rederive and check.
+  decision:
+    | Adopt (A). For any node in a terminal status, the user-fired commands set, field, fitness and evidence are rejected with exit 4 and one shared message text, mirrored byte-identical in both engines and single-sourced (goal G-47 style). Sanctioned lanes that stay permitted: grove undo, grove repair --confirm, grove renumber (which keeps its done-evidence fingerprint refusal), and system derivations (rederive_goals, refresh_goal_structured_fitness, rederive_artifacts) which must keep writing terminal nodes. Manual tunnel: set G-NN status=verified is rejected for structured fitness kinds (count/ratio/metric/boolean, machine-evaluated) and remains the only manual path for fitness_kind=manual goals. Formalize as invariant I14 in model.md; the pointwise accepted-decision predicate collapses into the shared guard.
+  consequences:
+    | W done/rejected/archived, G verified/declined, D rejected/superseded, Q answered/deferred/dropped, B validated/invalidated_*, Y superseded become immutable to user commands. Goal status is derived state, not user state: rederive must run on rejected/archived transitions and refresh must demote below-target verified goals (own work items in this family) so the badge cannot silently rot. Manual goal verdicts become irreversible by design; correction happens via grove undo.
+  validation:
+    | corpus scenario terminal-immutability.json: exit-4 steps for set/field/fitness/evidence across terminal statuses of all kinds, exit-0 steps for sanctioned lanes; recorded from the fixed julia, replayed byte-identical by rust (W-207 pattern).
+
+d D-54 status=accepted t_created=2026-10-24T15:34:44Z t_updated=2026-10-24T15:34:46Z "I8 (chaotic-question human-only transitions) stays at the skill layer"
+  context:
+    | I8 is formally declared (model.md: forall q in Q with cynefin(q)=chaotic, status transitions only via human) but unimplemented in both engines: chaotic appears only in the DoR conjunct (dor.rs cynefin neq chaotic) and in alignment triggers (status.rs). The CLI cannot distinguish a human invocation from an agent invocation.
+  options:
+    | (a) implement a human-only status gate in code; (b) remove I8 from the formal model; (c) hold the invariant at the skill layer via agent-facing protocol instructions.
+  decision:
+    | (c). Keep model.md I8 as written, enforce through SKILL.md hard constraints and protocol.md guidance; no new code work items. Maintainainer-invoked status changes on chaotic questions are an operator responsibility.
+  consequences:
+    | No corpus scenario for I8; the invariant is behavioral, not structural. If the CLI later gains an auth/role notion, the decision can be revisited via a superseding record.
+  validation:
+    | protocol.md contract for assistants; spot review that no code work item targets I8 in this family.
+
+d D-55 status=accepted t_created=2026-10-24T15:45:30Z t_updated=2026-10-24T16:17:58Z "Archive cascade rewrites goal citations and archives the orphaned shared resource"
+  context:
+    | Amends D-53 and adds the archive-cascade semantics. Today grove archive G-NN moves the goal and its exclusive mass only: exclusive_want compares a node's transitive reference set against the set containing exactly the closing goal, and archived goals are not subtracted from a W's goals list. Verified on v0.2.1 with a shared W citing G-01 and G-02: archive G-01 legitimately leaves the W active (documented exclusive-mass behavior, cli.md: archive sweeps nodes exclusive to that goal), but archive G-02 also leaves the W active forever because its reference set still contains the already-archived G-01, and grove check reports nothing (no invariant covers W goals citing archived goals).
+  options:
+    | (A) subtract the closing goal from every active non-terminal citing node's goals list on archive, ignore archived citations in mass computation, and archive the node with the last goal when its citation list runs empty; (B) leave lists untouched and surface orphaned shared work via an alignment trigger plus a manual archive path; (C) keep and document the current after-last-goal inaction.
+  decision:
+    | Adopt (A) as an amendment to D-53. Sanctioned system lanes extend with the archive cascade: it may rewrite the goals lists of active non-terminal nodes citing the closed goal and may set archived=true inside the strict exclusive mass. Mass computation must ignore archived citations so legacy locks (a W citing an archived goal plus a fresh goal) still complete: archiving the remaining fresh goal takes the orphaned W into the mass. Discoveries are never archived; D/Q/B mass rules and progress-session guards unchanged.
+  consequences:
+    | Shared resources survive early goal archives (their lists shrink) and are taken by the last archived goal (auto-archived with empty or all-archived citations). Existing locks with dangling citations complete on the next archive without a repair step. User-fired set/field/fitness/evidence immutability from D-53 stands unchanged.
+  validation:
+    | corpus scenario archive-cascade.json: shared W citing two verified goals, distill-null both, archive G-01 asserts the W stays active with a rewritten goals list, archive G-02 asserts the W joins the mass; legacy-orphan step archives the W with the remaining fresh goal; recorded from the fixed julia, replayed byte-identical by rust.
+
+d D-56 status=accepted t_created=2026-10-24T16:17:58Z t_updated=2026-10-24T16:18:00Z "Archive completion sweep takes the shared resource with the last goal"
+  context:
+    | Supersedes D-55. Both records solve the same verified defect: a shared W citing G-01 and G-02 survives archive G-01 legitimately (documented exclusive-mass semantics) but also survives archive G-02 forever, because its reference set still contains the archived G-01 and grove check is silent (exclusive_want, archive.rs:89-109; julia archive.jl:64). D-55 prescribed rewriting the goals lists of citing nodes; review flagged that this destroys W-to-goal provenance in the goals fields, which the renumber fingerprint guard (docs cli.md 227-232) treats as meaningful, and contradicts the D-53 philosophy of not mutating existing records. A cleaner variant set was researched; the sweep keeps every field untouched and closes the same gap.
+  options:
+    | (V1) membership over live citations: exclusive_want compares the reference set filtered to non-archived goals; conceptually clean but the predicate is load-bearing in three subsystems (archive archive.rs:237, distill pool distill.rs:57 and 85-93, stats archive pool stats.rs:578; julia cli.jl:935, 953, stats.jl:301), so distill pools and stats telemetry shift and their corpus scenarios need re-recording; legacy nodes whose goals are all already archived never converge because the filtered set is empty and matches no future mass. (V2) completion sweep: keep the mass predicate untouched; after the mass is marked, one pass over non-archived w/d/q/b archives any node whose raw reference set is non-empty and whose live citations are empty. (V3) visibility-only trigger plus manual archive, no automation.
+  decision:
+    | Adopt V2. cmd_archive computes the exclusive mass exactly as today, then runs the completion sweep over non-archived w/d/q/b: raw reference set non-empty and live (non-archived) citations empty means archived=true, with swept ids appended to the same audit-only journal archive record. Themes, discoveries and areas are never swept (theme status is derived from live work, algebra parity rust algebra.rs:127-160 / julia algebra.jl:106-110); a node with an empty raw reference set is never swept. The sweep set is computed before any mutation and the progress-session pre-check extends to it: a swept progress work item held by a foreign session rejects the whole archive atomically. The sweep is a sanctioned system lane of the D-53 immutability rule, alongside undo, repair --confirm, renumber and the derivations; user-fired set, field, fitness and evidence remain rejected on terminal nodes.
+  consequences:
+    | Goals fields are never rewritten: provenance of done work under archived goals survives intact, and dangling citations are a legal transitional state by definition (raw non-empty, live empty is exactly the swept condition). The last archive of a node's affiliation takes the resource, order-independently. Legacy fossils converge at the next archive of any goal. distill pools and stats telemetry stay byte-stable because the mass predicate does not move. No conformance re-records beyond the new archive-cascade scenario itself.
+  validation:
+    | corpus scenario archive-cascade.json recorded from the fixed julia: shared W citing two verified goals; after archive G-01 the W stays active and its goals field still reads G-01,G-02 (field intactness assertion); after archive G-02 the W is archived with the goals field still intact; a legacy-orphan step archives a node citing only already-archived goals at the next archive; rust corpus_replay byte-identical on first pass.
 
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
@@ -1086,6 +1298,8 @@ e D-32 supersedes D-31 t_created=2026-08-30T21:48:11Z
 e D-37 supersedes D-34 t_created=2026-09-17T15:44:19Z
 e D-47 supersedes D-41 t_created=2026-10-23T10:01:57Z
 e D-49 supersedes D-45 t_created=2026-10-23T18:20:12Z
+e D-55 supersedes D-53 t_created=2026-10-24T15:45:30Z
+e D-56 supersedes D-55 t_created=2026-10-24T16:17:58Z
 e Q-01 asks W-06 t_created=2026-07-19T01:19:10Z
 e Q-02 asks W-09 t_created=2026-07-19T01:19:17Z
 e Q-05 asks W-103 t_created=2026-08-17T10:53:14Z
