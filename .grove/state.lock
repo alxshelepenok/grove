@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:e2b377e730bd634982aa685395bf0ebcdf7de145f2c650fbe421acae8f8bd723
+# checksum: sha256:c5f9ddf11599e743dc69c1b24187f02decf5d3e852ba7d8ca3bdcae936b8129c
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -28,9 +28,10 @@ g G-48 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_update
   fitness_target: 4
   fitness_current: 1
 
-g G-49 status=unverified fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T15:34:47Z "Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations"
+g G-49 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T17:30:46Z "Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations"
   area: A-01
   fitness_target: 5
+  fitness_current: 1
 
 g G-50 status=unverified fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T15:34:47Z "Goal status derivation stays truthful across work transitions in both implementations"
   area: A-01
@@ -437,16 +438,21 @@ w W-213 type=bug status=done cynefin=clear t_created=2026-10-24T15:34:48Z t_upda
   evidence:
     | julia: guard_status_transition done branch now runs I5 preds_clear and the spike produces check before I3/I10 (message texts single-sourced with the progress branch and the i2 invariant); order I5->I2->I3->I10 per AC; two new CLI testsets in test_cli_core.jl (issue-71 scenario: progress and done both reject I5, done succeeds after answering the blocker; spike: I2 precedes I3, produces edge clears the gate) - 30 assertions green; full runtests green x2 (one flake run hit a pre-existing Windows ENOTEMPTY cleanup race in test_projects.jl:246 promote testset, unrelated subsystem, 0 failed); conformance 28 scenarios still green (rust port and corpus pinning are W-218/W-220).
 
-w W-214 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:49Z t_updated=2026-10-24T15:34:50Z "Julia reference restricts manual goal verification to manual-fitness goals"
+w W-214 type=bug status=done cynefin=clear t_created=2026-10-24T15:34:49Z t_updated=2026-10-24T17:30:46Z "Julia reference restricts manual goal verification to manual-fitness goals"
   goals: G-49
   fitness: G-49=+1
   surface: packages/grove/src/cli.jl, packages/grove/test/test_cli_core.jl
   ac:
     | grove set G status=verified exits 4 for count/ratio/metric/boolean goals at any fitness level with a derived-status message mirroring the theme guard text; it still exits 0 for fitness_kind=manual goals (human verdict) and for declined; grove undo reverts a manual verify as today.
+    | grove add g --status=verified exits 4 for structured fitness kinds (same derived-status family) and exits 0 for fitness_kind=manual; existing archive-gate test migrated to the manual kind as the legitimate human-verdict path.
   hypothesis:
     | gating set-status by goal fitness kind forces machine-evaluated verification to flow through aggregate deltas, which the refresh code already assumes
+  repro:
+    | verified empirically in the P1 research: grove set G-02 status=verified exits 0 on a count-kind goal at 0/5 target in both engines (manual verify bypass forges the I5 terminal-plus clearance); the gate must reject structured kinds and keep the manual-kind human verdict.
   evidence_strategy:
     | julia runtests manual-tunnel testset; corpus manual-tunnel scenario.
+  evidence:
+    | julia: guard_status_transition gains the :g branch rejecting set status=verified unless goal_structured_kind == :manual (legacy no-kind goals rejected too - both are machine-derived via refresh paths); cmd_add :g branch rejects add g --status=verified on the same condition (both engines accepted it before - second bypass closed); single-sourced message family 'derived from fitness deltas' mirroring the theme guard text; test_cli_core manual-tunnel testset (set reject 4 + message, manual verify 0, undo reverts, declined settable on structured, add-time reject 4 / manual 0); test_cli_integrity archive-gate goal migrated count->manual; targeted suites green, full runtests 0 failed (one Windows ENOTEMPTY teardown flake in test_discovery_behavior.jl:159, passes standalone, same pre-existing class as the W-213 run flake); conformance not touched (rust port is W-218).
 
 w W-215 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:34:51Z t_updated=2026-10-24T15:34:52Z "Julia reference freezes terminal nodes behind one immutability predicate (I14)"
   goals: G-49

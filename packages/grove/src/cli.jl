@@ -255,6 +255,10 @@ function cmd_add(ctx::CliCtx, pos, kw)
                     (println(stderr, "add g: --fitness-target is required for --fitness-kind=$fk2"); return EXIT_ERR)
             end
         end
+        if n.status === :verified && goal_structured_kind(n) !== :manual
+            println(stderr, "add g: --status=verified is derived from fitness deltas; only fitness_kind=manual goals take a human verdict")
+            return EXIT_GUARD
+        end
     elseif kind === :d
         n.status = Symbol(get(kw, "status", "proposed"))
     elseif kind === :q
@@ -631,6 +635,10 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
     end
     if n.kind === :a
         println(stderr, "area status is structural; cannot set")
+        return EXIT_GUARD
+    end
+    if n.kind === :g && new === :verified && goal_structured_kind(n) !== :manual
+        println(stderr, "goal $(n.id) status is derived from fitness deltas; cannot set manually (only fitness_kind=manual goals take a human verdict)")
         return EXIT_GUARD
     end
     if n.kind === :w && new === :progress

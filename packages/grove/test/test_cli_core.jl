@@ -257,3 +257,40 @@ end
         rm(tmp; recursive=true, force=true)
     end
 end
+
+@testset "cli: manual goal verification restricted to manual-fitness goals" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=Counted", "--fitness-kind=count", "--fitness-target=1",
+                      "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=Judged", "--fitness-kind=manual",
+                      "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        # structured kind: derived status, human set rejected at any fitness level
+        rc, err = capture_stderr_core(["set", "G-01", "status=verified", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("derived from fitness deltas", err)
+        # manual kind: human verdict passes, and undo reverts it
+        @test M.main(["set", "G-02", "status=verified", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["G-02"].status == :verified
+        @test M.main(["undo", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["G-02"].status == :unverified
+        # declined stays a settable human verdict on a structured goal
+        @test M.main(["set", "G-01", "status=declined", "--root=$tmp", "--quiet"]) == 0
+        # add-time bypass: --status=verified rejected for structured, allowed for manual
+        rc, err = capture_stderr_core(["add", "g", "--title=Sneaky", "--fitness-kind=count",
+                                       "--fitness-target=3", "--area=A-01",
+                                       "--status=verified", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("derived from fitness deltas", err)
+        @test M.main(["add", "g", "--title=Judge2", "--fitness-kind=manual", "--area=A-01",
+                      "--status=verified", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["G-03"].status == :verified
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end

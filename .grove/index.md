@@ -7,13 +7,13 @@
 | Measure | Count | Composition |
 | --- | --- | --- |
 | C (content) | 47 | validated B 1 · answered Q 3 · accepted D 24 · active Discovery 19 |
-| V (uncertainty) | 33 | open Q 2 · pending B 4 · W below DoR 14 · uncovered surface 13 |
+| V (uncertainty) | 31 | open Q 2 · pending B 4 · W below DoR 13 · uncovered surface 12 |
 
 ## Areas
 
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
-| A-01 | Evals | 0 | 24 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 12 · uncovered surface 12 |
+| A-01 | Evals | 0 | 22 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 11 · uncovered surface 11 |
 | A-02 | API | 3 | 3 | C: validated B 0 · answered Q 0 · accepted D 3; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 10 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -34,7 +34,7 @@
 | G-46 | Supersession completes the old decision in one command | count; current= target=1 | unverified |
 | G-47 | Accepted-decision guard texts are precise and single-sourced | count; current= target=2 | unverified |
 | G-48 | Completion guards cover blocks clearance and spike outputs at status=done in both implementations | count; current=1 target=4 | partial |
-| G-49 | Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations | count; current= target=5 | unverified |
+| G-49 | Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations | count; current=1 target=5 | partial |
 | G-50 | Goal status derivation stays truthful across work transitions in both implementations | count; current= target=5 | unverified |
 | G-51 | Archive cascade completes across shared resources in both implementations | count; current= target=4 | unverified |
 
@@ -66,7 +66,7 @@
 | W-211 | refactor | Accepted-decision predicate collapses into a single helper | G-47 | clear | ⊤ | ready |  |
 | W-212 | refactor | Test catalogs derive from production field catalogs | G-45 | clear | ⊤ | done |  |
 | W-213 | bug | Julia reference rejects status=done with unmet blocks clearance (I5) and produces-less spikes (I2) | G-48 | clear | ⊤ | done |  |
-| W-214 | bug | Julia reference restricts manual goal verification to manual-fitness goals | G-49 | clear | ⊥ | proposed |  |
+| W-214 | bug | Julia reference restricts manual goal verification to manual-fitness goals | G-49 | clear | ⊤ | done |  |
 | W-215 | refactor | Julia reference freezes terminal nodes behind one immutability predicate (I14) | G-49 | clear | ⊥ | proposed |  |
 | W-216 | bug | Julia reference gates feature ready transitions on a validated assumption chain | G-50 | clear | ⊥ | proposed |  |
 | W-217 | bug | Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals | G-50 | clear | ⊥ | proposed |  |
@@ -241,7 +241,7 @@ graph TD
   W_211["W-211: Accepted-decision predicate collapses into a single helper"]:::ready
   W_212["W-212: Test catalogs derive from production field catalogs"]:::done
   W_213["W-213: Julia reference rejects status=done with unmet blocks clearance (I5) and produces-less spikes (I2)"]:::done
-  W_214["W-214: Julia reference restricts manual goal verification to manual-fitness goals"]:::feature
+  W_214["W-214: Julia reference restricts manual goal verification to manual-fitness goals"]:::done
   W_215["W-215: Julia reference freezes terminal nodes behind one immutability predicate (I14)"]:::feature
   W_216["W-216: Julia reference gates feature ready transitions on a validated assumption chain"]:::feature
   W_217["W-217: Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals"]:::feature
