@@ -130,3 +130,55 @@ end
         rm(tmp; recursive=true, force=true)
     end
 end
+
+@testset "cli: accepted decision rejects field and set title mutations" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "d", "--title=Original decision", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["field", "D-01", "decision", "add", "Original body.", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "D-01", "status=accepted", "--root=$tmp", "--quiet"]) == 0
+        for fn in string.(M.FIELD_ORDER[:d])
+            @test M.main(["field", "D-01", fn, "add", "Replacement", "--root=$tmp", "--quiet"]) == 4
+            @test M.main(["field", "D-01", fn, "clear", "--root=$tmp", "--quiet"]) == 4
+            @test M.main(["field", "D-01", fn, "rm", "1", "--root=$tmp", "--quiet"]) == 4
+        end
+        for kv in ("title=Replacement title", "cynefin=complicated", "type=feature", "status=proposed")
+            @test M.main(["set", "D-01", kv, "--root=$tmp", "--quiet"]) == 4
+        end
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["D-01"].fields[:decision] == ["Original body."]
+        @test st.nodes["D-01"].title == "Original decision"
+        @test st.nodes["D-01"].status == :accepted
+        @test M.main(["add", "d", "--title=Replacement decision", "--supersedes=D-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["field", "D-02", "decision", "add", "New body.", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "D-02", "status=accepted", "--root=$tmp", "--quiet"]) == 0
+        st2 = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st2.nodes["D-02"].status == :accepted
+        @test M.main(["undo", "--root=$tmp", "--quiet"]) == 0
+        st3 = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st3.nodes["D-02"].status == :proposed
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end
+
+@testset "cli: unknown field and unsupported key diagnostics precede the accepted-decision guard" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "d", "--title=T", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["field", "D-01", "decision", "add", "B", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "D-01", "status=accepted", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["field", "D-01", "nosuch", "add", "x", "--root=$tmp", "--quiet"]) == 1
+        @test M.main(["set", "D-01", "nosuchkey=V", "--root=$tmp", "--quiet"]) == 1
+        @test M.main(["field", "D-01", "decision", "add", "x", "--root=$tmp", "--quiet"]) == 4
+        @test M.main(["set", "D-01", "title=Replacement", "--root=$tmp", "--quiet"]) == 4
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["D-01"].fields[:decision] == ["B"]
+        @test st.nodes["D-01"].title == "T"
+        @test st.nodes["D-01"].status == :accepted
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end

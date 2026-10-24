@@ -20,6 +20,10 @@ impl GuardVerdict {
     }
 }
 
+pub fn accepted_decision_msg(id: &str) -> String {
+    format!("decision {id} is accepted; create a new D with --supersedes")
+}
+
 pub fn guard_status_transition(st: &State, n: &Node, new: &str) -> GuardVerdict {
     if !status_set(n.kind).contains(&new) {
         return GuardVerdict::Invalid(vec![format!(
@@ -78,10 +82,7 @@ pub fn guard_status_transition(st: &State, n: &Node, new: &str) -> GuardVerdict 
         }
     }
     if n.kind == Kind::D && n.status == "accepted" && new != "superseded" {
-        return GuardVerdict::Reject(vec![format!(
-            "decision {} is accepted; create a new D with --supersedes",
-            n.id
-        )]);
+        return GuardVerdict::Reject(vec![accepted_decision_msg(&n.id)]);
     }
     if n.kind == Kind::Y {
         let cur = n.status.as_str();

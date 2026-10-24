@@ -37,7 +37,7 @@ mod times;
 mod toml;
 
 pub use checksum::{checksum_of, verify_checksum};
-pub use model::{Edge, FieldValue, Form, Kind, Node, State};
+pub use model::{field_form, field_order, Edge, FieldValue, Form, Kind, Node, State};
 pub use parse::{parse, parse_fixture, parse_strict, ParseError, ParseMode};
 pub use serialize::{serialize, serialize_body};
 
