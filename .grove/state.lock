@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:c5f9ddf11599e743dc69c1b24187f02decf5d3e852ba7d8ca3bdcae936b8129c
+# checksum: sha256:9e150180ad097bbbbce12e5a9bf42237830a7259a878e319ea8111469ce98fc0
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -31,7 +31,7 @@ g G-48 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_update
 g G-49 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T17:30:46Z "Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations"
   area: A-01
   fitness_target: 5
-  fitness_current: 1
+  fitness_current: 2
 
 g G-50 status=unverified fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T15:34:47Z "Goal status derivation stays truthful across work transitions in both implementations"
   area: A-01
@@ -454,7 +454,7 @@ w W-214 type=bug status=done cynefin=clear t_created=2026-10-24T15:34:49Z t_upda
   evidence:
     | julia: guard_status_transition gains the :g branch rejecting set status=verified unless goal_structured_kind == :manual (legacy no-kind goals rejected too - both are machine-derived via refresh paths); cmd_add :g branch rejects add g --status=verified on the same condition (both engines accepted it before - second bypass closed); single-sourced message family 'derived from fitness deltas' mirroring the theme guard text; test_cli_core manual-tunnel testset (set reject 4 + message, manual verify 0, undo reverts, declined settable on structured, add-time reject 4 / manual 0); test_cli_integrity archive-gate goal migrated count->manual; targeted suites green, full runtests 0 failed (one Windows ENOTEMPTY teardown flake in test_discovery_behavior.jl:159, passes standalone, same pre-existing class as the W-213 run flake); conformance not touched (rust port is W-218).
 
-w W-215 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:34:51Z t_updated=2026-10-24T15:34:52Z "Julia reference freezes terminal nodes behind one immutability predicate (I14)"
+w W-215 type=refactor status=done cynefin=clear t_created=2026-10-24T15:34:51Z t_updated=2026-10-24T20:09:17Z "Julia reference freezes terminal nodes behind one immutability predicate (I14)"
   goals: G-49
   fitness: G-49=+1
   surface: packages/grove/src/cli.jl, packages/grove/test/test_cli_core.jl
@@ -462,8 +462,12 @@ w W-215 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:34:5
     | set, field, fitness and evidence commands exit 4 against any node in a terminal status of any kind with one shared message text; grove undo, grove repair --confirm, grove renumber and system derivations (rederive_goals, refresh_goal_structured_fitness, rederive_artifacts) still mutate terminal nodes; the pointwise accepted-decision predicate collapses into the shared guard; rename of the legacy guard messages happens once.
   hypothesis:
     | a single predicate at mutation entry subsumes the accepted-decision guard and closes the latent mutation surface on terminal W/Q/B/Y/D/G nodes in one move
+  repro:
+    | verified in P2 research: on a done W-01 both engines accept grove field ac add / evidence add / set title / fitness (exit 0) - post-closure mutations contradict the verifiable-progress architecture; equally rejected D and superseded D and terminal Q/B/Y have no freeze at all today; only accepted D is pointwise guarded (W-205/W-206).
   evidence_strategy:
     | julia runtests cross-kind testset + corpus terminal-immutability scenario with sanctioned-lane exit-0 steps.
+  evidence:
+    | julia: terminal_freeze_msg helper (isterminal + accepted-D lane message + shared freeze text 'X is terminal (status); create a successor node or use grove undo'); guard_status_transition rejects terminal targets before all other branches except the accepted-to-superseded lane; the pointwise accepted-decision branches collapsed in guard, cmd_set and cmd_field with byte-identical preserved messages; cmd_fitness gained the freeze; cmd_evidence covered via cmd_field delegation; sanctioned lanes untouched (undo/repair/renumber/derivations verified by suite). I14 testset in test_cli_core.jl: freeze across set/field/evidence/fitness on done W, undo reverts the done transition (proposed, direct-lifecycle inverse), rejected-D frozen, accepted-D keeps supersede message, superseded transition legal, answered Q frozen; test_gate.jl surface-overflow scenario restructured to declare surface pre-done (planning-time info). Full suite green across batched runs except the two expected conformance drifts (discovery-lifecycle step 20, gate step 17) - corpus re-record deferred to W-220 per family sequencing so the rust replay stays stable until the W-218 port; three Windows ENOTEMPTY teardown flakes hit during full-suite runs (test_projects:246, test_cli_distill_prompt:45, test_cli_core:134 - different files each time, 0 failed assertions, all pass standalone, pre-existing class).
 
 w W-216 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:52Z t_updated=2026-10-24T15:34:54Z "Julia reference gates feature ready transitions on a validated assumption chain"
   goals: G-50
@@ -509,12 +513,13 @@ w W-219 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:34:58Z t_
   evidence_strategy:
     | cargo test full suite; corpus replay byte-identical.
 
-w W-220 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:34:59Z t_updated=2026-10-24T15:35:01Z "Conformance corpus pins completion guards, terminal immutability and derivation truthfulness"
+w W-220 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:34:59Z t_updated=2026-10-24T20:09:16Z "Conformance corpus pins completion guards, terminal immutability and derivation truthfulness"
   goals: G-48, G-49, G-50
   fitness: G-48=+1, G-49=+1, G-50=+1
   surface: packages/grove/conformance/scenarios.jl, packages/grove/conformance/corpus
   ac:
     | new scenarios recorded from the fixed julia: i5-done (open-blocker reject with control steps), i2-spike-done reject, manual-tunnel reject/allow, terminal-immutability exit-4 steps across kinds plus sanctioned-lane exit-0 steps, ready-gate reject, derivation-demotion steps; rust corpus_replay runs byte-identical on first pass.
+    | re-record the two scenarios that pin pre-freeze behavior: discovery-lifecycle step 20 (set Y-01 status=active on superseded now yields the terminal-freeze text instead of the illegal-y-transition text) and gate step 17 (surface declaration moves before the done transition per I14, mirroring the test_gate.jl adaptation); decision-immutability stays byte-identical because the accepted-D supersede-lane message is preserved.
   hypothesis:
     | the corpus is the single parity contract, so pinning the fixed semantics keeps engines aligned without per-suite drift (W-207 pattern)
   evidence_strategy:
@@ -938,6 +943,8 @@ t T-10 status=open t_created=2026-10-24T00:32:10Z t_updated=2026-10-24T00:32:41Z
 
 t T-11 status=open t_created=2026-10-24T00:32:11Z t_updated=2026-10-24T00:32:43Z "Test suites restate the production field catalog"
 
+t T-12 status=open t_created=2026-10-24T18:57:59Z t_updated=2026-10-24T18:59:00Z "Terminal integrity and completion gates across engines"
+
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-09-26T00:18:53Z "Normalize at capture, never inject test clocks"
   tags: normalization
   surface: packages/grove/conformance/run.jl, packages/core/tests/corpus_replay.rs
@@ -1339,6 +1346,7 @@ e T-08 causes W-183 t_created=2026-09-17T15:57:35Z
 e T-09 causes W-196 t_created=2026-10-22T23:06:30Z
 e T-10 causes W-211 t_created=2026-10-24T00:32:41Z
 e T-11 causes W-212 t_created=2026-10-24T00:32:43Z
+e T-12 causes W-215 t_created=2026-10-24T18:59:00Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z
@@ -5822,6 +5830,6 @@ t T-04 status=open t_created=2026-08-17T11:44:27Z t_updated=2026-10-22T20:14:20Z
 
 t T-05 status=done t_created=2026-08-28T22:38:42Z t_updated=2026-10-22T20:14:21Z "Graph view render loop and robustness debt"
 
-t T-07 status=done t_created=2026-08-30T17:29:26Z t_updated=2026-10-22T20:14:21Z "Desktop grows a causality cone view"
+t T-07 status=done t_created=2026-08-30T17:29:26Z t_updated=2026-10-24T18:58:59Z "Desktop grows a causality cone view"
 
 t T-08 status=done t_created=2026-09-17T13:05:27Z t_updated=2026-10-22T20:14:47Z "Skill packaging drift and dangling references"

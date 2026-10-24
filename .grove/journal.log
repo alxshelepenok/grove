@@ -4442,3 +4442,14 @@
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-24T17:30:46Z","inv":{"id":"W-214","field":"ac","op":"field_pop_last"}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-24T17:30:46Z","inv":{"id":"W-214","field":"evidence","op":"field_pop_last"}}
 {"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-24T17:30:46Z","inv":{"had_session_at_before":true,"old_w_status":"progress","had_session_before":true,"id":"W-214","op":"set_w_status_with_goals","goal_statuses":{"G-49":"unverified"},"old_session_at":"2026-10-24T17:14:24Z","old_session":"desktop-5a9h5ko:b9ace3ea3b856f36"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-24T18:57:11Z","inv":{"id":"W-215","field":"repro","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-24T18:57:11Z","inv":{"had_session_at_before":false,"old_w_status":"proposed","had_session_before":false,"id":"W-215","op":"set_w_status_with_goals","goal_statuses":{"G-49":"partial"},"old_session_at":"","old_session":""}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-24T18:57:11Z","inv":{"missing":["(A, causes, w) via materialised A"],"id":"W-215","op":"dor_reject"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"add","ts":"2026-10-24T18:57:59Z","inv":{"id":"T-12","op":"rm_node"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"link","ts":"2026-10-24T18:58:00Z","inv":{"label":"causes","to":"W-215","op":"unlink_edge","from":"T-07"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-24T18:58:00Z","inv":{"missing":["(A, causes, w) via materialised A"],"id":"W-215","op":"dor_reject"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"unlink","ts":"2026-10-24T18:58:59Z","inv":{"label":"causes","t_created":"2026-10-24T18:58:00Z","to":"W-215","op":"restore_edge","from":"T-07"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"link","ts":"2026-10-24T18:59:00Z","inv":{"label":"causes","to":"W-215","op":"unlink_edge","from":"T-12"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-24T20:09:16Z","inv":{"id":"W-220","field":"ac","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"field","ts":"2026-10-24T20:09:16Z","inv":{"id":"W-215","field":"evidence","op":"field_pop_last"}}
+{"v":1,"session":"desktop-5a9h5ko:b9ace3ea3b856f36","cmd":"set","ts":"2026-10-24T20:09:17Z","inv":{"had_session_at_before":false,"old_w_status":"ready","had_session_before":false,"id":"W-215","op":"set_w_status_with_goals","goal_statuses":{"G-49":"partial"},"old_session_at":"","old_session":""}}

@@ -7,13 +7,13 @@
 | Measure | Count | Composition |
 | --- | --- | --- |
 | C (content) | 47 | validated B 1 · answered Q 3 · accepted D 24 · active Discovery 19 |
-| V (uncertainty) | 31 | open Q 2 · pending B 4 · W below DoR 13 · uncovered surface 12 |
+| V (uncertainty) | 29 | open Q 2 · pending B 4 · W below DoR 12 · uncovered surface 11 |
 
 ## Areas
 
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
-| A-01 | Evals | 0 | 22 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 11 · uncovered surface 11 |
+| A-01 | Evals | 0 | 20 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 10 · uncovered surface 10 |
 | A-02 | API | 3 | 3 | C: validated B 0 · answered Q 0 · accepted D 3; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 10 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -34,7 +34,7 @@
 | G-46 | Supersession completes the old decision in one command | count; current= target=1 | unverified |
 | G-47 | Accepted-decision guard texts are precise and single-sourced | count; current= target=2 | unverified |
 | G-48 | Completion guards cover blocks clearance and spike outputs at status=done in both implementations | count; current=1 target=4 | partial |
-| G-49 | Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations | count; current=1 target=5 | partial |
+| G-49 | Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations | count; current=2 target=5 | partial |
 | G-50 | Goal status derivation stays truthful across work transitions in both implementations | count; current= target=5 | unverified |
 | G-51 | Archive cascade completes across shared resources in both implementations | count; current= target=4 | unverified |
 
@@ -67,7 +67,7 @@
 | W-212 | refactor | Test catalogs derive from production field catalogs | G-45 | clear | ⊤ | done |  |
 | W-213 | bug | Julia reference rejects status=done with unmet blocks clearance (I5) and produces-less spikes (I2) | G-48 | clear | ⊤ | done |  |
 | W-214 | bug | Julia reference restricts manual goal verification to manual-fitness goals | G-49 | clear | ⊤ | done |  |
-| W-215 | refactor | Julia reference freezes terminal nodes behind one immutability predicate (I14) | G-49 | clear | ⊥ | proposed |  |
+| W-215 | refactor | Julia reference freezes terminal nodes behind one immutability predicate (I14) | G-49 | clear | ⊤ | done |  |
 | W-216 | bug | Julia reference gates feature ready transitions on a validated assumption chain | G-50 | clear | ⊥ | proposed |  |
 | W-217 | bug | Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals | G-50 | clear | ⊥ | proposed |  |
 | W-218 | bug | Rust core ports completion guards, the manual-verify tunnel and the terminal freeze | G-48, G-49 | clear | ⊥ | proposed |  |
@@ -138,6 +138,7 @@
 | T-09 | Shared TOML machinery concentrates inside the projects module | done | W-196 | W-196 |
 | T-10 | Accepted-decision rule is duplicated across core call sites | open | W-211 | – |
 | T-11 | Test suites restate the production field catalog | open | W-212 | – |
+| T-12 | Terminal integrity and completion gates across engines | open | W-215 | – |
 
 ## Discoveries
 
@@ -242,7 +243,7 @@ graph TD
   W_212["W-212: Test catalogs derive from production field catalogs"]:::done
   W_213["W-213: Julia reference rejects status=done with unmet blocks clearance (I5) and produces-less spikes (I2)"]:::done
   W_214["W-214: Julia reference restricts manual goal verification to manual-fitness goals"]:::done
-  W_215["W-215: Julia reference freezes terminal nodes behind one immutability predicate (I14)"]:::feature
+  W_215["W-215: Julia reference freezes terminal nodes behind one immutability predicate (I14)"]:::done
   W_216["W-216: Julia reference gates feature ready transitions on a validated assumption chain"]:::feature
   W_217["W-217: Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals"]:::feature
   W_218["W-218: Rust core ports completion guards, the manual-verify tunnel and the terminal freeze"]:::feature
@@ -293,6 +294,7 @@ graph TD
   T_09["T-09: Shared TOML machinery concentrates inside the projects module"]:::theme
   T_10["T-10: Accepted-decision rule is duplicated across core call sites"]:::theme
   T_11["T-11: Test suites restate the production field catalog"]:::theme
+  T_12["T-12: Terminal integrity and completion gates across engines"]:::theme
   Y_01["Y-01: Normalize at capture, never inject test clocks"]:::discovery
   Y_02["Y-02: Never gate a validation task on the hypotheses it validates"]:::discovery
   Y_03["Y-03: Integration surfaces are thin adapters over the core CLI contract"]:::discovery
@@ -416,6 +418,7 @@ graph TD
   T_09 -->|causes| W_196
   T_10 -->|causes| W_211
   T_11 -->|causes| W_212
+  T_12 -->|causes| W_215
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
   W_03 -->|produces| D_11

@@ -294,3 +294,63 @@ end
         rm(tmp; recursive=true, force=true)
     end
 end
+
+@testset "cli: terminal nodes freeze set field fitness evidence (I14)" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=manual", "--area=A-01",
+                      "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
+                      "--title=W", "--root=$tmp", "--quiet"]) == 0
+        for fn = ("ac", "hypothesis", "evidence_strategy")
+            @test M.main(["field", "W-01", fn, "add", "x", "--root=$tmp", "--quiet"]) == 0
+        end
+        @test M.main(["fitness", "W-01", "G-01", "+1", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["evidence", "W-01", "e", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "W-01", "status=done", "--root=$tmp", "--quiet"]) == 0
+        # frozen: every user-fired mutation command on the terminal work item
+        for args in (["set", "W-01", "title=X"],
+                     ["set", "W-01", "status=archived"],
+                     ["field", "W-01", "ac", "add", "y"],
+                     ["evidence", "W-01", "more"],
+                     ["fitness", "W-01", "G-01", "+1"])
+            rc, err = capture_stderr_core([args..., "--root=$tmp"])
+            @test rc == M.EXIT_GUARD
+            @test occursin("W-01 is terminal (done); create a successor node or use grove undo", err)
+        end
+        # undo remains a sanctioned lane: reverts the done transition itself
+        # (this item went proposed -> done directly, so the inverse restores proposed)
+        @test M.main(["undo", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["W-01"].status == :proposed
+        @test M.main(["undo", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test isempty(get(st.nodes["W-01"].fields, :evidence, String[]))
+        # rejected and superseded decisions freeze like every other terminal kind
+        @test M.main(["add", "d", "--title=Rejected", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "D-01", "status=rejected", "--root=$tmp", "--quiet"]) == 0
+        rc, err = capture_stderr_core(["set", "D-01", "title=X", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("D-01 is terminal (rejected)", err)
+        # accepted decision keeps its supersede-lane message and its one legal transition
+        @test M.main(["add", "d", "--title=Accepted", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "D-02", "status=accepted", "--root=$tmp", "--quiet"]) == 0
+        rc, err = capture_stderr_core(["set", "D-02", "title=X", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("decision D-02 is accepted; create a new D with --supersedes", err)
+        @test M.main(["add", "d", "--title=Newer", "--supersedes=D-02", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "D-03", "status=accepted", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "D-02", "status=superseded", "--root=$tmp", "--quiet"]) == 0
+        # terminal question freezes too
+        @test M.main(["add", "q", "--title=Q", "--cynefin=clear", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "Q-01", "status=answered", "--root=$tmp", "--quiet"]) == 0
+        rc, err = capture_stderr_core(["field", "Q-01", "outcome", "add", "late",
+                                       "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("Q-01 is terminal (answered)", err)
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end

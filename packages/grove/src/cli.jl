@@ -515,10 +515,8 @@ function cmd_set(ctx::CliCtx, pos, kw)
     end
     set_key_supported(n.kind, key) ||
         (println(stderr, "unsupported key: $key"); return EXIT_ERR)
-    if n.kind === :d && n.status === :accepted
-        println(stderr, accepted_decision_msg(id))
-        return EXIT_GUARD
-    end
+    msg = terminal_freeze_msg(n)
+    msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
 
     if key == "cynefin"
         jr = wrap_journal_record("set", Dict{String,Any}(
@@ -626,9 +624,19 @@ set_key_supported(kind::Symbol, key::AbstractString)::Bool =
 accepted_decision_msg(id::AbstractString)::String =
     "decision $(id) is accepted; create a new D with --supersedes"
 
+function terminal_freeze_msg(n::Node)::Union{Nothing,String}
+    isterminal(n.kind, n.status) || return nothing
+    n.kind === :d && n.status === :accepted && return accepted_decision_msg(String(n.id))
+    return "$(n.id) is terminal ($(n.status)); create a successor node or use grove undo"
+end
+
 function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, kw)::Int
     valid = STATUS[n.kind]
     new in valid || (println(stderr, "invalid status `$new` for $(n.kind)"); return EXIT_ERR)
+    if n.kind !== :d || n.status !== :accepted || new !== :superseded
+        msg = terminal_freeze_msg(n)
+        msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+    end
     if n.kind === :t
         println(stderr, "theme status is derived; cannot set manually")
         return EXIT_GUARD
@@ -669,10 +677,6 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
             haskey(f, g) || (println(stderr, "I10: missing fitness delta for $g; use `grove fitness $(n.id) $g <delta>`"); return EXIT_GUARD)
         end
     end
-    if n.kind === :d && n.status === :accepted && new !== :superseded
-        println(stderr, accepted_decision_msg(n.id))
-        return EXIT_GUARD
-    end
     if n.kind === :y
         cur = n.status
         ok = if new === :superseded
@@ -710,10 +714,8 @@ function cmd_field(ctx::CliCtx, pos, kw)
     end
     form = get(FIELD_CATALOG, (n.kind, fname), nothing)
     form === nothing && (println(stderr, "unknown field $fname on $(n.kind)"); return EXIT_ERR)
-    if n.kind === :d && n.status === :accepted
-        println(stderr, accepted_decision_msg(id))
-        return EXIT_GUARD
-    end
+    msg = terminal_freeze_msg(n)
+    msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
     if n.kind === :g && fname === :fitness_current
         kg = goal_structured_kind(n)
         if kg !== nothing && kg !== :manual
@@ -874,6 +876,8 @@ function cmd_fitness(ctx::CliCtx, pos, kw)
     st = load(ctx)
     w = get(st.nodes, wid, nothing); w === nothing && (println(stderr, "missing: $wid"); return EXIT_NOTFOUND)
     haskey(st.nodes, gid) || (println(stderr, "missing: $gid"); return EXIT_NOTFOUND)
+    msg = terminal_freeze_msg(w)
+    msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
     eff = effective_session_token(ctx.root, kw)
     msg = session_denial_progress_mutate(w, eff)
     msg !== nothing && (println(stderr, msg); return EXIT_GUARD)

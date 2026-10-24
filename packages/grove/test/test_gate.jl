@@ -190,8 +190,21 @@ if Sys.which("git") !== nothing
             write(joinpath(tmp, "a.txt"), "a\n")
             run(`git -C $tmp add a.txt`)
             run(`git -C $tmp -c user.email=t@example.com -c user.name=t commit -q -m scaffold`)
-            gate_test_drive_done(tmp)
+            # surface is planning-time information: declare it before the item closes (I14 freezes done work)
+            @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+            @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
+            @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+            @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
+                          "--title=W", "--root=$tmp", "--quiet"]) == 0
+            for fn in ("ac", "hypothesis", "evidence_strategy")
+                @test M.main(["field", "W-01", fn, "add", "x", "--root=$tmp", "--quiet"]) == 0
+            end
+            @test M.main(["fitness", "W-01", "G-01", "+1", "--root=$tmp", "--quiet"]) == 0
             @test M.main(["field", "W-01", "surface", "add", "a.txt", "--root=$tmp", "--quiet"]) == 0
+            @test M.main(["evidence", "W-01", "e", "--root=$tmp", "--quiet"]) == 0
+            @test M.main(["set", "W-01", "status=ready", "--root=$tmp", "--quiet"]) == 0
+            @test M.main(["set", "W-01", "status=progress", "--root=$tmp", "--quiet"]) == 0
+            @test M.main(["set", "W-01", "status=done", "--root=$tmp", "--quiet"]) == 0
             write(joinpath(tmp, "a.txt"), "a2\n")
             write(joinpath(tmp, "b.txt"), "b\n")
             run(`git -C $tmp add a.txt b.txt`)
