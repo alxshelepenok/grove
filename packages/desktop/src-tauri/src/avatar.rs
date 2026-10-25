@@ -292,7 +292,11 @@ mod tests {
     fn distinct_names_render_distinct_svgs() {
         let svgs: std::collections::HashSet<String> =
             SAMPLE.into_iter().map(tree_avatar_svg).collect();
-        assert_eq!(svgs.len(), SAMPLE.len(), "each sample name keeps its own tree");
+        assert_eq!(
+            svgs.len(),
+            SAMPLE.len(),
+            "each sample name keeps its own tree"
+        );
     }
 
     #[test]
@@ -300,9 +304,15 @@ mod tests {
         for name in SAMPLE {
             let svg = tree_avatar_svg(name);
             let hues = hues_in(&svg);
-            assert!(hues.len() >= 3, "{name} tile, wood and foliage tones present");
+            assert!(
+                hues.len() >= 3,
+                "{name} tile, wood and foliage tones present"
+            );
             for h in hues {
-                assert!(FAMILY_HUES.contains(&h), "{name} hue {h} outside the family list");
+                assert!(
+                    FAMILY_HUES.contains(&h),
+                    "{name} hue {h} outside the family list"
+                );
             }
         }
     }
@@ -318,8 +328,16 @@ mod tests {
             let layout = tree_layout(name);
             assert_eq!(layout.tiers.len(), 3, "{name} keeps three bough tiers");
             let svg = tree_avatar_svg(name);
-            assert_eq!(svg.matches("<path").count(), 7, "{name} trunk plus six boughs");
-            assert_eq!(svg.matches('Q').count(), 6, "{name} boughs are quadratic curves");
+            assert_eq!(
+                svg.matches("<path").count(),
+                7,
+                "{name} trunk plus six boughs"
+            );
+            assert_eq!(
+                svg.matches('Q').count(),
+                6,
+                "{name} boughs are quadratic curves"
+            );
             for tier in &layout.tiers {
                 assert!(
                     (tier.left.tip_x + tier.right.tip_x - VIEW).abs() < 1e-9,
@@ -433,7 +451,10 @@ mod tests {
             let top = layout.tiers[2].left.tip_y;
             let mid = layout.tiers[1].left.tip_y;
             let bot = layout.tiers[0].left.tip_y;
-            assert!(top < mid && mid < bot, "{name} tier tips keep vertical order");
+            assert!(
+                top < mid && mid < bot,
+                "{name} tier tips keep vertical order"
+            );
             let bare = TRUNK_BASE_Y - (bot + layout.tiers[0].left.width / 2.0);
             assert!(bare >= 2.0, "{name} bare trunk shows below the boughs");
         }
@@ -500,8 +521,8 @@ mod tests {
 
     #[test]
     fn generator_draws_only_from_the_seed() {
-        let src = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/avatar.rs"))
-            .unwrap();
+        let src =
+            std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/avatar.rs")).unwrap();
         for banned in [
             concat!("Math.", "random"),
             concat!("thread", "_rng"),
@@ -509,14 +530,20 @@ mod tests {
             concat!("System", "Time"),
             concat!("Inst", "ant"),
         ] {
-            assert!(!src.contains(banned), "avatar.rs stays seeded only: {banned}");
+            assert!(
+                !src.contains(banned),
+                "avatar.rs stays seeded only: {banned}"
+            );
         }
     }
 
     #[test]
     fn svg_output_is_ascii_only() {
         for name in SAMPLE {
-            assert!(tree_avatar_svg(name).is_ascii(), "{name} svg carries non-ascii bytes");
+            assert!(
+                tree_avatar_svg(name).is_ascii(),
+                "{name} svg carries non-ascii bytes"
+            );
         }
         assert!(tree_avatar_svg("Baume 日本").is_ascii());
     }
@@ -525,7 +552,9 @@ mod tests {
     fn svg_interpolates_numbers_and_palette_only() {
         for name in SAMPLE {
             let svg = tree_avatar_svg(name);
-            assert!(svg.starts_with(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">"#));
+            assert!(
+                svg.starts_with(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">"#)
+            );
             assert!(svg.ends_with("</svg>"));
             assert!(!svg.contains(name), "{name} never reaches the markup");
         }
@@ -538,11 +567,18 @@ mod tests {
     fn svg_marks_up_tile_trunk_and_bough_tiers() {
         let svg = tree_avatar_svg("Alpha Pines");
         assert!(svg.contains(r#"<rect width="64" height="64" rx="0" fill="hsl("#));
-        assert!(svg.contains(r#"stroke-linecap="round"#), "caps stay rounded");
+        assert!(
+            svg.contains(r#"stroke-linecap="round"#),
+            "caps stay rounded"
+        );
         assert!(svg.contains(r#"fill="none"#), "strokes only");
         assert!(!svg.contains("<circle"), "blob crown is gone");
         assert!(!svg.contains("fill-opacity"), "blob crown is gone");
-        assert_eq!(svg.matches("stroke-width=").count(), 7, "trunk and six bough widths");
+        assert_eq!(
+            svg.matches("stroke-width=").count(),
+            7,
+            "trunk and six bough widths"
+        );
         assert!(svg.contains('Q'), "boughs curve");
         assert!(svg.contains('L'), "trunk is straight");
     }

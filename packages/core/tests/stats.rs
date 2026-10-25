@@ -25,7 +25,10 @@ fn tmpdir(tag: &str) -> PathBuf {
 }
 
 fn recs(lines: &[&str]) -> Vec<Json> {
-    lines.iter().map(|l| parse_json(l).expect("journal line")).collect()
+    lines
+        .iter()
+        .map(|l| parse_json(l).expect("journal line"))
+        .collect()
 }
 
 fn ts(s: &str) -> i64 {
@@ -74,8 +77,8 @@ fn mask_ts(s: &str) -> String {
 #[test]
 fn corpus_stats_scripted_text_and_json() {
     let sc = corpus_json("stats-scripted");
-    let st = parse_fixture(&step_field(&sc, 13, "lock")).expect("fixture lock parses");
-    let journal = step_field(&sc, 13, "journal");
+    let st = parse_fixture(&step_field(&sc, 17, "lock")).expect("fixture lock parses");
+    let journal = step_field(&sc, 17, "journal");
     let mut recs = Vec::new();
     for (i, line) in journal.lines().enumerate() {
         let retimed = line.replacen(
@@ -86,10 +89,10 @@ fn corpus_stats_scripted_text_and_json() {
         recs.push(parse_json(&retimed).expect("retimed line parses"));
     }
     let out = compute_stats(&st, &recs, NOW);
-    assert_eq!(mask_ts(&out.text), step_field(&sc, 15, "stdout"));
+    assert_eq!(mask_ts(&out.text), step_field(&sc, 18, "stdout"));
     assert_eq!(
         mask_ts(&json_cli_out(out.payload)),
-        step_field(&sc, 16, "stdout")
+        step_field(&sc, 19, "stdout")
     );
 }
 
@@ -114,7 +117,9 @@ fn cycle_time_skips_done_before_ready() {
     assert!(seconds.is_empty());
     assert!(rows.is_empty());
     let out = compute_stats(&st, &recs, NOW);
-    assert!(out.text.contains("  (no W with ready and done intervals)\n"));
+    assert!(out
+        .text
+        .contains("  (no W with ready and done intervals)\n"));
 }
 
 #[test]
@@ -133,10 +138,10 @@ fn dor_first_pass_counts_rejects_before_progress_start() {
     let ivals = stats_intervals(&st, &recs, ts(NOW));
     let (total, per_node, sorted, entries, first_pass, rate) = stats_dor(&st, &recs, &ivals);
     assert_eq!(total, 2);
-    assert_eq!(sorted, vec![
-        ("W-01".to_string(), 1),
-        ("W-02".to_string(), 1),
-    ]);
+    assert_eq!(
+        sorted,
+        vec![("W-01".to_string(), 1), ("W-02".to_string(), 1),]
+    );
     assert_eq!(*pget(&per_node, "W-01"), JVal::Int(1));
     assert_eq!(*pget(&per_node, "W-02"), JVal::Int(1));
     assert_eq!(entries, 2);
@@ -189,12 +194,18 @@ fn gates_overflow_paths_null_vs_int() {
     let ivals = stats_intervals(&st, &recs, ts(NOW));
     let (stale, revalidations, runs, empty, overflow, invalidated, gates) =
         stats_discovery(&st, &recs, &ivals);
-    assert_eq!((stale, revalidations, runs, empty, overflow, invalidated), (0, 0, 2, 1, 1, 2));
+    assert_eq!(
+        (stale, revalidations, runs, empty, overflow, invalidated),
+        (0, 0, 2, 1, 1, 2)
+    );
     assert_eq!(gates.len(), 2);
     let JVal::Obj(g1) = &gates[0] else {
         panic!("gate record is an object");
     };
-    assert_eq!(*pget(g1, "ts"), JVal::Str("2026-01-01T00:00:00Z".to_string()));
+    assert_eq!(
+        *pget(g1, "ts"),
+        JVal::Str("2026-01-01T00:00:00Z".to_string())
+    );
     assert_eq!(*pget(g1, "tw"), JVal::Int(1));
     assert_eq!(*pget(g1, "dones"), JVal::Int(2));
     assert_eq!(*pget(g1, "empty"), JVal::Bool(false));
@@ -368,10 +379,14 @@ fn audit_sessions_group_commands_with_unknown_bucket() {
     assert_eq!(*pget(sess, "count"), JVal::Int(2));
     let per = parr(sess, "per_session");
     assert_eq!(per.len(), 2);
-    let JVal::Obj(e0) = &per[0] else { panic!("entry obj") };
+    let JVal::Obj(e0) = &per[0] else {
+        panic!("entry obj")
+    };
     assert_eq!(*pget(e0, "session"), JVal::Str("tok-a".to_string()));
     assert_eq!(*pget(e0, "commands"), JVal::Int(2));
-    let JVal::Obj(e1) = &per[1] else { panic!("entry obj") };
+    let JVal::Obj(e1) = &per[1] else {
+        panic!("entry obj")
+    };
     assert_eq!(*pget(e1, "session"), JVal::Str("unknown".to_string()));
     assert_eq!(*pget(e1, "commands"), JVal::Int(1));
     assert_eq!(*pget(sess, "mean"), JVal::Float(1.5));
@@ -383,7 +398,9 @@ fn audit_sessions_group_commands_with_unknown_bucket() {
     assert_eq!(*pget(sess, "mean"), JVal::Null);
     assert_eq!(*pget(sess, "median"), JVal::Null);
     assert_eq!(*pget(sess, "max"), JVal::Null);
-    assert!(e.text.contains("  sessions: 0 mean \u{2013} median \u{2013} max \u{2013}\n"));
+    assert!(e
+        .text
+        .contains("  sessions: 0 mean \u{2013} median \u{2013} max \u{2013}\n"));
 }
 
 #[test]
@@ -425,7 +442,11 @@ fn archive_record_is_audit_only_and_not_undoable() {
         ],
     );
     assert_eq!(r.code, EXIT_OK, "{}", r.err);
-    let r = cmd_set(&ctx, &["G-01".to_string(), "status=verified".to_string()], &[]);
+    let r = cmd_set(
+        &ctx,
+        &["G-01".to_string(), "status=verified".to_string()],
+        &[],
+    );
     assert_eq!(r.code, EXIT_OK, "{}", r.err);
     let r = cmd_distill(
         &ctx,
@@ -459,11 +480,7 @@ fn archive_record_is_audit_only_and_not_undoable() {
         "{}",
         raw.last().expect("raw line")
     );
-    let r = cmd_undo(
-        &ctx,
-        &[],
-        &[("steps".to_string(), "1".to_string())],
-    );
+    let r = cmd_undo(&ctx, &[], &[("steps".to_string(), "1".to_string())]);
     assert_eq!(r.code, EXIT_OK, "{}", r.err);
     let st = match load(&ctx, true) {
         Ok(s) => s,
@@ -568,10 +585,14 @@ fn rework_covered_uncovered_split_with_reject_counts() {
     assert_eq!(*pget(cov, "mean_rejects"), JVal::Float(1.5));
     let per = parr(cov, "per_w");
     assert_eq!(per.len(), 2);
-    let JVal::Obj(r0) = &per[0] else { panic!("row obj") };
+    let JVal::Obj(r0) = &per[0] else {
+        panic!("row obj")
+    };
     assert_eq!(*pget(r0, "id"), JVal::Str("W-01".to_string()));
     assert_eq!(*pget(r0, "rejects"), JVal::Int(2));
-    let JVal::Obj(r1) = &per[1] else { panic!("row obj") };
+    let JVal::Obj(r1) = &per[1] else {
+        panic!("row obj")
+    };
     assert_eq!(*pget(r1, "id"), JVal::Str("W-04".to_string()));
     assert_eq!(*pget(r1, "rejects"), JVal::Int(1));
     let unc = pobj(pobj(&out.payload, "rework"), "uncovered");
@@ -580,10 +601,14 @@ fn rework_covered_uncovered_split_with_reject_counts() {
     assert_eq!(*pget(unc, "mean_rejects"), JVal::Float(0.5));
     let per = parr(unc, "per_w");
     assert_eq!(per.len(), 2);
-    let JVal::Obj(r0) = &per[0] else { panic!("row obj") };
+    let JVal::Obj(r0) = &per[0] else {
+        panic!("row obj")
+    };
     assert_eq!(*pget(r0, "id"), JVal::Str("W-02".to_string()));
     assert_eq!(*pget(r0, "rejects"), JVal::Int(0));
-    let JVal::Obj(r1) = &per[1] else { panic!("row obj") };
+    let JVal::Obj(r1) = &per[1] else {
+        panic!("row obj")
+    };
     assert_eq!(*pget(r1, "id"), JVal::Str("W-03".to_string()));
     assert_eq!(*pget(r1, "rejects"), JVal::Int(1));
     let e = compute_stats(&State::default(), &[], "2026-01-02T00:00:00Z");
@@ -625,18 +650,24 @@ fn distill_yield_real_null_none_per_archived_goal() {
     assert_eq!(*pget(dy, "goals_without"), JVal::Int(1));
     let goals = parr(dy, "goals");
     assert_eq!(goals.len(), 3);
-    let JVal::Obj(e0) = &goals[0] else { panic!("entry obj") };
+    let JVal::Obj(e0) = &goals[0] else {
+        panic!("entry obj")
+    };
     assert_eq!(*pget(e0, "goal"), JVal::Str("G-01".to_string()));
     assert_eq!(*pget(e0, "status"), JVal::Str("real".to_string()));
     assert_eq!(
         *pget(e0, "discoveries"),
         JVal::Arr(vec![JVal::Str("Y-01".to_string())])
     );
-    let JVal::Obj(e1) = &goals[1] else { panic!("entry obj") };
+    let JVal::Obj(e1) = &goals[1] else {
+        panic!("entry obj")
+    };
     assert_eq!(*pget(e1, "goal"), JVal::Str("G-02".to_string()));
     assert_eq!(*pget(e1, "status"), JVal::Str("null".to_string()));
     assert_eq!(*pget(e1, "discoveries"), JVal::Arr(vec![]));
-    let JVal::Obj(e2) = &goals[2] else { panic!("entry obj") };
+    let JVal::Obj(e2) = &goals[2] else {
+        panic!("entry obj")
+    };
     assert_eq!(*pget(e2, "goal"), JVal::Str("G-03".to_string()));
     assert_eq!(*pget(e2, "status"), JVal::Str("none".to_string()));
     assert_eq!(*pget(e2, "discoveries"), JVal::Arr(vec![]));
@@ -697,7 +728,9 @@ fn surprise_series_delta_and_c_assignment() {
     let out = compute_stats(&st, &recs, "2026-01-02T00:00:00Z");
     let ss = parr(&out.payload, "surprise_series");
     assert_eq!(ss.len(), 2);
-    let JVal::Obj(e0) = &ss[0] else { panic!("entry obj") };
+    let JVal::Obj(e0) = &ss[0] else {
+        panic!("entry obj")
+    };
     assert_eq!(*pget(e0, "id"), JVal::Str("W-01".to_string()));
     assert_eq!(
         *pget(e0, "ts"),
@@ -705,7 +738,9 @@ fn surprise_series_delta_and_c_assignment() {
     );
     assert_eq!(*pget(e0, "delta"), JVal::Int(1));
     assert_eq!(*pget(e0, "c"), JVal::Int(2));
-    let JVal::Obj(e1) = &ss[1] else { panic!("entry obj") };
+    let JVal::Obj(e1) = &ss[1] else {
+        panic!("entry obj")
+    };
     assert_eq!(*pget(e1, "id"), JVal::Str("W-02".to_string()));
     assert_eq!(
         *pget(e1, "ts"),

@@ -132,7 +132,11 @@ pub fn resolve_startup_root(
     }
     let mut recent: Option<&grove_core::ProjectEntry> = None;
     for e in registry {
-        if !Path::new(&e.path).join(".grove").join("state.lock").is_file() {
+        if !Path::new(&e.path)
+            .join(".grove")
+            .join("state.lock")
+            .is_file()
+        {
             continue;
         }
         if recent.map(|r| r.last_opened >= e.last_opened) != Some(true) {

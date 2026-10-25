@@ -9,7 +9,7 @@ This document records Grove's regulatory posture, versioning and support policy,
 release signing coverage, network egress, and telemetry policy. It is an
 engineering record of project decisions, not legal advice.
 
-## CRA applicability analysis (decision D-08)
+## CRA applicability analysis
 
 Grove is free and open-source software (AGPL-3.0), developed and distributed by
 a single developer outside any commercial activity: no sale, no paid support, no
@@ -101,7 +101,7 @@ no update check beyond the manifest fetch the user explicitly runs through the
 installer. There is no telemetry code in any package; a regression here is a bug
 to report via the security policy.
 
-## Deferred options (decision D-05 context)
+## Deferred options
 
 Options considered and explicitly deferred; each has a recorded trigger to
 reopen:

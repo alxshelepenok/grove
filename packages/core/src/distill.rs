@@ -1,6 +1,10 @@
-use crate::archive::{distill_linked_da_ids, distill_null_attested, exclusive_archive_ids, goal_reference_sets};
+use crate::archive::{
+    distill_linked_da_ids, distill_null_attested, exclusive_archive_ids, goal_reference_sets,
+};
 use crate::cli::{info, journal_session_token, json_cli_out, load, CliCtx};
-use crate::journal::{append_journal_record, stamp_journal_session, wrap_journal_record, JOURNAL_DISTILL_OP};
+use crate::journal::{
+    append_journal_record, stamp_journal_session, wrap_journal_record, JOURNAL_DISTILL_OP,
+};
 use crate::json::{JVal, JuliaDict};
 use crate::model::{Kind, State};
 use crate::ops::{kw_get, OpResult, EXIT_ERR, EXIT_GUARD, EXIT_NOTFOUND};
@@ -154,7 +158,9 @@ pub fn cmd_distill(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
             out.push_str(&format!("    {}\n", distill_skeleton(id)));
         }
     }
-    out.push_str(&format!("nothing worth distilling? `grove distill {gid} --null`\n"));
+    out.push_str(&format!(
+        "nothing worth distilling? `grove distill {gid} --null`\n"
+    ));
     let mut r = OpResult::ok();
     r.out = out;
     r

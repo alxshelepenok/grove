@@ -70,9 +70,7 @@ pub fn parse_rfc3339_utc_second(s: &str) -> Option<i64> {
     if b[4] != b'-' || b[7] != b'-' || b[10] != b'T' || b[13] != b':' || b[16] != b':' {
         return None;
     }
-    let num = |lo: usize, hi: usize| -> Option<i64> {
-        s[lo..hi].parse().ok()
-    };
+    let num = |lo: usize, hi: usize| -> Option<i64> { s[lo..hi].parse().ok() };
     let y = num(0, 4)?;
     let mo = num(5, 7)? as u32;
     let d = num(8, 10)? as u32;

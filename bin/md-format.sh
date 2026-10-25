@@ -32,20 +32,20 @@ if [ ${#args[@]} -gt 0 ]; then
     files+=("$f")
   done < <(printf '%s\n' "${args[@]}" | grep -Ev "$exclude_re")
 else
-  while IFS= read -r f; do files+=("$f"); done \
+  while IFS= read -r f; do [ ! -f "$f" ] || files+=("$f"); done \
     < <(git ls-files -- '*.md' | grep -Ev "$exclude_re")
 fi
 [ ${#files[@]} -gt 0 ] || die "no markdown files to format"
 
 command -v prettier >/dev/null 2>&1 || \
-  die "prettier not found on PATH: install it globally (bun add --global prettier or npm install --global prettier)"
+  die "prettier not found on PATH"
 
 if [ "$check" -eq 1 ]; then
   if out=$(prettier --check "${pretty_flags[@]}" -- "${files[@]}" 2>&1); then
     echo "markdown formatting: ok"
   else
     printf '%s\n' "$out" >&2
-    die "markdown formatting drift: run bin/md-format.sh to reflow"
+    die "run bin/md-format.sh to reflow"
   fi
 else
   prettier --write "${pretty_flags[@]}" -- "${files[@]}"

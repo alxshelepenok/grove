@@ -17,20 +17,22 @@ while [ $# -gt 0 ]; do
 done
 
 [ -f "$src/SKILL.md" ] || die "skill root not found: $src/SKILL.md"
-[ -d "$src/references" ] || die "references not found: $src/references"
-[ -d "$src/diagrams" ] || die "diagrams not found: $src/diagrams"
+[ -f docs/specification.md ] || die "specification not found: docs/specification.md"
 tar --help 2>/dev/null | grep -q -- --sort || die "GNU tar is required (for --sort)"
 
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 cp -R "$src" "$stage/grove"
+cp docs/specification.md "$stage/grove/specification.md"
 
 if [ -n "$ver" ]; then
   head -1 "$stage/grove/SKILL.md" | grep -q '^---$' || die "SKILL.md frontmatter not found"
-  awk -v v="$ver" 'NR == 1 { print; print "version: " v; next } { print }' \
-    "$stage/grove/SKILL.md" > "$stage/grove/SKILL.md.new"
-  mv "$stage/grove/SKILL.md.new" "$stage/grove/SKILL.md"
 fi
+awk -v v="$ver" '
+  NR == 1 && v != "" { print; print "version: " v; next }
+  { gsub(/\.\.\/\.\.\/specification\.md/, "specification.md"); print }
+' "$stage/grove/SKILL.md" > "$stage/grove/SKILL.md.new"
+mv "$stage/grove/SKILL.md.new" "$stage/grove/SKILL.md"
 
 tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
     -C "$stage" -cf - grove | gzip -n > "$output"

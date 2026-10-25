@@ -13,7 +13,7 @@ function work_significant_when_done(st::State, w::Node)::Bool
     false
 end
 
-"""Human-readable alignment trigger lines (protocol section 2.5). Empty if none apply."""
+"""Human-readable alignment trigger lines. Empty if none apply."""
 function alignment_triggers(st::State)::Vector{String}
     out = String[]
     for q in listnodes(st, :q)
@@ -33,6 +33,16 @@ function alignment_triggers(st::State)::Vector{String}
     for g in listnodes(st, :g)
         g.status !== :verified && continue
         push!(out, "verified goal: $(g.id) ($(g.title))")
+    end
+    for g in listnodes(st, :g)
+        kind = goal_structured_kind(g)
+        (kind === nothing || kind === :manual) && continue
+        ntar = _parse_nonneg_int(strip(string(get(g.fields, :fitness_target, ""))))
+        (ntar === nothing || ntar <= 0) && continue
+        total = aggregate_fitness_delta(st, g.id)
+        if total < ntar && g.status === :verified
+            push!(out, "verified goal below target: $(g.id) ($(g.title)) total=$total target=$ntar")
+        end
     end
     rs = ready(st)
     if isempty(rs)

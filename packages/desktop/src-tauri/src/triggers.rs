@@ -90,8 +90,8 @@ impl Dismissals {
             std::fs::create_dir_all(parent)
                 .map_err(|e| format!("cannot create {}: {e}", parent.display()))?;
         }
-        let body = serde_json::to_string_pretty(&json!({ "dismissed": self.entries }))
-            .unwrap_or_default();
+        let body =
+            serde_json::to_string_pretty(&json!({ "dismissed": self.entries })).unwrap_or_default();
         std::fs::write(path, body).map_err(|e| format!("cannot write {}: {e}", path.display()))
     }
 
@@ -203,7 +203,9 @@ pub fn detect(st: &State, session: &str, dismissals: &Dismissals, journal_len: u
         let cb = if cp.contains(&b.id) { 0 } else { 1 };
         let ia = -(grove_core::impact(st, &a.id).len() as i64);
         let ib = -(grove_core::impact(st, &b.id).len() as i64);
-        (ca, ia).cmp(&(cb, ib)).then_with(|| grove_core::id_cmp(&a.id, &b.id))
+        (ca, ia)
+            .cmp(&(cb, ib))
+            .then_with(|| grove_core::id_cmp(&a.id, &b.id))
     });
     ts.ready = ready.into_iter().map(node_ref).collect();
     ts.idle = ts.ready.is_empty() && (!ts.open_q.is_empty() || !ts.open_b.is_empty());
@@ -215,6 +217,7 @@ pub fn detect(st: &State, session: &str, dismissals: &Dismissals, journal_len: u
     ts.open_b.sort_by(by_id);
     ts.proposed_d.sort_by(by_id);
     ts.done_w.sort_by(|a, b| grove_core::id_cmp(&a.id, &b.id));
-    ts.stale_claims.sort_by(|a, b| grove_core::id_cmp(&a.id, &b.id));
+    ts.stale_claims
+        .sort_by(|a, b| grove_core::id_cmp(&a.id, &b.id));
     ts
 }

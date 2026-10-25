@@ -38,11 +38,17 @@ pub fn discovery_decay_errors(st: &State, root: &str, gpath: &Path) -> Vec<Strin
                 continue;
             }
             if dst.kind == Kind::D && dst.status == "superseded" {
-                out.push(format!("decay: {} rotted origin: {} (superseded)", x.id, dst.id));
+                out.push(format!(
+                    "decay: {} rotted origin: {} (superseded)",
+                    x.id, dst.id
+                ));
             } else if dst.kind == Kind::B
                 && (dst.status == "invalidated_acceptable" || dst.status == "invalidated_blocking")
             {
-                out.push(format!("decay: {} rotted origin: {} ({})", x.id, dst.id, dst.status));
+                out.push(format!(
+                    "decay: {} rotted origin: {} ({})",
+                    x.id, dst.id, dst.status
+                ));
             }
         }
         for t in x.lines("tags") {

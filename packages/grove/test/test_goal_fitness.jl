@@ -69,3 +69,121 @@
     @test st2.nodes["G-99"].fields[:fitness_target] == "10"
     rm(tmp)
 end
+
+@testset "goal_fitness: rederive runs on non-done transitions and demotes stale verified" begin
+    let st = M.State()
+        g = M.Node(:g, "G-01"; title="g", status=:unverified)
+        g.attrs["fitness_kind"] = "count"
+        g.fields[:fitness_target] = "1"
+        st.nodes["G-01"] = g
+        w = M.Node(:w, "W-01"; title="w", type=:feature, status=:done, cynefin=:clear)
+        w.fields[:goals] = ["G-01"]
+        w.fields[:fitness] = Dict("G-01" => 1)
+        st.nodes["W-01"] = w
+        M.record_id!(st, "G-01")
+        M.record_id!(st, "W-01")
+        M.rederive_goals!(st, w)
+        @test g.status === :verified
+
+        w.status = :rejected
+        M.rederive_goals!(st, w)
+        @test g.fields[:fitness_current] == "0"
+        @test g.status === :unverified
+    end
+
+    let st = M.State()
+        g = M.Node(:g, "G-02"; title="g", status=:unverified)
+        g.attrs["fitness_kind"] = "count"
+        g.fields[:fitness_target] = "3"
+        st.nodes["G-02"] = g
+        w = M.Node(:w, "W-02"; title="w", type=:feature, status=:done, cynefin=:clear)
+        w.fields[:goals] = ["G-02"]
+        w.fields[:fitness] = Dict("G-02" => 3)
+        st.nodes["W-02"] = w
+        M.record_id!(st, "G-02")
+        M.record_id!(st, "W-02")
+        M.rederive_goals!(st, w)
+        @test g.status === :verified
+        w.fields[:fitness] = Dict("G-02" => 1)
+        M.rederive_goals!(st, w)
+        @test g.status === :partial
+    end
+
+    let st = M.State()
+        g = M.Node(:g, "G-03"; title="g", status=:declined)
+        g.attrs["fitness_kind"] = "count"
+        g.fields[:fitness_target] = "1"
+        st.nodes["G-03"] = g
+        w = M.Node(:w, "W-03"; title="w", type=:feature, status=:done, cynefin=:clear)
+        w.fields[:goals] = ["G-03"]
+        w.fields[:fitness] = Dict("G-03" => 0)
+        st.nodes["W-03"] = w
+        M.record_id!(st, "G-03")
+        M.record_id!(st, "W-03")
+        M.rederive_goals!(st, w)
+        @test g.status === :declined
+    end
+
+    let st = M.State()
+        g = M.Node(:g, "G-04"; title="rotten", status=:verified)
+        g.attrs["fitness_kind"] = "count"
+        g.fields[:fitness_target] = "2"
+        st.nodes["G-04"] = g
+        w = M.Node(:w, "W-04"; title="w", type=:feature, status=:done, cynefin=:clear)
+        w.fields[:goals] = ["G-04"]
+        w.fields[:fitness] = Dict("G-04" => 1)
+        st.nodes["W-04"] = w
+        M.record_id!(st, "G-04")
+        M.record_id!(st, "W-04")
+        trig = M.alignment_triggers(st)
+        @test any(x -> occursin("verified goal below target: G-04", x) && occursin("total=1 target=2", x), trig)
+    end
+end
+
+@testset "goal_fitness: declined verdict survives at-target and positive aggregates" begin
+    let st = M.State()
+        g = M.Node(:g, "G-01"; title="g", status=:declined)
+        g.attrs["fitness_kind"] = "count"
+        g.fields[:fitness_target] = "1"
+        st.nodes["G-01"] = g
+        w = M.Node(:w, "W-01"; title="w", type=:feature, status=:done, cynefin=:clear)
+        w.fields[:goals] = ["G-01"]
+        w.fields[:fitness] = Dict("G-01" => 1)
+        st.nodes["W-01"] = w
+        M.record_id!(st, "G-01")
+        M.record_id!(st, "W-01")
+        M.rederive_goals!(st, w)
+        @test g.status === :declined
+        @test g.fields[:fitness_current] == "1"
+    end
+
+    let st = M.State()
+        g = M.Node(:g, "G-02"; title="g", status=:declined)
+        g.attrs["fitness_kind"] = "count"
+        g.fields[:fitness_target] = "5"
+        st.nodes["G-02"] = g
+        w = M.Node(:w, "W-02"; title="w", type=:bug, status=:done, cynefin=:clear)
+        w.fields[:goals] = ["G-02"]
+        w.fields[:fitness] = Dict("G-02" => 2)
+        st.nodes["W-02"] = w
+        M.record_id!(st, "G-02")
+        M.record_id!(st, "W-02")
+        M.rederive_goals!(st, w)
+        @test g.status === :declined
+        @test g.fields[:fitness_current] == "2"
+    end
+
+    let st = M.State()
+        g = M.Node(:g, "G-03"; title="g", status=:declined)
+        g.attrs["fitness"] = "2/2 x"
+        st.nodes["G-03"] = g
+        w = M.Node(:w, "W-03"; title="w", type=:bug, status=:done, cynefin=:clear)
+        w.fields[:goals] = ["G-03"]
+        w.fields[:fitness] = Dict("G-03" => 2)
+        st.nodes["W-03"] = w
+        M.record_id!(st, "G-03")
+        M.record_id!(st, "W-03")
+        M.rederive_goals!(st, w)
+        @test g.status === :declined
+    end
+end

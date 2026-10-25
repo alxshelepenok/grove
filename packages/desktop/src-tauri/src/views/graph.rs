@@ -249,7 +249,11 @@ pub fn model_filtered(
         }
     }
     let visible: BTreeSet<&str> = nodes.iter().filter_map(|n| n["id"].as_str()).collect();
-    let mut kind_eff = if kind_from(kind).is_some() { kind } else { "all" };
+    let mut kind_eff = if kind_from(kind).is_some() {
+        kind
+    } else {
+        "all"
+    };
     let focus_eff = if visible.contains(focus) { focus } else { "" };
 
     let mut kept: BTreeSet<&str> = if kind_eff == "all" {
@@ -421,14 +425,8 @@ pub fn render(tpl: &Templates, root: &str, params: &Value) -> Result<String, Str
         .get("archived")
         .and_then(|v| v.as_bool())
         .unwrap_or(false);
-    let kind = params
-        .get("kind")
-        .and_then(|v| v.as_str())
-        .unwrap_or("all");
-    let focus = params
-        .get("focus")
-        .and_then(|v| v.as_str())
-        .unwrap_or("");
+    let kind = params.get("kind").and_then(|v| v.as_str()).unwrap_or("all");
+    let focus = params.get("focus").and_then(|v| v.as_str()).unwrap_or("");
     let root_title = crate::projects::display_name(root);
     tpl.render(
         "graph",

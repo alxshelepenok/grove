@@ -2,8 +2,8 @@ use crate::cli::{run_cli, HELP, SESSION_MUTATE_COMMANDS};
 use crate::json::{emit_jval, julia_num_repr, parse_json, JVal, Json};
 use crate::ops::{OpResult, EXIT_OK};
 use crate::toml::{
-    bare_key, line_bracket_delta, line_without_comment, parse_line, CONFIG_LINE_POLICY, Line,
-    TomlVal,
+    bare_key, line_bracket_delta, line_without_comment, parse_line, Line, TomlVal,
+    CONFIG_LINE_POLICY,
 };
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -512,9 +512,17 @@ const TOOL_SPECS: &[ToolSpec] = &[
         required: &["id", "to"],
     },
     ToolSpec {
+        cmd: "specification",
+        title: "Normative specification",
+        desc: "Print the embedded normative Grove specification independently of the agent skill.",
+        ann: RO,
+        props: &[],
+        required: &[],
+    },
+    ToolSpec {
         cmd: "skill",
         title: "Embedded skill",
-        desc: "Print the embedded agent skill (the SKILL.md workflow guide with frontmatter), or install it as a skill directory when install names one.",
+        desc: "Print the embedded agent skill (the SKILL.md workflow guide with frontmatter), or install it with specification.md when install names one.",
         ann: IDEM,
         props: &[Prop {
             key: "install",
@@ -802,7 +810,11 @@ fn parse_tool_config(text: &str) -> Option<ToolConfig> {
 
 fn unknown_tool_names(cfg: &ToolConfig) -> Vec<String> {
     let mut seen: Vec<String> = Vec::new();
-    for name in cfg.disabled.iter().chain(cfg.roles.values().flat_map(|r| r.tools.iter())) {
+    for name in cfg
+        .disabled
+        .iter()
+        .chain(cfg.roles.values().flat_map(|r| r.tools.iter()))
+    {
         if spec_for(name).is_none() && !seen.contains(name) {
             seen.push(name.clone());
         }
@@ -966,7 +978,7 @@ fn negotiate_version(params: Option<&Json>) -> String {
     }
 }
 
-const MCP_INSTRUCTIONS: &str = "Grove is a graph-driven workflow protocol. Run the skill tool for the SKILL.md workflow guide before driving work items. Start every session with the status and next tools; keep check green.";
+const MCP_INSTRUCTIONS: &str = "Grove is a graph-driven workflow protocol. Run the skill tool for the SKILL.md workflow guide before driving work items. Use the specification tool for normative requirements. Start every session with the status and next tools; keep check green.";
 
 fn mcp_instructions(server: &McpServer) -> String {
     let base = match &server.role {
@@ -1050,7 +1062,10 @@ pub fn handle_message(server: &mut McpServer, line: &str) -> Option<String> {
         "initialize" => {
             let version = negotiate_version(params.as_ref());
             server.protocol_version = version.clone();
-            Some(result_response(&id, &initialize_result_json(server, &version)))
+            Some(result_response(
+                &id,
+                &initialize_result_json(server, &version),
+            ))
         }
         "notifications/initialized" => {
             server.initialized = true;
@@ -1109,7 +1124,11 @@ fn handle_tools_call(server: &McpServer, id: &Json, params: Option<&Json>) -> St
         None | Some(Json::Null) => &empty,
         Some(Json::Obj(o)) => o,
         Some(_) => {
-            return error_response(id, ERR_INVALID_PARAMS, "tools/call: arguments must be an object")
+            return error_response(
+                id,
+                ERR_INVALID_PARAMS,
+                "tools/call: arguments must be an object",
+            )
         }
     };
     if let Err(m) = validate_args(spec, args) {

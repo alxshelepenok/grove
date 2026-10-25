@@ -6,14 +6,14 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 43 | validated B 1 · answered Q 3 · accepted D 20 · active Discovery 19 |
-| V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
+| C (content) | 47 | validated B 1 · answered Q 3 · accepted D 24 · active Discovery 19 |
+| V (uncertainty) | 17 | open Q 2 · pending B 4 · W below DoR 6 · uncovered surface 5 |
 
 ## Areas
 
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
-| A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-01 | Evals | 0 | 8 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 4 · uncovered surface 4 |
 | A-02 | API | 3 | 3 | C: validated B 0 · answered Q 0 · accepted D 3; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 10 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -33,6 +33,10 @@
 | G-45 | Decision immutability holds for accepted decisions across CLI mutations in both implementations | count; current=3 target=3 | verified |
 | G-46 | Supersession completes the old decision in one command | count; current= target=1 | unverified |
 | G-47 | Accepted-decision guard texts are precise and single-sourced | count; current= target=2 | unverified |
+| G-48 | Completion guards cover blocks clearance and spike outputs at status=done in both implementations | count; current=4 target=4 | verified |
+| G-49 | Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations | count; current=5 target=5 | verified |
+| G-50 | Goal status derivation stays truthful across work transitions in both implementations | count; current=5 target=5 | verified |
+| G-51 | Archive cascade completes across shared resources in both implementations | count; current= target=4 | unverified |
 
 ## Work items
 
@@ -61,6 +65,19 @@
 | W-210 | bug | Guard text for rejected attempts stops advising supersession | G-47 | clear | ⊤ | ready |  |
 | W-211 | refactor | Accepted-decision predicate collapses into a single helper | G-47 | clear | ⊤ | ready |  |
 | W-212 | refactor | Test catalogs derive from production field catalogs | G-45 | clear | ⊤ | done |  |
+| W-213 | bug | Julia reference rejects status=done with unmet blocks clearance (I5) and produces-less spikes (I2) | G-48 | clear | ⊤ | done |  |
+| W-214 | bug | Julia reference restricts manual goal verification to manual-fitness goals | G-49 | clear | ⊤ | done |  |
+| W-215 | refactor | Julia reference freezes terminal nodes behind one immutability predicate (I14) | G-49 | clear | ⊤ | done |  |
+| W-216 | bug | Julia reference gates feature ready transitions on a validated assumption chain | G-50 | clear | ⊤ | done |  |
+| W-217 | bug | Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals | G-50 | clear | ⊤ | done |  |
+| W-218 | bug | Rust core ports completion guards, the manual-verify tunnel and the terminal freeze | G-48, G-49 | clear | ⊤ | done |  |
+| W-219 | bug | Rust core ports the ready-transition gate and derivation truthfulness fixes | G-50 | clear | ⊤ | done |  |
+| W-220 | refactor | Conformance corpus pins completion guards, terminal immutability and derivation truthfulness | G-48, G-49, G-50 | clear | ⊤ | done |  |
+| W-221 | refactor | Skill docs sync for the terminal-immutability family | G-48, G-49, G-50 | clear | ⊤ | done |  |
+| W-222 | bug | Julia reference completes the archive cascade for shared resources | G-51 | clear | ⊥ | proposed |  |
+| W-223 | bug | Rust core ports the archive-cascade completion fix | G-51 | clear | ⊥ | proposed |  |
+| W-224 | refactor | Conformance corpus pins the archive cascade scenario | G-51 | clear | ⊥ | proposed |  |
+| W-225 | refactor | Skill docs sync for the archive cascade semantics | G-51 | clear | ⊥ | proposed |  |
 
 ## Decisions
 
@@ -87,6 +104,10 @@
 | D-50 | Lock accepted decisions against field and title mutations | accepted |  |
 | D-51 | add --supersedes flips the old decision to superseded | accepted |  |
 | D-52 | Rejected transition attempts get a status-aware guard text | accepted |  |
+| D-53 | Terminal statuses impose uniform immutability with sanctioned lanes | accepted |  |
+| D-54 | I8 (chaotic-question human-only transitions) stays at the skill layer | accepted |  |
+| D-55 | Archive cascade rewrites goal citations and archives the orphaned shared resource | accepted | D-53 |
+| D-56 | Archive completion sweep takes the shared resource with the last goal | accepted | D-55 |
 
 ## Open questions
 
@@ -117,6 +138,7 @@
 | T-09 | Shared TOML machinery concentrates inside the projects module | done | W-196 | W-196 |
 | T-10 | Accepted-decision rule is duplicated across core call sites | open | W-211 | – |
 | T-11 | Test suites restate the production field catalog | open | W-212 | – |
+| T-12 | Terminal integrity and completion gates across engines | open | W-215, W-220, W-221 | – |
 
 ## Discoveries
 
@@ -192,6 +214,10 @@ graph TD
   G_45["G-45: Decision immutability holds for accepted decisions across CLI mutations in both implementations"]:::goal
   G_46["G-46: Supersession completes the old decision in one command"]:::goal
   G_47["G-47: Accepted-decision guard texts are precise and single-sourced"]:::goal
+  G_48["G-48: Completion guards cover blocks clearance and spike outputs at status=done in both implementations"]:::goal
+  G_49["G-49: Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations"]:::goal
+  G_50["G-50: Goal status derivation stays truthful across work transitions in both implementations"]:::goal
+  G_51["G-51: Archive cascade completes across shared resources in both implementations"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_192["W-192: Parse mcp.toml tool config"]:::done
@@ -215,6 +241,19 @@ graph TD
   W_210["W-210: Guard text for rejected attempts stops advising supersession"]:::ready
   W_211["W-211: Accepted-decision predicate collapses into a single helper"]:::ready
   W_212["W-212: Test catalogs derive from production field catalogs"]:::done
+  W_213["W-213: Julia reference rejects status=done with unmet blocks clearance (I5) and produces-less spikes (I2)"]:::done
+  W_214["W-214: Julia reference restricts manual goal verification to manual-fitness goals"]:::done
+  W_215["W-215: Julia reference freezes terminal nodes behind one immutability predicate (I14)"]:::done
+  W_216["W-216: Julia reference gates feature ready transitions on a validated assumption chain"]:::done
+  W_217["W-217: Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals"]:::done
+  W_218["W-218: Rust core ports completion guards, the manual-verify tunnel and the terminal freeze"]:::done
+  W_219["W-219: Rust core ports the ready-transition gate and derivation truthfulness fixes"]:::done
+  W_220["W-220: Conformance corpus pins completion guards, terminal immutability and derivation truthfulness"]:::done
+  W_221["W-221: Skill docs sync for the terminal-immutability family"]:::done
+  W_222["W-222: Julia reference completes the archive cascade for shared resources"]:::feature
+  W_223["W-223: Rust core ports the archive-cascade completion fix"]:::feature
+  W_224["W-224: Conformance corpus pins the archive cascade scenario"]:::feature
+  W_225["W-225: Skill docs sync for the archive cascade semantics"]:::feature
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
@@ -236,6 +275,10 @@ graph TD
   D_50["D-50: Lock accepted decisions against field and title mutations"]:::decision
   D_51["D-51: add --supersedes flips the old decision to superseded"]:::decision
   D_52["D-52: Rejected transition attempts get a status-aware guard text"]:::decision
+  D_53["D-53: Terminal statuses impose uniform immutability with sanctioned lanes"]:::decision
+  D_54["D-54: I8 (chaotic-question human-only transitions) stays at the skill layer"]:::decision
+  D_55["D-55: Archive cascade rewrites goal citations and archives the orphaned shared resource"]:::decision
+  D_56["D-56: Archive completion sweep takes the shared resource with the last goal"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_07["Q-07: How Neo4j integrates into Grove: role, pattern, and boundaries"]:::question
@@ -251,6 +294,7 @@ graph TD
   T_09["T-09: Shared TOML machinery concentrates inside the projects module"]:::theme
   T_10["T-10: Accepted-decision rule is duplicated across core call sites"]:::theme
   T_11["T-11: Test suites restate the production field catalog"]:::theme
+  T_12["T-12: Terminal integrity and completion gates across engines"]:::theme
   Y_01["Y-01: Normalize at capture, never inject test clocks"]:::discovery
   Y_02["Y-02: Never gate a validation task on the hypotheses it validates"]:::discovery
   Y_03["Y-03: Integration surfaces are thin adapters over the core CLI contract"]:::discovery
@@ -339,6 +383,8 @@ graph TD
   D_37 -->|supersedes| D_34
   D_47 -->|supersedes| D_41
   D_49 -->|supersedes| D_45
+  D_55 -->|supersedes| D_53
+  D_56 -->|supersedes| D_55
   Q_01 -->|asks| W_06
   Q_02 -->|asks| W_09
   Q_05 -->|asks| W_103
@@ -372,6 +418,9 @@ graph TD
   T_09 -->|causes| W_196
   T_10 -->|causes| W_211
   T_11 -->|causes| W_212
+  T_12 -->|causes| W_215
+  T_12 -->|causes| W_220
+  T_12 -->|causes| W_221
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
   W_03 -->|produces| D_11

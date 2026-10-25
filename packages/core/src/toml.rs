@@ -297,7 +297,11 @@ mod tests {
     #[test]
     fn assign_lines_are_shared_across_policies() {
         assert_eq!(
-            parse_line("disabled = [\"undo\", \"repair\"] # block", CONFIG_LINE_POLICY).unwrap(),
+            parse_line(
+                "disabled = [\"undo\", \"repair\"] # block",
+                CONFIG_LINE_POLICY
+            )
+            .unwrap(),
             Line::Assign(
                 "disabled".to_string(),
                 TomlVal::Arr(vec![
@@ -329,9 +333,18 @@ mod tests {
     #[test]
     fn comment_cut_tolerates_strings() {
         assert_eq!(line_without_comment("a = 1 # c"), "a = 1");
-        assert_eq!(line_without_comment("k = \"v # stays\""), "k = \"v # stays\"");
-        assert_eq!(line_without_comment("\"esc \\\" # stays\""), "\"esc \\\" # stays\"");
+        assert_eq!(
+            line_without_comment("k = \"v # stays\""),
+            "k = \"v # stays\""
+        );
+        assert_eq!(
+            line_without_comment("\"esc \\\" # stays\""),
+            "\"esc \\\" # stays\""
+        );
         assert_eq!(line_without_comment("# whole"), "");
-        assert_eq!(line_without_comment("  \"check\",   # why  "), "  \"check\",");
+        assert_eq!(
+            line_without_comment("  \"check\",   # why  "),
+            "  \"check\","
+        );
     }
 }

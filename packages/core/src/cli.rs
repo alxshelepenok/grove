@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 
 pub const EXIT_CHECKSUM: i32 = 2;
 
-pub const HELP: &str = "grove (graph-driven reasoning over verified evidence)\n\nRead:\n  ready                        list work items ready to start (critical first)\n  next                         propose single next W with full execution packet\n  packet    <W-NN>             full execution packet for a W [--cone --cone-depth=N --cone-max=N]\n  deps      <ID>               transitive blocks-predecessors\n  impact    <ID>               transitive blocks-successors\n  path                         critical path (longest unfinished blocks chain)\n  triage                       rank open W by discovery need (cov, \u{3c7}, fragility; read-only advisory)\n  dor       <W-NN>             DoR conjunct breakdown\n  show      <ID>               record dump\n  list      <kind>             list nodes (g|w|d|q|b|t|y|a) [--status= --cynefin=]\n  check                        verify lock checksum and invariants\n  graph                        print mermaid block\n  status                       summary: progress work, alignment triggers, invariant notes\n  stats                        read-only telemetry from journal + lock (cycle time, DoR, bets, discovery, undo, surprise, C/V)\n  diff                         structural diff vs git ref (--since=REF, default HEAD)\n  projects                     registry table: name, path, last opened\n  skill     [--install=<dir>]  print the embedded agent skill or install it as a directory\n  log       [<ID>]             timeline from t_* on nodes/edges + journal.log (--limit=N, default 200; 0=unlimited)\n  gate                         report-only distillation gate: tw delta, surface overflows, invalidated B, accepted D [--theta=N] [--n=N]\n\nMutate:\n  init                                       create .grove/state.lock + index.md + glossary.md [--id-stride=N] [--id-offset=K] [--id-width=W]\n  add         <kind> --title=\"\u{2026}\" [...]       create node; prints assigned ID\n  set         <ID> <key>=<value>             guarded transitions\n  field       <ID> <field> add|rm|clear \"\u{2026}\"  append one entry, remove the nth, or clear all\n  link        <from> <label> <to>            labels: blocks|implements|asks|tests|targets|produces|causes|supersedes|distills\n  unlink      <from> <label> <to>            remove an edge\n  evidence    <W-NN> \"\u{2026}\"                     append evidence line\n  fitness     <W-NN> <G-NN> <\u{b1}N>             set per-goal delta\n  archive     <G-NN>                         archive G + exclusive w/d/q/b/t (requires distillation: a linked Discovery or `grove distill G-NN --null`)\n  distill     <G-NN> [--null]                distillation worksheet for a verified goal; --null writes a null-distill attestation (journal, non-mutation)\n  renumber    <ID> --to=<NEW-ID>             rewrite record + refs (not if id in done evidence)\n  undo        [--steps=N]                    revert last N mutations (truncates `.grove/journal.log`)\n  resume      <W-NN>                         adopt session token on a `progress` W (journal undo restores prior claim)\n  handoff     <W-NN> --to=<token>            transfer ownership (holder only)\n  revert      <W-NN>                         `progress` -> `ready`, clear session (holder or stale claim)\n  revalidate  <Y-NN> --surface=\u{2026}|--from=ID   `stale` Discovery -> `active`, paid with a fresh anchor\n  promote     <Y-NN> --to=<project>          copy a Discovery into another project with origin provenance; copy starts `proposed`\n  glossary    rename <old> <new>             rewrite glossary.md term + Discovery tags atomically\n  render                                     regenerate index.md\n  repair      --confirm                      accept current lock contents (recompute checksum)\n\nGlobal flags: --root=<path> --project=<name|path> --quiet --json --no-render [--session=<token>]  (--since for diff; --limit for log; --steps for undo)\nRoot resolution: --root wins; else --project / GROVE_PROJECT (directory or registry name); else walk up from cwd to the first dir containing .grove/state.lock.\n";
+pub const HELP: &str = "grove (graph-driven reasoning over verified evidence)\n\nRead:\n  ready                        list work items ready to start (critical first)\n  next                         propose single next W with full execution packet\n  packet    <W-NN>             full execution packet for a W [--cone --cone-depth=N --cone-max=N]\n  deps      <ID>               transitive blocks-predecessors\n  impact    <ID>               transitive blocks-successors\n  path                         critical path (longest unfinished blocks chain)\n  triage                       rank open W by discovery need (cov, \u{3c7}, fragility; read-only advisory)\n  dor       <W-NN>             DoR conjunct breakdown\n  show      <ID>               record dump\n  list      <kind>             list nodes (g|w|d|q|b|t|y|a) [--status= --cynefin=]\n  check                        verify lock checksum and invariants\n  graph                        print mermaid block\n  status                       summary: progress work, alignment triggers, invariant notes\n  stats                        read-only telemetry from journal + lock (cycle time, DoR, bets, discovery, undo, surprise, C/V)\n  diff                         structural diff vs git ref (--since=REF, default HEAD)\n  projects                     registry table: name, path, last opened\n  skill     [--install=<dir>]  print the agent skill or install it with specification.md\n  specification                print the embedded normative specification\n  log       [<ID>]             timeline from t_* on nodes/edges + journal.log (--limit=N, default 200; 0=unlimited)\n  gate                         report-only distillation gate: tw delta, surface overflows, invalidated B, accepted D [--theta=N] [--n=N]\n\nMutate:\n  init                                       create .grove/state.lock + index.md + glossary.md [--id-stride=N] [--id-offset=K] [--id-width=W]\n  add         <kind> --title=\"\u{2026}\" [...]       create node; prints assigned ID\n  set         <ID> <key>=<value>             guarded transitions\n  field       <ID> <field> add|rm|clear \"\u{2026}\"  append one entry, remove the nth, or clear all\n  link        <from> <label> <to>            labels: blocks|implements|asks|tests|targets|produces|causes|supersedes|distills\n  unlink      <from> <label> <to>            remove an edge\n  evidence    <W-NN> \"\u{2026}\"                     append evidence line\n  fitness     <W-NN> <G-NN> <\u{b1}N>             set per-goal delta\n  archive     <G-NN>                         archive G + exclusive w/d/q/b/t (requires distillation: a linked Discovery or `grove distill G-NN --null`)\n  distill     <G-NN> [--null]                distillation worksheet for a verified goal; --null writes a null-distill attestation (journal, non-mutation)\n  renumber    <ID> --to=<NEW-ID>             rewrite record + refs (not if id in done evidence)\n  undo        [--steps=N]                    revert last N mutations (truncates `.grove/journal.log`)\n  resume      <W-NN>                         adopt session token on a `progress` W (journal undo restores prior claim)\n  handoff     <W-NN> --to=<token>            transfer ownership (holder only)\n  revert      <W-NN>                         `progress` -> `ready`, clear session (holder or stale claim)\n  revalidate  <Y-NN> --surface=\u{2026}|--from=ID   `stale` Discovery -> `active`, paid with a fresh anchor\n  promote     <Y-NN> --to=<project>          copy a Discovery into another project with origin provenance; copy starts `proposed`\n  glossary    rename <old> <new>             rewrite glossary.md term + Discovery tags atomically\n  render                                     regenerate index.md\n  repair      --confirm                      accept current lock contents (recompute checksum)\n\nGlobal flags: --root=<path> --project=<name|path> --quiet --json --no-render [--session=<token>]  (--since for diff; --limit for log; --steps for undo)\nRoot resolution: --root wins; else --project / GROVE_PROJECT (directory or registry name); else walk up from cwd to the first dir containing .grove/state.lock.\n";
 
 #[derive(Clone, Debug)]
 pub struct CliCtx {
@@ -276,7 +276,11 @@ pub fn cmd_init(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRes
         );
     }
     let mut r = OpResult::ok();
-    info(ctx, &mut r, &format!("initialised: {}", ctx.devdir().display()));
+    info(
+        ctx,
+        &mut r,
+        &format!("initialised: {}", ctx.devdir().display()),
+    );
     r
 }
 
@@ -379,7 +383,12 @@ pub fn cmd_evidence(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> Op
     if pos.len() < 2 {
         return OpResult::fail(EXIT_ERR, "usage: grove evidence <W-NN> \"…\"");
     }
-    let args = vec![pos[0].clone(), "evidence".to_string(), "add".to_string(), pos[1].clone()];
+    let args = vec![
+        pos[0].clone(),
+        "evidence".to_string(),
+        "add".to_string(),
+        pos[1].clone(),
+    ];
     cmd_field(ctx, &args, kw)
 }
 
@@ -533,6 +542,7 @@ pub fn dispatch(ctx: &CliCtx, cmd: &str, pos: &[String], kw: &[(String, String)]
         "undo" => cmd_undo(ctx, pos, kw),
         "glossary" => cmd_glossary(ctx, pos, kw),
         "skill" => cmd_skill(ctx, pos, kw),
+        "specification" => cmd_specification(ctx, pos, kw),
         "archive" => crate::archive::cmd_archive(ctx, pos, kw),
         "distill" => crate::distill::cmd_distill(ctx, pos, kw),
         "revalidate" => crate::revalidate::cmd_revalidate(ctx, pos, kw),
@@ -561,12 +571,47 @@ pub fn dispatch(ctx: &CliCtx, cmd: &str, pos: &[String], kw: &[(String, String)]
     }
 }
 
-pub const COMMAND_NAMES: [&str; 39] = [
-    "init", "add", "set", "field", "link", "unlink", "evidence", "fitness", "archive", "distill",
-    "render", "repair", "ready", "next", "packet", "deps", "impact", "path", "triage", "dor",
-    "show", "list", "graph", "check", "status", "stats", "diff", "log", "renumber", "resume",
-    "handoff", "revert", "undo", "gate", "revalidate", "glossary", "projects", "promote",
+pub const COMMAND_NAMES: [&str; 40] = [
+    "init",
+    "add",
+    "set",
+    "field",
+    "link",
+    "unlink",
+    "evidence",
+    "fitness",
+    "archive",
+    "distill",
+    "render",
+    "repair",
+    "ready",
+    "next",
+    "packet",
+    "deps",
+    "impact",
+    "path",
+    "triage",
+    "dor",
+    "show",
+    "list",
+    "graph",
+    "check",
+    "status",
+    "stats",
+    "diff",
+    "log",
+    "renumber",
+    "resume",
+    "handoff",
+    "revert",
+    "undo",
+    "gate",
+    "revalidate",
+    "glossary",
+    "projects",
+    "promote",
     "skill",
+    "specification",
 ];
 
 pub fn cmd_skill(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpResult {
@@ -605,20 +650,73 @@ pub fn cmd_skill(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRe
     }
 }
 
+pub fn cmd_specification(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> OpResult {
+    let md = crate::skill::specification_md();
+    let mut r = OpResult::ok();
+    if ctx.json {
+        r.out = json_cli_out(JuliaDict::from_pairs(vec![
+            (
+                "command".to_string(),
+                JVal::Str("specification".to_string()),
+            ),
+            ("mode".to_string(), JVal::Str("print".to_string())),
+            ("markdown".to_string(), JVal::Str(md.to_string())),
+        ]));
+    } else {
+        r.out = md.to_string();
+    }
+    r
+}
+
 pub fn unknown_command_result(cmd: &str) -> OpResult {
     let mut r = OpResult::fail(EXIT_ERR, &format!("unknown command: {cmd}"));
     r.err.push_str(HELP);
     r
 }
 
-pub const SESSION_READ_COMMANDS: [&str; 19] = [
-    "ready", "next", "packet", "deps", "impact", "path", "dor", "triage", "show", "list", "graph",
-    "check", "status", "diff", "log", "stats", "projects", "promote", "skill",
+pub const SESSION_READ_COMMANDS: [&str; 20] = [
+    "ready",
+    "next",
+    "packet",
+    "deps",
+    "impact",
+    "path",
+    "dor",
+    "triage",
+    "show",
+    "list",
+    "graph",
+    "check",
+    "status",
+    "diff",
+    "log",
+    "stats",
+    "projects",
+    "promote",
+    "skill",
+    "specification",
 ];
 
 pub const SESSION_MUTATE_COMMANDS: [&str; 20] = [
-    "init", "add", "set", "field", "link", "unlink", "evidence", "fitness", "archive", "distill",
-    "repair", "render", "undo", "renumber", "resume", "handoff", "revert", "gate", "revalidate",
+    "init",
+    "add",
+    "set",
+    "field",
+    "link",
+    "unlink",
+    "evidence",
+    "fitness",
+    "archive",
+    "distill",
+    "repair",
+    "render",
+    "undo",
+    "renumber",
+    "resume",
+    "handoff",
+    "revert",
+    "gate",
+    "revalidate",
     "glossary",
 ];
 

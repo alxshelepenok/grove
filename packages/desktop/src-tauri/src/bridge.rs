@@ -13,7 +13,10 @@ const BLOCKED_FLAG_PREFIXES: [&str; 3] = ["--root", "--session", "--project"];
 
 pub fn run_read(root: &str, cmd: &str, args: &[String]) -> Result<String, String> {
     if !READ_COMMANDS.contains(&cmd) {
-        return Err(format!("read bridge only allows: {}", READ_COMMANDS.join(", ")));
+        return Err(format!(
+            "read bridge only allows: {}",
+            READ_COMMANDS.join(", ")
+        ));
     }
     for a in args {
         if BLOCKED_FLAG_PREFIXES

@@ -7,7 +7,7 @@ use crate::ops::{kw_get, OpResult, EXIT_ERR, EXIT_GUARD, EXIT_NOTFOUND};
 use crate::renumber::glossary_terms;
 use crate::status::listnodes;
 use crate::times::{stamp_new_node, utc_stamp_second};
-use crate::toml::{parse_line, Line, REGISTRY_LINE_POLICY, TomlVal};
+use crate::toml::{parse_line, Line, TomlVal, REGISTRY_LINE_POLICY};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
@@ -54,10 +54,13 @@ enum Section {
 
 fn entry_from_pairs(pairs: &[(String, TomlVal)]) -> Option<ProjectEntry> {
     let get = |k: &str| {
-        pairs.iter().find(|(ek, _)| ek == k).and_then(|(_, v)| match v {
-            TomlVal::Str(s) => Some(s.clone()),
-            _ => None,
-        })
+        pairs
+            .iter()
+            .find(|(ek, _)| ek == k)
+            .and_then(|(_, v)| match v {
+                TomlVal::Str(s) => Some(s.clone()),
+                _ => None,
+            })
     };
     Some(ProjectEntry {
         name: get("name")?,
@@ -216,7 +219,9 @@ pub fn registry_name_for_path(reg: &[ProjectEntry], p: &str) -> Option<String> {
 }
 
 pub fn registry_path_for_name(reg: &[ProjectEntry], name: &str) -> Option<String> {
-    reg.iter().find(|e| e.name == name).map(|e| abspath(&e.path))
+    reg.iter()
+        .find(|e| e.name == name)
+        .map(|e| abspath(&e.path))
 }
 
 fn basename_normpath(p: &str) -> String {
@@ -257,7 +262,10 @@ pub fn registry_note_open(root: &str, cmd: &str) -> Option<String> {
         }
     }
     if registry_save(&reg, &rp).is_err() {
-        return Some(format!("warning: could not write registry {}", rp.display()));
+        return Some(format!(
+            "warning: could not write registry {}",
+            rp.display()
+        ));
     }
     None
 }
@@ -403,8 +411,9 @@ pub fn cmd_promote(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
     if !crate::session_lock::session_locks_enabled() {
         return promote_into_target(ctx, src, &tctx);
     }
-    match crate::session_lock::with_session_exclusive(&tctx, || promote_into_target(ctx, src, &tctx))
-    {
+    match crate::session_lock::with_session_exclusive(&tctx, || {
+        promote_into_target(ctx, src, &tctx)
+    }) {
         Ok((mut r, warnings)) => {
             let mut pre = String::new();
             for w in &warnings {
@@ -443,7 +452,10 @@ fn promote_into_target(sctx: &CliCtx, src: &Node, tctx: &CliCtx) -> OpResult {
     let origin_id = src.id.clone();
     for x in listnodes(&tst, Kind::Y, false) {
         if x.attr("origin_project") == origin_project && x.attr("origin_id") == origin_id {
-            return OpResult::fail(EXIT_GUARD, &format!("promote: already promoted as {}", x.id));
+            return OpResult::fail(
+                EXIT_GUARD,
+                &format!("promote: already promoted as {}", x.id),
+            );
         }
     }
     let nid = next_id(&mut tst, Kind::Y);
@@ -496,7 +508,10 @@ fn promote_glossary_terms(gpath: &Path, tags: &[String], origin_project: &str) {
     }
     let text = std::fs::read_to_string(gpath).unwrap_or_default();
     let terms = glossary_terms(&text);
-    let missing: Vec<&String> = tags.iter().filter(|t| !terms.contains(t.as_str())).collect();
+    let missing: Vec<&String> = tags
+        .iter()
+        .filter(|t| !terms.contains(t.as_str()))
+        .collect();
     if missing.is_empty() {
         return;
     }

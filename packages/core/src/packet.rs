@@ -1,6 +1,6 @@
 use crate::algebra::{
-    asks_of, backward_cone, bchain, contraction_order, critical_path, forward_cone,
-    goal_fragility, goals_of, impact, implements_of, relevant_discoveries,
+    asks_of, backward_cone, bchain, contraction_order, critical_path, forward_cone, goal_fragility,
+    goals_of, impact, implements_of, relevant_discoveries,
 };
 use crate::cli::{json_cli_out, load, CliCtx};
 use crate::dor::{dor, dor_breakdown, ready};
@@ -82,9 +82,18 @@ pub fn packet(st: &State, w: &Node) -> String {
         let Some(d) = st.nodes.get(&did) else {
             continue;
         };
-        out.push_str(&format!("## Decision {}: {}  ({})\n", d.id, d.title, d.status));
+        out.push_str(&format!(
+            "## Decision {}: {}  ({})\n",
+            d.id, d.title, d.status
+        ));
         out.push('\n');
-        for fname in ["context", "options", "decision", "consequences", "validation"] {
+        for fname in [
+            "context",
+            "options",
+            "decision",
+            "consequences",
+            "validation",
+        ] {
             let lines = d.lines(fname);
             if lines.is_empty() {
                 continue;
@@ -203,7 +212,9 @@ pub fn packet_cone(st: &State, w: &Node, depth: usize, maxcount: usize) -> Strin
     }
     if back.truncated || fwd.truncated {
         out.push('\n');
-        out.push_str(&format!("> cone truncated (depth={depth}, max={maxcount})\n"));
+        out.push_str(&format!(
+            "> cone truncated (depth={depth}, max={maxcount})\n"
+        ));
     }
     out
 }
@@ -228,7 +239,11 @@ pub fn cmd_ready(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> OpR
             )
         })
         .collect();
-    rs.sort_by(|a, b| (a.0, a.1).cmp(&(b.0, b.1)).then_with(|| id_cmp(&a.2.id, &b.2.id)));
+    rs.sort_by(|a, b| {
+        (a.0, a.1)
+            .cmp(&(b.0, b.1))
+            .then_with(|| id_cmp(&a.2.id, &b.2.id))
+    });
     let rs: Vec<&Node> = rs.into_iter().map(|(_, _, w)| w).collect();
     let mut r = OpResult::ok();
     if ctx.json {
@@ -351,7 +366,10 @@ pub fn cmd_packet(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpRe
                 .collect();
             let cone_dict = JuliaDict::from_pairs(vec![
                 ("backward".to_string(), str_arr(back.ids.clone())),
-                ("order".to_string(), str_arr(contraction_order(&st, &back.ids))),
+                (
+                    "order".to_string(),
+                    str_arr(contraction_order(&st, &back.ids)),
+                ),
                 ("forward".to_string(), str_arr(fwd.ids.clone())),
                 ("fragility".to_string(), JVal::Arr(fragility)),
                 (

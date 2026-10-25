@@ -22,28 +22,16 @@ function grove_version()::String
     return "unknown"
 end
 
-const SKILL_PAGES = (
-    "SKILL.md",
-    "references/model.md",
-    "references/protocol.md",
-    "references/planning.md",
-    "references/cli.md",
-    "references/evidence.md",
-    "references/rules.md",
-    "references/lockfile.md",
-    "references/typography.md",
-    "references/checklist.md",
-    "diagrams/dual-track.md",
-    "diagrams/graph-template.md",
-    "diagrams/workflow.md",
-)
+const SKILL_PAGES = ("SKILL.md", "specification.md")
 
 skill_src_dir() = joinpath(@__DIR__, "..", "..", "..", "docs", "skills", "grove")
+specification_src() = joinpath(@__DIR__, "..", "..", "..", "docs", "specification.md")
 
 function stamp_skill(md::AbstractString)::String
-    lines = split(md, '\n')
+    portable = replace(md, "../../specification.md" => "specification.md")
+    lines = split(portable, '\n')
     head = lines[1:min(3, length(lines))]
-    any(l -> startswith(l, "version:"), head) && return md
+    any(l -> startswith(l, "version:"), head) && return portable
     ver = grove_version()
     out = IOBuffer()
     for (i, l) in enumerate(lines)
@@ -67,11 +55,10 @@ function cmd_skill(ctx::CliCtx, pos, kw)::Int
         return EXIT_OK
     end
     target = joinpath(dir, "grove")
-    mkpath(joinpath(target, "references"))
-    mkpath(joinpath(target, "diagrams"))
+    mkpath(target)
     n = 0
     for p in SKILL_PAGES
-        text = p == "SKILL.md" ? stamp_skill(read(joinpath(srcroot, p), String)) : read(joinpath(srcroot, p), String)
+        text = p == "SKILL.md" ? stamp_skill(read(joinpath(srcroot, p), String)) : read(specification_src(), String)
         write(joinpath(target, p), text)
         n += 1
     end
@@ -80,6 +67,16 @@ function cmd_skill(ctx::CliCtx, pos, kw)::Int
         return EXIT_OK
     end
     println("installed $n skill files to $target")
+    EXIT_OK
+end
+
+function cmd_specification(ctx::CliCtx, pos, kw)::Int
+    md = read(specification_src(), String)
+    if ctx.json
+        json_cli_out(Dict("command" => "specification", "mode" => "print", "markdown" => md))
+    else
+        print(md)
+    end
     EXIT_OK
 end
 
@@ -255,6 +252,10 @@ function cmd_add(ctx::CliCtx, pos, kw)
                     (println(stderr, "add g: --fitness-target is required for --fitness-kind=$fk2"); return EXIT_ERR)
             end
         end
+        if n.status === :verified && goal_structured_kind(n) !== :manual
+            println(stderr, "add g: --status=verified is derived from fitness deltas")
+            return EXIT_GUARD
+        end
     elseif kind === :d
         n.status = Symbol(get(kw, "status", "proposed"))
     elseif kind === :q
@@ -393,7 +394,7 @@ function print_lazy_distill_prompt_on_newly_verified_goals!(
                 gid,
                 "` (or `grove distill ",
                 gid,
-                " --null` when nothing is worth keeping; lazy distill, see the rules section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.",
+                " --null` when nothing is worth keeping; lazy distill, see the Delivery loop section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.",
         )
     end
     nothing
@@ -511,10 +512,8 @@ function cmd_set(ctx::CliCtx, pos, kw)
     end
     set_key_supported(n.kind, key) ||
         (println(stderr, "unsupported key: $key"); return EXIT_ERR)
-    if n.kind === :d && n.status === :accepted
-        println(stderr, accepted_decision_msg(id))
-        return EXIT_GUARD
-    end
+    msg = terminal_freeze_msg(n)
+    msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
 
     if key == "cynefin"
         jr = wrap_journal_record("set", Dict{String,Any}(
@@ -622,9 +621,19 @@ set_key_supported(kind::Symbol, key::AbstractString)::Bool =
 accepted_decision_msg(id::AbstractString)::String =
     "decision $(id) is accepted; create a new D with --supersedes"
 
+function terminal_freeze_msg(n::Node)::Union{Nothing,String}
+    isterminal(n.kind, n.status) || return nothing
+    n.kind === :d && n.status === :accepted && return accepted_decision_msg(String(n.id))
+    return "$(n.id) is terminal ($(n.status)); create a successor node or use grove undo"
+end
+
 function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, kw)::Int
     valid = STATUS[n.kind]
     new in valid || (println(stderr, "invalid status `$new` for $(n.kind)"); return EXIT_ERR)
+    if n.kind !== :d || n.status !== :accepted || new !== :superseded
+        msg = terminal_freeze_msg(n)
+        msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+    end
     if n.kind === :t
         println(stderr, "theme status is derived; cannot set manually")
         return EXIT_GUARD
@@ -632,6 +641,24 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
     if n.kind === :a
         println(stderr, "area status is structural; cannot set")
         return EXIT_GUARD
+    end
+    if n.kind === :g && new === :verified && goal_structured_kind(n) !== :manual
+        println(stderr, "goal $(n.id) status is derived from fitness deltas")
+        return EXIT_GUARD
+    end
+    if n.kind === :w && new === :ready && n.type === :feature
+        bad = filter(b -> begin
+            bn = get(st.nodes, b, nothing)
+            bn === nothing || !(bn.status === :validated || bn.status === :invalidated_acceptable)
+        end, bchain(st, n))
+        if !isempty(bad)
+            detail = join(map(b -> begin
+                bn = get(st.nodes, b, nothing)
+                "$b ($(bn === nothing ? "missing" : bn.status))"
+            end, bad), ", ")
+            println(stderr, "I9: $(n.id) cannot enter `ready`; assumption chain must be validated or invalidated_acceptable: $detail")
+            return EXIT_GUARD
+        end
     end
     if n.kind === :w && new === :progress
         if !dor(st, n)
@@ -648,6 +675,11 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
         wip >= WIP_LIMIT_DEFAULT && (println(stderr, "I4: WIP limit ($(WIP_LIMIT_DEFAULT)) reached"); return EXIT_GUARD)
     end
     if n.kind === :w && new === :done
+        preds_clear(st, n.id) || (println(stderr, "I5: predecessors not cleared (goal blockers must be verified, not merely declined/partial/unverified)"); return EXIT_GUARD)
+        if n.type === :spike
+            has_produces = any(e -> e.label === :produces && e.from == n.id, st.edges)
+            has_produces || (println(stderr, "I2: $(n.id) is a done spike but `produces` is empty (no outgoing `produces` edges)"); return EXIT_GUARD)
+        end
         ev = get(n.fields, :evidence, String[])
         isempty(ev) && (println(stderr, "I3: $(n.id) has no evidence; use `grove evidence $(n.id) \"…\"`"); return EXIT_GUARD)
         gs = get(n.fields, :goals, String[])
@@ -655,10 +687,6 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
         for g in gs
             haskey(f, g) || (println(stderr, "I10: missing fitness delta for $g; use `grove fitness $(n.id) $g <delta>`"); return EXIT_GUARD)
         end
-    end
-    if n.kind === :d && n.status === :accepted && new !== :superseded
-        println(stderr, accepted_decision_msg(n.id))
-        return EXIT_GUARD
     end
     if n.kind === :y
         cur = n.status
@@ -697,10 +725,8 @@ function cmd_field(ctx::CliCtx, pos, kw)
     end
     form = get(FIELD_CATALOG, (n.kind, fname), nothing)
     form === nothing && (println(stderr, "unknown field $fname on $(n.kind)"); return EXIT_ERR)
-    if n.kind === :d && n.status === :accepted
-        println(stderr, accepted_decision_msg(id))
-        return EXIT_GUARD
-    end
+    msg = terminal_freeze_msg(n)
+    msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
     if n.kind === :g && fname === :fitness_current
         kg = goal_structured_kind(n)
         if kg !== nothing && kg !== :manual
@@ -861,6 +887,8 @@ function cmd_fitness(ctx::CliCtx, pos, kw)
     st = load(ctx)
     w = get(st.nodes, wid, nothing); w === nothing && (println(stderr, "missing: $wid"); return EXIT_NOTFOUND)
     haskey(st.nodes, gid) || (println(stderr, "missing: $gid"); return EXIT_NOTFOUND)
+    msg = terminal_freeze_msg(w)
+    msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
     eff = effective_session_token(ctx.root, kw)
     msg = session_denial_progress_mutate(w, eff)
     msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
@@ -2002,6 +2030,7 @@ const COMMANDS = Dict{String,Function}(
     "revalidate" => cmd_revalidate,
     "glossary" => cmd_glossary,
     "skill" => cmd_skill,
+    "specification" => cmd_specification,
     "projects" => cmd_projects,
     "promote" => cmd_promote,
 )
@@ -2026,7 +2055,8 @@ Read:
   stats                        read-only telemetry from journal + lock (cycle time, DoR, bets, discovery, undo, surprise, C/V)
   diff                         structural diff vs git ref (--since=REF, default HEAD)
   projects                     registry table: name, path, last opened
-  skill     [--install=<dir>]  print the embedded agent skill or install it as a directory
+  skill     [--install=<dir>]  print the agent skill or install it with specification.md
+  specification                print the embedded normative specification
   log       [<ID>]             timeline from t_* on nodes/edges + journal.log (--limit=N, default 200; 0=unlimited)
   gate                         report-only distillation gate: tw delta, surface overflows, invalidated B, accepted D [--theta=N] [--n=N]
 
@@ -2059,7 +2089,7 @@ Root resolution: --root wins; else --project / GROVE_PROJECT (directory or regis
 const SESSION_READ_COMMANDS = Set([
     "ready", "next", "packet", "deps", "impact", "path", "dor", "triage",
     "show", "list", "graph", "check", "status", "diff", "log", "stats",
-    "projects", "promote", "skill",
+    "projects", "promote", "skill", "specification",
 ])
 
 const SESSION_MUTATE_COMMANDS = Set([

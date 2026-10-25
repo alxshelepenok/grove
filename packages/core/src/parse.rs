@@ -178,7 +178,8 @@ pub(crate) fn parse_internal(
                     node.fields.insert(key, FieldValue::RefList(items));
                 }
                 Form::Single => {
-                    node.fields.insert(key, FieldValue::Single(value.to_string()));
+                    node.fields
+                        .insert(key, FieldValue::Single(value.to_string()));
                 }
                 Form::Fitness => {
                     let mut deltas = BTreeMap::new();
@@ -301,7 +302,9 @@ pub(crate) fn parse_internal(
 }
 
 fn is_hex64(s: &str) -> bool {
-    s.len() == 64 && s.bytes().all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
+    s.len() == 64
+        && s.bytes()
+            .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
 }
 
 fn is_iso8601_utc(s: &str) -> bool {
@@ -313,8 +316,7 @@ fn is_iso8601_utc(s: &str) -> bool {
         && b[13] == b':'
         && b[16] == b':'
         && b[19] == b'Z'
-        && b
-            .iter()
+        && b.iter()
             .enumerate()
             .all(|(i, c)| matches!(i, 4 | 7 | 10 | 13 | 16 | 19) || c.is_ascii_digit())
 }

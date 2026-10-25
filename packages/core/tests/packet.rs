@@ -70,7 +70,7 @@ fn corpus_packet_cone_steps_byte_identical() {
 #[test]
 fn wave2b_next_log_cmd_steps_byte_identical() {
     let sc = corpus_json("next-log");
-    for i in 31..=36usize {
+    for i in 39..=44usize {
         let st = parse_fixture(&step_field(&sc, i - 1, "lock")).unwrap();
         let args = step_args(&sc, i);
         let mut ctx = ctx_with_state("nextlog", &st);
@@ -289,10 +289,18 @@ fn packet_cone_truncation_line_for_wide_cone() {
         edge(&mut st, &id, "blocks", "W-01");
     }
     let cone = packet_cone(&st, st.nodes.get("W-01").unwrap(), 4, 5);
-    assert!(cone.ends_with("> cone truncated (depth=4, max=5)\n"), "{cone}");
+    assert!(
+        cone.ends_with("> cone truncated (depth=4, max=5)\n"),
+        "{cone}"
+    );
     let numbered = cone
         .lines()
-        .filter(|l| l.chars().next().map(|c| c.is_ascii_digit()).unwrap_or(false))
+        .filter(|l| {
+            l.chars()
+                .next()
+                .map(|c| c.is_ascii_digit())
+                .unwrap_or(false)
+        })
         .count();
     assert_eq!(numbered, 5, "{cone}");
     assert!(cone.contains("1. W-100  proposed"), "{cone}");

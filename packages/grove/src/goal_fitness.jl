@@ -45,6 +45,7 @@ end
 
 """Legacy: `attrs["fitness"]` denominator style + sum of deltas; no structured fields touched."""
 function _refresh_goal_legacy!(g::Node, total::Int)::Nothing
+    g.status === :declined && return nothing
     prev = g.status
     label = get(g.attrs, "fitness", "")
     target = parse_fitness_target(label)
@@ -52,6 +53,8 @@ function _refresh_goal_legacy!(g::Node, total::Int)::Nothing
         g.status = :verified
     elseif total > 0
         g.status = :partial
+    else
+        g.status = :unverified
     end
     g.status !== prev && stamp_touch_node!(g)
     nothing
@@ -73,12 +76,16 @@ function refresh_goal_structured_fitness!(st::State, g::Node)::Nothing
 
     _sync_goal_fitness_current_field!(g, kind, total)
 
+    g.status === :declined && return nothing
+
     prev = g.status
     tgt_txt = strip(string(get(g.fields, :fitness_target, "")))
 
     if kind === :boolean
         if total >= 1
             g.status = :verified
+        else
+            g.status = :unverified
         end
     elseif kind === :count
         ntar = isempty(tgt_txt) ? nothing : _parse_nonneg_int(tgt_txt)
@@ -87,6 +94,8 @@ function refresh_goal_structured_fitness!(st::State, g::Node)::Nothing
                 g.status = :verified
             elseif total > 0
                 g.status = :partial
+            else
+                g.status = :unverified
             end
         end
     elseif kind === :ratio
@@ -97,6 +106,8 @@ function refresh_goal_structured_fitness!(st::State, g::Node)::Nothing
                 g.status = :verified
             elseif total > 0
                 g.status = :partial
+            else
+                g.status = :unverified
             end
         end
     elseif kind === :metric
@@ -106,6 +117,8 @@ function refresh_goal_structured_fitness!(st::State, g::Node)::Nothing
                 g.status = :verified
             elseif total > 0
                 g.status = :partial
+            else
+                g.status = :unverified
             end
         end
     end
@@ -114,7 +127,6 @@ function refresh_goal_structured_fitness!(st::State, g::Node)::Nothing
 end
 
 function rederive_goals!(st::State, w::Node)::Nothing
-    w.status === :done || return nothing
     seen = Set{String}()
     for gid0 in get(w.fields, :goals, String[])
         gid = String(strip(string(gid0)))

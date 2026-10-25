@@ -53,7 +53,10 @@ fn journal_lines(dir: &Path) -> Vec<String> {
 
 fn git(dir: &Path, args: &[&str], date: Option<&str>) {
     let mut cmd = std::process::Command::new("git");
-    cmd.arg("-C").arg(dir).args(args).env("GIT_TERMINAL_PROMPT", "0");
+    cmd.arg("-C")
+        .arg(dir)
+        .args(args)
+        .env("GIT_TERMINAL_PROMPT", "0");
     if let Some(d) = date {
         cmd.env("GIT_AUTHOR_DATE", d).env("GIT_COMMITTER_DATE", d);
     }
@@ -66,9 +69,9 @@ fn stats_scripted_gate_step_matches_fixture() {
     pin(TS);
     let sc = corpus_json("stats-scripted");
     let dir = tmpdir("stats_scripted");
-    let lock = step_field(&sc, 12, "lock").replace("<ts>", TS);
+    let lock = step_field(&sc, 15, "lock").replace("<ts>", TS);
     let st = parse_fixture(&lock).expect("parse step 12 lock");
-    let journal = step_field(&sc, 12, "journal")
+    let journal = step_field(&sc, 15, "journal")
         .replace("<ts>", TS)
         .replace("<session>", "testsession");
     write_project(&dir, &serialize(&st), &journal);
@@ -77,10 +80,10 @@ fn stats_scripted_gate_step_matches_fixture() {
     let r = cmd_gate(&ctx, &[], &[]);
     assert_eq!(r.code, 0);
     assert_eq!(r.err, "");
-    assert_eq!(r.out, step_field(&sc, 13, "stdout"));
+    assert_eq!(r.out, step_field(&sc, 16, "stdout"));
     let lines = journal_lines(&dir);
-    assert_eq!(lines.len(), 13);
-    let want_last = step_field(&sc, 13, "journal");
+    assert_eq!(lines.len(), 16);
+    let want_last = step_field(&sc, 16, "journal");
     let tok = journal_session_token(&ctx, &[]);
     assert_eq!(
         lines
@@ -114,9 +117,9 @@ fn gate_scenario_two_runs_match_fixture() {
         ],
         Some(TS),
     );
-    let lock = step_field(&sc, 16, "lock").replace("<ts>", TS);
+    let lock = step_field(&sc, 19, "lock").replace("<ts>", TS);
     let st = parse_fixture(&lock).expect("parse step 16 lock");
-    let journal = step_field(&sc, 16, "journal")
+    let journal = step_field(&sc, 19, "journal")
         .replace("<ts>", TS)
         .replace("<session>", "testsession");
     write_project(&dir, &serialize(&st), &journal);
@@ -142,8 +145,8 @@ fn gate_scenario_two_runs_match_fixture() {
     let r1 = cmd_gate(&ctx, &[], &kw(&[("theta", "0")]));
     assert_eq!(r1.code, 0);
     assert_eq!(r1.err, "");
-    assert_eq!(r1.out, step_field(&sc, 22, "stdout"));
-    let want_last1 = step_field(&sc, 22, "journal");
+    assert_eq!(r1.out, step_field(&sc, 25, "stdout"));
+    let want_last1 = step_field(&sc, 25, "journal");
     let tok = journal_session_token(&ctx, &kw(&[("theta", "0")]));
     assert_eq!(
         journal_lines(&dir)
@@ -159,7 +162,7 @@ fn gate_scenario_two_runs_match_fixture() {
     assert_eq!(r2.err, "");
     assert_eq!(
         r2.out,
-        step_field(&sc, 23, "stdout").replace("<ts>", "2031-01-02T00:00:00Z")
+        step_field(&sc, 26, "stdout").replace("<ts>", "2031-01-02T00:00:00Z")
     );
     let got = journal_lines(&dir)
         .join("\n")
@@ -168,16 +171,22 @@ fn gate_scenario_two_runs_match_fixture() {
         .replace("2031-01-03T00:00:00Z", "<ts>")
         .replace(&tok, "<session>")
         .replace("testsession", "<session>");
-    assert_eq!(got, step_field(&sc, 23, "journal").trim_end());
+    assert_eq!(got, step_field(&sc, 26, "journal").trim_end());
     let _ = std::fs::remove_dir_all(&dir);
 }
 
 #[test]
 fn baseline_last_gate_record_wins() {
     let recs = vec![
-        rec(r#"{"v":1,"cmd":"gate","ts":"2030-01-01T00:00:00Z","inv":{"op":"gate","tw":1,"dones":2}}"#),
-        rec(r#"{"v":1,"cmd":"set","ts":"2030-06-01T00:00:00Z","inv":{"op":"set_status_plain","id":"W-01"}}"#),
-        rec(r#"{"v":1,"cmd":"gate","ts":"2030-12-31T00:00:00Z","inv":{"op":"gate","tw":3,"dones":4}}"#),
+        rec(
+            r#"{"v":1,"cmd":"gate","ts":"2030-01-01T00:00:00Z","inv":{"op":"gate","tw":1,"dones":2}}"#,
+        ),
+        rec(
+            r#"{"v":1,"cmd":"set","ts":"2030-06-01T00:00:00Z","inv":{"op":"set_status_plain","id":"W-01"}}"#,
+        ),
+        rec(
+            r#"{"v":1,"cmd":"gate","ts":"2030-12-31T00:00:00Z","inv":{"op":"gate","tw":3,"dones":4}}"#,
+        ),
     ];
     let b = gate_baseline(&recs).expect("baseline");
     assert_eq!(b.ts, "2030-12-31T00:00:00Z");
@@ -188,9 +197,13 @@ fn baseline_last_gate_record_wins() {
 #[test]
 fn baseline_skips_non_gate_and_empty_ts() {
     let recs = vec![
-        rec(r#"{"v":1,"cmd":"gate","ts":"2030-01-01T00:00:00Z","inv":{"op":"gate","tw":1,"dones":2}}"#),
+        rec(
+            r#"{"v":1,"cmd":"gate","ts":"2030-01-01T00:00:00Z","inv":{"op":"gate","tw":1,"dones":2}}"#,
+        ),
         rec(r#"{"v":1,"cmd":"gate","ts":"   ","inv":{"op":"gate","tw":9,"dones":9}}"#),
-        rec(r#"{"v":1,"cmd":"distill","ts":"2031-01-01T00:00:00Z","inv":{"op":"distill","empty":true}}"#),
+        rec(
+            r#"{"v":1,"cmd":"distill","ts":"2031-01-01T00:00:00Z","inv":{"op":"distill","empty":true}}"#,
+        ),
         rec(r#"{"v":1,"cmd":"gate","ts":"2031-06-01T00:00:00Z"}"#),
         rec(r#"{}"#),
         Json::Null,

@@ -79,7 +79,11 @@ pub fn model(st: &State) -> Value {
         chain
             .iter()
             .map(|id| {
-                let title = st.nodes.get(id).map(|n| n.title.clone()).unwrap_or_default();
+                let title = st
+                    .nodes
+                    .get(id)
+                    .map(|n| n.title.clone())
+                    .unwrap_or_default();
                 json!({ "id": id, "title": title })
             })
             .collect()
@@ -102,7 +106,12 @@ pub fn model(st: &State) -> Value {
             }));
         }
     }
-    cloud.sort_by(|a, b| id_cmp(a["id"].as_str().unwrap_or(""), b["id"].as_str().unwrap_or("")));
+    cloud.sort_by(|a, b| {
+        id_cmp(
+            a["id"].as_str().unwrap_or(""),
+            b["id"].as_str().unwrap_or(""),
+        )
+    });
     let questions: Vec<Value> = cloud
         .iter()
         .filter(|n| n["id"].as_str().unwrap_or_default().starts_with('Q'))

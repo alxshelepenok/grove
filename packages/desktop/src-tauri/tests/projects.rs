@@ -74,9 +74,16 @@ fn recents_sorted_capped_at_five_and_skip_missing_locks() {
         .iter()
         .map(|r| r["name"].as_str().unwrap())
         .collect();
-    assert_eq!(names, ["p5", "p4", "p3", "p2", "p1"], "newest first, p6 has no lock");
+    assert_eq!(
+        names,
+        ["p5", "p4", "p3", "p2", "p1"],
+        "newest first, p6 has no lock"
+    );
     for r in recents {
-        assert!(Path::new(r["path"].as_str().unwrap()).join(".grove").join("state.lock").is_file());
+        assert!(Path::new(r["path"].as_str().unwrap())
+            .join(".grove")
+            .join("state.lock")
+            .is_file());
     }
 }
 
@@ -94,7 +101,10 @@ fn open_switches_root_and_rejects_missing_lock() {
     let err = projects::open(&ps, &slashed(&missing)).unwrap_err();
     assert_eq!(
         err,
-        format!("No lock at {}; create the project instead.", slashed(&missing))
+        format!(
+            "No lock at {}; create the project instead.",
+            slashed(&missing)
+        )
     );
     assert!(ps.current_root().is_err(), "failed open leaves root unset");
 
@@ -108,7 +118,10 @@ fn open_switches_root_and_rejects_missing_lock() {
     assert_eq!(ps.session(), desktop_session(&abs(&dir)));
 
     let reg = registry_load(&registry_path()).unwrap();
-    let e = reg.iter().find(|e| e.path == abs(&dir)).expect("open registers");
+    let e = reg
+        .iter()
+        .find(|e| e.path == abs(&dir))
+        .expect("open registers");
     assert_eq!(e.name, dir.file_name().unwrap().to_string_lossy());
 }
 
@@ -134,7 +147,10 @@ fn create_makes_parseable_lock_and_unique_names_on_collision() {
     assert_eq!(ps.current_root().unwrap(), abs(&b));
 
     let err = projects::create(&ps, &slashed(&a), "").unwrap_err();
-    assert!(err.contains("lock already exists"), "init refusal surfaced: {err}");
+    assert!(
+        err.contains("lock already exists"),
+        "init refusal surfaced: {err}"
+    );
 }
 
 #[test]
@@ -187,7 +203,11 @@ fn startup_env_project_resolves_dir_and_registry_name() {
     let cwd = tmpdir("sr-env-cwd");
 
     let got = resolve_startup_root(&[], Some("envproj"), &[], &slashed(&cwd));
-    assert_eq!(got, Some(abs(&regdir)), "registry name via on-disk registry");
+    assert_eq!(
+        got,
+        Some(abs(&regdir)),
+        "registry name via on-disk registry"
+    );
     let got = resolve_startup_root(&[], Some(&slashed(&regdir)), &[], &slashed(&cwd));
     assert_eq!(got, Some(abs(&regdir)), "plain directory path");
 }
@@ -287,7 +307,10 @@ fn list_normalizes_and_merges_duplicate_paths() {
     let reg = registry_load(&registry_path()).unwrap();
     assert_eq!(reg.len(), 1, "registry persisted normalized");
     assert_eq!(reg[0].path, abs(&dir));
-    assert_eq!(reg[0].last_opened, "2026-08-01T00:00:02Z", "newest stamp wins");
+    assert_eq!(
+        reg[0].last_opened, "2026-08-01T00:00:02Z",
+        "newest stamp wins"
+    );
 }
 
 #[test]

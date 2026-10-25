@@ -1,7 +1,7 @@
 use crate::fitness::rederive_goals;
 use crate::ids::reconcile_counters;
 use crate::invariants::validate_and_push_edge;
-use crate::json::{emit_jval, parse_json, JVal, JuliaDict, Json};
+use crate::json::{emit_jval, parse_json, JVal, Json, JuliaDict};
 use crate::model::{field_form, FieldValue, Form, Node, State};
 use crate::renumber::apply_renumber;
 use crate::session::progress_has_session_record;
@@ -321,11 +321,7 @@ pub fn jinv_field_restore_lines(id: &str, field: &str, lines: &[String]) -> Juli
     ])
 }
 
-pub fn jinv_field_restore_fitness(
-    id: &str,
-    field: &str,
-    map: &BTreeMap<String, i64>,
-) -> JuliaDict {
+pub fn jinv_field_restore_fitness(id: &str, field: &str, map: &BTreeMap<String, i64>) -> JuliaDict {
     JuliaDict::from_pairs(vec![
         ("op".to_string(), s("field_restore_fitness")),
         ("id".to_string(), s(id)),
@@ -361,12 +357,7 @@ pub fn jinv_set_simple_old(op: &str, id: &str, old: &str) -> JuliaDict {
     ])
 }
 
-pub fn jinv_set_g_attr_fitness_kind(
-    id: &str,
-    had_before: bool,
-    old: &str,
-    new: &str,
-) -> JuliaDict {
+pub fn jinv_set_g_attr_fitness_kind(id: &str, had_before: bool, old: &str, new: &str) -> JuliaDict {
     JuliaDict::from_pairs(vec![
         ("op".to_string(), s("set_g_attr_fitness_kind")),
         ("id".to_string(), s(id)),
@@ -439,10 +430,7 @@ pub fn jinv_glossary_rename_restore(
         ("tags".to_string(), JVal::Obj(tags)),
         ("old".to_string(), s(old)),
         ("new".to_string(), s(new)),
-        (
-            "glossary_changed".to_string(),
-            JVal::Bool(glossary_changed),
-        ),
+        ("glossary_changed".to_string(), JVal::Bool(glossary_changed)),
     ])
 }
 
@@ -778,8 +766,7 @@ pub fn journal_apply_inverse(st: &mut State, inv: &Json) -> Option<String> {
                 .unwrap_or(false);
             if had {
                 let old = inv_str(inv, "old").unwrap_or("").to_string();
-                n.fields
-                    .insert("area".to_string(), FieldValue::Single(old));
+                n.fields.insert("area".to_string(), FieldValue::Single(old));
             } else {
                 n.fields.remove("area");
             }
@@ -910,7 +897,8 @@ pub fn journal_apply_inverse(st: &mut State, inv: &Json) -> Option<String> {
             let Some(n) = st.nodes.get_mut(id) else {
                 return fail(format!("missing node {id}"));
             };
-            n.fields.insert(field.to_string(), FieldValue::Single(value));
+            n.fields
+                .insert(field.to_string(), FieldValue::Single(value));
             stamp_touch_node(n);
             None
         }

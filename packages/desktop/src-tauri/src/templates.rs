@@ -74,8 +74,7 @@ impl HelperDef for IconHelper {
             .param(0)
             .and_then(|p| p.value().as_str())
             .unwrap_or_default();
-        let svg = std::fs::read_to_string(self.dir.join(format!("{name}.svg")))
-            .unwrap_or_default();
+        let svg = std::fs::read_to_string(self.dir.join(format!("{name}.svg"))).unwrap_or_default();
         if svg.is_empty() {
             eprintln!("grove-desktop: unknown icon: {name}");
             return Ok(());
@@ -127,7 +126,9 @@ pub fn ui_dir() -> PathBuf {
             }
         }
     }
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("ui")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("ui")
 }
 
 impl Templates {

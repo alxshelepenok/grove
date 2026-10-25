@@ -110,3 +110,103 @@ fn goal_fitness_table_cell_legacy_and_structured() {
     single(&mut g2, "fitness_target", "2");
     assert_eq!(goal_fitness_table_cell(&g2), "count; current=1 target=2");
 }
+
+#[test]
+fn rederive_runs_on_non_done_transitions_and_demotes_stale_verified() {
+    let mut st = State::default();
+    let mut g = plain(Kind::G, "G-01", "unverified");
+    attr(&mut g, "fitness_kind", "count");
+    single(&mut g, "fitness_target", "1");
+    put(&mut st, g);
+    put(&mut st, done_work_with_delta("W-01", "G-01", 1));
+    rederive_goals(&mut st, "W-01");
+    assert_eq!(st.nodes["G-01"].status, "verified");
+    st.nodes.get_mut("W-01").expect("W-01").status = "rejected".to_string();
+    rederive_goals(&mut st, "W-01");
+    assert_eq!(st.nodes["G-01"].single("fitness_current"), "0");
+    assert_eq!(st.nodes["G-01"].status, "unverified");
+}
+
+#[test]
+fn below_target_aggregate_demotes_verified_to_partial() {
+    let mut st = State::default();
+    let mut g = plain(Kind::G, "G-01", "unverified");
+    attr(&mut g, "fitness_kind", "count");
+    single(&mut g, "fitness_target", "3");
+    put(&mut st, g);
+    put(&mut st, done_work_with_delta("W-01", "G-01", 3));
+    rederive_goals(&mut st, "W-01");
+    assert_eq!(st.nodes["G-01"].status, "verified");
+    st.nodes.get_mut("W-01").expect("W-01").status = "done".to_string();
+    if let Some(FieldValue::Fitness(f)) = st
+        .nodes
+        .get_mut("W-01")
+        .expect("W-01")
+        .fields
+        .get_mut("fitness")
+    {
+        f.insert("G-01".to_string(), 1);
+    }
+    rederive_goals(&mut st, "W-01");
+    assert_eq!(st.nodes["G-01"].status, "partial");
+}
+
+#[test]
+fn declined_goals_survive_the_derivation() {
+    let mut st = State::default();
+    let mut g = plain(Kind::G, "G-01", "declined");
+    attr(&mut g, "fitness_kind", "count");
+    single(&mut g, "fitness_target", "1");
+    put(&mut st, g);
+    put(&mut st, done_work_with_delta("W-01", "G-01", 0));
+    rederive_goals(&mut st, "W-01");
+    assert_eq!(st.nodes["G-01"].status, "declined");
+}
+
+#[test]
+fn alignment_trigger_surfaces_verified_goal_below_target() {
+    let mut st = State::default();
+    let mut g = plain(Kind::G, "G-01", "verified");
+    g.title = "rotten".to_string();
+    attr(&mut g, "fitness_kind", "count");
+    single(&mut g, "fitness_target", "2");
+    put(&mut st, g);
+    put(&mut st, done_work_with_delta("W-01", "G-01", 1));
+    let trig = alignment_triggers(&st);
+    assert!(trig
+        .iter()
+        .any(|x| x.contains("verified goal below target: G-01")
+            && x.contains("total=1 target=2")
+            && x.contains("(rotten)")));
+}
+
+#[test]
+fn declined_verdict_survives_at_target_and_positive_aggregates() {
+    let mut st = State::default();
+    let mut g = plain(Kind::G, "G-01", "declined");
+    attr(&mut g, "fitness_kind", "count");
+    single(&mut g, "fitness_target", "1");
+    put(&mut st, g);
+    put(&mut st, done_work_with_delta("W-01", "G-01", 1));
+    rederive_goals(&mut st, "W-01");
+    assert_eq!(st.nodes["G-01"].status, "declined");
+    assert_eq!(st.nodes["G-01"].single("fitness_current"), "1");
+
+    let mut st = State::default();
+    let mut g = plain(Kind::G, "G-02", "declined");
+    attr(&mut g, "fitness_kind", "count");
+    single(&mut g, "fitness_target", "5");
+    put(&mut st, g);
+    put(&mut st, done_work_with_delta("W-02", "G-02", 2));
+    rederive_goals(&mut st, "W-02");
+    assert_eq!(st.nodes["G-02"].status, "declined");
+    assert_eq!(st.nodes["G-02"].single("fitness_current"), "2");
+
+    let mut st = State::default();
+    let mut g = plain(Kind::G, "G-03", "declined");
+    attr(&mut g, "fitness", "2/2 x");
+    put(&mut st, g);
+    put(&mut st, done_work_with_delta("W-03", "G-03", 2));
+    rederive_goals(&mut st, "W-03");
+    assert_eq!(st.nodes["G-03"].status, "declined");
+}

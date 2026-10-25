@@ -182,3 +182,209 @@ end
         rm(tmp; recursive=true, force=true)
     end
 end
+
+function capture_stderr_core(args)
+    out_path, out_io = mktemp()
+    close(out_io)
+    rc = Ref(-1)
+    open(out_path, "w") do f
+        redirect_stderr(f) do
+            rc[] = M.main(args)
+        end
+    end
+    txt = read(out_path, String)
+    rm(out_path, force=true)
+    rc[], txt
+end
+
+@testset "cli: status=done guards blocks clearance and spike outputs (issue 71)" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1",
+                      "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "q", "--title=Unresolved prerequisite", "--cynefin=complicated",
+                      "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
+                      "--title=Dependent work", "--root=$tmp", "--quiet"]) == 0
+        for fn = ("ac", "hypothesis", "evidence_strategy")
+            @test M.main(["field", "W-01", fn, "add", "x", "--root=$tmp", "--quiet"]) == 0
+        end
+        @test M.main(["fitness", "W-01", "G-01", "+1", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["link", "Q-01", "blocks", "W-01", "--root=$tmp", "--quiet"]) == 0
+
+        rc, err = capture_stderr_core(["set", "W-01", "status=progress", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("I5: predecessors not cleared", err)
+
+        rc, err = capture_stderr_core(["set", "W-01", "status=done", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("I5: predecessors not cleared", err)
+
+        @test M.main(["set", "Q-01", "status=answered", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["evidence", "W-01", "e", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "W-01", "status=done", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["W-01"].status == :done
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end
+
+@testset "cli: done spike without produces rejects with I2 before evidence" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1",
+                      "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "w", "--type=spike", "--cynefin=complex", "--goals=G-01",
+                      "--title=Probe", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["fitness", "W-01", "G-01", "+1", "--root=$tmp", "--quiet"]) == 0
+
+        rc, err = capture_stderr_core(["set", "W-01", "status=done", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("I2: W-01 is a done spike but `produces` is empty", err)
+
+        @test M.main(["add", "d", "--title=Finding", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["link", "W-01", "produces", "D-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["evidence", "W-01", "e", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "W-01", "status=done", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["W-01"].status == :done
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end
+
+@testset "cli: manual goal verification restricted to manual-fitness goals" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=Counted", "--fitness-kind=count", "--fitness-target=1",
+                      "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=Judged", "--fitness-kind=manual",
+                      "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+
+        rc, err = capture_stderr_core(["set", "G-01", "status=verified", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("derived from fitness deltas", err)
+
+        @test M.main(["set", "G-02", "status=verified", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["G-02"].status == :verified
+        @test M.main(["undo", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["G-02"].status == :unverified
+
+        @test M.main(["set", "G-01", "status=declined", "--root=$tmp", "--quiet"]) == 0
+
+        rc, err = capture_stderr_core(["add", "g", "--title=Sneaky", "--fitness-kind=count",
+                                       "--fitness-target=3", "--area=A-01",
+                                       "--status=verified", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("derived from fitness deltas", err)
+        @test M.main(["add", "g", "--title=Judge2", "--fitness-kind=manual", "--area=A-01",
+                      "--status=verified", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["G-03"].status == :verified
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end
+
+@testset "cli: terminal nodes freeze set field fitness evidence (I14)" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=manual", "--area=A-01",
+                      "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "w", "--type=feature", "--cynefin=clear", "--goals=G-01",
+                      "--title=W", "--root=$tmp", "--quiet"]) == 0
+        for fn = ("ac", "hypothesis", "evidence_strategy")
+            @test M.main(["field", "W-01", fn, "add", "x", "--root=$tmp", "--quiet"]) == 0
+        end
+        @test M.main(["fitness", "W-01", "G-01", "+1", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["evidence", "W-01", "e", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "W-01", "status=done", "--root=$tmp", "--quiet"]) == 0
+
+        for args in (["set", "W-01", "title=X"],
+                     ["set", "W-01", "status=archived"],
+                     ["field", "W-01", "ac", "add", "y"],
+                     ["evidence", "W-01", "more"],
+                     ["fitness", "W-01", "G-01", "+1"])
+            rc, err = capture_stderr_core([args..., "--root=$tmp"])
+            @test rc == M.EXIT_GUARD
+            @test occursin("W-01 is terminal (done); create a successor node or use grove undo", err)
+        end
+
+        @test M.main(["undo", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test st.nodes["W-01"].status == :proposed
+        @test M.main(["undo", "--root=$tmp", "--quiet"]) == 0
+        st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
+        @test isempty(get(st.nodes["W-01"].fields, :evidence, String[]))
+
+        @test M.main(["add", "d", "--title=Rejected", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "D-01", "status=rejected", "--root=$tmp", "--quiet"]) == 0
+        rc, err = capture_stderr_core(["set", "D-01", "title=X", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("D-01 is terminal (rejected)", err)
+
+        @test M.main(["add", "d", "--title=Accepted", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "D-02", "status=accepted", "--root=$tmp", "--quiet"]) == 0
+        rc, err = capture_stderr_core(["set", "D-02", "title=X", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("decision D-02 is accepted; create a new D with --supersedes", err)
+        @test M.main(["add", "d", "--title=Newer", "--supersedes=D-02", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "D-03", "status=accepted", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "D-02", "status=superseded", "--root=$tmp", "--quiet"]) == 0
+
+        @test M.main(["add", "q", "--title=Q", "--cynefin=clear", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "Q-01", "status=answered", "--root=$tmp", "--quiet"]) == 0
+        rc, err = capture_stderr_core(["field", "Q-01", "outcome", "add", "late",
+                                       "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("Q-01 is terminal (answered)", err)
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end
+
+@testset "cli: ready transition gates the feature assumption chain (I9 at entry)" begin
+    tmp = mktempdir()
+    try
+        @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1",
+                      "--area=A-01", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "b", "--title=Assumption", "--cynefin=complicated",
+                      "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["add", "w", "--type=feature", "--cynefin=complicated", "--goals=G-01",
+                      "--title=Feature", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["link", "B-01", "targets", "W-01", "--root=$tmp", "--quiet"]) == 0
+
+        rc, err = capture_stderr_core(["set", "W-01", "status=ready", "--root=$tmp"])
+        @test rc == M.EXIT_GUARD
+        @test occursin("I9: W-01 cannot enter `ready`", err)
+        @test occursin("B-01 (proposed)", err)
+
+        @test M.main(["set", "B-01", "status=validated", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "W-01", "status=ready", "--root=$tmp", "--quiet"]) == 0
+
+        @test M.main(["set", "B-01", "status=proposed", "--root=$tmp", "--quiet"]) == 0
+        rc, err = capture_stderr_core(["check", "--root=$tmp"])
+        @test rc == 3
+        @test occursin("I9: W-01 is `ready` but B-01 is `proposed`", err)
+
+        @test M.main(["add", "w", "--type=bug", "--cynefin=clear", "--goals=G-01",
+                      "--title=Bugfix", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["link", "B-01", "targets", "W-02", "--root=$tmp", "--quiet"]) == 0
+        @test M.main(["set", "W-02", "status=ready", "--root=$tmp", "--quiet"]) == 0
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end

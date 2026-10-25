@@ -273,10 +273,7 @@ fn discovery_anchor_count_cone_link() {
     edge(&mut st, "W-02", "blocks", "W-01");
     put(&mut st, plain(Kind::Y, "Y-01", "active"));
     edge(&mut st, "Y-01", "distills", "W-02");
-    let cone: BTreeSet<String> = backward_cone(&st, "W-01", 4, 50)
-        .ids
-        .into_iter()
-        .collect();
+    let cone: BTreeSet<String> = backward_cone(&st, "W-01", 4, 50).ids.into_iter().collect();
     let surfaces: BTreeSet<String> = BTreeSet::new();
     let tags: BTreeSet<String> = BTreeSet::new();
     let y = st.nodes.get("Y-01").unwrap();

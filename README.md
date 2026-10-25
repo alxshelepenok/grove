@@ -542,7 +542,7 @@ and projects where the code will not outlive the session.
 Grove is not a task manager, code-context tool, or multi-agent orchestrator. It
 is a protocol for maintaining verified project state for autonomous agents.
 
-## Protocol invariants
+## Invariants
 
 ```text
 I₁:  ∀ w ∈ W with status = progress, DoR(w) ≡ ⊤.
@@ -564,8 +564,7 @@ I₁₀: status transition w → done is atomic with applying fitness deltas
 I₁₁: ∀ w ∈ W with status = progress, the session that set it is the only
       session permitted to mutate w until terminal(w) or w leaves `progress`
       (e.g. `revert` or another guarded status change). Persisted as header
-      attrs `session` and `session_at` (UTC); `check` rejects a missing token
-      (`grove resume` adopts; see protocol §2.6).
+      attrs `session` and `session_at` (UTC); `check` rejects a missing token.
 I₁₂: ∀ y ∈ Y: (≥1 provenance edge: (w, produces, y) ∨ (y, distills, d/q/b))
       ∧ (surface(y) ≠ ∅ ∨ why(y) ≠ ∅) ∧ tags(y) ≠ ∅ (≥1 glossary term).
       `proposed → active` is refused while any conjunct fails; `stale → active`
@@ -574,6 +573,9 @@ I₁₃: ∀ g ∈ G: ∃ a ∈ A with area(g) = a.id, recorded as the mandatory
       field and enforced at creation (`grove add g --area=A-NN`); re-partition
       via `grove set G-NN area=A-NN`. An area-less goal in the lock is a
       violation, never silently repaired.
+I₁₄: ∀ n with terminal(n), the user-fired set, field, fitness and evidence
+      commands refuse n; sanctioned lanes: undo, repair --confirm, renumber,
+      and the system derivations.
 ```
 
 with terminality:
@@ -584,7 +586,7 @@ terminal⁺(g ∈ G) ⟺ status(g) = verified (strict for blocks edges)
 terminal(g ∈ G)  ⟺ status(g) ∈ { verified, declined }
 terminal(d ∈ D)  ⟺ status(d) ∈ { accepted, rejected, superseded }
 terminal(q ∈ Q)  ⟺ status(q) ∈ { answered, deferred, dropped }
-terminal(b ∈ B)  ⟺ status(b) ∈ { validated, invalidated_acceptable, invalidated_blocking }
+terminal(b ∈ B)  ⟺ status(b) ∈ { invalidated_acceptable, invalidated_blocking }
 terminal(t ∈ T)  ⟺ status(t) = done
 terminal(y ∈ Y)  ⟺ status(y) = superseded
 terminal(a ∈ A)  ⟺ ⊥ (areas have no lifecycle)

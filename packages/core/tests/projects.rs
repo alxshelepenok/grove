@@ -372,7 +372,11 @@ fn toml_parse_rules() {
     assert_eq!(got.len(), 1);
     assert_eq!(got[0].name, "a");
     assert_eq!(got[0].last_opened, "d");
-    std::fs::write(&p, "[[projects]]\nname = \"a\\u0041\"\npath = \"p\"\ncreated = \"c\"\nlast_opened = \"l\"\n").unwrap();
+    std::fs::write(
+        &p,
+        "[[projects]]\nname = \"a\\u0041\"\npath = \"p\"\ncreated = \"c\"\nlast_opened = \"l\"\n",
+    )
+    .unwrap();
     let got = registry_load(&p).unwrap();
     assert_eq!(got[0].name, "aA");
     assert!(registry_load(&dir.join("missing.toml")).unwrap().is_empty());
@@ -396,10 +400,7 @@ fn name_path_lookup() {
     let reg = vec![entry("main", &abspath(&ps))];
     assert_eq!(registry_name_for_path(&reg, &ps), Some("main".to_string()));
     assert_eq!(registry_name_for_path(&reg, &dir.to_string_lossy()), None);
-    assert_eq!(
-        registry_path_for_name(&reg, "main"),
-        Some(abspath(&ps))
-    );
+    assert_eq!(registry_path_for_name(&reg, "main"), Some(abspath(&ps)));
     assert_eq!(registry_path_for_name(&reg, "nope"), None);
     std::fs::remove_dir_all(&dir).ok();
 }

@@ -591,7 +591,11 @@ pub fn discovery_anchor_count(
     cone: &BTreeSet<String>,
 ) -> i64 {
     let mut anchors = 0i64;
-    if discovery.lines("surface").iter().any(|s| surfaces.contains(s)) {
+    if discovery
+        .lines("surface")
+        .iter()
+        .any(|s| surfaces.contains(s))
+    {
         anchors += 1;
     }
     if discovery.lines("tags").iter().any(|t| tags.contains(t)) {
@@ -617,7 +621,12 @@ pub fn discovery_anchor_matches(
     discovery_anchor_count(st, discovery, surfaces, tags, cone) > 0
 }
 
-pub fn relevant_discoveries(st: &State, w: &Node, cone_ids: &[String], maxcount: usize) -> Vec<String> {
+pub fn relevant_discoveries(
+    st: &State,
+    w: &Node,
+    cone_ids: &[String],
+    maxcount: usize,
+) -> Vec<String> {
     let cone: BTreeSet<String> = cone_ids.iter().cloned().collect();
     let w_surface: BTreeSet<String> = w.lines("surface").into_iter().collect();
     let mut cone_tags: BTreeSet<String> = w.lines("tags").into_iter().collect();
@@ -637,7 +646,11 @@ pub fn relevant_discoveries(st: &State, w: &Node, cone_ids: &[String], maxcount:
         }
     }
     scored.sort();
-    scored.into_iter().take(maxcount).map(|(_, id)| id).collect()
+    scored
+        .into_iter()
+        .take(maxcount)
+        .map(|(_, id)| id)
+        .collect()
 }
 
 pub fn area_goals<'a>(st: &'a State, z: &Node) -> Vec<&'a Node> {

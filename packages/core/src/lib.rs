@@ -1,7 +1,7 @@
 mod algebra;
 mod archive;
-mod checksum;
 mod check;
+mod checksum;
 mod cli;
 mod decay;
 mod distill;

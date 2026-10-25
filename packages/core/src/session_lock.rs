@@ -82,9 +82,7 @@ fn time_nanos() -> u128 {
 
 fn mtime_sec(p: &Path) -> Option<f64> {
     let m = std::fs::metadata(p).ok()?.modified().ok()?;
-    m.duration_since(UNIX_EPOCH)
-        .ok()
-        .map(|d| d.as_secs_f64())
+    m.duration_since(UNIX_EPOCH).ok().map(|d| d.as_secs_f64())
 }
 
 pub fn session_locks_root(ctx: &CliCtx) -> PathBuf {
@@ -236,7 +234,10 @@ fn prune_stale_readers(ctx: &CliCtx, warn: &mut Vec<String>) {
         push_info(
             ctx,
             warn,
-            format!("warning: cleaned stale grove shared session lock: {}", d.display()),
+            format!(
+                "warning: cleaned stale grove shared session lock: {}",
+                d.display()
+            ),
         );
     }
 }

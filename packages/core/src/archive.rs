@@ -3,7 +3,7 @@ use crate::journal::{
     journal_read_nonempty_pairs, stamp_journal_session, wrap_journal_record, JOURNAL_ARCHIVE_OP,
     JOURNAL_DISTILL_OP,
 };
-use crate::json::{JVal, JuliaDict, Json};
+use crate::json::{JVal, Json, JuliaDict};
 use crate::model::{Kind, State};
 use crate::ops::{OpResult, EXIT_ERR, EXIT_GUARD, EXIT_NOTFOUND};
 use crate::session::session_denial_progress_mutate;
@@ -36,11 +36,15 @@ pub fn goal_reference_sets(st: &State) -> BTreeMap<String, BTreeSet<String>> {
         refs.insert(id.clone(), BTreeSet::new());
     }
     for g in listnodes(st, Kind::G, true) {
-        refs.entry(g.id.clone()).or_insert_with(BTreeSet::new).insert(g.id.clone());
+        refs.entry(g.id.clone())
+            .or_insert_with(BTreeSet::new)
+            .insert(g.id.clone());
     }
     for w in listnodes(st, Kind::W, true) {
         for gg in w.lines("goals") {
-            refs.entry(w.id.clone()).or_insert_with(BTreeSet::new).insert(gg);
+            refs.entry(w.id.clone())
+                .or_insert_with(BTreeSet::new)
+                .insert(gg);
         }
     }
     let mut changed = true;
@@ -240,7 +244,9 @@ pub fn cmd_archive(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
     if !distilled {
         return OpResult::fail(
             EXIT_GUARD,
-            &format!("archive: distill {gid} first (grove distill {gid}, or grove distill {gid} --null)"),
+            &format!(
+                "archive: distill {gid} first (grove distill {gid}, or grove distill {gid} --null)"
+            ),
         );
     }
     let eff = eff_token(ctx, kw);

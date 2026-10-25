@@ -27,7 +27,12 @@ const NAV_CARDS: [(&str, &str, &str, &str); 7] = [
         "Questions, assumptions, and probes in flight.",
         "sparkles",
     ),
-    ("goals", "Goals", "Track fitness progress across all goals.", "target"),
+    (
+        "goals",
+        "Goals",
+        "Track fitness progress across all goals.",
+        "target",
+    ),
     ("work", "Work", "Every work item by status.", "list-view"),
     (
         "themes",
@@ -35,7 +40,12 @@ const NAV_CARDS: [(&str, &str, &str, &str); 7] = [
         "Track work by theme and the critical path.",
         "layers",
     ),
-    ("graph", "Graph", "Explore nodes and edges as an interactive graph.", "share"),
+    (
+        "graph",
+        "Graph",
+        "Explore nodes and edges as an interactive graph.",
+        "share",
+    ),
     (
         "packet",
         "Packet",

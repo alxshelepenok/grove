@@ -1,7 +1,6 @@
 pub(crate) fn needs_quote(s: &str) -> bool {
     s.is_empty()
-        || s
-            .chars()
+        || s.chars()
             .any(|c| matches!(c, ' ' | '"' | '\\' | '\t' | '\n'))
 }
 
