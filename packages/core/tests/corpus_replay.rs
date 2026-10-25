@@ -491,6 +491,10 @@ macro_rules! scenario {
 
 scenario!(init, "init");
 scenario!(add_kinds, "add-kinds");
+scenario!(add_usage_guards, "add-usage-guards");
+scenario!(add_g_fitness_required, "add-g-fitness-required");
+scenario!(skill, "skill");
+scenario!(specification, "specification");
 scenario!(field_ops, "field-ops");
 scenario!(decision_immutability, "decision-immutability");
 scenario!(link_cycle, "link-cycle");
