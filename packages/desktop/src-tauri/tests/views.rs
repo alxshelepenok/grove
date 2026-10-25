@@ -1,6 +1,8 @@
 use grove_core::parse_fixture;
 use grove_desktop_lib::templates::{ui_dir, Templates};
-use grove_desktop_lib::views::{areas, cone, discovery, goals, graph, overview, project, themes, work};
+use grove_desktop_lib::views::{
+    areas, cone, discovery, goals, graph, overview, project, themes, work,
+};
 
 mod common;
 
@@ -102,7 +104,10 @@ fn goals_model_shapes_fitness_and_work() {
     for g in goals {
         assert!(g.get("chi").is_none(), "chi dropped from goal model");
     }
-    assert!(m.get("chi_hint").is_none(), "chi_hint dropped from page model");
+    assert!(
+        m.get("chi_hint").is_none(),
+        "chi_hint dropped from page model"
+    );
 }
 
 #[test]
@@ -176,10 +181,16 @@ a A-01 status=present t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:
     let html = templates().render("goals", &m).unwrap();
     assert!(html.contains(r#"<div class="empty-state">"#));
     assert!(html.contains(r#"class="icon empty-state-icon""#));
-    assert!(html.contains(r#"viewBox="0 0 72 75""#), "ghost icon svg inlined");
+    assert!(
+        html.contains(r#"viewBox="0 0 72 75""#),
+        "ghost icon svg inlined"
+    );
     assert!(html.contains(r#"<p class="empty-state-title">No goals</p>"#));
     assert!(html.contains("The lock has no goal nodes yet."));
-    assert!(!html.contains("alert-info"), "alert replaced by empty-state");
+    assert!(
+        !html.contains("alert-info"),
+        "alert replaced by empty-state"
+    );
     assert!(html.contains(r#"id="add-node-modal""#));
     assert!(!html.contains('\u{b7}'));
     assert!(!html.contains('\u{2013}'));
@@ -360,13 +371,9 @@ fn areas_model_counts_shared_node_in_both() {
     assert_eq!(a1["v"]["w"], a2["v"]["w"]);
     assert_eq!(a1["v"]["q"], a2["v"]["q"]);
 
-    let html = grove_desktop_lib::views::render_view(
-        &templates(),
-        &root,
-        "areas",
-        &serde_json::json!({}),
-    )
-    .unwrap();
+    let html =
+        grove_desktop_lib::views::render_view(&templates(), &root, "areas", &serde_json::json!({}))
+            .unwrap();
     assert!(html.contains(r#"class="view view-areas""#));
     assert!(html.contains(r#"id="area-A-01""#));
     assert!(html.contains(r#"id="area-A-02""#));
@@ -382,7 +389,9 @@ fn areas_fragment_renders_cards_health_and_links() {
     assert!(html.contains(r#"id="area-A-02""#));
     assert!(html.contains("Evals"));
     assert!(html.contains("API"));
-    assert!(html.contains(r#"<span class="badge badge-neutral capitalize" id="A-01">present</span>"#));
+    assert!(
+        html.contains(r#"<span class="badge badge-neutral capitalize" id="A-01">present</span>"#)
+    );
     assert!(html.contains(r#"<span class="overview-row-title">Goal one</span>"#));
     assert!(html.contains(
         r#"<span class="text-muted overview-row-note word-spacing-tight">(1 / 4)</span>"#
@@ -391,7 +400,10 @@ fn areas_fragment_renders_cards_health_and_links() {
         r#"<span class="text-muted overview-row-note word-spacing-tight">(boolean: true)</span>"#
     ));
     assert!(!html.contains("fitness-bar"), "goal progress bars removed");
-    assert!(!html.contains("area-goal-row"), "old goal row markup removed");
+    assert!(
+        !html.contains("area-goal-row"),
+        "old goal row markup removed"
+    );
     assert!(
         !html.contains(r#"<span class="badge badge-warning">unverified</span>"#),
         "goal status badges removed"
@@ -409,7 +421,9 @@ fn areas_fragment_renders_cards_health_and_links() {
         "A-01 content row includes conditional discoveries"
     );
     assert!(
-        html.contains("Validated assumptions (1), answered questions (1), accepted decisions (1).</span>"),
+        html.contains(
+            "Validated assumptions (1), answered questions (1), accepted decisions (1).</span>"
+        ),
         "A-02 content row omits discoveries when none active"
     );
     assert!(
@@ -458,7 +472,9 @@ fn areas_fragment_chips_carry_full_value_tooltip() {
         "surface chip exposes the full path via a title tooltip"
     );
     assert!(
-        html.contains(r#"<span class="badge badge-neutral" title="normalization">normalization</span>"#),
+        html.contains(
+            r#"<span class="badge badge-neutral" title="normalization">normalization</span>"#
+        ),
         "tag chip exposes the full value via a title tooltip"
     );
 }
@@ -472,9 +488,7 @@ fn areas_fragment_card_header_keeps_id_token_whole() {
         "card header carries an explicit gap between title and badge"
     );
     assert!(
-        html.contains(
-            r#"<span class="text-mono text-muted font-light text-nowrap">[A-01]</span>"#
-        ),
+        html.contains(r#"<span class="text-mono text-muted font-light text-nowrap">[A-01]</span>"#),
         "area id token marked nowrap so it never splits across lines"
     );
     let utilities = std::fs::read_to_string(ui_dir().join("css").join("utilities.css")).unwrap();
@@ -544,10 +558,16 @@ g G-01 status=unverified t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:
     let html = templates().render("areas", &m).unwrap();
     assert!(html.contains(r#"<div class="empty-state">"#));
     assert!(html.contains(r#"class="icon empty-state-icon""#));
-    assert!(html.contains(r#"viewBox="0 0 72 75""#), "ghost icon svg inlined");
+    assert!(
+        html.contains(r#"viewBox="0 0 72 75""#),
+        "ghost icon svg inlined"
+    );
     assert!(html.contains(r#"<p class="empty-state-title">No areas</p>"#));
     assert!(html.contains("The lock has no area nodes yet."));
-    assert!(!html.contains("alert-info"), "alert replaced by empty-state");
+    assert!(
+        !html.contains("alert-info"),
+        "alert replaced by empty-state"
+    );
     assert!(html.contains(r#"id="add-node-modal""#));
 }
 
@@ -568,11 +588,15 @@ a A-01 status=present t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:
     assert_eq!(m["areas"][0]["work_empty"], true);
     let html = templates().render("areas", &m).unwrap();
     assert_eq!(
-        html.matches(r#"<div class="empty-state empty-state-compact">"#).count(),
+        html.matches(r#"<div class="empty-state empty-state-compact">"#)
+            .count(),
         2,
         "goals and work sections each render a compact empty-state"
     );
-    assert!(html.contains(r#"width="32" height="32""#), "compact ghost icon");
+    assert!(
+        html.contains(r#"width="32" height="32""#),
+        "compact ghost icon"
+    );
     assert!(html.contains("No goals in this area."));
     assert!(html.contains("No work linked to this area&#x27;s goals."));
     assert!(!html.contains('\u{b7}'));
@@ -648,38 +672,74 @@ fn themes_fragment_shows_cloud_and_excludes_closed() {
     assert!(html.contains("complex"));
     assert!(!html.contains("Q-02"));
     assert!(!html.contains("B-03"));
-    for item in m["questions"].as_array().unwrap().iter().chain(m["assumptions"].as_array().unwrap()) {
+    for item in m["questions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .chain(m["assumptions"].as_array().unwrap())
+    {
         assert!(item.get("kind").is_none(), "kind badge field dropped");
-        assert!(item.get("kind_variant").is_none(), "kind badge field dropped");
+        assert!(
+            item.get("kind_variant").is_none(),
+            "kind badge field dropped"
+        );
     }
     assert!(!html.contains(">B</span>"), "kind badge removed");
-    assert!(!html.contains("cloud-item"), "cloud rows use compact-row classes");
+    assert!(
+        !html.contains("cloud-item"),
+        "cloud rows use compact-row classes"
+    );
     assert!(html.contains(r#"<li class="overview-row">"#));
     assert!(html.contains(r#"<span class="overview-row-title">Open question</span>"#));
-    assert!(html.contains("overview-row-note"), "cynefin badge pinned to row end");
+    assert!(
+        html.contains("overview-row-note"),
+        "cynefin badge pinned to row end"
+    );
     for label in ["Questions", "Assumptions"] {
         assert!(
-            html.contains(&format!(r#"<span class="area-section-label">{label}</span>"#)),
+            html.contains(&format!(
+                r#"<span class="area-section-label">{label}</span>"#
+            )),
             "section head {label}"
         );
     }
-    let q_pos = html.find(r#"<span class="area-section-label">Questions</span>"#).unwrap();
-    let a_pos = html.find(r#"<span class="area-section-label">Assumptions</span>"#).unwrap();
+    let q_pos = html
+        .find(r#"<span class="area-section-label">Questions</span>"#)
+        .unwrap();
+    let a_pos = html
+        .find(r#"<span class="area-section-label">Assumptions</span>"#)
+        .unwrap();
     assert!(q_pos < a_pos, "questions section precedes assumptions");
-    let q_id_pos = html.find(r#"<span class="overview-row-id text-mono">Q-01</span>"#).unwrap();
-    let b_id_pos = html.find(r#"<span class="overview-row-id text-mono">B-01</span>"#).unwrap();
-    assert!(q_pos < q_id_pos && q_id_pos < a_pos, "Q-01 inside the questions section");
+    let q_id_pos = html
+        .find(r#"<span class="overview-row-id text-mono">Q-01</span>"#)
+        .unwrap();
+    let b_id_pos = html
+        .find(r#"<span class="overview-row-id text-mono">B-01</span>"#)
+        .unwrap();
+    assert!(
+        q_pos < q_id_pos && q_id_pos < a_pos,
+        "Q-01 inside the questions section"
+    );
     assert!(a_pos < b_id_pos, "B-01 inside the assumptions section");
 
-    let table_count = html.matches(r#"<table class="theme-works-table interactive">"#).count();
-    assert_eq!(table_count, 2, "one works table per theme card incl. Unthemed");
+    let table_count = html
+        .matches(r#"<table class="theme-works-table interactive">"#)
+        .count();
+    assert_eq!(
+        table_count, 2,
+        "one works table per theme card incl. Unthemed"
+    );
     assert_eq!(
         html.matches(r#"<div class="table-scroll">"#).count(),
         2,
         "each works table renders inside a scroll container"
     );
-    assert!(!html.contains(r#"<ul class="theme-works">"#), "ul/li work list replaced");
-    let css = std::fs::read_to_string(ui_dir().join("css").join("views").join("themes.css")).unwrap();
+    assert!(
+        !html.contains(r#"<ul class="theme-works">"#),
+        "ul/li work list replaced"
+    );
+    let css =
+        std::fs::read_to_string(ui_dir().join("css").join("views").join("themes.css")).unwrap();
     assert!(
         css.contains(".theme-card .table-scroll") && css.contains("max-height: 360px"),
         "theme card list height capped with scroll"
@@ -688,22 +748,39 @@ fn themes_fragment_shows_cloud_and_excludes_closed() {
         css.contains(".theme-works-table thead th") && css.contains("position: static"),
         "in-card thead is not sticky"
     );
-    let overview_css = std::fs::read_to_string(ui_dir().join("css").join("views").join("overview.css")).unwrap();
+    let overview_css =
+        std::fs::read_to_string(ui_dir().join("css").join("views").join("overview.css")).unwrap();
     assert!(
-        overview_css.contains("#overview-goals .overview-rows") && overview_css.contains("#overview-discovery .overview-rows"),
+        overview_css.contains("#overview-goals .overview-rows")
+            && overview_css.contains("#overview-discovery .overview-rows"),
         "overview list scroll caps present"
     );
-    for col in [r#"<th class="col-id">ID</th>"#, "<th>Title</th>", r#"<th class="col-status">Status</th>"#] {
+    for col in [
+        r#"<th class="col-id">ID</th>"#,
+        "<th>Title</th>",
+        r#"<th class="col-status">Status</th>"#,
+    ] {
         assert_eq!(html.matches(col).count(), 2, "column {col} in both tables");
     }
     for id in ["W-01", "W-02", "W-03", "W-04"] {
-        assert!(html.contains(&format!(r#"<tr data-id="{id}">"#)), "row carries data-id {id}");
+        assert!(
+            html.contains(&format!(r#"<tr data-id="{id}">"#)),
+            "row carries data-id {id}"
+        );
     }
     assert!(html.contains(r#"<td class="cell-title">Themed alpha</td>"#));
-    assert!(html.contains(r#"<div class="theme-counts">"#), "counts chips stay in the card header");
+    assert!(
+        html.contains(r#"<div class="theme-counts">"#),
+        "counts chips stay in the card header"
+    );
     let counts_pos = html.find(r#"<div class="theme-counts">"#).unwrap();
-    let table_pos = html.find(r#"<table class="theme-works-table interactive">"#).unwrap();
-    assert!(counts_pos < table_pos, "counts render above the works table");
+    let table_pos = html
+        .find(r#"<table class="theme-works-table interactive">"#)
+        .unwrap();
+    assert!(
+        counts_pos < table_pos,
+        "counts render above the works table"
+    );
     assert!(!html.contains('\u{b7}'));
     assert!(!html.contains('\u{2013}'));
     assert!(!html.contains('\u{2014}'));
@@ -724,7 +801,10 @@ t T-01 status=open t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z
     let html = templates().render("themes", &m).unwrap();
     assert!(html.contains(r#"<div class="empty-state empty-state-compact">"#));
     assert!(html.contains(r#"class="icon empty-state-icon""#));
-    assert!(html.contains(r#"viewBox="0 0 72 75""#), "ghost icon svg inlined");
+    assert!(
+        html.contains(r#"viewBox="0 0 72 75""#),
+        "ghost icon svg inlined"
+    );
     assert!(html.contains("No open questions or proposed/testing assumptions."));
     assert!(!html.contains('\u{b7}'));
     assert!(!html.contains('\u{2013}'));
@@ -749,7 +829,10 @@ t T-01 status=open t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:00Z
         3,
         "critical path card, workless theme row, and question cloud each render a compact empty-state"
     );
-    assert!(html.contains(r#"width="32" height="32""#), "compact ghost icon");
+    assert!(
+        html.contains(r#"width="32" height="32""#),
+        "compact ghost icon"
+    );
     assert!(html.contains("No open blocks edges."));
     assert!(html.contains("No work items under this theme."));
     assert!(!html.contains('\u{b7}'));
@@ -848,10 +931,16 @@ a A-01 status=present t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00:
     let html = templates().render("discovery", &m).unwrap();
     assert!(html.contains(r#"<div class="empty-state">"#));
     assert!(html.contains(r#"class="icon empty-state-icon""#));
-    assert!(html.contains(r#"viewBox="0 0 72 75""#), "ghost icon svg inlined");
+    assert!(
+        html.contains(r#"viewBox="0 0 72 75""#),
+        "ghost icon svg inlined"
+    );
     assert!(html.contains(r#"<p class="empty-state-title">No active discoveries</p>"#));
     assert!(html.contains("No discovery is active in the lock."));
-    assert!(!html.contains("alert-info"), "alert replaced by empty-state");
+    assert!(
+        !html.contains("alert-info"),
+        "alert replaced by empty-state"
+    );
     assert!(!html.contains('\u{b7}'));
     assert!(!html.contains('\u{2013}'));
     assert!(!html.contains('\u{2014}'));
@@ -867,7 +956,9 @@ fn graph_model_excludes_archived_by_default() {
     assert!(nodes.iter().all(|n| n["id"] != "W-09"));
     assert!(nodes.iter().all(|n| n["archived"] == false));
     let edges = m["graph"]["edges"].as_array().unwrap();
-    assert!(edges.iter().all(|e| e["from"] != "W-09" && e["to"] != "W-09"));
+    assert!(edges
+        .iter()
+        .all(|e| e["from"] != "W-09" && e["to"] != "W-09"));
 
     let w1 = nodes.iter().find(|n| n["id"] == "W-01").unwrap();
     assert_eq!(w1["kind"], "w");
@@ -951,7 +1042,10 @@ fn graph_model_synthesizes_root_and_contains_edges() {
 
     let edges = m["graph"]["edges"].as_array().unwrap();
     assert_eq!(edges.len(), 18);
-    let real: Vec<&serde_json::Value> = edges.iter().filter(|e| e.get("virtual").is_none()).collect();
+    let real: Vec<&serde_json::Value> = edges
+        .iter()
+        .filter(|e| e.get("virtual").is_none())
+        .collect();
     assert_eq!(real.len(), 6);
     let labels: Vec<&str> = real.iter().map(|e| e["label"].as_str().unwrap()).collect();
     assert!(labels.contains(&"blocks"));
@@ -974,7 +1068,10 @@ fn graph_model_synthesizes_root_and_contains_edges() {
             expected.1
         );
     }
-    for n in nodes.iter().filter(|n| ["a", "g", "w"].contains(&n["kind"].as_str().unwrap())) {
+    for n in nodes
+        .iter()
+        .filter(|n| ["a", "g", "w"].contains(&n["kind"].as_str().unwrap()))
+    {
         let id = n["id"].as_str().unwrap();
         assert!(
             contains.iter().any(|(_, to)| to == id),
@@ -1121,7 +1218,13 @@ fn graph_model_archived_filter_moves_virtual_edges() {
             expected.1
         );
     }
-    assert_eq!(contains.iter().filter(|(from, _)| from == "Project").count(), 2);
+    assert_eq!(
+        contains
+            .iter()
+            .filter(|(from, _)| from == "Project")
+            .count(),
+        2
+    );
 }
 
 #[test]
@@ -1138,7 +1241,9 @@ fn graph_model_theme_contains_themed_work() {
         );
     }
     assert!(
-        contains.iter().all(|(from, to)| from != "Project" || to != "T-01"),
+        contains
+            .iter()
+            .all(|(from, to)| from != "Project" || to != "T-01"),
         "T-01 has works and must not attach to Project"
     );
 }
@@ -1239,7 +1344,11 @@ fn graph_model_edgeless_qbd_attach_to_root() {
     let m = graph::model(&st, false, graph::ROOT_TITLE);
     assert_eq!(m["virtual_edge_count"], 3);
     let contains = contains_edges(&m);
-    for expected in [("Project", "Q-01"), ("Project", "B-01"), ("Project", "D-01")] {
+    for expected in [
+        ("Project", "Q-01"),
+        ("Project", "B-01"),
+        ("Project", "D-01"),
+    ] {
         assert!(
             contains.contains(&(expected.0.to_string(), expected.1.to_string())),
             "missing contains edge {} -> {}",
@@ -1354,12 +1463,21 @@ fn graph_root_node_keeps_id_and_uses_given_project_title() {
     let st = fixture_state();
     let m = graph::model(&st, false, "g14-lock");
     let nodes = m["graph"]["nodes"].as_array().unwrap();
-    let root = nodes.iter().find(|n| n["id"] == "Project").expect("root node");
+    let root = nodes
+        .iter()
+        .find(|n| n["id"] == "Project")
+        .expect("root node");
     assert_eq!(root["id"], "Project", "ROOT_ID unchanged");
-    assert_eq!(root["title"], "g14-lock", "root title follows the project name");
+    assert_eq!(
+        root["title"], "g14-lock",
+        "root title follows the project name"
+    );
     let m = graph::model(&st, false, graph::ROOT_TITLE);
     let nodes = m["graph"]["nodes"].as_array().unwrap();
-    let root = nodes.iter().find(|n| n["id"] == "Project").expect("root node");
+    let root = nodes
+        .iter()
+        .find(|n| n["id"] == "Project")
+        .expect("root node");
     assert_eq!(root["title"], graph::ROOT_TITLE, "default title fallback");
 }
 
@@ -1460,7 +1578,13 @@ fn graph_model_cluster_stable_under_kind_filter() {
     let st = parse_fixture(GRAPH_CLUSTER_LOCK).expect("fixture parses");
     let all = graph_clusters(&graph::model(&st, false, graph::ROOT_TITLE));
     for kind in ["a", "g", "w", "y"] {
-        let filtered = graph_clusters(&graph::model_filtered(&st, false, kind, "", graph::ROOT_TITLE));
+        let filtered = graph_clusters(&graph::model_filtered(
+            &st,
+            false,
+            kind,
+            "",
+            graph::ROOT_TITLE,
+        ));
         for (id, cluster) in &filtered {
             assert_eq!(all[id], *cluster, "{id} changed cluster under kind={kind}");
         }
@@ -1471,7 +1595,13 @@ fn graph_model_cluster_stable_under_kind_filter() {
 fn graph_model_cluster_stable_under_focus() {
     let st = parse_fixture(GRAPH_CLUSTER_LOCK).expect("fixture parses");
     let all = graph_clusters(&graph::model(&st, false, graph::ROOT_TITLE));
-    let focused = graph_clusters(&graph::model_filtered(&st, false, "all", "G-01", graph::ROOT_TITLE));
+    let focused = graph_clusters(&graph::model_filtered(
+        &st,
+        false,
+        "all",
+        "G-01",
+        graph::ROOT_TITLE,
+    ));
     assert!(focused.len() > 2);
     for (id, cluster) in &focused {
         assert_eq!(all[id], *cluster, "{id} changed cluster under focus");
@@ -1539,12 +1669,7 @@ d D-01 status=accepted t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:00
     let filters = m["filters"].as_array().unwrap();
     let labels: Vec<(&str, &str)> = filters
         .iter()
-        .map(|f| {
-            (
-                f["status"].as_str().unwrap(),
-                f["label"].as_str().unwrap(),
-            )
-        })
+        .map(|f| (f["status"].as_str().unwrap(), f["label"].as_str().unwrap()))
         .collect();
     assert_eq!(
         labels,
@@ -1659,7 +1784,9 @@ fn graph_fragment_shows_kind_tabs_and_focus_select() {
         ("y", "Discovery (Y)"),
     ] {
         assert!(
-            html.contains(&format!(r#"data-status="{kind}" aria-selected="false">{label}<span"#)),
+            html.contains(&format!(
+                r#"data-status="{kind}" aria-selected="false">{label}<span"#
+            )),
             "missing label {label}"
         );
     }
@@ -1681,7 +1808,10 @@ fn graph_fragment_shows_kind_tabs_and_focus_select() {
 fn graph_fragment_focus_shows_selected_label_and_clear() {
     let st = fixture_state();
     let html = templates()
-        .render("graph", &graph::model_filtered(&st, false, "all", "G-01", graph::ROOT_TITLE))
+        .render(
+            "graph",
+            &graph::model_filtered(&st, false, "all", "G-01", graph::ROOT_TITLE),
+        )
         .unwrap();
     assert!(html.contains(r#"id="graph-focus-clear""#));
     assert!(html.contains("G-01 - Ship the API (g)"));
@@ -1748,9 +1878,7 @@ fn packet_fragment_trigger_shows_selected_text_or_placeholder() {
         "selectedText": "W-01 - Themed alpha",
     });
     let html = templates().render("packet", &selected).unwrap();
-    assert!(html.contains(
-        r#"<div class="searchable-select-trigger">W-01 - Themed alpha</div>"#
-    ));
+    assert!(html.contains(r#"<div class="searchable-select-trigger">W-01 - Themed alpha</div>"#));
     assert!(!html.contains("Select a work item..."));
 
     let bare = serde_json::json!({
@@ -1758,13 +1886,14 @@ fn packet_fragment_trigger_shows_selected_text_or_placeholder() {
         "selected": "",
     });
     let html = templates().render("packet", &bare).unwrap();
-    assert!(html.contains(
-        r#"<div class="searchable-select-trigger">Select a work item...</div>"#
-    ));
+    assert!(html.contains(r#"<div class="searchable-select-trigger">Select a work item...</div>"#));
     assert!(html.contains(r#"<div class="empty-state">"#));
     assert!(html.contains(r#"class="icon empty-state-icon""#));
     assert!(html.contains("Pick a work item to render its execution packet."));
-    assert!(!html.contains(r#"<p class="empty-state-title">"#), "prompt keeps no title");
+    assert!(
+        !html.contains(r#"<p class="empty-state-title">"#),
+        "prompt keeps no title"
+    );
 }
 
 fn packet_temp_root() -> (std::sync::MutexGuard<'static, ()>, std::path::PathBuf) {
@@ -1806,9 +1935,7 @@ fn packet_view_trigger_shows_routed_work() {
         &serde_json::json!({ "id": "W-01" }),
     )
     .unwrap();
-    assert!(html.contains(
-        r#"<div class="searchable-select-trigger">W-01 - Themed alpha</div>"#
-    ));
+    assert!(html.contains(r#"<div class="searchable-select-trigger">W-01 - Themed alpha</div>"#));
     assert!(!html.contains("Select a work item..."));
 
     let html = grove_desktop_lib::views::render_view(
@@ -1818,9 +1945,7 @@ fn packet_view_trigger_shows_routed_work() {
         &serde_json::json!({}),
     )
     .unwrap();
-    assert!(html.contains(
-        r#"<div class="searchable-select-trigger">Select a work item...</div>"#
-    ));
+    assert!(html.contains(r#"<div class="searchable-select-trigger">Select a work item...</div>"#));
     drop(guard);
 }
 
@@ -2034,13 +2159,18 @@ fn overview_model_nav_cards() {
     let m = overview_fixture_model();
     let cards = m["nav_cards"].as_array().unwrap();
     assert_eq!(cards.len(), 7);
-    let routes: Vec<&str> = cards
-        .iter()
-        .map(|c| c["route"].as_str().unwrap())
-        .collect();
+    let routes: Vec<&str> = cards.iter().map(|c| c["route"].as_str().unwrap()).collect();
     assert_eq!(
         routes,
-        ["areas", "discovery", "goals", "work", "themes", "graph", "packet"]
+        [
+            "areas",
+            "discovery",
+            "goals",
+            "work",
+            "themes",
+            "graph",
+            "packet"
+        ]
     );
     let icons = ui_dir().join("icons");
     for c in cards {
@@ -2088,7 +2218,10 @@ fn overview_status_bar_updated_label_edges() {
     assert_eq!(overview::updated_label(now, None), "n/a");
 
     let st = fixture_state();
-    assert_eq!(overview::status_bar_model(&st, None, None)["updated"], "n/a");
+    assert_eq!(
+        overview::status_bar_model(&st, None, None)["updated"],
+        "n/a"
+    );
     assert_eq!(overview::status_bar_model(&st, None, None)["lock"], "n/a");
 }
 
@@ -2171,7 +2304,10 @@ fn overview_fragment_renders_cards_and_deep_links() {
         html.contains(r#"<span class="overview-k">Content (C) trend</span><span class="overview-v">0 over last 1 point</span>"#),
         "trend renders as plain text"
     );
-    assert!(!html.contains(r#">0 over last 1 point</span></span>"#), "no trend badge");
+    assert!(
+        !html.contains(r#">0 over last 1 point</span></span>"#),
+        "no trend badge"
+    );
     assert!(
         html.contains(r#"<span class="overview-figure-label"><span class="overview-swatch overview-swatch-c" aria-hidden="true"></span>Content (C)</span>"#),
         "C label carries decorative spark-c swatch"
@@ -2180,7 +2316,11 @@ fn overview_fragment_renders_cards_and_deep_links() {
         html.contains(r#"<span class="overview-k"><span class="overview-swatch overview-swatch-v" aria-hidden="true"></span>Uncertainty (V)</span>"#),
         "V label carries decorative spark-v swatch"
     );
-    assert_eq!(html.matches("overview-swatch ").count(), 2, "exactly two swatches");
+    assert_eq!(
+        html.matches("overview-swatch ").count(),
+        2,
+        "exactly two swatches"
+    );
     assert!(
         html.contains(r#"<span class="overview-k">Content (C) / Uncertainty (V) ratio</span>"#),
         "ratio row has no swatch"
@@ -2231,7 +2371,10 @@ fn overview_fragment_discovery_empty_state() {
     m["discovery_empty"] = serde_json::json!(true);
     let html = templates().render("overview", &m).unwrap();
     assert!(html.contains(r#"<div class="empty-state empty-state-compact">"#));
-    assert!(html.contains(r#"width="32" height="32""#), "compact ghost icon");
+    assert!(
+        html.contains(r#"width="32" height="32""#),
+        "compact ghost icon"
+    );
     assert!(html.contains("No discoveries yet."));
     assert!(!html.contains('\u{b7}'));
     assert!(!html.contains('\u{2013}'));
@@ -2440,13 +2583,9 @@ fn work_model_mirrors_render_work_semantics() {
     assert_eq!(work_filter(&m, "rejected")["count"], 1);
     assert_eq!(work_filter(&m, "rejected")["variant"], "danger");
 
-    let html = grove_desktop_lib::views::render_view(
-        &templates(),
-        &root,
-        "work",
-        &serde_json::json!({}),
-    )
-    .unwrap();
+    let html =
+        grove_desktop_lib::views::render_view(&templates(), &root, "work", &serde_json::json!({}))
+            .unwrap();
     assert!(html.contains(r#"class="view view-work""#));
     assert!(html.contains(r#"<tr data-id="W-01">"#));
 
@@ -2564,10 +2703,16 @@ fn work_fragment_renders_table_filter_tabs_and_rows() {
     assert!(html.contains("\u{22a5}"));
     assert!(html.contains("\u{2605}"));
     assert!(html.contains(r#"<span class="badge badge-info capitalize" id="W-01">ready</span>"#));
-    assert!(html.contains(r#"<span class="badge badge-neutral capitalize" id="W-02">proposed</span>"#));
-    assert!(html.contains(r#"<span class="badge badge-accent capitalize" id="W-03">progress</span>"#));
+    assert!(
+        html.contains(r#"<span class="badge badge-neutral capitalize" id="W-02">proposed</span>"#)
+    );
+    assert!(
+        html.contains(r#"<span class="badge badge-accent capitalize" id="W-03">progress</span>"#)
+    );
     assert!(html.contains(r#"<span class="badge badge-success capitalize" id="W-04">done</span>"#));
-    assert!(html.contains(r#"<span class="badge badge-danger capitalize" id="W-05">rejected</span>"#));
+    assert!(
+        html.contains(r#"<span class="badge badge-danger capitalize" id="W-05">rejected</span>"#)
+    );
     assert!(!html.contains("W-09"));
     assert!(!html.contains("Archived work"));
     assert!(html.contains(r#"id="add-node-modal""#));
@@ -2594,10 +2739,16 @@ g G-01 status=unverified t_created=2026-07-27T00:00:00Z t_updated=2026-07-27T00:
     let html = templates().render("work", &m).unwrap();
     assert!(html.contains(r#"<div class="empty-state">"#));
     assert!(html.contains(r#"class="icon empty-state-icon""#));
-    assert!(html.contains(r#"viewBox="0 0 72 75""#), "ghost icon svg inlined");
+    assert!(
+        html.contains(r#"viewBox="0 0 72 75""#),
+        "ghost icon svg inlined"
+    );
     assert!(html.contains(r#"<p class="empty-state-title">No work items</p>"#));
     assert!(html.contains("No work items match this filter."));
-    assert!(!html.contains("alert-info"), "alert replaced by empty-state");
+    assert!(
+        !html.contains("alert-info"),
+        "alert replaced by empty-state"
+    );
     assert!(html.contains(r#"role="tablist""#));
     assert!(html.contains(
         r#"data-action="filter" data-status="all" aria-selected="true">all<span class="filter-tab-count">0</span>"#
@@ -2615,7 +2766,10 @@ fn project_fragment_renders_no_project_state() {
     assert!(html.contains(r#"class="view view-project""#));
     assert!(html.contains(r#"<div class="empty-state">"#));
     assert!(html.contains(r#"class="icon empty-state-icon""#));
-    assert!(html.contains(r#"viewBox="0 0 72 75""#), "ghost icon svg inlined");
+    assert!(
+        html.contains(r#"viewBox="0 0 72 75""#),
+        "ghost icon svg inlined"
+    );
     assert!(html.contains(r#"<p class="empty-state-title">No project selected</p>"#));
     assert!(html.contains("Open an existing project or create a new one"));
     assert_eq!(
@@ -2636,7 +2790,8 @@ fn project_fragment_renders_no_project_state() {
 fn project_rail_button_and_gating_wiring() {
     let html = std::fs::read_to_string(ui_dir().join("index.html")).unwrap();
     assert_eq!(
-        html.matches(r#"<li class="side-rail-item" data-level="#).count(),
+        html.matches(r#"<li class="side-rail-item" data-level="#)
+            .count(),
         9,
         "nine route items"
     );
@@ -2648,23 +2803,42 @@ fn project_rail_button_and_gating_wiring() {
     assert!(item.contains(r#"id="project-open""#));
     assert!(item.contains(r#"aria-label="Project""#));
     assert!(item.contains(r#"data-action="project-picker""#));
-    assert!(item.contains(r#"id="project-avatar""#), "W-50 avatar swap container");
+    assert!(
+        item.contains(r#"id="project-avatar""#),
+        "W-50 avatar swap container"
+    );
     assert!(item.contains("nav-icon-tree"));
 
     let js = std::fs::read_to_string(ui_dir().join("js").join("main.js")).unwrap();
-    assert!(js.contains("grove:project-picker"), "picker hook dispatched");
-    assert!(js.contains("grove:project-changed"), "lifecycle hook observed");
+    assert!(
+        js.contains("grove:project-picker"),
+        "picker hook dispatched"
+    );
+    assert!(
+        js.contains("grove:project-changed"),
+        "lifecycle hook observed"
+    );
     assert!(js.contains("refreshProjectState"));
     assert!(js.contains("aria-disabled"));
-    assert!(js.contains("side-rail-item.disabled"), "clicks blocked centrally");
+    assert!(
+        js.contains("side-rail-item.disabled"),
+        "clicks blocked centrally"
+    );
 
     let tree = std::fs::read_to_string(ui_dir().join("icons").join("tree.svg")).unwrap();
     assert!(tree.contains(r#"viewBox="0 0 19 25""#));
     assert!(tree.contains(r#"fill="currentColor""#));
-    assert!(!tree.contains(r#"fill="black""#), "normalized to currentColor");
-    let manifest =
-        std::fs::read_to_string(ui_dir().join("..").join("tools").join("icons.manifest.json"))
-            .unwrap();
+    assert!(
+        !tree.contains(r#"fill="black""#),
+        "normalized to currentColor"
+    );
+    let manifest = std::fs::read_to_string(
+        ui_dir()
+            .join("..")
+            .join("tools")
+            .join("icons.manifest.json"),
+    )
+    .unwrap();
     assert!(manifest.contains("\"tree\""), "tree in the icon manifest");
 }
 
@@ -2719,10 +2893,17 @@ fn command_menu_component_wiring() {
     }
     let cancel = std::fs::read_to_string(ui_dir().join("icons").join("cancel.svg")).unwrap();
     assert!(cancel.contains(r#"fill="currentColor""#));
-    let manifest =
-        std::fs::read_to_string(ui_dir().join("..").join("tools").join("icons.manifest.json"))
-            .unwrap();
-    assert!(manifest.contains("\"cancel\""), "cancel in the icon manifest");
+    let manifest = std::fs::read_to_string(
+        ui_dir()
+            .join("..")
+            .join("tools")
+            .join("icons.manifest.json"),
+    )
+    .unwrap();
+    assert!(
+        manifest.contains("\"cancel\""),
+        "cancel in the icon manifest"
+    );
 
     let search_css = std::fs::read_to_string(
         ui_dir()
@@ -2740,10 +2921,8 @@ fn command_menu_component_wiring() {
         assert!(search_css.contains(token), "search-input.css: {token}");
     }
 
-    let js = std::fs::read_to_string(
-        ui_dir().join("js").join("utils").join("command-menu.js"),
-    )
-    .unwrap();
+    let js =
+        std::fs::read_to_string(ui_dir().join("js").join("utils").join("command-menu.js")).unwrap();
     for token in [
         "openCommandMenu",
         "searchInput",
@@ -2802,7 +2981,10 @@ fn project_picker_wiring() {
     );
 
     let main = std::fs::read_to_string(ui_dir().join("js").join("main.js")).unwrap();
-    assert!(main.contains("project-picker.js"), "main.js imports the picker");
+    assert!(
+        main.contains("project-picker.js"),
+        "main.js imports the picker"
+    );
     assert!(main.contains("openProjectPicker"));
     assert!(
         !main.contains("project picker requested"),
@@ -2812,26 +2994,38 @@ fn project_picker_wiring() {
     let icon = std::fs::read_to_string(ui_dir().join("icons").join("folder-open.svg")).unwrap();
     assert!(icon.contains(r#"viewBox="0 0 24 24""#));
     assert!(icon.contains(r#"fill="currentColor""#));
-    assert!(!icon.contains(r#"fill="black""#), "normalized to currentColor");
-    let manifest =
-        std::fs::read_to_string(ui_dir().join("..").join("tools").join("icons.manifest.json"))
-            .unwrap();
-    assert!(manifest.contains("\"folder-open\""), "folder-open in the icon manifest");
+    assert!(
+        !icon.contains(r#"fill="black""#),
+        "normalized to currentColor"
+    );
+    let manifest = std::fs::read_to_string(
+        ui_dir()
+            .join("..")
+            .join("tools")
+            .join("icons.manifest.json"),
+    )
+    .unwrap();
+    assert!(
+        manifest.contains("\"folder-open\""),
+        "folder-open in the icon manifest"
+    );
 }
 
 #[test]
 fn directory_picker_wiring() {
-    let cargo = std::fs::read_to_string(
-        ui_dir().join("..").join("src-tauri").join("Cargo.toml"),
-    )
-    .unwrap();
+    let cargo =
+        std::fs::read_to_string(ui_dir().join("..").join("src-tauri").join("Cargo.toml")).unwrap();
     assert!(
         cargo.contains("tauri-plugin-dialog"),
         "dialog plugin dependency declared"
     );
 
     let lib = std::fs::read_to_string(
-        ui_dir().join("..").join("src-tauri").join("src").join("lib.rs"),
+        ui_dir()
+            .join("..")
+            .join("src-tauri")
+            .join("src")
+            .join("lib.rs"),
     )
     .unwrap();
     assert!(
@@ -2878,10 +3072,8 @@ fn directory_picker_wiring() {
         "picker invokes the command"
     );
 
-    let menu = std::fs::read_to_string(
-        ui_dir().join("js").join("utils").join("command-menu.js"),
-    )
-    .unwrap();
+    let menu =
+        std::fs::read_to_string(ui_dir().join("js").join("utils").join("command-menu.js")).unwrap();
     for token in ["browseBtn", "command-menu-browse", "form.browse"] {
         assert!(menu.contains(token), "command-menu.js: {token}");
     }
@@ -2890,7 +3082,6 @@ fn directory_picker_wiring() {
         "component stays host-agnostic"
     );
 }
-
 
 #[test]
 fn tree_avatar_module_and_wiring() {
@@ -2953,7 +3144,10 @@ fn tree_avatar_module_and_wiring() {
     );
 
     let main = std::fs::read_to_string(ui_dir().join("js").join("main.js")).unwrap();
-    assert!(!main.contains("utils/avatar.js"), "main.js drops the js generator");
+    assert!(
+        !main.contains("utils/avatar.js"),
+        "main.js drops the js generator"
+    );
     assert!(!main.contains("treeAvatarSvg"), "main.js drops the js api");
     assert!(main.contains("renderProjectAvatar"));
     assert!(main.contains(r#"document.getElementById("project-avatar")"#));
@@ -2961,8 +3155,14 @@ fn tree_avatar_module_and_wiring() {
         main.contains(r#"tauriBridge.invoke("grove_project_avatar", { name })"#),
         "rail avatar invokes the rust command"
     );
-    assert!(main.contains("avatarToken"), "stale renders dropped by token");
-    assert!(main.contains("nav-icon nav-icon-tree"), "rootless restores the tree tile");
+    assert!(
+        main.contains("avatarToken"),
+        "stale renders dropped by token"
+    );
+    assert!(
+        main.contains("nav-icon nav-icon-tree"),
+        "rootless restores the tree tile"
+    );
 
     let picker = std::fs::read_to_string(
         ui_dir()
@@ -2971,7 +3171,10 @@ fn tree_avatar_module_and_wiring() {
             .join("project-picker.js"),
     )
     .unwrap();
-    assert!(!picker.contains("utils/avatar.js"), "picker drops the js generator");
+    assert!(
+        !picker.contains("utils/avatar.js"),
+        "picker drops the js generator"
+    );
     assert!(!picker.contains("treeAvatarSvg"), "picker drops the js api");
     assert!(
         picker.contains(r#"tauriBridge.invoke("grove_project_avatar", { name })"#),
@@ -2987,14 +3190,23 @@ fn tree_avatar_module_and_wiring() {
     );
 
     let rail_css = std::fs::read_to_string(
-        ui_dir().join("css").join("components").join("side-rail.css"),
+        ui_dir()
+            .join("css")
+            .join("components")
+            .join("side-rail.css"),
     )
     .unwrap();
-    assert!(rail_css.contains(".project-avatar svg"), "rail svg pinned by css");
+    assert!(
+        rail_css.contains(".project-avatar svg"),
+        "rail svg pinned by css"
+    );
     assert!(rail_css.contains("width: 28px"), "rail avatar at 28px");
 
     let menu_css = std::fs::read_to_string(
-        ui_dir().join("css").join("components").join("command-menu.css"),
+        ui_dir()
+            .join("css")
+            .join("components")
+            .join("command-menu.css"),
     )
     .unwrap();
     assert!(
@@ -3010,23 +3222,24 @@ fn tree_avatar_module_and_wiring() {
         "avatar tiles drop the inset frame"
     );
 
-    let menu = std::fs::read_to_string(
-        ui_dir().join("js").join("utils").join("command-menu.js"),
-    )
-    .unwrap();
-    assert!(menu.contains("tile.dataset.avatar"), "avatar tiles keep the marker");
+    let menu =
+        std::fs::read_to_string(ui_dir().join("js").join("utils").join("command-menu.js")).unwrap();
+    assert!(
+        menu.contains("tile.dataset.avatar"),
+        "avatar tiles keep the marker"
+    );
     assert!(
         menu.contains(r#"typeof item.avatar === "string""#),
         "string avatars swap the tile content"
     );
 }
 
-
 #[test]
 fn dev_debug_tooling_wiring() {
     let main = std::fs::read_to_string(ui_dir().join("js").join("main.js")).unwrap();
     assert_eq!(
-        main.matches(r#"document.addEventListener("keydown""#).count(),
+        main.matches(r#"document.addEventListener("keydown""#)
+            .count(),
         1,
         "Ctrl+Shift+P listener registered once"
     );
@@ -3048,9 +3261,13 @@ fn dev_debug_tooling_wiring() {
         "standalone dev palette removed"
     );
 
-    let picker =
-        std::fs::read_to_string(ui_dir().join("js").join("integration").join("project-picker.js"))
-            .unwrap();
+    let picker = std::fs::read_to_string(
+        ui_dir()
+            .join("js")
+            .join("integration")
+            .join("project-picker.js"),
+    )
+    .unwrap();
     for token in [
         r#"window.workspace?.appEnv === "development""#,
         "Development actions",
@@ -3060,7 +3277,9 @@ fn dev_debug_tooling_wiring() {
     ] {
         assert!(picker.contains(token), "project-picker.js: {token}");
     }
-    let actions_pos = picker.find(r#"{ title: "Actions", items: actions }"#).unwrap();
+    let actions_pos = picker
+        .find(r#"{ title: "Actions", items: actions }"#)
+        .unwrap();
     let dev_pos = picker.find(r#""Development actions""#).unwrap();
     let recents_pos = picker.find(r#""Recent projects""#).unwrap();
     assert!(
@@ -3079,9 +3298,13 @@ fn dev_debug_tooling_wiring() {
         .nth(1)
         .and_then(|rest| rest.split("]);").next())
         .expect("DEV_ROUTES set present");
-    assert!(dev_routes.contains(r#""debug""#), "debug gated dev-side only");
+    assert!(
+        dev_routes.contains(r#""debug""#),
+        "debug gated dev-side only"
+    );
 
-    let debug = std::fs::read_to_string(ui_dir().join("js").join("views").join("debug.js")).unwrap();
+    let debug =
+        std::fs::read_to_string(ui_dir().join("js").join("views").join("debug.js")).unwrap();
     for token in [
         "renderDebug",
         "grove_project_current",
@@ -3120,13 +3343,20 @@ fn dev_debug_tooling_wiring() {
     assert!(css.contains(r#"url("/icons/bug.svg")"#));
     let icon = std::fs::read_to_string(ui_dir().join("icons").join("bug.svg")).unwrap();
     assert!(icon.contains(r#"fill="currentColor""#));
-    let manifest =
-        std::fs::read_to_string(ui_dir().join("..").join("tools").join("icons.manifest.json"))
-            .unwrap();
+    let manifest = std::fs::read_to_string(
+        ui_dir()
+            .join("..")
+            .join("tools")
+            .join("icons.manifest.json"),
+    )
+    .unwrap();
     assert!(manifest.contains("\"bug\""), "bug in the icon manifest");
 
     let html = std::fs::read_to_string(ui_dir().join("index.html")).unwrap();
-    assert!(!html.contains("debug"), "index.html carries no debug markup");
+    assert!(
+        !html.contains("debug"),
+        "index.html carries no debug markup"
+    );
     assert!(!html.contains("Debug"));
     assert!(
         !ui_dir().join("views").join("debug.hbs").exists(),
@@ -3157,17 +3387,19 @@ fn font_faces_use_plain_paths_that_exist() {
 #[test]
 fn window_state_plugin_registered() {
     let lib = std::fs::read_to_string(
-        ui_dir().join("..").join("src-tauri").join("src").join("lib.rs"),
+        ui_dir()
+            .join("..")
+            .join("src-tauri")
+            .join("src")
+            .join("lib.rs"),
     )
     .unwrap();
     assert!(
         lib.contains("tauri_plugin_window_state::Builder::new().build()"),
         "window-state plugin registered on the builder"
     );
-    let manifest = std::fs::read_to_string(
-        ui_dir().join("..").join("src-tauri").join("Cargo.toml"),
-    )
-    .unwrap();
+    let manifest =
+        std::fs::read_to_string(ui_dir().join("..").join("src-tauri").join("Cargo.toml")).unwrap();
     assert!(
         manifest.contains("tauri-plugin-window-state"),
         "window-state crate is a dependency"
@@ -3214,7 +3446,9 @@ fn cone_fragment_renders_picker_seed_and_empty_states() {
     assert!(html.contains("Pick a work item to trace its causality cone."));
     assert!(!html.contains("cone-stage"));
 
-    let html = tpl.render("cone", &cone::model(&st, "W-01", 4, 50)).unwrap();
+    let html = tpl
+        .render("cone", &cone::model(&st, "W-01", 4, 50))
+        .unwrap();
     assert!(
         html.contains("W-01 - Themed alpha"),
         "the picker carries the seed selection now that the card is gone"
@@ -3222,7 +3456,9 @@ fn cone_fragment_renders_picker_seed_and_empty_states() {
     assert!(html.contains(r#"id="cone-stage" data-seed="W-01""#));
     assert!(!html.contains("its cone is empty"));
 
-    let html = tpl.render("cone", &cone::model(&st, "W-04", 4, 50)).unwrap();
+    let html = tpl
+        .render("cone", &cone::model(&st, "W-04", 4, 50))
+        .unwrap();
     assert!(html.contains("This work item has no blocks edges yet"));
     assert!(!html.contains("cone-stage"));
     for banned in ['\u{b7}', '\u{2013}', '\u{2014}'] {
@@ -3248,7 +3484,11 @@ fn cone_model_walks_the_fixture_diamond() {
         serde_json::json!(["W-01", "W-02", "W-09"]),
         "contraction order runs dependencies first, smallest id on ties"
     );
-    assert_eq!(cone["forward"], serde_json::json!([]), "nothing blocks on W-03");
+    assert_eq!(
+        cone["forward"],
+        serde_json::json!([]),
+        "nothing blocks on W-03"
+    );
     let dep_ids: Vec<&str> = m["dependencies"]
         .as_array()
         .unwrap()
@@ -3266,9 +3506,15 @@ fn cone_model_walks_the_fixture_diamond() {
     assert_eq!(cone["forward_truncated"], false);
     let nodes = cone["nodes"].as_array().unwrap();
     assert_eq!(nodes.len(), 4, "seed plus three predecessors");
-    assert!(nodes.iter().any(|n| n["id"] == "W-09" && n["archived"] == true));
+    assert!(nodes
+        .iter()
+        .any(|n| n["id"] == "W-09" && n["archived"] == true));
     let edges = cone["edges"].as_array().unwrap();
-    assert_eq!(edges.len(), 3, "all fixture blocks edges stay inside the cone");
+    assert_eq!(
+        edges.len(),
+        3,
+        "all fixture blocks edges stay inside the cone"
+    );
     assert!(edges.contains(&serde_json::json!({"from": "W-01", "to": "W-02"})));
     assert!(edges.contains(&serde_json::json!({"from": "W-09", "to": "W-03"})));
 
@@ -3285,16 +3531,26 @@ fn cone_model_walks_the_fixture_diamond() {
         .iter()
         .map(|d| d["id"].as_str().unwrap_or_default())
         .collect();
-    assert!(dep_ids.is_empty(), "no dependency rows without a backward cone");
+    assert!(
+        dep_ids.is_empty(),
+        "no dependency rows without a backward cone"
+    );
     let impact_ids: Vec<&str> = m["impact"]
         .as_array()
         .unwrap()
         .iter()
         .map(|d| d["id"].as_str().unwrap_or_default())
         .collect();
-    assert_eq!(impact_ids, vec!["W-02", "W-03"], "impact rows list the blast radius");
+    assert_eq!(
+        impact_ids,
+        vec!["W-02", "W-03"],
+        "impact rows list the blast radius"
+    );
     for d in m["impact"].as_array().unwrap() {
-        assert!(!d["title"].as_str().unwrap_or("").is_empty(), "rows carry titles");
+        assert!(
+            !d["title"].as_str().unwrap_or("").is_empty(),
+            "rows carry titles"
+        );
     }
 }
 
@@ -3308,7 +3564,10 @@ fn cone_model_caps_walks_and_flags_truncation() {
 
     let m = cone::model(&st, "W-03", 1, 50);
     assert_eq!(m["cone"]["backward"], serde_json::json!(["W-02", "W-09"]));
-    assert_eq!(m["cone"]["truncated"], true, "depth cap leaves unseen neighbors");
+    assert_eq!(
+        m["cone"]["truncated"], true,
+        "depth cap leaves unseen neighbors"
+    );
 }
 
 #[test]
@@ -3335,15 +3594,28 @@ fn cone_fragment_embeds_blob_and_controls() {
     let st = fixture_state();
     let tpl = templates();
 
-    let html = tpl.render("cone", &cone::model(&st, "W-03", 4, 50)).unwrap();
+    let html = tpl
+        .render("cone", &cone::model(&st, "W-03", 4, 50))
+        .unwrap();
     assert!(html.contains(r#"<script type="application/json" id="cone-data">"#));
     assert!(html.contains(r#"id="cone-depth" min="1" max="10" value="4""#));
     assert!(html.contains(r#"id="cone-max" min="1" value="50""#));
-    assert!(html.contains(r#""backward":["W-02","W-09","W-01"]"#), "blob carries the walk");
+    assert!(
+        html.contains(r#""backward":["W-02","W-09","W-01"]"#),
+        "blob carries the walk"
+    );
 
-    let html = tpl.render("cone", &cone::model(&st, "W-04", 4, 50)).unwrap();
-    assert!(html.contains(r#"id="cone-data""#), "edge-less seed still embeds its cone");
-    assert!(!html.contains(r#"id="cone-depth""#), "controls hide without edges");
+    let html = tpl
+        .render("cone", &cone::model(&st, "W-04", 4, 50))
+        .unwrap();
+    assert!(
+        html.contains(r#"id="cone-data""#),
+        "edge-less seed still embeds its cone"
+    );
+    assert!(
+        !html.contains(r#"id="cone-depth""#),
+        "controls hide without edges"
+    );
 
     let html = tpl.render("cone", &cone::model(&st, "", 4, 50)).unwrap();
     assert!(!html.contains(r#"id="cone-data""#), "no seed, no blob");
@@ -3354,7 +3626,9 @@ fn cone_fragment_counts_sides_and_empty_states() {
     let st = fixture_state();
     let tpl = templates();
 
-    let html = tpl.render("cone", &cone::model(&st, "W-01", 4, 50)).unwrap();
+    let html = tpl
+        .render("cone", &cone::model(&st, "W-01", 4, 50))
+        .unwrap();
     assert!(html.contains("Dependencies"), "dependencies side panel");
     assert!(html.contains("Impact"), "impact side panel");
     assert!(html.contains(r#">0</span>"#), "dependency count of zero");
@@ -3362,16 +3636,33 @@ fn cone_fragment_counts_sides_and_empty_states() {
         html.contains("badge-count badge-neutral badge-count-lg\">0<"),
         "a zero count still renders the count modifier"
     );
-    assert!(html.contains(r#">2</span>"#), "blast radius of two from W-01");
+    assert!(
+        html.contains(r#">2</span>"#),
+        "blast radius of two from W-01"
+    );
     assert!(html.contains("No dependencies inside the cone."));
     assert!(!html.contains("Nothing blocks on this work item."));
-    assert!(html.contains(r#">W-02</span>"#), "impact card lists its members");
-    assert!(html.contains(r#">W-03</span>"#), "impact card lists the blast radius");
+    assert!(
+        html.contains(r#">W-02</span>"#),
+        "impact card lists its members"
+    );
+    assert!(
+        html.contains(r#">W-03</span>"#),
+        "impact card lists the blast radius"
+    );
     assert!(html.contains(r#"id="cone-labels""#));
     assert!(html.contains(r#"id="graph-tooltip""#));
-    assert!(html.contains(r#"class="cone-layout""#), "stage and furniture share a side layout");
-    assert!(html.contains(r#"class="cone-sidebar""#), "controls, legend and cards sit beside the stage");
-    let sidebar_at = html.find(r#"class="cone-sidebar""#).expect("sidebar present");
+    assert!(
+        html.contains(r#"class="cone-layout""#),
+        "stage and furniture share a side layout"
+    );
+    assert!(
+        html.contains(r#"class="cone-sidebar""#),
+        "controls, legend and cards sit beside the stage"
+    );
+    let sidebar_at = html
+        .find(r#"class="cone-sidebar""#)
+        .expect("sidebar present");
     let controls_at = html.find(r#"id="cone-depth""#).expect("controls present");
     let stage_at = html.find(r#"id="cone-stage""#).expect("stage present");
     assert!(
@@ -3379,13 +3670,30 @@ fn cone_fragment_counts_sides_and_empty_states() {
         "controls live inside the sidebar before the stage"
     );
     assert!(!html.contains("cone-seed-card"), "the seed card is gone");
-    assert!(!html.contains("cone-legend"), "the dom legend is gone; axes are named in-scene");
-    assert!(!html.contains(r#"class="cone-axis""#), "no dom axis strip over the orbiting scene");
-    assert!(!html.contains(r#"id="graph-info""#), "graph info panel stays out of the cone");
+    assert!(
+        !html.contains("cone-legend"),
+        "the dom legend is gone; axes are named in-scene"
+    );
+    assert!(
+        !html.contains(r#"class="cone-axis""#),
+        "no dom axis strip over the orbiting scene"
+    );
+    assert!(
+        !html.contains(r#"id="graph-info""#),
+        "graph info panel stays out of the cone"
+    );
 
-    let html = tpl.render("cone", &cone::model(&st, "W-03", 4, 50)).unwrap();
-    assert!(html.contains(r#">3</span>"#), "three dependencies behind W-03");
-    assert!(html.contains(r#">W-09</span>"#), "dependency card lists its members");
+    let html = tpl
+        .render("cone", &cone::model(&st, "W-03", 4, 50))
+        .unwrap();
+    assert!(
+        html.contains(r#">3</span>"#),
+        "three dependencies behind W-03"
+    );
+    assert!(
+        html.contains(r#">W-09</span>"#),
+        "dependency card lists its members"
+    );
     assert!(html.contains("Nothing blocks on this work item."));
     assert!(!html.contains("No dependencies inside the cone."));
     for banned in ['\u{b7}', '\u{2013}', '\u{2014}'] {
@@ -3470,7 +3778,10 @@ e W-83 blocks W-80 t_created=2026-07-27T00:00:00Z
     let st = parse_fixture(lock).expect("fixture parses");
     let m = cone::model(&st, "W-80", 4, 50);
     let frag = m["fragility"].as_array().unwrap();
-    assert_eq!(m["fragility_count"], 3, "fragility badge count covers every seed goal");
+    assert_eq!(
+        m["fragility_count"], 3,
+        "fragility badge count covers every seed goal"
+    );
     assert_eq!(frag[0]["id"], "G-01");
     assert_eq!(frag[0]["connectivity"], 1);
     assert_eq!(frag[0]["label"], "brittle");
@@ -3487,10 +3798,22 @@ e W-83 blocks W-80 t_created=2026-07-27T00:00:00Z
     let html = templates().render("cone", &m).unwrap();
     assert!(html.contains("Fragility"), "fragility card renders");
     assert!(html.contains("brittle"), "single path reads as brittle");
-    assert!(html.contains("2 disjoint paths"), "redundant path count renders");
-    assert!(html.contains("no path"), "zero connectivity reads as no path");
-    assert!(html.contains("Single path"), "goal title shows in the fragility row");
-    assert!(html.contains("Double path"), "every fragility row carries its goal title");
+    assert!(
+        html.contains("2 disjoint paths"),
+        "redundant path count renders"
+    );
+    assert!(
+        html.contains("no path"),
+        "zero connectivity reads as no path"
+    );
+    assert!(
+        html.contains("Single path"),
+        "goal title shows in the fragility row"
+    );
+    assert!(
+        html.contains("Double path"),
+        "every fragility row carries its goal title"
+    );
     assert!(
         html.contains(r#"class="overview-row cone-fragility-row""#),
         "fragility rows use the standard row layout"
@@ -3502,7 +3825,10 @@ e W-83 blocks W-80 t_created=2026-07-27T00:00:00Z
         "a seed without goals carries no fragility rows"
     );
     let relay_html = templates().render("cone", &relay).unwrap();
-    assert!(!relay_html.contains("Fragility"), "no fragility card without goals");
+    assert!(
+        !relay_html.contains("Fragility"),
+        "no fragility card without goals"
+    );
 }
 
 #[test]
@@ -3535,11 +3861,13 @@ e W-91 blocks W-90 t_created=2026-07-27T00:00:00Z
     let m = cone::model(&st, "W-90", 4, 50);
     let rows = m["discoveries"].as_array().unwrap();
     assert_eq!(
-        m["discoveries_count"],
-        3,
+        m["discoveries_count"], 3,
         "discoveries badge count covers the ranked rows"
     );
-    let ids: Vec<&str> = rows.iter().map(|r| r["id"].as_str().unwrap_or_default()).collect();
+    let ids: Vec<&str> = rows
+        .iter()
+        .map(|r| r["id"].as_str().unwrap_or_default())
+        .collect();
     assert_eq!(
         ids,
         vec!["Y-04", "Y-01", "Y-02"],
@@ -3551,9 +3879,15 @@ e W-91 blocks W-90 t_created=2026-07-27T00:00:00Z
     assert_eq!(rows[2]["reason"], "tags: graph");
 
     let html = templates().render("cone", &m).unwrap();
-    assert!(html.contains("Relevant discoveries"), "discovery card renders");
+    assert!(
+        html.contains("Relevant discoveries"),
+        "discovery card renders"
+    );
     assert!(html.contains("Both anchors"), "invariant text shows");
-    assert!(html.contains("surface: pkg/a.rs; tags: graph"), "overlap reason shows");
+    assert!(
+        html.contains("surface: pkg/a.rs; tags: graph"),
+        "overlap reason shows"
+    );
     assert!(
         html.contains(r#"class="overview-row cone-discovery-row" data-navigate="discovery""#),
         "rows use the overview format and activate discovery navigation"
@@ -3581,7 +3915,10 @@ e W-01 blocks W-02 t_created=2026-07-27T00:00:00Z
     let m = cone::model(&st, "W-02", 4, 50);
     let surface = m["surface"].as_array().unwrap();
     assert_eq!(m["surface_count"], 2, "union across seed and cone members");
-    assert_eq!(surface[0]["path"], "packages/desktop/ui/js/utils/cone-model.js");
+    assert_eq!(
+        surface[0]["path"],
+        "packages/desktop/ui/js/utils/cone-model.js"
+    );
     assert_eq!(surface[0]["count"], 1);
     assert_eq!(surface[0]["touchers"], serde_json::json!(["W-02"]));
     assert_eq!(surface[1]["path"], "packages/desktop/ui/js/views/cone.js");
@@ -3624,7 +3961,11 @@ e W-09 blocks W-03 t_created=2026-07-27T00:00:00Z
     );
     for n in cone["nodes"].as_array().unwrap() {
         let on_path = matches!(n["id"].as_str(), Some("W-01") | Some("W-02") | Some("W-03"));
-        assert_eq!(n["critical"], on_path, "node {} carries the marker", n["id"]);
+        assert_eq!(
+            n["critical"], on_path,
+            "node {} carries the marker",
+            n["id"]
+        );
     }
 
     let html = templates().render("cone", &m).unwrap();
@@ -3637,9 +3978,17 @@ e W-09 blocks W-03 t_created=2026-07-27T00:00:00Z
 #[test]
 fn cone_fragment_shell_renders_sidebar_and_counts() {
     let st = fixture_state();
-    let html = templates().render("cone", &cone::model(&st, "W-01", 4, 50)).unwrap();
-    assert!(html.contains("Dependencies"), "dependency count card names the backward zone");
-    assert!(html.contains("Impact"), "impact count card names the forward zone");
+    let html = templates()
+        .render("cone", &cone::model(&st, "W-01", 4, 50))
+        .unwrap();
+    assert!(
+        html.contains("Dependencies"),
+        "dependency count card names the backward zone"
+    );
+    assert!(
+        html.contains("Impact"),
+        "impact count card names the forward zone"
+    );
     assert!(!html.contains("cone-legend"), "no dom legend remains");
     assert!(
         html.contains("badge badge-count badge-neutral"),
@@ -3653,7 +4002,10 @@ fn cone_level_registry_and_unknown_error_lists_it() {
     let tpl = templates();
     let err = grove_desktop_lib::views::render_view(&tpl, ".", "bogus", &serde_json::json!({}))
         .expect_err("unknown level rejected");
-    assert!(err.contains("cone"), "unknown-level error lists cone: {err}");
+    assert!(
+        err.contains("cone"),
+        "unknown-level error lists cone: {err}"
+    );
 }
 
 #[test]
@@ -3682,7 +4034,10 @@ fn cone_rail_route_icon_and_wiring() {
     let js = std::fs::read_to_string(ui_dir().join("js").join("views").join("cone.js")).unwrap();
     assert!(js.contains("new SearchableSelect"));
     assert!(js.contains(r#"navigate?.("cone", { id: item.id })"#));
-    assert!(js.contains("select.destroy()"), "cleanup tears the select down");
+    assert!(
+        js.contains("select.destroy()"),
+        "cleanup tears the select down"
+    );
 
     let nav_css =
         std::fs::read_to_string(ui_dir().join("css").join("views").join("overview.css")).unwrap();
@@ -3692,12 +4047,15 @@ fn cone_rail_route_icon_and_wiring() {
     let icon = std::fs::read_to_string(ui_dir().join("icons").join("cone.svg")).unwrap();
     assert!(icon.contains(r#"viewBox="0 0 24 24""#));
     assert!(icon.contains(r#"fill="currentColor""#));
-    let manifest =
-        std::fs::read_to_string(ui_dir().join("..").join("tools").join("icons.manifest.json"))
-            .unwrap();
+    let manifest = std::fs::read_to_string(
+        ui_dir()
+            .join("..")
+            .join("tools")
+            .join("icons.manifest.json"),
+    )
+    .unwrap();
     assert!(manifest.contains("\"cone\""), "cone in the icon manifest");
 }
-
 
 const NATURAL_LOCK: &str = r#"@grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.

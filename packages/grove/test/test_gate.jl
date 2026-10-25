@@ -190,7 +190,7 @@ if Sys.which("git") !== nothing
             write(joinpath(tmp, "a.txt"), "a\n")
             run(`git -C $tmp add a.txt`)
             run(`git -C $tmp -c user.email=t@example.com -c user.name=t commit -q -m scaffold`)
-            # surface is planning-time information: declare it before the item closes (I14 freezes done work)
+
             @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
             @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0
             @test M.main(["add", "g", "--title=G", "--fitness-kind=count", "--fitness-target=1", "--area=A-01", "--root=$tmp", "--quiet"]) == 0

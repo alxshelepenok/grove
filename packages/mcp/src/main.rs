@@ -46,7 +46,13 @@ fn main() {
             std::process::exit(1);
         }
     }
-    if role.as_deref().map(str::trim).unwrap_or_default().is_empty() && role.is_some() {
+    if role
+        .as_deref()
+        .map(str::trim)
+        .unwrap_or_default()
+        .is_empty()
+        && role.is_some()
+    {
         eprintln!("grove-mcp: --role expects a non-empty name\n{}", usage());
         std::process::exit(1);
     }

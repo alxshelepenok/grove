@@ -76,7 +76,7 @@ function main()
     push_unique!(joinpath(REPO, "README.md"))
     push_unique!(joinpath(REPO, "SECURITY.md"))
 
-    push_unique!(joinpath(skills_dir, "index.md"))
+    push_unique!(joinpath(skills_dir, "SKILL.md"))
     for p in reading_order(skills_dir)
         push_unique!(p)
     end

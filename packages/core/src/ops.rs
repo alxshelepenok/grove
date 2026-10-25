@@ -1,10 +1,12 @@
 use crate::algebra::rederive_artifacts;
 use crate::dor::{dor, dor_breakdown, parse_requires_coverage};
-use crate::fitness::{goal_structured_kind, rederive_goals, refresh_goal_structured_fitness, GOAL_FITNESS_KINDS};
+use crate::fitness::{
+    goal_structured_kind, rederive_goals, refresh_goal_structured_fitness, GOAL_FITNESS_KINDS,
+};
 use crate::guards::{guard_status_transition, terminal_freeze_msg, GuardVerdict};
 use crate::ids::id_cmp;
-use crate::json::{parse_json, JuliaDict};
 use crate::journal::*;
+use crate::json::{parse_json, JuliaDict};
 use crate::model::{field_form, FieldValue, Form, Kind, Node, State};
 use crate::renumber::{
     apply_renumber, glossary_rename_in_text, glossary_terms, renumber_blocked_by_done_evidence,
@@ -137,7 +139,7 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
             if n.status == "verified" && goal_structured_kind(&n) != Some("manual") {
                 bail!(
                     EXIT_GUARD,
-                    "add g: --status=verified is derived from fitness deltas; only fitness_kind=manual goals take a human verdict"
+                    "add g: --status=verified is derived from fitness deltas"
                 );
             }
             let aref = kw_get(kw, "area").unwrap_or("").trim().to_string();
@@ -166,10 +168,7 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
             if let Some(fk_raw) = kw_get(kw, "fitness-kind") {
                 let fk = fk_raw.trim().to_lowercase();
                 if matches!(fk.as_str(), "count" | "metric" | "ratio")
-                    && kw_get(kw, "fitness-target")
-                        .unwrap_or("")
-                        .trim()
-                        .is_empty()
+                    && kw_get(kw, "fitness-target").unwrap_or("").trim().is_empty()
                 {
                     bail!(
                         EXIT_ERR,
@@ -204,7 +203,8 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
                     "add y: --tags=<t1,t2> is required (≥1 glossary term)"
                 );
             }
-            n.fields.insert("tags".to_string(), FieldValue::RefList(tags));
+            n.fields
+                .insert("tags".to_string(), FieldValue::RefList(tags));
             let surface = csv_filtered(kw_get(kw, "surface").unwrap_or(""));
             if !surface.is_empty() {
                 n.fields
@@ -252,7 +252,8 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
     rederive_artifacts(st);
     let mut r = OpResult::ok();
     r.out = format!("{id}\n");
-    r.journal.push(wrap_journal_record("add", jinv_rm_node(&id)));
+    r.journal
+        .push(wrap_journal_record("add", jinv_rm_node(&id)));
     r
 }
 
@@ -367,7 +368,7 @@ fn lazy_distill_prompts(st: &State, w: &Node, old_goal_status: &[(String, String
             continue;
         }
         out.push(format!(
-            "grove: goal {} ({}) verified, distill content: `grove distill {}` (or `grove distill {} --null` when nothing is worth keeping; lazy distill, see the rules section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.",
+            "grove: goal {} ({}) verified, distill content: `grove distill {}` (or `grove distill {} --null` when nothing is worth keeping; lazy distill, see the Delivery loop section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.",
             gid, g.title, gid, gid
         ));
     }
@@ -477,9 +478,8 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
             let parsed = parse_json(&line).ok();
             let mut pairs = Vec::new();
             if let Some(rec) = parsed {
-                if let Some(crate::json::Json::Obj(gs)) = rec
-                    .get("inv")
-                    .and_then(|i| i.get("goal_statuses"))
+                if let Some(crate::json::Json::Obj(gs)) =
+                    rec.get("inv").and_then(|i| i.get("goal_statuses"))
                 {
                     for (k, v) in gs {
                         if let Some(sv) = v.as_str() {
@@ -595,10 +595,7 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
                 let n = st.nodes.get_mut(id).expect("checked");
                 let hb = n.attrs.contains_key("fitness_kind");
                 let oldk = n.attr("fitness_kind");
-                line = wrap_journal_record(
-                    "set",
-                    jinv_set_g_attr_fitness_kind(id, hb, &oldk, &ks),
-                );
+                line = wrap_journal_record("set", jinv_set_g_attr_fitness_kind(id, hb, &oldk, &ks));
                 n.attrs.insert("fitness_kind".to_string(), ks);
             }
             refresh_goal_structured_fitness(st, id);
@@ -726,8 +723,10 @@ pub fn op_field(
                 Form::Prose | Form::RefList => {
                     let n = st.nodes.get_mut(id).expect("checked");
                     line = wrap_journal_record("field", jinv_field_pop_last(id, fname));
-                    let needs_insert =
-                        !matches!(n.fields.get(fname), Some(FieldValue::Prose(_)) | Some(FieldValue::RefList(_)));
+                    let needs_insert = !matches!(
+                        n.fields.get(fname),
+                        Some(FieldValue::Prose(_)) | Some(FieldValue::RefList(_))
+                    );
                     if needs_insert {
                         let fv = if form == Form::Prose {
                             FieldValue::Prose(Vec::new())
@@ -779,10 +778,7 @@ pub fn op_field(
                 return OpResult::fail(EXIT_ERR, "index out of range");
             }
             let removed = v[(idx - 1) as usize].clone();
-            line = wrap_journal_record(
-                "field",
-                jinv_field_insert_line(id, fname, idx, &removed),
-            );
+            line = wrap_journal_record("field", jinv_field_insert_line(id, fname, idx, &removed));
             match n.fields.get_mut(fname) {
                 Some(FieldValue::Prose(lines)) | Some(FieldValue::RefList(lines)) => {
                     lines.remove((idx - 1) as usize);
@@ -820,8 +816,10 @@ pub fn op_link(st: &mut State, from: &str, label: &str, to: &str, eff: &str) -> 
     }
     rederive_artifacts(st);
     let mut r = OpResult::ok();
-    r.journal
-        .push(wrap_journal_record("link", jinv_unlink_edge(from, label, to)));
+    r.journal.push(wrap_journal_record(
+        "link",
+        jinv_unlink_edge(from, label, to),
+    ));
     r
 }
 
@@ -873,8 +871,10 @@ pub fn op_fitness(st: &mut State, wid: &str, gid: &str, delta: i64, eff: &str) -
     }
     let w = st.nodes.get_mut(wid).expect("checked");
     if !matches!(w.fields.get("fitness"), Some(FieldValue::Fitness(_))) {
-        w.fields
-            .insert("fitness".to_string(), FieldValue::Fitness(Default::default()));
+        w.fields.insert(
+            "fitness".to_string(),
+            FieldValue::Fitness(Default::default()),
+        );
     }
     let Some(FieldValue::Fitness(f)) = w.fields.get_mut("fitness") else {
         unreachable!()
@@ -919,8 +919,10 @@ pub fn op_renumber(st: &mut State, old_id: &str, new_id: &str, eff: &str) -> OpR
     }
     rederive_artifacts(st);
     let mut r = OpResult::ok();
-    r.journal
-        .push(wrap_journal_record("renumber", jinv_renumber_swap(new, old)));
+    r.journal.push(wrap_journal_record(
+        "renumber",
+        jinv_renumber_swap(new, old),
+    ));
     r
 }
 
@@ -950,7 +952,9 @@ pub fn op_glossary_rename(
     if !in_glossary && users.is_empty() {
         return OpResult::fail(
             EXIT_NOTFOUND,
-            &format!("glossary rename: `{old}` is neither in glossary.md nor used by any discovery"),
+            &format!(
+                "glossary rename: `{old}` is neither in glossary.md nor used by any discovery"
+            ),
         );
     }
     if terms.contains(&new) {
@@ -978,7 +982,11 @@ pub fn op_glossary_rename(
         let tags = x.lines("tags");
         snap.insert(
             xid.clone(),
-            crate::json::JVal::Arr(tags.iter().map(|t| crate::json::JVal::Str(t.clone())).collect()),
+            crate::json::JVal::Arr(
+                tags.iter()
+                    .map(|t| crate::json::JVal::Str(t.clone()))
+                    .collect(),
+            ),
         );
     }
     for xid in &users {

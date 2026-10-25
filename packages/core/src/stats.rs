@@ -204,10 +204,7 @@ pub fn stats_dor(
     for id in &order {
         per_node.insert(id.clone(), JVal::Int(counts[id]));
     }
-    let sorted: Vec<(String, i64)> = counts
-        .iter()
-        .map(|(k, v)| (k.clone(), *v))
-        .collect();
+    let sorted: Vec<(String, i64)> = counts.iter().map(|(k, v)| (k.clone(), *v)).collect();
     let mut entries = 0i64;
     let mut first_pass = 0i64;
     for n in listnodes(st, Kind::W, true) {
@@ -290,10 +287,7 @@ pub fn stats_discovery(
             continue;
         }
         gate_runs += 1;
-        let empty = inv
-            .get("empty")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(false);
+        let empty = inv.get("empty").and_then(|v| v.as_bool()).unwrap_or(false);
         if empty {
             gate_empty += 1;
         }
@@ -328,10 +322,7 @@ pub fn stats_discovery(
                 JVal::Int(inv.get("dones").and_then(|v| v.as_i64()).unwrap_or(0)),
             ),
             ("empty".to_string(), JVal::Bool(empty)),
-            (
-                "overflow_events".to_string(),
-                JVal::Int(ov.unwrap_or(0)),
-            ),
+            ("overflow_events".to_string(), JVal::Int(ov.unwrap_or(0))),
             ("overflow_paths".to_string(), overflow_paths),
             (
                 "invalidated_events".to_string(),
@@ -483,10 +474,9 @@ pub fn stats_post_approval_invalidation(st: &State, ivals: &StatsIntervals) -> (
             continue;
         };
         ever_validated += 1;
-        if ivs[k + 1..]
-            .iter()
-            .any(|(_, _, status)| status == "invalidated_acceptable" || status == "invalidated_blocking")
-        {
+        if ivs[k + 1..].iter().any(|(_, _, status)| {
+            status == "invalidated_acceptable" || status == "invalidated_blocking"
+        }) {
             invalidated += 1;
         }
     }
@@ -517,7 +507,10 @@ pub fn stats_rework(st: &State, reject_per_node: &BTreeMap<String, i64>) -> Juli
             if covered != want_covered {
                 continue;
             }
-            rows.push((w.id.clone(), reject_per_node.get(&w.id).copied().unwrap_or(0)));
+            rows.push((
+                w.id.clone(),
+                reject_per_node.get(&w.id).copied().unwrap_or(0),
+            ));
         }
         let total: i64 = rows.iter().map(|(_, r)| r).sum();
         let mean = if rows.is_empty() {
@@ -615,7 +608,11 @@ pub fn stats_distill_yield(st: &State, recs: &[Json]) -> (i64, i64, i64, Vec<JVa
     (real, null, none, entries)
 }
 
-pub fn stats_dor_split(st: &State, recs: &[Json], ivals: &StatsIntervals) -> ((i64, i64, i64), JVal) {
+pub fn stats_dor_split(
+    st: &State,
+    recs: &[Json],
+    ivals: &StatsIntervals,
+) -> ((i64, i64, i64), JVal) {
     let mut reject_ts: BTreeMap<String, Vec<i64>> = BTreeMap::new();
     for rec in recs {
         let Some(inv) = inv_obj(rec) else {
@@ -769,11 +766,7 @@ pub fn stats_surprise_series(
     out
 }
 
-pub fn stats_cv_series(
-    st: &State,
-    recs: &[Json],
-    now_ts: &str,
-) -> (Vec<(String, i64, i64)>, i64) {
+pub fn stats_cv_series(st: &State, recs: &[Json], now_ts: &str) -> (Vec<(String, i64, i64)>, i64) {
     let mut r = st.clone();
     let (c0, v0) = content_health_sums(st);
     let mut series: Vec<(String, i64, i64)> = vec![(now_ts.to_string(), c0, v0)];
@@ -819,8 +812,15 @@ pub fn compute_stats(st: &State, recs: &[Json], now_ts: &str) -> StatsOut {
     let (reject_total, reject_per_node, reject_sorted, progress_entries, first_pass, rate) =
         stats_dor(st, recs, &ivals);
     let ((bet_validated, bet_acceptable, bet_blocking), bet_ratio) = stats_bets(st, &ivals);
-    let (stale_entries, revalidations, gate_runs, gate_empty, overflow_events, invalidated_events, gates) =
-        stats_discovery(st, recs, &ivals);
+    let (
+        stale_entries,
+        revalidations,
+        gate_runs,
+        gate_empty,
+        overflow_events,
+        invalidated_events,
+        gates,
+    ) = stats_discovery(st, recs, &ivals);
     let (undo_events, undone_steps, mutations, undos_per_100) = stats_undo(recs);
     let surprise_total = bet_acceptable + bet_blocking + overflow_events;
     let done_w = listnodes(st, Kind::W, true)
@@ -889,7 +889,9 @@ pub fn compute_stats(st: &State, recs: &[Json], now_ts: &str) -> StatsOut {
     text.push_str(&format!("  first pass rate: {}\n", stats_fmt_num(&rate)));
     text.push_str("  first pass split:\n");
     text.push_str(&format!("    no reject: {split_no_reject}\n"));
-    text.push_str(&format!("    reject + discovery: {split_reject_discovery}\n"));
+    text.push_str(&format!(
+        "    reject + discovery: {split_reject_discovery}\n"
+    ));
     text.push_str(&format!("    reject plain: {split_reject_plain}\n"));
     text.push_str(&format!(
         "    discovery rate: {}\n",
@@ -928,7 +930,10 @@ pub fn compute_stats(st: &State, recs: &[Json], now_ts: &str) -> StatsOut {
         };
         let tok = stats_fmt_num(dget(d, "session"));
         let tok: String = tok.chars().take(24).collect();
-        text.push_str(&format!("    {tok} {}\n", stats_fmt_num(dget(d, "commands"))));
+        text.push_str(&format!(
+            "    {tok} {}\n",
+            stats_fmt_num(dget(d, "commands"))
+        ));
     }
     text.push_str(&format!(
         "  sessions: {} mean {} median {} max {}\n",
@@ -1078,10 +1083,7 @@ pub fn compute_stats(st: &State, recs: &[Json], now_ts: &str) -> StatsOut {
                     "invalidated_acceptable".to_string(),
                     JVal::Int(bet_acceptable),
                 ),
-                (
-                    "invalidated_blocking".to_string(),
-                    JVal::Int(bet_blocking),
-                ),
+                ("invalidated_blocking".to_string(), JVal::Int(bet_blocking)),
                 ("ratio".to_string(), bet_ratio),
             ])),
         ),

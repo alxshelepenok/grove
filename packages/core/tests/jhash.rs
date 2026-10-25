@@ -1,4 +1,4 @@
-use grove_core::{emit_jval, julia_string_hash, parse_json, JVal, JuliaDict, Json};
+use grove_core::{emit_jval, julia_string_hash, parse_json, JVal, Json, JuliaDict};
 
 fn keys(d: &JuliaDict) -> Vec<String> {
     d.iter_pairs().map(|(k, _)| k.clone()).collect()
@@ -90,7 +90,10 @@ fn dict_growth_order_matches_julia() {
         "G-06", "G-03", "G-011", "G-012", "G-01", "G-09", "G-015", "G-013", "G-04", "G-05",
         "G-010", "G-07", "G-08", "G-02", "G-014",
     ];
-    assert_eq!(keys(&d), want.iter().map(|s| s.to_string()).collect::<Vec<_>>());
+    assert_eq!(
+        keys(&d),
+        want.iter().map(|s| s.to_string()).collect::<Vec<_>>()
+    );
 }
 
 #[test]

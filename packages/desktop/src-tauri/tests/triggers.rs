@@ -212,7 +212,10 @@ b B-01 status=validated cynefin=clear t_created=2026-07-27T00:00:00Z t_updated=2
     )
     .unwrap();
     let ts = triggers::detect(&st, SESSION, &Dismissals::default(), 0);
-    assert!(!ts.idle, "no open gap: idle stays off even with ready empty");
+    assert!(
+        !ts.idle,
+        "no open gap: idle stays off even with ready empty"
+    );
 }
 
 #[test]
@@ -271,7 +274,10 @@ fn dismissal_hides_significant_w_until_journal_moves() {
 
     let ts = triggers::detect(&st, SESSION, &dismissals, 6);
     let w02 = ts.done_w.iter().find(|d| d.id == "W-02").unwrap();
-    assert!(w02.significant && !w02.dismissed, "journal moved: dismissal void");
+    assert!(
+        w02.significant && !w02.dismissed,
+        "journal moved: dismissal void"
+    );
     assert_eq!(ts.trigger_count(), 9);
 }
 
@@ -316,7 +322,11 @@ fn detect_on_temp_root_matches_status_output() {
         &root,
         SESSION,
         "add",
-        &["q".to_string(), "--title=Chaos".to_string(), "--cynefin=chaotic".to_string()],
+        &[
+            "q".to_string(),
+            "--title=Chaos".to_string(),
+            "--cynefin=chaotic".to_string(),
+        ],
     )
     .unwrap();
     run_write(
@@ -330,7 +340,12 @@ fn detect_on_temp_root_matches_status_output() {
         &root,
         SESSION,
         "add",
-        &["g".to_string(), "--title=Goal".to_string(), "--area=A-01".to_string(), "--fitness-kind=manual".to_string()],
+        &[
+            "g".to_string(),
+            "--title=Goal".to_string(),
+            "--area=A-01".to_string(),
+            "--fitness-kind=manual".to_string(),
+        ],
     )
     .unwrap();
 
@@ -388,6 +403,12 @@ w W-01 type=feature status=progress cynefin=clear session=other-token session_at
 
     run_write(&root, SESSION, "revert", &["W-01".to_string()]).unwrap();
     let lock = lock_text();
-    assert!(lock.contains("status=ready"), "revert returns W-01 to ready");
-    assert!(!lock.contains("session="), "revert clears the session claim");
+    assert!(
+        lock.contains("status=ready"),
+        "revert returns W-01 to ready"
+    );
+    assert!(
+        !lock.contains("session="),
+        "revert clears the session claim"
+    );
 }

@@ -18,7 +18,7 @@ cmp -s "$work/bundle-a.tar.gz" "$work/bundle-b.tar.gz"
 report $? "bundle is byte-stable for unchanged sources"
 
 tar -tzf "$work/bundle-a.tar.gz" > "$work/listing.txt"
-for entry in "grove/" "grove/SKILL.md" "grove/references/rules.md" "grove/diagrams/workflow.md"; do
+for entry in "grove/" "grove/SKILL.md" "grove/specification.md"; do
   grep -qx "$entry" "$work/listing.txt"
   report $? "archive contains $entry"
 done
@@ -41,7 +41,7 @@ if [ -s "$work/broken.txt" ]; then
 else
   r=0
 fi
-report $r "every relative link resolves inside the skill directory"
+report $r "every relative source link resolves"
 
 bin/skill-bundle.sh --output "$work/bundle-v.tar.gz" --version 9.9.9 > /dev/null
 rm -rf "$work/unpack"
@@ -49,6 +49,12 @@ mkdir -p "$work/unpack"
 tar -xzf "$work/bundle-v.tar.gz" -C "$work/unpack"
 sed -n '2p' "$work/unpack/grove/SKILL.md" | grep -qx 'version: 9.9.9'
 report $? "--version stamps the frontmatter second line"
+
+cmp -s docs/specification.md "$work/unpack/grove/specification.md"
+report $? "packaged specification matches the normative source"
+
+grep -qF '](specification.md)' "$work/unpack/grove/SKILL.md"
+report $? "packaged skill links to the adjacent specification"
 
 if grep -q '^version:' docs/skills/grove/SKILL.md; then r=1; else r=0; fi
 report $r "source SKILL.md carries no version line"

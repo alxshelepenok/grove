@@ -28,7 +28,7 @@ function isterminal(kind::Symbol, status::Symbol)::Bool
     elseif kind === :q
         return status in (:answered, :deferred, :dropped)
     elseif kind === :b
-        return status in (:validated, :invalidated_acceptable, :invalidated_blocking)
+        return status in (:invalidated_acceptable, :invalidated_blocking)
     elseif kind === :t
         return status === :done
     elseif kind === :y
@@ -54,9 +54,11 @@ end
 Node(kind, id; title="", type=nothing, status=:proposed, cynefin=nothing) =
     Node(kind, id, title, type, status, cynefin, Dict{String,String}(), Dict{Symbol,Any}(), false)
 
-"""Strict clearance for `(predecessor, blocks, ·)` edges: terminal+ on goals ⇒ `verified` (not merely `declined`)."""
+"""Strict clearance for `(predecessor, blocks, ·)` edges: terminal+ on goals ⇒ `verified` (not merely `declined`). Every adjudicated assumption state clears, matching the pre-freeze terminality (validated included)."""
 clears_blocks_predecessor(p::Node)::Bool =
-    (p.kind === :g ? p.status === :verified : isterminal(p.kind, p.status))
+    (p.kind === :g ? p.status === :verified :
+     p.kind === :b ? p.status in (:validated, :invalidated_acceptable, :invalidated_blocking) :
+     isterminal(p.kind, p.status))
 
 mutable struct Edge
     from::String

@@ -162,7 +162,12 @@ pub fn glossary_rename_in_text(text: &str, old: &str, new: &str) -> (String, boo
         let Some(byte_idx) = cell.find(old) else {
             continue;
         };
-        let replaced = format!("{}{}{}", &cell[..byte_idx], new, &cell[byte_idx + old.len()..]);
+        let replaced = format!(
+            "{}{}{}",
+            &cell[..byte_idx],
+            new,
+            &cell[byte_idx + old.len()..]
+        );
         let mut owned: Vec<String> = cells.iter().map(|c| c.to_string()).collect();
         owned[1] = replaced;
         *line = owned.join("|");

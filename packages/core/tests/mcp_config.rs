@@ -145,7 +145,10 @@ fn non_role_headers_define_no_roles() {
         write_cfg("[roles]\ntools = [\"next\"]\n\n[roles.multi.dot]\ntools = [\"ready\"]\n\n[roles.worker]\ntools = [\"packet\"]\n");
         let got = load_tool_config().unwrap();
         assert_eq!(got.roles.len(), 1);
-        assert_eq!(got.roles.get("worker").unwrap().tools, vec!["packet".to_string()]);
+        assert_eq!(
+            got.roles.get("worker").unwrap().tools,
+            vec!["packet".to_string()]
+        );
     }
     std::fs::remove_dir_all(&home).ok();
 }
@@ -226,10 +229,7 @@ fn multiline_tool_arrays_parse() {
         assert_eq!(got.disabled, vec!["undo".to_string(), "repair".to_string()]);
         assert_eq!(got.roles.len(), 1);
         let scope = got.roles.get("keeper").unwrap();
-        assert_eq!(
-            scope.tools,
-            vec!["check".to_string(), "status".to_string()]
-        );
+        assert_eq!(scope.tools, vec!["check".to_string(), "status".to_string()]);
         assert_eq!(scope.instructions.as_deref(), Some("Keep the invariants."));
     }
     std::fs::remove_dir_all(&home).ok();

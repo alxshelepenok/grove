@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:bfe98f4949c301473f59d92ebe832f7887693d3fcb410ad6d8d32f46640d1f1f
+# checksum: sha256:e0fffb0cd40916a9b3d26bf8c255834ab197b7390ffc00a550cd47b07c116481
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -23,20 +23,20 @@ g G-47 status=unverified fitness_kind=count t_created=2026-10-24T00:32:10Z t_upd
   area: A-02
   fitness_target: 2
 
-g G-48 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T17:11:13Z "Completion guards cover blocks clearance and spike outputs at status=done in both implementations"
+g G-48 status=verified fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-25T16:28:28Z "Completion guards cover blocks clearance and spike outputs at status=done in both implementations"
   area: A-01
   fitness_target: 4
-  fitness_current: 3
-
-g G-49 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T17:30:46Z "Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations"
-  area: A-01
-  fitness_target: 5
   fitness_current: 4
 
-g G-50 status=partial fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-24T20:29:47Z "Goal status derivation stays truthful across work transitions in both implementations"
+g G-49 status=verified fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-25T16:28:28Z "Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations"
   area: A-01
   fitness_target: 5
-  fitness_current: 4
+  fitness_current: 5
+
+g G-50 status=verified fitness_kind=count t_created=2026-10-24T15:34:47Z t_updated=2026-10-25T16:28:28Z "Goal status derivation stays truthful across work transitions in both implementations"
+  area: A-01
+  fitness_target: 5
+  fitness_current: 5
 
 g G-51 status=unverified fitness_kind=count t_created=2026-10-24T15:45:33Z t_updated=2026-10-24T15:45:33Z "Archive cascade completes across shared resources in both implementations"
   area: A-01
@@ -546,16 +546,22 @@ w W-220 type=refactor status=done cynefin=clear t_created=2026-10-24T15:34:59Z t
   evidence:
     | conformance: 34 scenarios (28 + 6 new: next-log ported from wave2b with the bchain fix, i5-done, manual-tunnel, terminal-immutability, ready-gate, derivation-demotion); drifted scenarios restructured for the new guards: w-lifecycle canonical bchain validation before ready, staging-overwrite/distill-archive switched to bug type (feature-ness not load-bearing), stats-scripted bchain added while preserving the deliberate DoR-reject step, gate surface moved pre-done; recorded from the fixed julia (run.jl record); julia verify green x5 (one intermittent next-log log-ordering drift root-caused to missing step spacing - fixed with !sleep guards like the rest of the scenario); rust corpus_replay 34/34 byte-identical; rust fixture tests adapted: gate.rs stats/gate step indices shifted (+3 bchain steps), stats.rs corpus test indices (pre-stats state at the gate step, records 16), journal.rs undo assertions now assert record-scope restore plus truthful derived fitness_current (always-rederive semantics), report.rs golden indices shifted and LOG_TS extended to 20 with per-edge record-position retiming and B-01 added to the retime table; full cargo test 24 binaries green, full julia runtests exit 0.
 
-w W-221 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:35:02Z t_updated=2026-10-24T15:35:04Z "Skill docs sync for the terminal-immutability family"
+w W-221 type=refactor status=done cynefin=clear t_created=2026-10-24T15:35:02Z t_updated=2026-10-25T16:28:28Z "Skill docs sync for the terminal-immutability family"
   goals: G-48, G-49, G-50
   fitness: G-48=+1, G-49=+1, G-50=+1
   surface: docs/skills/grove/references/model.md, docs/skills/grove/references/cli.md, docs/skills/grove/references/rules.md
   ac:
     | model.md adds I14 with the manual-verify tunnel and states transition-time enforcement for I2 and I5; cli.md guarded-transition table gains I2/I5 on the done line and documents terminal-node rejection plus sanctioned lanes; rules.md documents system-derivation exceptions and the demotion alignment trigger; reflow stays at width 80.
+    | protocol clarification folded into this docs item per maintainer direction: terminal(b) shrinks to the two adjudicated invalidations - a validated assumption stays falsifiable and may transition to invalidated_acceptable or invalidated_blocking (the audited post-approval invalidation); implemented in both engines (isterminal/is_terminal minus validated, clears_blocks_predecessor carve-out keeping the pre-freeze blocks clearance for all adjudicated assumption states), covered by guards/journal unit tests and the cli ready-gate testset (devalidation allowed + I9 check backstop); model.md terminality table and falsifiability note, rules.md exception sentence.
+    | declined protection completed across every derivation branch (structured count/metric/ratio/boolean, legacy): the derivation syncs fitness_current but never overwrites a declined verdict in any branch - top-guard early return in both engines replacing the partial per-branch guards W-217/W-218/W-219 had added; overwrite-case tests added (declined + at-target, declined + positive below-target, declined legacy) in both suites; docs/protocol.md derivation table updated (declined keeps its verdict in every branch); disclosed: the staged skill work (PAGES 13->11) was mechanically completed (skill.rs annotation, cli_skill references count 9->8) to unblock the shared build.
   hypothesis:
     | updating the formal model, the cli table and guard texts inside one family keeps doc drift zero
   evidence_strategy:
     | docs diff review; skill sync note in the family evidence.
+  evidence:
+    | docs: model.md invariants fence gains I14 (user-fired set/field/fitness/evidence refused on terminal nodes; sanctioned lanes undo/repair --confirm/renumber/system derivations; manual tunnel - set G verified only for fitness_kind=manual) and I5 now reads 'to progress or done'; post-fence prose states the transition-time enforcement of I2 and I5 (check stays the backstop) and the I14 correction path; cli.md guarded list gains the W ready bullet (I9 chain gate), the done bullet re-ordered to I5/I2/I3/I10, the G verified manual-tunnel bullet, the accepted-D supersede-lane note and the Terminal freeze (I14) paragraph with the sanctioned-lane list; rules.md gains Manual verdicts, Terminal immutability and Derived-goal honesty paragraphs (rejection/archive re-derivation, demotion ladder with declined protection, verified-goal-below-target alignment trigger); all added lines reflowed at width 80; the maintainer's in-flight terminology edits in model.md (I11 wording) and README/protocol are preserved untouched. No commit per instruction - the docs diff stays in the working tree; goals left unarchived.
+    | protocol clarification (B falsifiability): undo of the premature done, then implemented in both engines - isterminal/is_terminal for :b shrinks to invalidated_acceptable|invalidated_blocking (a validated assumption stays falsifiable per the FSM argument and the audited post-approval invalidation metric), and clears_blocks_predecessor gains an explicit B carve-out preserving the pre-freeze blocks clearance for validated|invalidated_acceptable|invalidated_blocking (guards against an I5 regression for assumption-blocked work); docs updated (model.md terminality table + falsifiability note, rules.md exception sentence); tests: julia ready-gate testset asserts devalidation allowed + I9 check backstop, rust guards.rs clears-carve-out + terminality unit test, ops.rs falsifiability via op_set; verification: cargo full suite 0 FAILED across all binaries, julia cli_core/invariants/algebra targeted green, corpus_replay byte-identical with the B change in the binary (no corpus step transitions out of validated); the remaining julia verify drift is the skill scenario and belongs to the maintainer's staged in-flight docs consolidation (skill.rs PAGES 13->11, skill.json, evolving SKILL.md text) - orthogonal to B (drift diff is pure SKILL.md wording), left to that pending work; the staged skill.rs annotation was mechanically aligned (13->11) to unblock the shared build.
+    | declined protection completion: maintainer review flagged that verified/partial branches still overwrote a declined verdict (only the W-217 unverified demotion carried the guard); both engines now early-return on declined after syncing fitness_current (structured + legacy paths), with the redundant per-branch guards removed; new overwrite-case testsets in test_goal_fitness.jl (3 scenarios incl. legacy) and tests/fitness.rs (3 scenarios); docs/protocol.md derivation table rows updated to 'A declined goal keeps its verdict in every branch'; suites: cargo full green (all binaries), julia goal_fitness/cli_core targeted green, batched full runtests green except the skill-scenario drift which belongs to the maintainer's staged in-flight docs consolidation (skill.rs PAGES 13->11, stale skill.json vs evolving SKILL.md - orthogonal to B and declined, left to that pending work); the staged skill.rs const annotation was mechanically aligned (13->11) and test_cli_skill references count 9->8 completed as part of that same staged wave to unblock the shared build. No commit per instruction.
 
 w W-222 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:45:33Z t_updated=2026-10-24T16:18:01Z "Julia reference completes the archive cascade for shared resources"
   goals: G-51
@@ -964,7 +970,7 @@ t T-10 status=open t_created=2026-10-24T00:32:10Z t_updated=2026-10-24T00:32:41Z
 
 t T-11 status=open t_created=2026-10-24T00:32:11Z t_updated=2026-10-24T00:32:43Z "Test suites restate the production field catalog"
 
-t T-12 status=open t_created=2026-10-24T18:57:59Z t_updated=2026-10-24T20:51:59Z "Terminal integrity and completion gates across engines"
+t T-12 status=open t_created=2026-10-24T18:57:59Z t_updated=2026-10-25T08:40:53Z "Terminal integrity and completion gates across engines"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-09-26T00:18:53Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -1369,6 +1375,7 @@ e T-10 causes W-211 t_created=2026-10-24T00:32:41Z
 e T-11 causes W-212 t_created=2026-10-24T00:32:43Z
 e T-12 causes W-215 t_created=2026-10-24T18:59:00Z
 e T-12 causes W-220 t_created=2026-10-24T20:51:59Z
+e T-12 causes W-221 t_created=2026-10-25T08:40:53Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z

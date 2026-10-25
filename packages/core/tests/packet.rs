@@ -289,10 +289,18 @@ fn packet_cone_truncation_line_for_wide_cone() {
         edge(&mut st, &id, "blocks", "W-01");
     }
     let cone = packet_cone(&st, st.nodes.get("W-01").unwrap(), 4, 5);
-    assert!(cone.ends_with("> cone truncated (depth=4, max=5)\n"), "{cone}");
+    assert!(
+        cone.ends_with("> cone truncated (depth=4, max=5)\n"),
+        "{cone}"
+    );
     let numbered = cone
         .lines()
-        .filter(|l| l.chars().next().map(|c| c.is_ascii_digit()).unwrap_or(false))
+        .filter(|l| {
+            l.chars()
+                .next()
+                .map(|c| c.is_ascii_digit())
+                .unwrap_or(false)
+        })
         .count();
     assert_eq!(numbered, 5, "{cone}");
     assert!(cone.contains("1. W-100  proposed"), "{cone}");

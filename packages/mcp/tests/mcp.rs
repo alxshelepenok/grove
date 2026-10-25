@@ -104,9 +104,11 @@ fn handshake(s: &mut McpServer) {
     assert_eq!(r["result"]["serverInfo"]["name"], "grove-mcp");
     let instructions = r["result"]["instructions"].as_str().unwrap();
     assert!(instructions.contains("Run the skill tool"));
-    assert!(
-        handle_message(s, "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}").is_none()
-    );
+    assert!(handle_message(
+        s,
+        "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}"
+    )
+    .is_none());
 }
 
 fn text_of(v: &serde_json::Value) -> &str {
@@ -146,7 +148,10 @@ fn unknown_method_returns_method_not_found() {
     let _g = ENV_LOCK.lock().unwrap();
     let f = fixture("method");
     let mut s = server(&f.root);
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"bogus/thing\"}");
+    let v = rpc(
+        &mut s,
+        "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"bogus/thing\"}",
+    );
     assert_eq!(v["id"], 7);
     assert_eq!(v["error"]["code"], -32601);
 }
@@ -156,7 +161,11 @@ fn notifications_never_get_responses() {
     let _g = ENV_LOCK.lock().unwrap();
     let f = fixture("notif");
     let mut s = server(&f.root);
-    assert!(handle_message(&mut s, "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}").is_none());
+    assert!(handle_message(
+        &mut s,
+        "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}"
+    )
+    .is_none());
     assert!(handle_message(&mut s, "{\"jsonrpc\":\"2.0\",\"method\":\"tools/list\"}").is_none());
     assert!(handle_message(&mut s, "{\"jsonrpc\":\"2.0\",\"method\":\"bogus/thing\"}").is_none());
     assert!(handle_message(&mut s, "   ").is_none());
@@ -188,7 +197,10 @@ fn requests_before_initialized_are_refused() {
     let _g = ENV_LOCK.lock().unwrap();
     let f = fixture("gate32002");
     let mut s = server(&f.root);
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\"}");
+    let v = rpc(
+        &mut s,
+        "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\"}",
+    );
     assert_eq!(v["error"]["code"], -32002);
     let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"ping\"}");
     assert!(v["result"].is_object());
@@ -196,13 +208,20 @@ fn requests_before_initialized_are_refused() {
         &mut s,
         "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\"}}",
     );
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/list\"}");
-    assert_eq!(v["error"]["code"], -32002);
-    assert!(
-        handle_message(&mut s, "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}")
-            .is_none()
+    let v = rpc(
+        &mut s,
+        "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/list\"}",
     );
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/list\"}");
+    assert_eq!(v["error"]["code"], -32002);
+    assert!(handle_message(
+        &mut s,
+        "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}"
+    )
+    .is_none());
+    let v = rpc(
+        &mut s,
+        "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/list\"}",
+    );
     assert!(v["result"]["tools"].is_array());
 }
 
@@ -212,7 +231,10 @@ fn tools_list_covers_all_commands_with_valid_schemas() {
     let f = fixture("toolslist");
     let mut s = server(&f.root);
     handshake(&mut s);
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"tools/list\"}");
+    let v = rpc(
+        &mut s,
+        "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"tools/list\"}",
+    );
     let tools = v["result"]["tools"].as_array().unwrap();
     assert_eq!(tools.len(), COMMAND_NAMES.len());
     let mut names: Vec<&str> = tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
@@ -221,7 +243,11 @@ fn tools_list_covers_all_commands_with_valid_schemas() {
     expected.sort_unstable();
     assert_eq!(names, expected);
     for t in tools {
-        assert!(t["description"].as_str().unwrap().len() > 3, "{}", t["name"]);
+        assert!(
+            t["description"].as_str().unwrap().len() > 3,
+            "{}",
+            t["name"]
+        );
         assert!(
             t["title"].as_str().unwrap().len() > 3,
             "{}: title missing or too short",
@@ -281,7 +307,10 @@ fn tools_list_covers_all_commands_with_valid_schemas() {
         .map(|x| x.as_str().unwrap())
         .collect();
     assert_eq!(packet_req, ["id"]);
-    assert_eq!(packet["inputSchema"]["properties"]["cone"]["type"], "boolean");
+    assert_eq!(
+        packet["inputSchema"]["properties"]["cone"]["type"],
+        "boolean"
+    );
     assert_eq!(
         packet["inputSchema"]["properties"]["cone_depth"]["type"],
         "integer"
@@ -293,6 +322,19 @@ fn tools_list_covers_all_commands_with_valid_schemas() {
 }
 
 #[test]
+fn specification_tool_returns_normative_markdown() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("specification");
+    let mut s = server(&f.root);
+    handshake(&mut s);
+    let v = call(&mut s, 1, "specification", serde_json::json!({}));
+    assert!(!is_error(&v), "{}", text_of(&v));
+    let text = text_of(&v);
+    assert!(text.starts_with("# Grove\n"), "{text}");
+    assert!(text.contains("## 8. Command interface"));
+}
+
+#[test]
 fn tools_call_unknown_tool_and_argument_validation() {
     let _g = ENV_LOCK.lock().unwrap();
     let f = fixture("callvalid");
@@ -300,7 +342,12 @@ fn tools_call_unknown_tool_and_argument_validation() {
     handshake(&mut s);
     let v = call(&mut s, 1, "bogus", serde_json::json!({}));
     assert_eq!(v["error"]["code"], -32602);
-    let v = call(&mut s, 2, "add", serde_json::json!({"kind": "a", "title": "x", "bogus": 1}));
+    let v = call(
+        &mut s,
+        2,
+        "add",
+        serde_json::json!({"kind": "a", "title": "x", "bogus": 1}),
+    );
     assert!(v["error"].is_null());
     assert!(is_error(&v));
     let t = text_of(&v);
@@ -329,7 +376,12 @@ fn tools_call_maps_arguments_to_cli() {
     let mut s = server(&f.root);
     handshake(&mut s);
     init_project(&mut s, 10);
-    let v = call(&mut s, 11, "add", serde_json::json!({"kind": "a", "title": "Area one"}));
+    let v = call(
+        &mut s,
+        11,
+        "add",
+        serde_json::json!({"kind": "a", "title": "Area one"}),
+    );
     assert_eq!(text_of(&v), "A-01");
     let v = call(
         &mut s,
@@ -413,7 +465,12 @@ fn guard_refusal_is_tool_error_not_protocol_error() {
     let mut s = server(&f.root);
     handshake(&mut s);
     init_project(&mut s, 10);
-    let v = call(&mut s, 11, "add", serde_json::json!({"kind": "a", "title": "Area"}));
+    let v = call(
+        &mut s,
+        11,
+        "add",
+        serde_json::json!({"kind": "a", "title": "Area"}),
+    );
     assert_eq!(text_of(&v), "A-01");
     let v = call(
         &mut s,
@@ -461,7 +518,11 @@ fn scripted_session_drives_full_work_loop() {
     };
     let v = step(&mut s, "init", serde_json::json!({}));
     assert!(!is_error(&v), "{}", text_of(&v));
-    let v = step(&mut s, "add", serde_json::json!({"kind": "a", "title": "Loop area"}));
+    let v = step(
+        &mut s,
+        "add",
+        serde_json::json!({"kind": "a", "title": "Loop area"}),
+    );
     assert_eq!(text_of(&v), "A-01");
     let v = step(
         &mut s,
@@ -502,7 +563,10 @@ fn scripted_session_drives_full_work_loop() {
     );
     assert!(!is_error(&v), "{}", text_of(&v));
     let lock = std::fs::read_to_string(f.root.join(".grove").join("state.lock")).unwrap();
-    assert!(lock.contains(token), "lock must hold the server session token:\n{lock}");
+    assert!(
+        lock.contains(token),
+        "lock must hold the server session token:\n{lock}"
+    );
     let v = step(
         &mut s,
         "evidence",
@@ -561,7 +625,11 @@ fn binary_smoke_ndjson_session() {
         }
     }
     let out = child.wait_with_output().unwrap();
-    assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+    assert!(
+        out.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
     let stdout = String::from_utf8(out.stdout).unwrap();
     let lines: Vec<&str> = stdout.lines().filter(|l| !l.trim().is_empty()).collect();
     assert_eq!(lines.len(), 5, "{stdout}");
@@ -571,7 +639,10 @@ fn binary_smoke_ndjson_session() {
         .collect();
     assert_eq!(parsed[0]["result"]["serverInfo"]["name"], "grove-mcp");
     assert_eq!(parsed[1]["id"], 2);
-    assert_eq!(parsed[2]["result"]["tools"].as_array().unwrap().len(), 39);
+    assert_eq!(
+        parsed[2]["result"]["tools"].as_array().unwrap().len(),
+        COMMAND_NAMES.len()
+    );
     let add_text = parsed[3]["result"]["content"][0]["text"].as_str().unwrap();
     assert!(add_text.contains("A-01"), "{add_text}");
     assert!(!add_text.contains("--- stderr ---"), "{add_text}");
@@ -588,7 +659,10 @@ fn roleless_instance_serves_every_tool_minus_disabled() {
     let mut s = server(&f.root);
     handshake(&mut s);
     s.scope.disabled = vec!["undo".to_string(), "repair".to_string()];
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"tools/list\"}");
+    let v = rpc(
+        &mut s,
+        "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"tools/list\"}",
+    );
     let tools = v["result"]["tools"].as_array().unwrap();
     assert_eq!(tools.len(), COMMAND_NAMES.len() - 2);
     assert!(tools.iter().all(|t| t["name"] != "undo"));
@@ -607,7 +681,10 @@ fn role_allowlist_serves_allowlist_minus_disabled() {
     handshake(&mut s);
     bind_role(&mut s, "worker", &["status", "check", "add"]);
     s.scope.disabled = vec!["add".to_string()];
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"tools/list\"}");
+    let v = rpc(
+        &mut s,
+        "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"tools/list\"}",
+    );
     let tools = v["result"]["tools"].as_array().unwrap();
     let mut names: Vec<&str> = tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
     names.sort_unstable();
@@ -618,12 +695,11 @@ fn role_allowlist_serves_allowlist_minus_disabled() {
         "unknown tool: packet; known tools: check, status"
     );
     s.role = Some("stranger".to_string());
-    let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"tools/list\"}");
-    assert_eq!(
-        v["result"]["tools"].as_array().unwrap().len(),
-        0,
-        "{v}"
+    let v = rpc(
+        &mut s,
+        "{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"tools/list\"}",
     );
+    assert_eq!(v["result"]["tools"].as_array().unwrap().len(), 0, "{v}");
 }
 
 #[test]
@@ -655,7 +731,10 @@ fn roleless_instructions_keep_default_text() {
     handshake(&mut s);
     let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":30,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\"}}");
     let t = v["result"]["instructions"].as_str().unwrap();
-    assert!(t.starts_with("Grove is a graph-driven workflow protocol."), "{t}");
+    assert!(
+        t.starts_with("Grove is a graph-driven workflow protocol."),
+        "{t}"
+    );
     assert!(!t.contains("Active grove role:"), "{t}");
     assert!(t.contains("Binary v"), "{t}");
 }
@@ -670,18 +749,20 @@ fn role_bound_instructions_carry_role_line_and_replacement() {
     let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":30,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\"}}");
     let t = v["result"]["instructions"].as_str().unwrap();
     assert!(t.starts_with("Active grove role: keeper.\n"), "{t}");
-    assert!(t.contains("Grove is a graph-driven workflow protocol."), "{t}");
+    assert!(
+        t.contains("Grove is a graph-driven workflow protocol."),
+        "{t}"
+    );
     let custom = "You only run invariant checks; do not mutate the graph.";
-    s.scope
-        .roles
-        .get_mut("keeper")
-        .unwrap()
-        .instructions = Some(custom.to_string());
+    s.scope.roles.get_mut("keeper").unwrap().instructions = Some(custom.to_string());
     let v = rpc(&mut s, "{\"jsonrpc\":\"2.0\",\"id\":31,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\"}}");
     let t = v["result"]["instructions"].as_str().unwrap();
     assert!(t.starts_with("Active grove role: keeper.\n"), "{t}");
     assert!(t.contains(custom), "{t}");
-    assert!(!t.contains("Grove is a graph-driven workflow protocol."), "{t}");
+    assert!(
+        !t.contains("Grove is a graph-driven workflow protocol."),
+        "{t}"
+    );
     assert!(t.contains("Binary v"), "{t}");
 }
 
@@ -721,7 +802,11 @@ fn binary_serves_role_instructions_from_config() {
         }
     }
     let out = child.wait_with_output().unwrap();
-    assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+    assert!(
+        out.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
     let stdout = String::from_utf8(out.stdout).unwrap();
     let lines: Vec<&str> = stdout.lines().filter(|l| !l.trim().is_empty()).collect();
     assert_eq!(lines.len(), 2, "{stdout}");
@@ -734,7 +819,10 @@ fn binary_serves_role_instructions_from_config() {
         instructions.starts_with("Active grove role: keeper.\nGuard the invariants."),
         "{instructions}"
     );
-    assert!(!instructions.contains("Grove is a graph-driven"), "{instructions}");
+    assert!(
+        !instructions.contains("Grove is a graph-driven"),
+        "{instructions}"
+    );
 }
 
 #[test]
@@ -778,10 +866,7 @@ fn binary_rejects_unknown_role_against_configured_set() {
         .output()
         .expect("spawn grove-mcp");
     let stderr = String::from_utf8_lossy(&out.stderr);
-    assert!(
-        stderr.contains("configured roles: keeper"),
-        "{stderr}"
-    );
+    assert!(stderr.contains("configured roles: keeper"), "{stderr}");
 }
 
 #[test]
@@ -821,7 +906,10 @@ fn binary_warns_once_on_malformed_config_and_serves_all_tools() {
         .lines()
         .filter(|l| l.contains("warning: malformed") && l.contains("mcp.toml"))
         .count();
-    assert_eq!(warnings, 1, "exactly one malformed-config warning expected: {stderr}");
+    assert_eq!(
+        warnings, 1,
+        "exactly one malformed-config warning expected: {stderr}"
+    );
     let stdout = String::from_utf8(out.stdout).unwrap();
     let parsed: Vec<serde_json::Value> = stdout
         .lines()
@@ -861,7 +949,10 @@ fn binary_malformed_config_warning_precedes_role_refusal() {
     let role = stderr
         .find("unknown role worker")
         .unwrap_or_else(|| panic!("role refusal must name the role\n{stderr}"));
-    assert!(warn < role, "config warning must precede the role refusal: {stderr}");
+    assert!(
+        warn < role,
+        "config warning must precede the role refusal: {stderr}"
+    );
 }
 
 #[test]
@@ -870,7 +961,11 @@ fn config_backed_role_flow_via_binary() {
     let f = fixture("binroleflow");
     let root = f.root.to_string_lossy().into_owned();
     let cfg = f._home.join("mcp.toml");
-    std::fs::write(&cfg, "disabled = [\"add\"]\n\n[roles.keeper]\ntools = [\"check\"]\n").unwrap();
+    std::fs::write(
+        &cfg,
+        "disabled = [\"add\"]\n\n[roles.keeper]\ntools = [\"check\"]\n",
+    )
+    .unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
     assert_eq!(r.code, 0, "{}", r.err);
     let script = [
@@ -897,7 +992,11 @@ fn config_backed_role_flow_via_binary() {
         }
     }
     let out = child.wait_with_output().unwrap();
-    assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+    assert!(
+        out.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
     let stdout = String::from_utf8(out.stdout).unwrap();
     let lines: Vec<&str> = stdout.lines().filter(|l| !l.trim().is_empty()).collect();
     assert_eq!(lines.len(), 2, "{stdout}");
@@ -906,7 +1005,5 @@ fn config_backed_role_flow_via_binary() {
         .map(|l| serde_json::from_str(l).expect("each stdout line must parse as JSON"))
         .collect();
     assert_eq!(parsed[1]["result"]["tools"].as_array().unwrap().len(), 1);
-    assert_eq!(
-        parsed[1]["result"]["tools"][0]["name"], "check"
-    );
+    assert_eq!(parsed[1]["result"]["tools"][0]["name"], "check");
 }

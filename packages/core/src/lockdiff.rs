@@ -18,10 +18,7 @@ fn edge_multiset_counts(st: &State) -> BTreeMap<EdgeKey, i64> {
     d
 }
 
-fn multiset_diff(
-    a: &BTreeMap<EdgeKey, i64>,
-    b: &BTreeMap<EdgeKey, i64>,
-) -> Vec<(i32, EdgeKey)> {
+fn multiset_diff(a: &BTreeMap<EdgeKey, i64>, b: &BTreeMap<EdgeKey, i64>) -> Vec<(i32, EdgeKey)> {
     let mut outs: Vec<(i32, EdgeKey)> = Vec::new();
     let keys: BTreeSet<&EdgeKey> = a.keys().chain(b.keys()).collect();
     for k in keys {
@@ -230,7 +227,11 @@ fn kind_ids(st: &State, kind: Kind) -> BTreeSet<String> {
         .collect()
 }
 
-fn changed_pair<'a>(ref_st: &'a State, wt_st: &'a State, cid: &str) -> Option<(&'a Node, &'a Node)> {
+fn changed_pair<'a>(
+    ref_st: &'a State,
+    wt_st: &'a State,
+    cid: &str,
+) -> Option<(&'a Node, &'a Node)> {
     let nr = &ref_st.nodes[cid];
     let nw = &wt_st.nodes[cid];
     if nr.kind == nw.kind && node_semantically_equal(nr, nw) {

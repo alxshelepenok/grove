@@ -81,12 +81,18 @@ pub fn cmd_revalidate(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> 
             );
         }
         if src.kind == Kind::D && src.status == "superseded" {
-            return OpResult::fail(EXIT_GUARD, &format!("revalidate: --from {oid} is superseded"));
+            return OpResult::fail(
+                EXIT_GUARD,
+                &format!("revalidate: --from {oid} is superseded"),
+            );
         }
         if src.kind == Kind::B
             && (src.status == "invalidated_acceptable" || src.status == "invalidated_blocking")
         {
-            return OpResult::fail(EXIT_GUARD, &format!("revalidate: --from {oid} is invalidated"));
+            return OpResult::fail(
+                EXIT_GUARD,
+                &format!("revalidate: --from {oid} is invalidated"),
+            );
         }
     }
     let mut paid: Vec<String> = Vec::new();
@@ -128,7 +134,10 @@ pub fn cmd_revalidate(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> 
         wrap_journal_record(
             "revalidate",
             JuliaDict::from_pairs(vec![
-                ("op".to_string(), JVal::Str("revalidate_restore".to_string())),
+                (
+                    "op".to_string(),
+                    JVal::Str("revalidate_restore".to_string()),
+                ),
                 ("id".to_string(), JVal::Str(id.clone())),
                 ("old_status".to_string(), JVal::Str(old_status)),
                 ("had_surface".to_string(), JVal::Bool(had_surface)),
@@ -156,7 +165,11 @@ pub fn cmd_revalidate(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> 
         }
         stamp_touch_node(n);
     }
-    persist(ctx, &mut st, Some(&stamp_journal_session(&jr, &journal_session_token(ctx, kw))));
+    persist(
+        ctx,
+        &mut st,
+        Some(&stamp_journal_session(&jr, &journal_session_token(ctx, kw))),
+    );
     let mut r = OpResult::ok();
     if ctx.json {
         r.out = json_cli_out(JuliaDict::from_pairs(vec![

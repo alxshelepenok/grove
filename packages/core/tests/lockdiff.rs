@@ -163,7 +163,10 @@ fn cmd_diff_missing_worktree_lock() {
     let ctx = CliCtx::new(root);
     let r = cmd_diff(&ctx, &[], &[]);
     assert_eq!(r.code, EXIT_ERR);
-    assert_eq!(r.err, format!("lock not found: {}\n", ctx.lockpath().display()));
+    assert_eq!(
+        r.err,
+        format!("lock not found: {}\n", ctx.lockpath().display())
+    );
     assert_eq!(r.out, "");
     let _ = std::fs::remove_dir_all(&dir);
 }

@@ -35,7 +35,10 @@ fn bareword_vs_qstring_choice() {
     );
     assert_eq!(
         out,
-        body.replace("e G-01 blocks G-02\n", "e G-01 blocks G-02 t_created=\"\"\n")
+        body.replace(
+            "e G-01 blocks G-02\n",
+            "e G-01 blocks G-02 t_created=\"\"\n"
+        )
     );
 }
 
@@ -171,7 +174,10 @@ fn crlf_handled_like_julia() {
     let full = serialize(&st);
 
     let crlf = full.replace('\n', "\r\n");
-    assert!(verify_checksum(&crlf), "crlf file verifies after normalization");
+    assert!(
+        verify_checksum(&crlf),
+        "crlf file verifies after normalization"
+    );
     let st2 = parse_strict(&crlf).expect("crlf parse");
     assert_eq!(serialize(&st2), full, "crlf parse equals lf parse");
 

@@ -33,7 +33,10 @@ fn main() {
         let fragility = goal_fragility(&st, seed);
         let elapsed = t0.elapsed().as_millis();
         assert!(m.get("cone").is_some(), "model builds a cone");
-        assert!(!fragility.is_empty() || goals == 0, "fragility covers goals");
+        assert!(
+            !fragility.is_empty() || goals == 0,
+            "fragility covers goals"
+        );
         println!("build: {} ms (connectivity {:?})", elapsed, fragility);
         best = best.min(elapsed);
         worst = worst.max(elapsed);

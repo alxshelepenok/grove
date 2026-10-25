@@ -108,11 +108,17 @@ fn fitness_map_jval_order_matches_julia() {
 fn fitness_record_lines() {
     pin();
     assert_eq!(
-        wrap_journal_record("fitness", jinv_restore_fitness_key("W-01", "G-01", false, None)),
+        wrap_journal_record(
+            "fitness",
+            jinv_restore_fitness_key("W-01", "G-01", false, None)
+        ),
         r#"{"v":1,"cmd":"fitness","ts":"2031-01-01T00:00:00Z","inv":{"had_key":false,"wid":"W-01","gid":"G-01","previous":null,"op":"restore_fitness_key"}}"#
     );
     assert_eq!(
-        wrap_journal_record("fitness", jinv_restore_fitness_key("W-01", "G-01", true, Some(2))),
+        wrap_journal_record(
+            "fitness",
+            jinv_restore_fitness_key("W-01", "G-01", true, Some(2))
+        ),
         r#"{"v":1,"cmd":"fitness","ts":"2031-01-01T00:00:00Z","inv":{"had_key":true,"wid":"W-01","gid":"G-01","previous":2,"op":"restore_fitness_key"}}"#
     );
 }
@@ -149,11 +155,17 @@ fn set_simple_record_lines() {
         r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"id":"G-02","had_before":true,"old":"3","op":"set_g_fitness_target"}}"#
     );
     assert_eq!(
-        wrap_journal_record("set", jinv_set_g_attr_fitness_kind("G-02", false, "", "count")),
+        wrap_journal_record(
+            "set",
+            jinv_set_g_attr_fitness_kind("G-02", false, "", "count")
+        ),
         r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"new":"count","id":"G-02","had_before":false,"old":"","op":"set_g_attr_fitness_kind"}}"#
     );
     assert_eq!(
-        wrap_journal_record("set", jinv_set_g_attr_fitness_kind("G-02", true, "count", "ratio")),
+        wrap_journal_record(
+            "set",
+            jinv_set_g_attr_fitness_kind("G-02", true, "count", "ratio")
+        ),
         r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"new":"ratio","id":"G-02","had_before":true,"old":"count","op":"set_g_attr_fitness_kind"}}"#
     );
     assert_eq!(
@@ -197,7 +209,10 @@ fn w_status_record_lines() {
     let w = &st.nodes["W-01"];
     let gs = goal_statuses_jdict(&st, w);
     assert_eq!(
-        wrap_journal_record("set", jinv_set_w_status_with_goals("W-01", "proposed", gs, w)),
+        wrap_journal_record(
+            "set",
+            jinv_set_w_status_with_goals("W-01", "proposed", gs, w)
+        ),
         r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"had_session_at_before":false,"old_w_status":"proposed","had_session_before":false,"id":"W-01","op":"set_w_status_with_goals","goal_statuses":{"G-01":"unverified","G-02":"unverified"},"old_session_at":"","old_session":""}}"#
     );
 
@@ -210,7 +225,10 @@ fn w_status_record_lines() {
     let w = &st2.nodes["W-01"];
     let gs = goal_statuses_jdict(&st2, w);
     assert_eq!(
-        wrap_journal_record("set", jinv_set_w_status_with_goals("W-01", "progress", gs, w)),
+        wrap_journal_record(
+            "set",
+            jinv_set_w_status_with_goals("W-01", "progress", gs, w)
+        ),
         r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"had_session_at_before":true,"old_w_status":"progress","had_session_before":true,"id":"W-01","op":"set_w_status_with_goals","goal_statuses":{"G-01":"unverified","G-02":"unverified"},"old_session_at":"2031-01-01T00:00:00Z","old_session":"testsession"}}"#
     );
 }
@@ -317,7 +335,11 @@ fn mutation_classification_and_tail_view() {
     ))
     .unwrap();
     let undo = parse_json(&wrap_journal_record("undo", jinv_undo(3))).unwrap();
-    let field = parse_json(&wrap_journal_record("field", jinv_field_pop_last("W-01", "ac"))).unwrap();
+    let field = parse_json(&wrap_journal_record(
+        "field",
+        jinv_field_pop_last("W-01", "ac"),
+    ))
+    .unwrap();
     assert!(journal_record_mutation(&add));
     assert!(!journal_record_mutation(&gate));
     assert!(!journal_record_mutation(&distill));
@@ -371,7 +393,14 @@ fn undo_restores_state_and_truncates_journal() {
             ("cynefin", "clear"),
         ]),
     ));
-    step!(op_field(&mut st, "W-01", "ac", "add", Some("first ac"), EFF));
+    step!(op_field(
+        &mut st,
+        "W-01",
+        "ac",
+        "add",
+        Some("first ac"),
+        EFF
+    ));
     step!(op_field(
         &mut st,
         "W-01",
@@ -403,17 +432,14 @@ fn undo_restores_state_and_truncates_journal() {
 
     let r = op_undo(&mut st, &jp, None, Some("2"), "none");
     assert_eq!(r.code, 0, "{}", r.err);
-    // record-scope restore: ready/progress roll back; the derived
-    // fitness_current written by their rederives stays truthful at "0"
+
     assert_eq!(st.nodes["W-01"].status, "proposed");
     assert_eq!(st.nodes["G-01"].status, "unverified");
     assert_eq!(st.nodes["G-01"].single("fitness_current"), "0");
 
     let r = op_undo(&mut st, &jp, None, Some("3"), "none");
     assert_eq!(r.code, 0, "{}", r.err);
-    // undo restores record-scope state (work fields back to pre-fitness);
-    // derived goal fields follow the live aggregate under the
-    // always-rederive semantics: fitness_current stays truthful at "0"
+
     assert_eq!(st.nodes["W-01"].status, "proposed");
     assert!(st.nodes["W-01"].lines("evidence").is_empty());
     match st.nodes["W-01"].fields.get("fitness") {
@@ -625,7 +651,8 @@ fn apply_inverse_reports_malformed_records() {
     );
     let inv = parse_json(r#"{"op":"rm_node","id":"A-99"}"#).unwrap();
     assert_eq!(journal_apply_inverse(&mut st, &inv), None);
-    let inv = parse_json(r#"{"op":"unlink_edge","from":"A-01","label":"blocks","to":"A-02"}"#).unwrap();
+    let inv =
+        parse_json(r#"{"op":"unlink_edge","from":"A-01","label":"blocks","to":"A-02"}"#).unwrap();
     assert_eq!(
         journal_apply_inverse(&mut st, &inv).as_deref(),
         Some("journal undo: unlink_edge: missing edge A-01 blocks A-02")

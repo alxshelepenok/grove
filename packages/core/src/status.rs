@@ -20,7 +20,9 @@ pub const CYNEFIN: [&str; 4] = ["clear", "complicated", "complex", "chaotic"];
 pub fn status_set(kind: Kind) -> &'static [&'static str] {
     match kind {
         Kind::G => &["unverified", "partial", "verified", "declined"],
-        Kind::W => &["proposed", "ready", "progress", "done", "rejected", "archived"],
+        Kind::W => &[
+            "proposed", "ready", "progress", "done", "rejected", "archived",
+        ],
         Kind::D => &["proposed", "accepted", "rejected", "superseded"],
         Kind::Q => &["open", "deferred", "answered", "dropped"],
         Kind::B => &[
@@ -42,10 +44,7 @@ pub fn is_terminal(kind: Kind, status: &str) -> bool {
         Kind::G => matches!(status, "verified" | "declined"),
         Kind::D => matches!(status, "accepted" | "rejected" | "superseded"),
         Kind::Q => matches!(status, "answered" | "deferred" | "dropped"),
-        Kind::B => matches!(
-            status,
-            "validated" | "invalidated_acceptable" | "invalidated_blocking"
-        ),
+        Kind::B => matches!(status, "invalidated_acceptable" | "invalidated_blocking"),
         Kind::T => status == "done",
         Kind::Y => status == "superseded",
         Kind::A => false,
@@ -55,6 +54,11 @@ pub fn is_terminal(kind: Kind, status: &str) -> bool {
 pub fn clears_blocks_predecessor(n: &Node) -> bool {
     if n.kind == Kind::G {
         n.status == "verified"
+    } else if n.kind == Kind::B {
+        matches!(
+            n.status.as_str(),
+            "validated" | "invalidated_acceptable" | "invalidated_blocking"
+        )
     } else {
         is_terminal(n.kind, &n.status)
     }
@@ -79,11 +83,15 @@ pub fn listnodes(st: &State, kind: Kind, include_archived: bool) -> Vec<&Node> {
 }
 
 pub fn out_edges<'a>(st: &'a State, id: &'a str, label: &'a str) -> impl Iterator<Item = &'a Edge> {
-    st.edges.iter().filter(move |e| e.from == id && e.label == label)
+    st.edges
+        .iter()
+        .filter(move |e| e.from == id && e.label == label)
 }
 
 pub fn in_edges<'a>(st: &'a State, id: &'a str, label: &'a str) -> impl Iterator<Item = &'a Edge> {
-    st.edges.iter().filter(move |e| e.to == id && e.label == label)
+    st.edges
+        .iter()
+        .filter(move |e| e.to == id && e.label == label)
 }
 
 pub fn prose_field_nonempty(lines: &[String]) -> bool {
@@ -111,7 +119,10 @@ pub fn work_significant_when_done(st: &State, w: &Node) -> bool {
         if w.cynefin.as_deref() == Some("complex") {
             return true;
         }
-        return st.edges.iter().any(|e| e.label == "produces" && e.from == w.id);
+        return st
+            .edges
+            .iter()
+            .any(|e| e.label == "produces" && e.from == w.id);
     }
     false
 }

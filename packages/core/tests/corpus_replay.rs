@@ -166,9 +166,8 @@ fn replace_bare_sha(s: &str) -> String {
             while j < b.len() && is_lower_hex(b[j]) {
                 j += 1;
             }
-            let run_ok = j - i == 64
-                && (i == 0 || !is_hex(b[i - 1]))
-                && (j == b.len() || !is_hex(b[j]));
+            let run_ok =
+                j - i == 64 && (i == 0 || !is_hex(b[i - 1])) && (j == b.len() || !is_hex(b[j]));
             if run_ok {
                 out.push_str(&s[last..i]);
                 out.push_str("<sha>");
@@ -265,12 +264,21 @@ fn replace_first_json_ts(line: &str, ts: &str) -> String {
     let Some(end_off) = line[val_start..].find('"') else {
         return line.to_string();
     };
-    format!("{}{}{}", &line[..val_start], ts, &line[val_start + end_off..])
+    format!(
+        "{}{}{}",
+        &line[..val_start],
+        ts,
+        &line[val_start + end_off..]
+    )
 }
 
 fn retime_journal(target: &Path) {
     let jp = target.join(".grove").join("journal.log");
-    assert!(jp.is_file(), "retime-journal: no journal at {}", jp.display());
+    assert!(
+        jp.is_file(),
+        "retime-journal: no journal at {}",
+        jp.display()
+    );
     let text = std::fs::read_to_string(&jp).unwrap();
     let mut out = String::new();
     for (i, ln) in text.split('\n').filter(|l| !l.is_empty()).enumerate() {
@@ -338,7 +346,10 @@ fn read_norm(path: &Path, paths: &[(String, String)], tokens: &[String]) -> Stri
 }
 
 fn print_drift(name: &str, i: usize, args: &[String], field: &str, want: &str, got: &str) {
-    eprintln!("DRIFT scenario={name} step={i} field={field} args={}", args.join(" "));
+    eprintln!(
+        "DRIFT scenario={name} step={i} field={field} args={}",
+        args.join(" ")
+    );
     let wl: Vec<&str> = want.split('\n').collect();
     let al: Vec<&str> = got.split('\n').collect();
     let mut shown = 0;
@@ -401,7 +412,10 @@ fn replay(name: &str) {
         let mut target = root.clone();
         let mut target_s = root_s.clone();
         if step[0] == "@2" {
-            assert!(two_roots, "scenario {name} step {i} uses @2 without two_roots");
+            assert!(
+                two_roots,
+                "scenario {name} step {i} uses @2 without two_roots"
+            );
             step.remove(0);
             target = root2.clone();
             target_s = root2_s.clone();
@@ -434,7 +448,8 @@ fn replay(name: &str) {
         };
         let want_exit = common::step_exit(&sc, i);
         assert_eq!(
-            code as i64, want_exit,
+            code as i64,
+            want_exit,
             "scenario {name} step {i} exit: expected {want_exit} got {code} args={}",
             raw.join(" ")
         );

@@ -361,7 +361,10 @@ fn empty_declared_surface_fails_with_guidance() {
     assert!(!dor(&st, &w, false));
     let (ok, det) = coverage_detail(&st, &w);
     assert!(!ok);
-    assert_eq!(det, "no declared surface; declare via field W-01 surface add …");
+    assert_eq!(
+        det,
+        "no declared surface; declare via field W-01 surface add …"
+    );
 }
 
 #[test]
@@ -462,7 +465,10 @@ fn dor_fitness_detail_julia_slot_order() {
     }
     let mut w = work("W-01", "feature", "proposed", "clear");
     reflist(&mut w, "goals", &["G-01", "G-02", "G-03", "G-04"]);
-    fitness(&mut w, &[("G-01", 2), ("G-02", -1), ("G-03", 5), ("G-04", -3)]);
+    fitness(
+        &mut w,
+        &[("G-01", 2), ("G-02", -1), ("G-03", 5), ("G-04", -3)],
+    );
     put(&mut st, w);
     let w = st.nodes.get("W-01").unwrap();
     let mut found = None;

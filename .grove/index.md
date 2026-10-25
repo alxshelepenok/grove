@@ -7,13 +7,13 @@
 | Measure | Count | Composition |
 | --- | --- | --- |
 | C (content) | 47 | validated B 1 · answered Q 3 · accepted D 24 · active Discovery 19 |
-| V (uncertainty) | 19 | open Q 2 · pending B 4 · W below DoR 7 · uncovered surface 6 |
+| V (uncertainty) | 17 | open Q 2 · pending B 4 · W below DoR 6 · uncovered surface 5 |
 
 ## Areas
 
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
-| A-01 | Evals | 0 | 10 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 5 · uncovered surface 5 |
+| A-01 | Evals | 0 | 8 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 4 · uncovered surface 4 |
 | A-02 | API | 3 | 3 | C: validated B 0 · answered Q 0 · accepted D 3; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 10 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -33,9 +33,9 @@
 | G-45 | Decision immutability holds for accepted decisions across CLI mutations in both implementations | count; current=3 target=3 | verified |
 | G-46 | Supersession completes the old decision in one command | count; current= target=1 | unverified |
 | G-47 | Accepted-decision guard texts are precise and single-sourced | count; current= target=2 | unverified |
-| G-48 | Completion guards cover blocks clearance and spike outputs at status=done in both implementations | count; current=3 target=4 | partial |
-| G-49 | Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations | count; current=4 target=5 | partial |
-| G-50 | Goal status derivation stays truthful across work transitions in both implementations | count; current=4 target=5 | partial |
+| G-48 | Completion guards cover blocks clearance and spike outputs at status=done in both implementations | count; current=4 target=4 | verified |
+| G-49 | Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations | count; current=5 target=5 | verified |
+| G-50 | Goal status derivation stays truthful across work transitions in both implementations | count; current=5 target=5 | verified |
 | G-51 | Archive cascade completes across shared resources in both implementations | count; current= target=4 | unverified |
 
 ## Work items
@@ -73,7 +73,7 @@
 | W-218 | bug | Rust core ports completion guards, the manual-verify tunnel and the terminal freeze | G-48, G-49 | clear | ⊤ | done |  |
 | W-219 | bug | Rust core ports the ready-transition gate and derivation truthfulness fixes | G-50 | clear | ⊤ | done |  |
 | W-220 | refactor | Conformance corpus pins completion guards, terminal immutability and derivation truthfulness | G-48, G-49, G-50 | clear | ⊤ | done |  |
-| W-221 | refactor | Skill docs sync for the terminal-immutability family | G-48, G-49, G-50 | clear | ⊥ | proposed |  |
+| W-221 | refactor | Skill docs sync for the terminal-immutability family | G-48, G-49, G-50 | clear | ⊤ | done |  |
 | W-222 | bug | Julia reference completes the archive cascade for shared resources | G-51 | clear | ⊥ | proposed |  |
 | W-223 | bug | Rust core ports the archive-cascade completion fix | G-51 | clear | ⊥ | proposed |  |
 | W-224 | refactor | Conformance corpus pins the archive cascade scenario | G-51 | clear | ⊥ | proposed |  |
@@ -138,7 +138,7 @@
 | T-09 | Shared TOML machinery concentrates inside the projects module | done | W-196 | W-196 |
 | T-10 | Accepted-decision rule is duplicated across core call sites | open | W-211 | – |
 | T-11 | Test suites restate the production field catalog | open | W-212 | – |
-| T-12 | Terminal integrity and completion gates across engines | open | W-215, W-220 | – |
+| T-12 | Terminal integrity and completion gates across engines | open | W-215, W-220, W-221 | – |
 
 ## Discoveries
 
@@ -249,7 +249,7 @@ graph TD
   W_218["W-218: Rust core ports completion guards, the manual-verify tunnel and the terminal freeze"]:::done
   W_219["W-219: Rust core ports the ready-transition gate and derivation truthfulness fixes"]:::done
   W_220["W-220: Conformance corpus pins completion guards, terminal immutability and derivation truthfulness"]:::done
-  W_221["W-221: Skill docs sync for the terminal-immutability family"]:::feature
+  W_221["W-221: Skill docs sync for the terminal-immutability family"]:::done
   W_222["W-222: Julia reference completes the archive cascade for shared resources"]:::feature
   W_223["W-223: Rust core ports the archive-cascade completion fix"]:::feature
   W_224["W-224: Conformance corpus pins the archive cascade scenario"]:::feature
@@ -420,6 +420,7 @@ graph TD
   T_11 -->|causes| W_212
   T_12 -->|causes| W_215
   T_12 -->|causes| W_220
+  T_12 -->|causes| W_221
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
   W_03 -->|produces| D_11

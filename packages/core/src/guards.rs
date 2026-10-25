@@ -50,9 +50,12 @@ pub fn guard_status_transition(st: &State, n: &Node, new: &str) -> GuardVerdict 
             return GuardVerdict::Reject(vec![msg]);
         }
     }
-    if n.kind == Kind::G && new == "verified" && crate::fitness::goal_structured_kind(n) != Some("manual") {
+    if n.kind == Kind::G
+        && new == "verified"
+        && crate::fitness::goal_structured_kind(n) != Some("manual")
+    {
         return GuardVerdict::Reject(vec![format!(
-            "goal {} status is derived from fitness deltas; cannot set manually (only fitness_kind=manual goals take a human verdict)",
+            "goal {} status is derived from fitness deltas",
             n.id
         )]);
     }
@@ -81,7 +84,7 @@ pub fn guard_status_transition(st: &State, n: &Node, new: &str) -> GuardVerdict 
     }
     if n.kind == Kind::T {
         return GuardVerdict::Reject(vec![
-            "theme status is derived; cannot set manually".to_string(),
+            "theme status is derived; cannot set manually".to_string()
         ]);
     }
     if n.kind == Kind::A {
@@ -118,7 +121,10 @@ pub fn guard_status_transition(st: &State, n: &Node, new: &str) -> GuardVerdict 
             ]);
         }
         if n.wtype.as_deref() == Some("spike") {
-            let has_produces = st.edges.iter().any(|e| e.label == "produces" && e.from == n.id);
+            let has_produces = st
+                .edges
+                .iter()
+                .any(|e| e.label == "produces" && e.from == n.id);
             if !has_produces {
                 return GuardVerdict::Reject(vec![format!(
                     "I2: {} is a done spike but `produces` is empty (no outgoing `produces` edges)",

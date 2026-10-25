@@ -100,7 +100,10 @@ fn area_health(st: &State, z: &Node) -> (BTreeMap<&'static str, i64>, BTreeMap<&
             health_tally(&mut c, &mut v, st, n);
         }
     }
-    c.insert("y", crate::algebra::area_relevant_discoveries(st, z).len() as i64);
+    c.insert(
+        "y",
+        crate::algebra::area_relevant_discoveries(st, z).len() as i64,
+    );
     (c, v)
 }
 
@@ -309,8 +312,16 @@ fn render_themes(out: &mut String, st: &State) {
             .collect();
         tw_ids.sort_by(|a, b| id_cmp(a, b));
         let tw = tw_ids.join(", ");
-        let cw = if cw.is_empty() { "\u{2013}".to_string() } else { cw };
-        let tw = if tw.is_empty() { "\u{2013}".to_string() } else { tw };
+        let cw = if cw.is_empty() {
+            "\u{2013}".to_string()
+        } else {
+            cw
+        };
+        let tw = if tw.is_empty() {
+            "\u{2013}".to_string()
+        } else {
+            tw
+        };
         out.push_str(&format!(
             "| {} | {} | {} | {cw} | {tw} |\n",
             n.id, n.title, n.status
@@ -389,11 +400,7 @@ fn render_graph(out: &mut String, st: &State) {
         for n in listnodes(st, kind, false) {
             let label = n.title.replace('"', "'");
             let cls = node_class(n);
-            let mut line = format!(
-                "  {}[\"{}: {label}\"]:::{cls}",
-                mermaid_safe(&n.id),
-                n.id
-            );
+            let mut line = format!("  {}[\"{}: {label}\"]:::{cls}", mermaid_safe(&n.id), n.id);
             if cp.contains(&n.id) {
                 line.push_str(",critical");
             }

@@ -115,7 +115,7 @@ Plus the trust and transparency files:
   signatures are only re-created when they no longer verify against the current
   key (key rotation), otherwise the committed `.sig` files ship as-is.
 - `grove-skill.tar.gz` and `grove-skill.tar.gz.sig`: the agent skill directory
-  archive (SKILL.md, references, diagrams) from `bin/skill-bundle.sh`
+  archive (`SKILL.md` and `specification.md`) from `bin/skill-bundle.sh`
   (deterministic GNU tar plus gzip -n).
 - SLSA build provenance attestations via `actions/attest-build-provenance`
   covering all archives, bundles, and `manifest.json`.

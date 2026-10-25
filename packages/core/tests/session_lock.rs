@@ -37,7 +37,10 @@ fn make_stale_exclusive(root: &Path, age_sec: u64) {
     std::fs::create_dir_all(&slot).unwrap();
     let holder = slot.join("holder");
     std::fs::write(&holder, "99999\n2020-01-01T00:00:00Z\n").unwrap();
-    let f = std::fs::OpenOptions::new().write(true).open(&holder).unwrap();
+    let f = std::fs::OpenOptions::new()
+        .write(true)
+        .open(&holder)
+        .unwrap();
     f.set_modified(SystemTime::now() - Duration::from_secs(age_sec))
         .unwrap();
 }

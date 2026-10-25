@@ -1,10 +1,10 @@
 use crate::algebra::treewidth_upper;
 use crate::cli::{abspath, journal_session_token, json_cli_out, load, CliCtx};
 use crate::journal::{
-    append_journal_record, journal_read_nonempty_pairs, stamp_journal_session,
-    wrap_journal_record, JOURNAL_GATE_OP,
+    append_journal_record, journal_read_nonempty_pairs, stamp_journal_session, wrap_journal_record,
+    JOURNAL_GATE_OP,
 };
-use crate::json::{JVal, JuliaDict, Json};
+use crate::json::{JVal, Json, JuliaDict};
 use crate::model::{Kind, Node, State};
 use crate::ops::{kw_get, OpResult, EXIT_ERR};
 use crate::status::listnodes;
@@ -157,7 +157,11 @@ pub fn gate_git_scan_log(txt: &str, wids: &[String]) -> BTreeMap<String, Vec<Str
     out
 }
 
-pub fn gate_git_files_by_w(root: &str, wids: &[String], cut: &str) -> BTreeMap<String, Vec<String>> {
+pub fn gate_git_files_by_w(
+    root: &str,
+    wids: &[String],
+    cut: &str,
+) -> BTreeMap<String, Vec<String>> {
     if wids.is_empty() || !gate_git_root_ok(root) {
         return wids.iter().map(|w| (w.clone(), Vec::new())).collect();
     }
@@ -241,10 +245,7 @@ pub fn gate_report(st: &State, recs: &[Json], root: &str, theta: i64, n: i64) ->
     let baseline = gate_baseline(recs);
     let cut = gate_time_cut(baseline.as_ref()).to_string();
     let tw_now = treewidth_upper(st);
-    let tw_delta = baseline
-        .as_ref()
-        .map(|b| tw_now as i64 - b.tw)
-        .unwrap_or(0);
+    let tw_delta = baseline.as_ref().map(|b| tw_now as i64 - b.tw).unwrap_or(0);
     let dones = gate_done_since(st, &cut).len();
     let overflows = surface_overflows(st, root, baseline.as_ref(), theta);
     let invalidated = gate_invalidated(st, &cut);
@@ -387,7 +388,10 @@ pub fn cmd_gate(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRes
             ),
         ]),
     );
-    let _ = append_journal_record(&jp, &stamp_journal_session(&jr, &journal_session_token(ctx, kw)));
+    let _ = append_journal_record(
+        &jp,
+        &stamp_journal_session(&jr, &journal_session_token(ctx, kw)),
+    );
     let mut r = OpResult::ok();
     if ctx.json {
         r.out = json_cli_out(gate_json_payload(&rep));
@@ -404,7 +408,8 @@ pub fn cmd_gate(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRes
         "treewidth: {} (Δ {sign}{})\n",
         rep.tw_now, rep.tw_delta
     ));
-    r.out.push_str(&format!("done since baseline: {}\n", rep.dones));
+    r.out
+        .push_str(&format!("done since baseline: {}\n", rep.dones));
     r.out.push_str(&format!("due: {}\n", rep.due));
     if rep.overflows.is_empty() && rep.invalidated.is_empty() && rep.accepted.is_empty() {
         r.out.push_str("would distill: none\n");
@@ -412,13 +417,16 @@ pub fn cmd_gate(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRes
     }
     r.out.push_str("would distill:\n");
     for (wid, paths) in &rep.overflows {
-        r.out.push_str(&format!("- overflow {wid}: {}\n", paths.join(", ")));
+        r.out
+            .push_str(&format!("- overflow {wid}: {}\n", paths.join(", ")));
     }
     for b in &rep.invalidated {
-        r.out.push_str(&format!("- invalidated {}: {}\n", b.id, b.title));
+        r.out
+            .push_str(&format!("- invalidated {}: {}\n", b.id, b.title));
     }
     for d in &rep.accepted {
-        r.out.push_str(&format!("- accepted {}: {}\n", d.id, d.title));
+        r.out
+            .push_str(&format!("- accepted {}: {}\n", d.id, d.title));
     }
     r
 }

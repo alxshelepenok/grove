@@ -343,7 +343,10 @@ pub fn cmd_list(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResu
             d.insert("filter_status".to_string(), JVal::Str(fstatus.to_string()));
         }
         if !fcynefin.is_empty() {
-            d.insert("filter_cynefin".to_string(), JVal::Str(fcynefin.to_string()));
+            d.insert(
+                "filter_cynefin".to_string(),
+                JVal::Str(fcynefin.to_string()),
+            );
         }
         let mut r = OpResult::ok();
         r.out = json_cli_out(d);
@@ -351,7 +354,8 @@ pub fn cmd_list(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResu
     }
     let mut r = OpResult::ok();
     for n in rows.into_iter().filter(|n| keep(*n)) {
-        r.out.push_str(&format!("{}\t{}\t{}\n", n.id, n.status, n.title));
+        r.out
+            .push_str(&format!("{}\t{}\t{}\n", n.id, n.status, n.title));
     }
     r
 }
@@ -754,8 +758,8 @@ pub fn cmd_log(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResul
     if !pos.is_empty() {
         let id0 = &pos[0];
         let jp = ctx.journalpath();
-        let mut ok = st.nodes.contains_key(id0)
-            || st.edges.iter().any(|e| &e.from == id0 || &e.to == id0);
+        let mut ok =
+            st.nodes.contains_key(id0) || st.edges.iter().any(|e| &e.from == id0 || &e.to == id0);
         if !ok && journal_file_mentions_id(&jp, id0) {
             ok = true;
         }

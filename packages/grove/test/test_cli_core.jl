@@ -213,15 +213,15 @@ end
         end
         @test M.main(["fitness", "W-01", "G-01", "+1", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["link", "Q-01", "blocks", "W-01", "--root=$tmp", "--quiet"]) == 0
-        # control: progress entry rejects with I5 (issue 71 setup)
+
         rc, err = capture_stderr_core(["set", "W-01", "status=progress", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
         @test occursin("I5: predecessors not cleared", err)
-        # the fix: done rejects with the same I5 text before evidence validation
+
         rc, err = capture_stderr_core(["set", "W-01", "status=done", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
         @test occursin("I5: predecessors not cleared", err)
-        # completion succeeds after legitimate predecessor clearance
+
         @test M.main(["set", "Q-01", "status=answered", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["evidence", "W-01", "e", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "W-01", "status=done", "--root=$tmp", "--quiet"]) == 0
@@ -242,11 +242,11 @@ end
         @test M.main(["add", "w", "--type=spike", "--cynefin=complex", "--goals=G-01",
                       "--title=Probe", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["fitness", "W-01", "G-01", "+1", "--root=$tmp", "--quiet"]) == 0
-        # I2 precedes I3: no evidence staged yet, message must still be I2
+
         rc, err = capture_stderr_core(["set", "W-01", "status=done", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
         @test occursin("I2: W-01 is a done spike but `produces` is empty", err)
-        # producing a decision clears the gate
+
         @test M.main(["add", "d", "--title=Finding", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["link", "W-01", "produces", "D-01", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["evidence", "W-01", "e", "--root=$tmp", "--quiet"]) == 0
@@ -267,20 +267,20 @@ end
                       "--area=A-01", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "g", "--title=Judged", "--fitness-kind=manual",
                       "--area=A-01", "--root=$tmp", "--quiet"]) == 0
-        # structured kind: derived status, human set rejected at any fitness level
+
         rc, err = capture_stderr_core(["set", "G-01", "status=verified", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
         @test occursin("derived from fitness deltas", err)
-        # manual kind: human verdict passes, and undo reverts it
+
         @test M.main(["set", "G-02", "status=verified", "--root=$tmp", "--quiet"]) == 0
         st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
         @test st.nodes["G-02"].status == :verified
         @test M.main(["undo", "--root=$tmp", "--quiet"]) == 0
         st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
         @test st.nodes["G-02"].status == :unverified
-        # declined stays a settable human verdict on a structured goal
+
         @test M.main(["set", "G-01", "status=declined", "--root=$tmp", "--quiet"]) == 0
-        # add-time bypass: --status=verified rejected for structured, allowed for manual
+
         rc, err = capture_stderr_core(["add", "g", "--title=Sneaky", "--fitness-kind=count",
                                        "--fitness-target=3", "--area=A-01",
                                        "--status=verified", "--root=$tmp"])
@@ -310,7 +310,7 @@ end
         @test M.main(["fitness", "W-01", "G-01", "+1", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["evidence", "W-01", "e", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "W-01", "status=done", "--root=$tmp", "--quiet"]) == 0
-        # frozen: every user-fired mutation command on the terminal work item
+
         for args in (["set", "W-01", "title=X"],
                      ["set", "W-01", "status=archived"],
                      ["field", "W-01", "ac", "add", "y"],
@@ -320,21 +320,20 @@ end
             @test rc == M.EXIT_GUARD
             @test occursin("W-01 is terminal (done); create a successor node or use grove undo", err)
         end
-        # undo remains a sanctioned lane: reverts the done transition itself
-        # (this item went proposed -> done directly, so the inverse restores proposed)
+
         @test M.main(["undo", "--root=$tmp", "--quiet"]) == 0
         st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
         @test st.nodes["W-01"].status == :proposed
         @test M.main(["undo", "--root=$tmp", "--quiet"]) == 0
         st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
         @test isempty(get(st.nodes["W-01"].fields, :evidence, String[]))
-        # rejected and superseded decisions freeze like every other terminal kind
+
         @test M.main(["add", "d", "--title=Rejected", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "D-01", "status=rejected", "--root=$tmp", "--quiet"]) == 0
         rc, err = capture_stderr_core(["set", "D-01", "title=X", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
         @test occursin("D-01 is terminal (rejected)", err)
-        # accepted decision keeps its supersede-lane message and its one legal transition
+
         @test M.main(["add", "d", "--title=Accepted", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "D-02", "status=accepted", "--root=$tmp", "--quiet"]) == 0
         rc, err = capture_stderr_core(["set", "D-02", "title=X", "--root=$tmp"])
@@ -343,7 +342,7 @@ end
         @test M.main(["add", "d", "--title=Newer", "--supersedes=D-02", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "D-03", "status=accepted", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "D-02", "status=superseded", "--root=$tmp", "--quiet"]) == 0
-        # terminal question freezes too
+
         @test M.main(["add", "q", "--title=Q", "--cynefin=clear", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "Q-01", "status=answered", "--root=$tmp", "--quiet"]) == 0
         rc, err = capture_stderr_core(["field", "Q-01", "outcome", "add", "late",
@@ -367,20 +366,20 @@ end
         @test M.main(["add", "w", "--type=feature", "--cynefin=complicated", "--goals=G-01",
                       "--title=Feature", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["link", "B-01", "targets", "W-01", "--root=$tmp", "--quiet"]) == 0
-        # proposed assumption blocks the ready door
+
         rc, err = capture_stderr_core(["set", "W-01", "status=ready", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
         @test occursin("I9: W-01 cannot enter `ready`", err)
         @test occursin("B-01 (proposed)", err)
-        # validation opens the door
+
         @test M.main(["set", "B-01", "status=validated", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "W-01", "status=ready", "--root=$tmp", "--quiet"]) == 0
-        # late devalidation of a validated assumption is itself frozen by I14;
-        # the revision lane is a successor assumption node (or grove undo)
-        rc, err = capture_stderr_core(["set", "B-01", "status=proposed", "--root=$tmp"])
-        @test rc == M.EXIT_GUARD
-        @test occursin("B-01 is terminal (validated)", err)
-        # non-feature work never needed the chain
+
+        @test M.main(["set", "B-01", "status=proposed", "--root=$tmp", "--quiet"]) == 0
+        rc, err = capture_stderr_core(["check", "--root=$tmp"])
+        @test rc == 3
+        @test occursin("I9: W-01 is `ready` but B-01 is `proposed`", err)
+
         @test M.main(["add", "w", "--type=bug", "--cynefin=clear", "--goals=G-01",
                       "--title=Bugfix", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["link", "B-01", "targets", "W-02", "--root=$tmp", "--quiet"]) == 0

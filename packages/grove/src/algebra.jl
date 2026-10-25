@@ -375,7 +375,7 @@ function packet(st::State, w::Node)::String
         end
         println(io)
     end
-    # Linked decisions.
+
     for did in implements_of(st, w)
         d = get(st.nodes, did, nothing)
         d === nothing && continue
@@ -391,6 +391,7 @@ function packet(st::State, w::Node)::String
             println(io)
         end
     end
+
     for bid in bchain(st, w)
         b = get(st.nodes, bid, nothing)
         b === nothing && continue

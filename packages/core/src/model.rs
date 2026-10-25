@@ -73,8 +73,11 @@ pub fn field_form(kind: Kind, key: &str) -> Option<Form> {
         (W, "theme") => Single,
         (W, "fitness") => Fitness,
         (W, "surface") => RefList,
-        (W, "ac" | "hypothesis" | "repro" | "exit" | "evidence_strategy" | "evidence" | "plan"
-        | "why") => Prose,
+        (
+            W,
+            "ac" | "hypothesis" | "repro" | "exit" | "evidence_strategy" | "evidence" | "plan"
+            | "why",
+        ) => Prose,
         (D, "context" | "options" | "decision" | "consequences" | "validation") => Prose,
         (Q, "why" | "hypothesis" | "exit" | "log" | "outcome") => Prose,
         (B, "vm" | "threshold" | "result") => Prose,
@@ -106,7 +109,14 @@ pub fn field_order(kind: Kind) -> &'static [&'static str] {
             "plan",
             "why",
         ],
-        Kind::D => &["tags", "context", "options", "decision", "consequences", "validation"],
+        Kind::D => &[
+            "tags",
+            "context",
+            "options",
+            "decision",
+            "consequences",
+            "validation",
+        ],
         Kind::Q => &["tags", "why", "hypothesis", "exit", "log", "outcome"],
         Kind::B => &["tags", "vm", "threshold", "result"],
         Kind::G => &["area", "tags", "fitness_target", "fitness_current", "notes"],
@@ -176,7 +186,8 @@ impl Node {
     }
 
     pub fn set_single(&mut self, key: &str, value: String) {
-        self.fields.insert(key.to_string(), FieldValue::Single(value));
+        self.fields
+            .insert(key.to_string(), FieldValue::Single(value));
     }
 
     pub fn fitness(&self) -> BTreeMap<String, i64> {

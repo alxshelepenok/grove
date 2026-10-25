@@ -35,8 +35,18 @@ fn ok(root: &str, cmd: &str, args: &[&str]) -> String {
 fn write_bridge_rejects_non_whitelist_verbs() {
     let (_guard, _home) = common::isolated_grove_home("whitelist-reject");
     for cmd in [
-        "show", "status", "init", "undo", "repair", "renumber", "handoff", "gate", "revalidate",
-        "glossary", "promote", "render",
+        "show",
+        "status",
+        "init",
+        "undo",
+        "repair",
+        "renumber",
+        "handoff",
+        "gate",
+        "revalidate",
+        "glossary",
+        "promote",
+        "render",
     ] {
         let err = run_write("x", SESSION, cmd, &[]).unwrap_err();
         assert!(
@@ -105,7 +115,11 @@ fn write_round_trip_per_verb() {
 
     let a = ok(&root, "add", &["a", "--title=Area"]);
     assert_eq!(a.trim(), "A-01");
-    let g = ok(&root, "add", &["g", "--title=Goal", "--area=A-01", "--fitness-kind=manual"]);
+    let g = ok(
+        &root,
+        "add",
+        &["g", "--title=Goal", "--area=A-01", "--fitness-kind=manual"],
+    );
     assert_eq!(g.trim(), "G-01");
     let w = ok(&root, "add", &["w", "--title=Work", "--goals=G-01"]);
     assert_eq!(w.trim(), "W-01");
@@ -135,9 +149,8 @@ fn write_round_trip_per_verb() {
     let shown = run_read(&root, "show", &["W-01".to_string()]).unwrap();
     assert!(shown.contains("G-01"), "fitness read back: {shown}");
 
-    let lock_text = || {
-        std::fs::read_to_string(PathBuf::from(&root).join(".grove").join("state.lock")).unwrap()
-    };
+    let lock_text =
+        || std::fs::read_to_string(PathBuf::from(&root).join(".grove").join("state.lock")).unwrap();
 
     ok(&root, "link", &["Q-01", "asks", "G-01"]);
     assert!(
@@ -151,10 +164,8 @@ fn write_round_trip_per_verb() {
         "unlink read back in lock"
     );
 
-    let journal = std::fs::read_to_string(
-        PathBuf::from(&root).join(".grove").join("journal.log"),
-    )
-    .unwrap();
+    let journal =
+        std::fs::read_to_string(PathBuf::from(&root).join(".grove").join("journal.log")).unwrap();
     assert!(
         journal.contains(SESSION),
         "journal records carry the injected session token"
@@ -184,7 +195,10 @@ fn write_surfaces_guard_refusal_verbatim() {
         &["W-99".to_string(), "nope".to_string()],
     )
     .unwrap_err();
-    assert!(err.contains("exited"), "not-found exit code surfaced: {err}");
+    assert!(
+        err.contains("exited"),
+        "not-found exit code surfaced: {err}"
+    );
     assert!(err.contains("not found: W-99"), "stderr verbatim: {err}");
 }
 
@@ -193,14 +207,16 @@ fn write_distill_archive_round_trip() {
     let (_guard, _home) = common::isolated_grove_home("distill-archive-home");
     let root = init_root(&tmpdir("distill-archive"));
     ok(&root, "add", &["a", "--title=Area"]);
-    ok(&root, "add", &["g", "--title=Goal", "--area=A-01", "--fitness-kind=manual"]);
+    ok(
+        &root,
+        "add",
+        &["g", "--title=Goal", "--area=A-01", "--fitness-kind=manual"],
+    );
     ok(&root, "set", &["G-01", "status=verified"]);
     ok(&root, "distill", &["G-01", "--null"]);
     ok(&root, "archive", &["G-01"]);
-    let lock = std::fs::read_to_string(
-        PathBuf::from(&root).join(".grove").join("state.lock"),
-    )
-    .unwrap();
+    let lock =
+        std::fs::read_to_string(PathBuf::from(&root).join(".grove").join("state.lock")).unwrap();
     let archive_section = lock
         .split(":archive")
         .nth(1)

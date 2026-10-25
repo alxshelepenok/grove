@@ -356,7 +356,7 @@ jobs:
 
           - grove and grove-mcp CLI binaries + grove-desktop portable archives: linux-x64, macos-arm64, macos-x64, windows-x64.
           - Desktop OS bundles: msi + nsis (windows), dmg (macOS arm64 + x64), deb + AppImage (linux).
-          - Signed agent skill archive (grove-skill.tar.gz): directory skill (SKILL.md, references, diagrams) to unpack into the agent's skills directory.
+          - Signed agent skill archive (grove-skill.tar.gz): directory skill (SKILL.md and specification.md) to unpack into the agent's skills directory.
           - Signed manifest, SHA256SUMS, CycloneDX SBOM, VEX, signed installers.
           EOF
           cat manifest.json

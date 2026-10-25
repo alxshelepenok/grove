@@ -193,9 +193,10 @@ pub fn model(st: &State, seed: &str, depth: usize, max: usize) -> Value {
         m["selectedText"] = json!(text);
     }
     if let Some(node) = st.nodes.get(&selected).filter(|n| n.kind == Kind::W) {
-        let has_edges = st.edges.iter().any(|e| {
-            e.label == "blocks" && (e.from == selected || e.to == selected)
-        });
+        let has_edges = st
+            .edges
+            .iter()
+            .any(|e| e.label == "blocks" && (e.from == selected || e.to == selected));
         m["seed"] = json!({
             "id": node.id,
             "title": node.title,
@@ -228,10 +229,14 @@ pub fn model(st: &State, seed: &str, depth: usize, max: usize) -> Value {
         let backward = backward_cone(st, &selected, depth, max);
         let forward = forward_cone(st, &selected, depth, max);
         let member_row = |id: &String| {
-            st.nodes.get(id).map(|n| json!({"id": n.id, "title": n.title}))
+            st.nodes
+                .get(id)
+                .map(|n| json!({"id": n.id, "title": n.title}))
         };
-        let dependencies: Vec<Value> =
-            contraction_order(st, &backward.ids).iter().filter_map(member_row).collect();
+        let dependencies: Vec<Value> = contraction_order(st, &backward.ids)
+            .iter()
+            .filter_map(member_row)
+            .collect();
         let impact: Vec<Value> = forward.ids.iter().filter_map(member_row).collect();
         m["dependencies"] = json!(dependencies);
         m["impact"] = json!(impact);

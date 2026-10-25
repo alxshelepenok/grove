@@ -45,6 +45,7 @@ end
 
 """Legacy: `attrs["fitness"]` denominator style + sum of deltas; no structured fields touched."""
 function _refresh_goal_legacy!(g::Node, total::Int)::Nothing
+    g.status === :declined && return nothing
     prev = g.status
     label = get(g.attrs, "fitness", "")
     target = parse_fitness_target(label)
@@ -52,7 +53,7 @@ function _refresh_goal_legacy!(g::Node, total::Int)::Nothing
         g.status = :verified
     elseif total > 0
         g.status = :partial
-    elseif g.status !== :declined
+    else
         g.status = :unverified
     end
     g.status !== prev && stamp_touch_node!(g)
@@ -75,13 +76,15 @@ function refresh_goal_structured_fitness!(st::State, g::Node)::Nothing
 
     _sync_goal_fitness_current_field!(g, kind, total)
 
+    g.status === :declined && return nothing
+
     prev = g.status
     tgt_txt = strip(string(get(g.fields, :fitness_target, "")))
 
     if kind === :boolean
         if total >= 1
             g.status = :verified
-        elseif g.status !== :declined
+        else
             g.status = :unverified
         end
     elseif kind === :count
@@ -91,7 +94,7 @@ function refresh_goal_structured_fitness!(st::State, g::Node)::Nothing
                 g.status = :verified
             elseif total > 0
                 g.status = :partial
-            elseif g.status !== :declined
+            else
                 g.status = :unverified
             end
         end
@@ -103,7 +106,7 @@ function refresh_goal_structured_fitness!(st::State, g::Node)::Nothing
                 g.status = :verified
             elseif total > 0
                 g.status = :partial
-            elseif g.status !== :declined
+            else
                 g.status = :unverified
             end
         end
@@ -114,7 +117,7 @@ function refresh_goal_structured_fitness!(st::State, g::Node)::Nothing
                 g.status = :verified
             elseif total > 0
                 g.status = :partial
-            elseif g.status !== :declined
+            else
                 g.status = :unverified
             end
         end

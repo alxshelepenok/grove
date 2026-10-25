@@ -30,7 +30,10 @@ fn guard_rejects_invalid_status_for_kind() {
     put(&mut st, work("W-01", "feature", "ready", "clear"));
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "bogus");
-    assert_eq!(expect_invalid(&v), &vec!["invalid status `bogus` for w".to_string()]);
+    assert_eq!(
+        expect_invalid(&v),
+        &vec!["invalid status `bogus` for w".to_string()]
+    );
     assert_eq!(v.exit_code(), 1);
 }
 
@@ -144,8 +147,10 @@ fn guard_w_done_requires_fitness_delta_per_goal() {
     let v = guard_status_transition(&st, n, "done");
     assert_eq!(
         expect_reject(&v),
-        &vec!["I10: missing fitness delta for G-01; use `grove fitness W-01 G-01 <delta>`"
-            .to_string()]
+        &vec![
+            "I10: missing fitness delta for G-01; use `grove fitness W-01 G-01 <delta>`"
+                .to_string()
+        ]
     );
     assert_eq!(v.exit_code(), 4);
 }
@@ -202,11 +207,25 @@ fn guard_field_ops_reject_accepted_decision() {
             let d = accepted_decision_with_catalog();
             let expected_lines = d.lines(fname);
             put(&mut st, d);
-            let r = op_field(&mut st, "D-01", &field, &op, value.as_deref(), "testsession");
+            let r = op_field(
+                &mut st,
+                "D-01",
+                &field,
+                &op,
+                value.as_deref(),
+                "testsession",
+            );
             assert_eq!(r.code, 4, "field {field} {op} must be rejected");
             assert_eq!(r.err.trim(), DECISION_IMMUTABLE_MSG);
-            assert!(r.journal.is_empty(), "guard must fire before journaling {field} {op}");
-            assert_eq!(st.nodes["D-01"].lines(fname), expected_lines, "field {field} {op} must not mutate");
+            assert!(
+                r.journal.is_empty(),
+                "guard must fire before journaling {field} {op}"
+            );
+            assert_eq!(
+                st.nodes["D-01"].lines(fname),
+                expected_lines,
+                "field {field} {op} must not mutate"
+            );
         }
     }
 }
@@ -222,7 +241,10 @@ fn guard_set_non_status_keys_reject_accepted_decision() {
         let r = op_set(&mut st, "D-01", key, "Replacement", "testsession");
         assert_eq!(r.code, 4, "set {key} on accepted D must be rejected");
         assert_eq!(r.err.trim(), DECISION_IMMUTABLE_MSG);
-        assert!(r.journal.is_empty(), "guard must fire before journaling set {key}");
+        assert!(
+            r.journal.is_empty(),
+            "guard must fire before journaling set {key}"
+        );
         assert_eq!(st.nodes["D-01"].title, old_title);
         assert_eq!(st.nodes["D-01"].cynefin, old_cynefin);
     }
@@ -346,7 +368,9 @@ fn guard_y_superseded_is_frozen_by_terminal_immutability() {
     let v = guard_status_transition(&st, n, "superseded");
     assert_eq!(
         expect_reject(&v),
-        &vec!["Y-01 is terminal (superseded); create a successor node or use grove undo".to_string()]
+        &vec![
+            "Y-01 is terminal (superseded); create a successor node or use grove undo".to_string()
+        ]
     );
 }
 
@@ -453,8 +477,7 @@ fn guard_done_rejects_open_blocks_predecessor_then_allows_after_clearance() {
     prose(&mut w, "evidence", &["e"]);
     put(&mut st, w);
     put(&mut st, plain(Kind::G, "G-01", "verified"));
-    st.edges
-        .push(Edge::new("Q-01", "blocks", "W-01"));
+    st.edges.push(Edge::new("Q-01", "blocks", "W-01"));
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "done");
     assert_eq!(
@@ -477,11 +500,13 @@ fn guard_done_spike_requires_produces_before_evidence() {
     let v = guard_status_transition(&st, n, "done");
     assert_eq!(
         expect_reject(&v),
-        &vec!["I2: W-01 is a done spike but `produces` is empty (no outgoing `produces` edges)".to_string()]
+        &vec![
+            "I2: W-01 is a done spike but `produces` is empty (no outgoing `produces` edges)"
+                .to_string()
+        ]
     );
     put(&mut st, plain(Kind::D, "D-01", "proposed"));
-    st.edges
-        .push(Edge::new("W-01", "produces", "D-01"));
+    st.edges.push(Edge::new("W-01", "produces", "D-01"));
     prose(st.nodes.get_mut("W-01").expect("W-01"), "evidence", &["e"]);
     let n = st.nodes.get("W-01").expect("W-01 present");
     expect_ok(&guard_status_transition(&st, n, "done"));
@@ -495,7 +520,7 @@ fn guard_manual_goal_verification_restricted_to_manual_kind() {
     let v = guard_status_transition(&st, n, "verified");
     assert_eq!(
         expect_reject(&v),
-        &vec!["goal G-01 status is derived from fitness deltas; cannot set manually (only fitness_kind=manual goals take a human verdict)".to_string()]
+        &vec!["goal G-01 status is derived from fitness deltas".to_string()]
     );
     let mut manual = plain(Kind::G, "G-02", "unverified");
     manual
@@ -518,7 +543,7 @@ fn guard_freezes_terminal_nodes_except_supersede_lane() {
         expect_reject(&v),
         &vec!["W-01 is terminal (done); create a successor node or use grove undo".to_string()]
     );
-    // rejected decision freezes with the shared text
+
     put(&mut st, plain(Kind::D, "D-01", "rejected"));
     let n = st.nodes.get("D-01").expect("D-01 present");
     let v = guard_status_transition(&st, n, "proposed");
@@ -526,7 +551,7 @@ fn guard_freezes_terminal_nodes_except_supersede_lane() {
         expect_reject(&v),
         &vec!["D-01 is terminal (rejected); create a successor node or use grove undo".to_string()]
     );
-    // accepted decision keeps its supersede-lane message for non-lane targets
+
     put(&mut st, plain(Kind::D, "D-02", "accepted"));
     let n = st.nodes.get("D-02").expect("D-02 present");
     let v = guard_status_transition(&st, n, "rejected");
@@ -534,7 +559,7 @@ fn guard_freezes_terminal_nodes_except_supersede_lane() {
         expect_reject(&v),
         &vec!["decision D-02 is accepted; create a new D with --supersedes".to_string()]
     );
-    // the one sanctioned transition still passes
+
     expect_ok(&guard_status_transition(&st, n, "superseded"));
 }
 
@@ -546,8 +571,7 @@ fn guard_ready_gates_feature_assumption_chain() {
     let mut w = work("W-01", "feature", "proposed", "complicated");
     reflist(&mut w, "goals", &["G-01"]);
     put(&mut st, w);
-    st.edges
-        .push(Edge::new("B-01", "targets", "W-01"));
+    st.edges.push(Edge::new("B-01", "targets", "W-01"));
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "ready");
     assert_eq!(
@@ -557,12 +581,36 @@ fn guard_ready_gates_feature_assumption_chain() {
     st.nodes.get_mut("B-01").expect("B-01").status = "validated".to_string();
     let n = st.nodes.get("W-01").expect("W-01 present");
     expect_ok(&guard_status_transition(&st, n, "ready"));
-    // non-feature work never needed the chain
+
     let mut bug = work("W-02", "bug", "proposed", "clear");
     reflist(&mut bug, "goals", &["G-01"]);
     put(&mut st, bug);
-    st.edges
-        .push(Edge::new("B-01", "targets", "W-02"));
+    st.edges.push(Edge::new("B-01", "targets", "W-02"));
     let n = st.nodes.get("W-02").expect("W-02 present");
     expect_ok(&guard_status_transition(&st, n, "ready"));
+}
+
+#[test]
+fn clears_blocks_predecessor_keeps_adjudicated_assumptions() {
+    let mut st = State::default();
+    put(&mut st, plain(Kind::B, "B-01", "validated"));
+    put(&mut st, plain(Kind::B, "B-02", "invalidated_acceptable"));
+    put(&mut st, plain(Kind::B, "B-03", "invalidated_blocking"));
+    put(&mut st, plain(Kind::B, "B-04", "proposed"));
+    put(&mut st, plain(Kind::B, "B-05", "testing"));
+    for id in ["B-01", "B-02", "B-03"] {
+        assert!(
+            clears_blocks_predecessor(st.nodes.get(id).expect("b")),
+            "{id} must clear"
+        );
+    }
+    for id in ["B-04", "B-05"] {
+        assert!(
+            !clears_blocks_predecessor(st.nodes.get(id).expect("b")),
+            "{id} must not clear"
+        );
+    }
+    assert!(!is_terminal(Kind::B, "validated"));
+    assert!(is_terminal(Kind::B, "invalidated_acceptable"));
+    assert!(is_terminal(Kind::B, "invalidated_blocking"));
 }

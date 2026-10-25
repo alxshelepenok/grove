@@ -27,8 +27,9 @@ installing_ into `~/.local/grove` (`%USERPROFILE%\.local\grove` on Windows). Add
 
 The agent-facing workflow documentation ships as a signed archive,
 `grove-skill.tar.gz` (+ `grove-skill.tar.gz.sig`), attached to every release.
-The archive expands to a `grove/` directory (`SKILL.md`, `references/`,
-`diagrams/`), the layout skill-aware agents load natively:
+The archive expands to a `grove/` directory containing `SKILL.md` and
+`specification.md`, the layout skill-aware agents load natively. The
+specification link in the packaged skill resolves to this adjacent file:
 
 ```bash
 tar -xzf grove-skill.tar.gz -C ~/.kimi-code/skills  # or your agent's skills directory
@@ -124,12 +125,6 @@ grove set W-01 status=done  # atomic close: deltas applied, goal re-derived, che
 ```
 
 ## MCP server
-
-`grove-mcp` exposes the full CLI as MCP tools over stdio (one tool per command,
-plus `grove://packet`, `grove://show/<id>`, and `grove://skill` resources - the
-last serves the embedded agent skill (SKILL.md root, per-page
-`grove://skill/<page>` reads), so an agent with only the MCP integration gets
-the full skill in-band). Build it from the repo root:
 
 ```bash
 cargo build --release

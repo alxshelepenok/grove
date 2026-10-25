@@ -27,8 +27,10 @@ fn i2_spike_outputs_requires_produces_edge() {
     put(&mut st, work("W-01", "spike", "done", "clear"));
     assert_eq!(
         i2_spike_outputs(&st),
-        vec!["I2: W-01 is a done spike but `produces` is empty (no outgoing `produces` edges)"
-            .to_string()]
+        vec![
+            "I2: W-01 is a done spike but `produces` is empty (no outgoing `produces` edges)"
+                .to_string()
+        ]
     );
     put(&mut st, plain(Kind::Q, "Q-01", "open"));
     edge(&mut st, "W-01", "produces", "Q-01");
@@ -377,11 +379,17 @@ fn validate_and_push_edge_success_stamps_and_dedupes() {
     let mut st = State::default();
     put(&mut st, work("W-01", "feature", "ready", "clear"));
     put(&mut st, work("W-02", "feature", "ready", "clear"));
-    assert_eq!(validate_and_push_edge(&mut st, "W-01", "blocks", "W-02", true), None);
+    assert_eq!(
+        validate_and_push_edge(&mut st, "W-01", "blocks", "W-02", true),
+        None
+    );
     assert_eq!(st.edges.len(), 1);
     let t = st.edges[0].t_created.clone().expect("t_created stamped");
     assert!(parse_rfc3339_utc_second(&t).is_some());
-    assert_eq!(validate_and_push_edge(&mut st, "W-01", "blocks", "W-02", true), None);
+    assert_eq!(
+        validate_and_push_edge(&mut st, "W-01", "blocks", "W-02", true),
+        None
+    );
     assert_eq!(st.edges.len(), 1);
 }
 
@@ -414,8 +422,14 @@ fn validate_and_push_edge_rejects_blocks_cycle_and_rolls_back() {
     for id in ["W-01", "W-02", "W-03"] {
         put(&mut st, work(id, "feature", "ready", "clear"));
     }
-    assert_eq!(validate_and_push_edge(&mut st, "W-01", "blocks", "W-02", true), None);
-    assert_eq!(validate_and_push_edge(&mut st, "W-02", "blocks", "W-03", true), None);
+    assert_eq!(
+        validate_and_push_edge(&mut st, "W-01", "blocks", "W-02", true),
+        None
+    );
+    assert_eq!(
+        validate_and_push_edge(&mut st, "W-02", "blocks", "W-03", true),
+        None
+    );
     let before = st.edges.len();
     assert_eq!(
         validate_and_push_edge(&mut st, "W-03", "blocks", "W-01", true),

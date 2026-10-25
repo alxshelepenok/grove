@@ -33,10 +33,7 @@ fn parse_id_numeric_rejects_malformed_ids() {
         parse_id_numeric("W01"),
         Err("malformed id: W01".to_string())
     );
-    assert_eq!(
-        parse_id_numeric("W-"),
-        Err("malformed id: W-".to_string())
-    );
+    assert_eq!(parse_id_numeric("W-"), Err("malformed id: W-".to_string()));
     assert_eq!(parse_id_numeric(""), Err("malformed id: ".to_string()));
     assert_eq!(
         parse_id_numeric("W-01x"),

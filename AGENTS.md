@@ -9,6 +9,8 @@ This document contains links to available skill documentation for agents.
 
 ## Architecture
 
+- **[Specification](docs/specification.md)**: the normative definition of the
+  graph, invariants, serialization, lifecycle, and command behavior.
 - **[Bootstrap trust](docs/architecture/bootstrap-trust.md)**: how a fresh user
   establishes trust in Grove binaries: HTTPS fetch, embedded release public key
   anchor, and signed-manifest verification of every artifact.

@@ -22,28 +22,16 @@ function grove_version()::String
     return "unknown"
 end
 
-const SKILL_PAGES = (
-    "SKILL.md",
-    "references/model.md",
-    "references/protocol.md",
-    "references/planning.md",
-    "references/cli.md",
-    "references/evidence.md",
-    "references/rules.md",
-    "references/lockfile.md",
-    "references/typography.md",
-    "references/checklist.md",
-    "diagrams/dual-track.md",
-    "diagrams/graph-template.md",
-    "diagrams/workflow.md",
-)
+const SKILL_PAGES = ("SKILL.md", "specification.md")
 
 skill_src_dir() = joinpath(@__DIR__, "..", "..", "..", "docs", "skills", "grove")
+specification_src() = joinpath(@__DIR__, "..", "..", "..", "docs", "specification.md")
 
 function stamp_skill(md::AbstractString)::String
-    lines = split(md, '\n')
+    portable = replace(md, "../../specification.md" => "specification.md")
+    lines = split(portable, '\n')
     head = lines[1:min(3, length(lines))]
-    any(l -> startswith(l, "version:"), head) && return md
+    any(l -> startswith(l, "version:"), head) && return portable
     ver = grove_version()
     out = IOBuffer()
     for (i, l) in enumerate(lines)
@@ -67,11 +55,10 @@ function cmd_skill(ctx::CliCtx, pos, kw)::Int
         return EXIT_OK
     end
     target = joinpath(dir, "grove")
-    mkpath(joinpath(target, "references"))
-    mkpath(joinpath(target, "diagrams"))
+    mkpath(target)
     n = 0
     for p in SKILL_PAGES
-        text = p == "SKILL.md" ? stamp_skill(read(joinpath(srcroot, p), String)) : read(joinpath(srcroot, p), String)
+        text = p == "SKILL.md" ? stamp_skill(read(joinpath(srcroot, p), String)) : read(specification_src(), String)
         write(joinpath(target, p), text)
         n += 1
     end
@@ -80,6 +67,16 @@ function cmd_skill(ctx::CliCtx, pos, kw)::Int
         return EXIT_OK
     end
     println("installed $n skill files to $target")
+    EXIT_OK
+end
+
+function cmd_specification(ctx::CliCtx, pos, kw)::Int
+    md = read(specification_src(), String)
+    if ctx.json
+        json_cli_out(Dict("command" => "specification", "mode" => "print", "markdown" => md))
+    else
+        print(md)
+    end
     EXIT_OK
 end
 
@@ -256,7 +253,7 @@ function cmd_add(ctx::CliCtx, pos, kw)
             end
         end
         if n.status === :verified && goal_structured_kind(n) !== :manual
-            println(stderr, "add g: --status=verified is derived from fitness deltas; only fitness_kind=manual goals take a human verdict")
+            println(stderr, "add g: --status=verified is derived from fitness deltas")
             return EXIT_GUARD
         end
     elseif kind === :d
@@ -397,7 +394,7 @@ function print_lazy_distill_prompt_on_newly_verified_goals!(
                 gid,
                 "` (or `grove distill ",
                 gid,
-                " --null` when nothing is worth keeping; lazy distill, see the rules section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.",
+                " --null` when nothing is worth keeping; lazy distill, see the Delivery loop section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.",
         )
     end
     nothing
@@ -646,7 +643,7 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
         return EXIT_GUARD
     end
     if n.kind === :g && new === :verified && goal_structured_kind(n) !== :manual
-        println(stderr, "goal $(n.id) status is derived from fitness deltas; cannot set manually (only fitness_kind=manual goals take a human verdict)")
+        println(stderr, "goal $(n.id) status is derived from fitness deltas")
         return EXIT_GUARD
     end
     if n.kind === :w && new === :ready && n.type === :feature
@@ -2033,6 +2030,7 @@ const COMMANDS = Dict{String,Function}(
     "revalidate" => cmd_revalidate,
     "glossary" => cmd_glossary,
     "skill" => cmd_skill,
+    "specification" => cmd_specification,
     "projects" => cmd_projects,
     "promote" => cmd_promote,
 )
@@ -2057,7 +2055,8 @@ Read:
   stats                        read-only telemetry from journal + lock (cycle time, DoR, bets, discovery, undo, surprise, C/V)
   diff                         structural diff vs git ref (--since=REF, default HEAD)
   projects                     registry table: name, path, last opened
-  skill     [--install=<dir>]  print the embedded agent skill or install it as a directory
+  skill     [--install=<dir>]  print the agent skill or install it with specification.md
+  specification                print the embedded normative specification
   log       [<ID>]             timeline from t_* on nodes/edges + journal.log (--limit=N, default 200; 0=unlimited)
   gate                         report-only distillation gate: tw delta, surface overflows, invalidated B, accepted D [--theta=N] [--n=N]
 
@@ -2090,7 +2089,7 @@ Root resolution: --root wins; else --project / GROVE_PROJECT (directory or regis
 const SESSION_READ_COMMANDS = Set([
     "ready", "next", "packet", "deps", "impact", "path", "dor", "triage",
     "show", "list", "graph", "check", "status", "diff", "log", "stats",
-    "projects", "promote", "skill",
+    "projects", "promote", "skill", "specification",
 ])
 
 const SESSION_MUTATE_COMMANDS = Set([

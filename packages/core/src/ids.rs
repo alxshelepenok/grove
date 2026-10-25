@@ -104,7 +104,8 @@ mod tests {
     use super::id_cmp;
 
     fn ordered(ids: &[&str]) -> bool {
-        ids.windows(2).all(|w| id_cmp(w[0], w[1]) != std::cmp::Ordering::Greater)
+        ids.windows(2)
+            .all(|w| id_cmp(w[0], w[1]) != std::cmp::Ordering::Greater)
     }
 
     #[test]
@@ -116,7 +117,9 @@ mod tests {
 
     #[test]
     fn families_group_by_prefix() {
-        assert!(ordered(&["A-10", "B-2", "D-99", "G-3", "Q-100", "T-4", "W-100", "Y-5"]));
+        assert!(ordered(&[
+            "A-10", "B-2", "D-99", "G-3", "Q-100", "T-4", "W-100", "Y-5"
+        ]));
     }
 
     #[test]

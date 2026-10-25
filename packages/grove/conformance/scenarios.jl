@@ -461,6 +461,9 @@ const SCENARIOS = Scenario[
     scenario("skill", [
         ["skill"],
     ]),
+    scenario("specification", [
+        ["specification"],
+    ]),
     scenario("next-log", [
         ["init", "--quiet"],
         ["!sleep", "1.1"],

@@ -51,8 +51,7 @@ fn normalize_placeholders(st: &mut State) {
             }
         }
         if n.attrs.get("session_at").map(|v| v.as_str()) == Some("<ts>") {
-            n.attrs
-                .insert("session_at".to_string(), utc_stamp_second());
+            n.attrs.insert("session_at".to_string(), utc_stamp_second());
         }
         if n.attrs.get("session").map(|v| v.as_str()) == Some("<session>") {
             n.attrs
@@ -126,12 +125,7 @@ fn run_golden(sc: &serde_json::Value, i: usize, tag: &str, extra_kw: &[(&str, &s
         kw.push((k.to_string(), v.to_string()));
     }
     let r = dispatch_report(&ctx, &args[0], &pos, &kw);
-    check_step(
-        r,
-        sc,
-        i,
-        &[(T_UNIFORM, "<ts>"), (SESSION_PH, "<session>")],
-    );
+    check_step(r, sc, i, &[(T_UNIFORM, "<ts>"), (SESSION_PH, "<session>")]);
 }
 
 fn retime_next_log(st: &mut State) {
@@ -147,14 +141,14 @@ fn retime_next_log(st: &mut State) {
         n.attrs.insert("t_created".to_string(), tc.to_string());
         n.attrs.insert("t_updated".to_string(), tu.to_string());
     }
-    // per-edge record positions: link blocks = record 13, targets W-01 = 15, targets W-02 = 16
+
     let edge_ts: [(&str, &str, usize); 3] = [
         ("W-01", "W-02", 13),
         ("B-01", "W-01", 15),
         ("B-01", "W-02", 16),
     ];
     for e in &mut st.edges {
-        if let Some((_, _, idx)) = edge_ts.iter().find(|(f, t, _)| f == &e.from && t == &e.to) {
+        if let Some((_, _, idx)) = edge_ts.iter().find(|(f, t, _)| *f == e.from && *t == e.to) {
             e.t_created = Some(LOG_TS[*idx].to_string());
         }
     }
@@ -164,10 +158,7 @@ fn retime_next_log_journal(journal: &str) -> String {
     let mut out = String::new();
     for (idx, line) in journal.lines().enumerate() {
         let t = LOG_TS[idx + 1];
-        out.push_str(&line.replace(
-            "\"ts\":\"<ts>\"",
-            &format!("\"ts\":\"{}\"", t),
-        ));
+        out.push_str(&line.replace("\"ts\":\"<ts>\"", &format!("\"ts\":\"{}\"", t)));
         out.push('\n');
     }
     out
@@ -312,7 +303,11 @@ fn status_json_match_and_stale_match_julia_ground_truth() {
         r.out,
         "{\"invariants\":{\"messages\":[],\"ok\":true},\"progress\":[{\"stale_for_agent\":false,\"id\":\"W-01\",\"title\":\"Alpha\",\"options_hint\":\"\",\"session_detail\":\"  session=tok-abc\",\"session\":\"tok-abc\"}],\"command\":\"status\",\"alignment_triggers\":[]}\n"
     );
-    let r = cmd_status(&ctx, &[], &[("session".to_string(), "someone-else".to_string())]);
+    let r = cmd_status(
+        &ctx,
+        &[],
+        &[("session".to_string(), "someone-else".to_string())],
+    );
     assert_eq!(
         r.out,
         "{\"invariants\":{\"messages\":[],\"ok\":true},\"progress\":[{\"stale_for_agent\":true,\"id\":\"W-01\",\"title\":\"Alpha\",\"options_hint\":\"grove resume W-01 | grove revert W-01 | grove handoff W-01 --to=<token>\",\"session_detail\":\"  session=tok-abc  [!= this session]\",\"session\":\"tok-abc\"}],\"command\":\"status\",\"alignment_triggers\":[]}\n"

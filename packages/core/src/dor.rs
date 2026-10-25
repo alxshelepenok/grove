@@ -210,11 +210,19 @@ pub fn dor_breakdown(st: &State, w: &Node, pin_coverage: bool) -> Vec<(String, b
             out.push((
                 label,
                 false,
-                format!("no declared surface; declare via field {} surface add …", w.id),
+                format!(
+                    "no declared surface; declare via field {} surface add …",
+                    w.id
+                ),
             ));
         } else if ratio < theta {
             let shown: Vec<String> = uncovered.iter().take(5).cloned().collect();
-            let mut det = format!("{:.2} < {}; uncovered: {}", ratio, theta_s, shown.join(", "));
+            let mut det = format!(
+                "{:.2} < {}; uncovered: {}",
+                ratio,
+                theta_s,
+                shown.join(", ")
+            );
             if uncovered.len() > 5 {
                 det.push_str(&format!(" … (+{} more)", uncovered.len() - 5));
             }

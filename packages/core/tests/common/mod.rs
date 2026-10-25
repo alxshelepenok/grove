@@ -82,18 +82,14 @@ pub fn reflist(n: &mut Node, key: &str, items: &[&str]) {
 }
 
 pub fn single(n: &mut Node, key: &str, v: &str) {
-    n.fields.insert(
-        key.to_string(),
-        FieldValue::Single(v.to_string()),
-    );
+    n.fields
+        .insert(key.to_string(), FieldValue::Single(v.to_string()));
 }
 
 pub fn fitness(n: &mut Node, pairs: &[(&str, i64)]) {
-    let m: BTreeMap<String, i64> = pairs
-        .iter()
-        .map(|(k, v)| (k.to_string(), *v))
-        .collect();
-    n.fields.insert("fitness".to_string(), FieldValue::Fitness(m));
+    let m: BTreeMap<String, i64> = pairs.iter().map(|(k, v)| (k.to_string(), *v)).collect();
+    n.fields
+        .insert("fitness".to_string(), FieldValue::Fitness(m));
 }
 
 pub fn attr(n: &mut Node, key: &str, v: &str) {

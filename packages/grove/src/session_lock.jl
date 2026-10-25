@@ -26,7 +26,7 @@ function maybe_migrate_legacy_session_locks!(ctx::CliCtx)::Nothing
     try
         mv(legacy, fresh)
     catch
-        # Concurrent agents or FS edge cases; new sessions still use `fresh`.
+
     end
     return nothing
 end
