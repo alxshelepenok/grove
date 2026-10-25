@@ -913,8 +913,10 @@ function cmd_archive(ctx::CliCtx, pos, kw)
     distilled ||
         (println(stderr, "archive: distill $gid first (grove distill $gid, or grove distill $gid --null)"); return EXIT_GUARD)
     eff = effective_session_token(ctx.root, kw)
+    orphans = archive_orphan_ids(st, gid)
     for w in listnodes(st, :w)
-        gid in get(w.fields, :goals, String[]) || continue
+        citing = gid in get(w.fields, :goals, String[])
+        (citing || w.id in orphans) || continue
         w.status !== :progress && continue
         msg = session_denial_progress_mutate(w, eff)
         msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
@@ -924,10 +926,18 @@ function cmd_archive(ctx::CliCtx, pos, kw)
         n.archived = true
         stamp_touch_node!(n)
     end
+    setdiff!(orphans, ids)
+    for id in orphans
+        haskey(st.nodes, id) || continue
+        n = st.nodes[id]
+        n.archived = true
+        stamp_touch_node!(n)
+    end
+    all_ids = sort!(collect(union(ids, orphans)); by = id_key)
     persist(ctx, st; session=eff, journal=wrap_journal_record("archive", Dict{String,Any}(
         "op" => JOURNAL_ARCHIVE_OP,
         "id" => String(gid),
-        "ids" => String[String(i) for i in sort!(collect(ids); by = id_key)],
+        "ids" => String[String(i) for i in all_ids],
     )))
     EXIT_OK
 end

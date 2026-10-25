@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:e0fffb0cd40916a9b3d26bf8c255834ab197b7390ffc00a550cd47b07c116481
+# checksum: sha256:442398e7a700cd0baae867fa18e1d28ba46d1cf142ed9db95ec1bbe7d06e1eb5
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -38,9 +38,10 @@ g G-50 status=verified fitness_kind=count t_created=2026-10-24T15:34:47Z t_updat
   fitness_target: 5
   fitness_current: 5
 
-g G-51 status=unverified fitness_kind=count t_created=2026-10-24T15:45:33Z t_updated=2026-10-24T15:45:33Z "Archive cascade completes across shared resources in both implementations"
+g G-51 status=partial fitness_kind=count t_created=2026-10-24T15:45:33Z t_updated=2026-10-25T23:50:32Z "Archive cascade completes across shared resources in both implementations"
   area: A-01
   fitness_target: 4
+  fitness_current: 1
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -563,7 +564,7 @@ w W-221 type=refactor status=done cynefin=clear t_created=2026-10-24T15:35:02Z t
     | protocol clarification (B falsifiability): undo of the premature done, then implemented in both engines - isterminal/is_terminal for :b shrinks to invalidated_acceptable|invalidated_blocking (a validated assumption stays falsifiable per the FSM argument and the audited post-approval invalidation metric), and clears_blocks_predecessor gains an explicit B carve-out preserving the pre-freeze blocks clearance for validated|invalidated_acceptable|invalidated_blocking (guards against an I5 regression for assumption-blocked work); docs updated (model.md terminality table + falsifiability note, rules.md exception sentence); tests: julia ready-gate testset asserts devalidation allowed + I9 check backstop, rust guards.rs clears-carve-out + terminality unit test, ops.rs falsifiability via op_set; verification: cargo full suite 0 FAILED across all binaries, julia cli_core/invariants/algebra targeted green, corpus_replay byte-identical with the B change in the binary (no corpus step transitions out of validated); the remaining julia verify drift is the skill scenario and belongs to the maintainer's staged in-flight docs consolidation (skill.rs PAGES 13->11, skill.json, evolving SKILL.md text) - orthogonal to B (drift diff is pure SKILL.md wording), left to that pending work; the staged skill.rs annotation was mechanically aligned (13->11) to unblock the shared build.
     | declined protection completion: maintainer review flagged that verified/partial branches still overwrote a declined verdict (only the W-217 unverified demotion carried the guard); both engines now early-return on declined after syncing fitness_current (structured + legacy paths), with the redundant per-branch guards removed; new overwrite-case testsets in test_goal_fitness.jl (3 scenarios incl. legacy) and tests/fitness.rs (3 scenarios); docs/protocol.md derivation table rows updated to 'A declined goal keeps its verdict in every branch'; suites: cargo full green (all binaries), julia goal_fitness/cli_core targeted green, batched full runtests green except the skill-scenario drift which belongs to the maintainer's staged in-flight docs consolidation (skill.rs PAGES 13->11, stale skill.json vs evolving SKILL.md - orthogonal to B and declined, left to that pending work); the staged skill.rs const annotation was mechanically aligned (13->11) and test_cli_skill references count 9->8 completed as part of that same staged wave to unblock the shared build. No commit per instruction.
 
-w W-222 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:45:33Z t_updated=2026-10-24T16:18:01Z "Julia reference completes the archive cascade for shared resources"
+w W-222 type=bug status=done cynefin=clear t_created=2026-10-24T15:45:33Z t_updated=2026-10-25T23:50:32Z "Julia reference completes the archive cascade for shared resources"
   goals: G-51
   fitness: G-51=+1
   surface: packages/grove/src/archive.jl, packages/grove/test/test_archive_exclusive.jl
@@ -571,8 +572,12 @@ w W-222 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:45:33Z t_
     | cmd_archive keeps the exclusive mass computation unchanged and runs the completion sweep over non-archived w/d/q/b: raw goal-reference set non-empty and live citations empty marks the node archived and lists it in the archive journal record; themes, discoveries, areas and goal-less nodes are never swept; the sweep set is computed before mutations and the progress-session guard extends to it (a foreign-session swept progress work item rejects the whole archive atomically); the goals fields of citing nodes are never rewritten.
   hypothesis:
     | a completion sweep inside the existing archive command takes the shared resource with the last goal without rewriting citations and without moving the mass predicate
+  repro:
+    | shared W citing G-01 and G-02: archive G-01 legitimately leaves the W active (exclusive mass), but archive G-02 also leaves it active forever (its reference set still holds the archived G-01) and check is silent - the shared resource drops out of the lifecycle permanently (verified on v0.2.1 both engines).
   evidence_strategy:
     | julia runtests archive-cascade testsets; corpus scenario recorded from the fixed julia.
+  evidence:
+    | julia: archive_orphan_ids (named per maintainer feedback, parallel to exclusive_archive_ids) computes the completion sweep per D-56: non-archived w/d/q/b whose raw goal-reference set is non-empty while every live (non-archived) citation is gone, treating the closing goal as already archived; themes, discoveries, areas and goal-less nodes never swept; goals fields never rewritten. cmd_archive keeps the exclusive mass unchanged, computes the sweep before mutations, extends the progress-session guard to swept work items (foreign session rejects the whole archive atomically), applies the sweep after the mass, and lists mass plus swept ids in the same audit-only journal archive record. Tests: unit (shared pair retires with the last goal; transitive d/q/b coverage; goal-less nodes and themes skipped) and end-to-end cli cascade (field-intactness after the first archive, orphaned shared work archived with the last goal, journal ids G-02+W-01, check green). Verification: test_archive_exclusive green, full batched runtests green, conformance 35 scenarios green, corpus replays byte-identical; rust port follows in W-223 as archive_orphan_ids.
 
 w W-223 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:45:35Z t_updated=2026-10-24T16:18:03Z "Rust core ports the archive-cascade completion fix"
   goals: G-51
