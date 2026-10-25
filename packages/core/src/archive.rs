@@ -175,6 +175,35 @@ pub fn exclusive_archive_ids(st: &State, gid: &str) -> BTreeSet<String> {
     seen
 }
 
+pub fn archive_orphan_ids(st: &State, gid: &str) -> BTreeSet<String> {
+    let refs = goal_reference_sets(st);
+    let mut out = BTreeSet::new();
+    for kind in [Kind::W, Kind::D, Kind::Q, Kind::B] {
+        for n in listnodes(st, kind, false) {
+            if n.archived {
+                continue;
+            }
+            let raw = match refs.get(&n.id) {
+                Some(r) if !r.is_empty() => r,
+                _ => continue,
+            };
+            let mut live = false;
+            for g in raw {
+                if let Some(gg) = st.nodes.get(g) {
+                    if gg.kind == Kind::G && !gg.archived && g.as_str() != gid {
+                        live = true;
+                        break;
+                    }
+                }
+            }
+            if !live {
+                out.insert(n.id.clone());
+            }
+        }
+    }
+    out
+}
+
 pub fn distill_linked_da_ids(st: &State, mass: &BTreeSet<String>) -> Vec<String> {
     let mut out = BTreeSet::new();
     for e in &st.edges {
@@ -250,8 +279,10 @@ pub fn cmd_archive(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
         );
     }
     let eff = eff_token(ctx, kw);
+    let orphans = archive_orphan_ids(&st, gid);
     for w in listnodes(&st, Kind::W, false) {
-        if !w.lines("goals").iter().any(|g| g == gid) {
+        let citing = w.lines("goals").iter().any(|g| g == gid);
+        if !(citing || orphans.contains(&w.id)) {
             continue;
         }
         if w.status != "progress" {
@@ -266,6 +297,14 @@ pub fn cmd_archive(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
         n.archived = true;
         stamp_touch_node(n);
     }
+    let orphans: Vec<String> = orphans.difference(&ids).cloned().collect();
+    for id in &orphans {
+        let n = st.nodes.get_mut(id).expect("orphan ids are nodes");
+        n.archived = true;
+        stamp_touch_node(n);
+    }
+    let mut all_ids: BTreeSet<String> = ids.clone();
+    all_ids.extend(orphans.iter().cloned());
     let line = stamp_journal_session(
         &wrap_journal_record(
             "archive",
@@ -274,7 +313,7 @@ pub fn cmd_archive(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
                 ("id".to_string(), JVal::Str(gid.clone())),
                 (
                     "ids".to_string(),
-                    JVal::Arr(ids.iter().map(|i| JVal::Str(i.clone())).collect()),
+                    JVal::Arr(all_ids.iter().map(|i| JVal::Str(i.clone())).collect()),
                 ),
             ]),
         ),

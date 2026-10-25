@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:442398e7a700cd0baae867fa18e1d28ba46d1cf142ed9db95ec1bbe7d06e1eb5
+# checksum: sha256:2638ef49614e6537d3776e9b444fb41bd58b8065ca4920e701070a2c4ffed7b1
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -41,7 +41,7 @@ g G-50 status=verified fitness_kind=count t_created=2026-10-24T15:34:47Z t_updat
 g G-51 status=partial fitness_kind=count t_created=2026-10-24T15:45:33Z t_updated=2026-10-25T23:50:32Z "Archive cascade completes across shared resources in both implementations"
   area: A-01
   fitness_target: 4
-  fitness_current: 1
+  fitness_current: 2
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -579,7 +579,7 @@ w W-222 type=bug status=done cynefin=clear t_created=2026-10-24T15:45:33Z t_upda
   evidence:
     | julia: archive_orphan_ids (named per maintainer feedback, parallel to exclusive_archive_ids) computes the completion sweep per D-56: non-archived w/d/q/b whose raw goal-reference set is non-empty while every live (non-archived) citation is gone, treating the closing goal as already archived; themes, discoveries, areas and goal-less nodes never swept; goals fields never rewritten. cmd_archive keeps the exclusive mass unchanged, computes the sweep before mutations, extends the progress-session guard to swept work items (foreign session rejects the whole archive atomically), applies the sweep after the mass, and lists mass plus swept ids in the same audit-only journal archive record. Tests: unit (shared pair retires with the last goal; transitive d/q/b coverage; goal-less nodes and themes skipped) and end-to-end cli cascade (field-intactness after the first archive, orphaned shared work archived with the last goal, journal ids G-02+W-01, check green). Verification: test_archive_exclusive green, full batched runtests green, conformance 35 scenarios green, corpus replays byte-identical; rust port follows in W-223 as archive_orphan_ids.
 
-w W-223 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:45:35Z t_updated=2026-10-24T16:18:03Z "Rust core ports the archive-cascade completion fix"
+w W-223 type=bug status=done cynefin=clear t_created=2026-10-24T15:45:35Z t_updated=2026-10-25T23:54:14Z "Rust core ports the archive-cascade completion fix"
   goals: G-51
   fitness: G-51=+1
   surface: packages/core/src/archive.rs
@@ -587,8 +587,12 @@ w W-223 type=bug status=proposed cynefin=clear t_created=2026-10-24T15:45:35Z t_
     | cmd_archive gains the completion sweep with byte-identical stderr wording to the julia reference; goal_reference_sets is not modified, so distill pools and stats archive pools stay byte-stable; swept ids join the archive journal record identically; same pre-mutation session-guard extension as julia.
   hypothesis:
     | the port keeps both engines parity-locked on the sweep path while leaving the shared predicate and its downstream consumers untouched
+  repro:
+    | same shared-resource scenario as W-222: a W citing G-01 and G-02 survives archive G-02 forever because its reference set still holds the archived G-01; the rust port must mirror the julia completion sweep byte-identically (mass unchanged, sweep after the mass, journal ids union, session guard extended pre-mutation).
   evidence_strategy:
     | cargo test -p grove-core suite; corpus_replay archive-cascade scenario byte-identical on first pass.
+  evidence:
+    | rust: archive_orphan_ids mirrors the julia sweep per D-56 (non-archived w/d/q/b with a non-empty raw goal-reference set and no live non-archived citations, closing goal treated as archived; themes, discoveries, areas and goal-less nodes excluded; goals fields untouched); cmd_archive computes the sweep before mutations, extends the progress-session guard to swept work items, applies it after the exclusive mass and lists mass plus swept ids in the same journal archive record; goal_reference_sets untouched so distill pools and stats archive pools stay byte-stable; stderr texts byte-identical to the julia reference; tests/archive.rs +2 unit testsets (shared pair retirement, transitive d coverage with goal-less and theme exclusions); full cargo test all binaries green.
 
 w W-224 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:45:36Z t_updated=2026-10-24T16:18:03Z "Conformance corpus pins the archive cascade scenario"
   goals: G-51
