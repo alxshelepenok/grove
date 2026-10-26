@@ -642,7 +642,7 @@ conjunct labels and does not change the lock.
 ### 7.3 Distillation and archive
 
 `distill G-NN` requires `status(g)=verified`. Its worksheet contains validated
-`B`, answered `Q`, and accepted `D` from the goal's exclusive mass, with
+`B`, answered `Q`, and accepted `D` from the goal-exclusive archive set, with
 suggested discovery provenance. `distill G-NN --null` appends a null
 attestation.
 
@@ -654,16 +654,34 @@ reminder does not create a discovery or satisfy the archive precondition.
 `archive G-NN` requires:
 
 1. A verified `G`.
-2. Either at least one discovery provenance-linked into the exclusive mass or a
-   null-distill attestation.
+2. Either at least one discovery provenance-linked into the goal-exclusive
+   archive set or a null-distill attestation.
 3. No session-guard refusal on affected progress work.
 
-Archive membership contains the goal and affinity-connected `W`, `D`, `Q`, `B`,
-and `T` whose goal-reference set equals exactly that goal. Reference propagation
-covers `goals`, `implements`, `produces`, `asks`, `tests`, `targets`, `causes`,
-`theme`, and bidirectional `supersedes`. Shared resources remain active. `Y` and
-`A` are never archived. Archived nodes are excluded from algebra and read paths
-by default.
+For archiving, each node has a goal-reference set derived from `goals` and
+propagated through `implements`, `produces`, `asks`, `tests`, `targets`,
+`causes`, `theme`, and bidirectional `supersedes`. Archiving then proceeds in
+two steps:
+
+1. **Archive the goal-exclusive set.** This set contains the closing goal and
+   affinity-connected `W`, `D`, `Q`, `B`, and `T` whose goal-reference set
+   contains exactly that goal. A resource linked to any other goal is excluded.
+2. **Archive resources that have no active goals left.** After the first step,
+   archive every non-archived `W`, `D`, `Q`, or `B` whose goal-reference set is
+   non-empty but contains no non-archived goal. The closing goal counts as
+   archived for this test. Consequently, a shared resource is archived when its
+   last active goal is archived. A resource whose goals were all archived
+   earlier is archived during the next archive operation.
+
+Themes are archived only as members of the goal-exclusive set. Discoveries (`Y`) and
+areas (`A`) are never archived. A node with an empty goal-reference set is not
+archived by the second step.
+
+Both sets are computed before any mutation. Session guards are checked over both
+sets at the same time. If any affected progress `W` is held by a foreign
+session, the operation archives nothing. Archive does not rewrite `goals`
+fields: references from an archived resource to archived goals remain valid.
+Archived nodes are excluded from algebra and read paths by default.
 
 A successful archive appends:
 
@@ -671,7 +689,8 @@ A successful archive appends:
 { "op": "archive", "id": "G-NN", "ids": ["..."] }
 ```
 
-as the `inv` payload of an audit-only `archive` record.
+as the `inv` payload of an audit-only `archive` record. The `ids` list contains
+the goal-exclusive set and the resources archived by the second step.
 
 ### 7.4 Discovery revalidation and decay
 

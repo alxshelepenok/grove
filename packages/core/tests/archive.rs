@@ -658,3 +658,43 @@ fn cmd_check_ok_text_and_json() {
     assert_eq!(v.get("ok").and_then(|x| x.as_bool()), Some(true));
     assert_eq!(v.get("errors").and_then(|x| x.as_arr()).unwrap().len(), 0);
 }
+
+#[test]
+fn archive_orphan_ids_shared_pair_retires_with_last_goal() {
+    let mut st = State::default();
+    let mut g1 = plain(Kind::G, "G-01", "verified");
+    g1.archived = true;
+    put(&mut st, g1);
+    put(&mut st, plain(Kind::G, "G-02", "verified"));
+    let mut w1 = work("W-01", "feature", "done", "clear");
+    reflist(&mut w1, "goals", &["G-01", "G-02"]);
+    put(&mut st, w1);
+    assert!(archive_orphan_ids(&st, "G-01").is_empty());
+    let orphans = archive_orphan_ids(&st, "G-02");
+    let want: BTreeSet<String> = ["W-01"].iter().map(|s| s.to_string()).collect();
+    assert_eq!(orphans, want);
+}
+
+#[test]
+fn archive_orphan_ids_covers_transitive_d_and_skips_goal_less_and_themes() {
+    let mut st = State::default();
+    let mut g1 = plain(Kind::G, "G-01", "verified");
+    g1.archived = true;
+    put(&mut st, g1);
+    put(&mut st, plain(Kind::G, "G-02", "verified"));
+    let mut w1 = work("W-01", "feature", "done", "clear");
+    reflist(&mut w1, "goals", &["G-01", "G-02"]);
+    single(&mut w1, "theme", "T-01");
+    put(&mut st, w1);
+    put(&mut st, plain(Kind::D, "D-01", "accepted"));
+    put(&mut st, plain(Kind::T, "T-01", "open"));
+    edge(&mut st, "W-01", "implements", "D-01");
+    edge(&mut st, "T-01", "causes", "W-01");
+    let mut orphan = work("W-02", "bug", "proposed", "clear");
+    put(&mut st, orphan);
+    let orphans = archive_orphan_ids(&st, "G-02");
+    let want: BTreeSet<String> = ["W-01", "D-01"].iter().map(|s| s.to_string()).collect();
+    assert_eq!(orphans, want);
+    assert!(!orphans.contains("T-01"));
+    assert!(!orphans.contains("W-02"));
+}

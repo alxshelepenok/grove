@@ -120,6 +120,30 @@ function exclusive_archive_ids(st::State, gid::String)::Set{String}
     seen
 end
 
+"""IDs of active `w`/`d`/`q`/`b` whose every goal citation is archived once `gid` closes: the raw goal-reference set is non-empty while no live citation remains, so these shared resources retire together with the last goal. Themes, discoveries, areas and goal-less nodes never appear; `goals` fields stay untouched."""
+function archive_orphan_ids(st::State, gid::AbstractString)::Set{String}
+    refs = goal_reference_sets(st)
+    out = Set{String}()
+    for kind in (:w, :d, :q, :b)
+        for n in listnodes(st, kind)
+            n.archived && continue
+            raw = get(refs, n.id, nothing)
+            (raw === nothing || isempty(raw)) && continue
+            live = false
+            for g in raw
+                gg = get(st.nodes, g, nothing)
+                (gg === nothing || gg.kind !== :g) && continue
+                gg.archived && continue
+                g == gid && continue
+                live = true
+                break
+            end
+            live || push!(out, n.id)
+        end
+    end
+    out
+end
+
 function distill_linked_da_ids(st::State, mass::Set{String})::Vector{String}
     out = Set{String}()
     for e in st.edges

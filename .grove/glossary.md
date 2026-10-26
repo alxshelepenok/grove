@@ -29,3 +29,4 @@
 | embedded-skill | docs/skills is the single corpus embedded into the grove binary and packed into the signed grove-skill.tar.gz archive; MCP-only surfaces stay Rust | Y-49 |
 | branch-naming | Branch names carry a commit-type prefix and a node or version identifier (feature/w-190, chore/version-vX.Y.Z) | Y-57 |
 | markdown-reflow | Tracked markdown prose is reflowed by prettier to a hard 80-column limit via bin/md-format.sh; machine-parsed markdown (vendored PROVENANCE.md) and .grove/ stay excluded | Y-59 |
+| terminal-integrity | Closed-state discipline across the lifecycle: terminal nodes refuse user-fired set/field/fitness/evidence (undo, repair, renumber and derivations are sanctioned lanes), a validated assumption stays falsifiable, derived goal status follows the live aggregate, and archiving the last goal retires orphaned shared resources with their goals fields intact | T-12 |
