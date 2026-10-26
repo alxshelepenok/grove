@@ -37,6 +37,51 @@ function capture_cmd(f)
     rc, out, err
 end
 
+function validate_diag_object(d::AbstractDict)::Bool
+    haskey(d, "severity") && haskey(d, "code") && haskey(d, "text") || return false
+    d["severity"] in ("error", "warning", "info") || error("bad diagnostic severity $(d["severity"])")
+    d["code"] in string.(G.DIAG_CODES) || error("bad diagnostic code $(d["code"])")
+    d["text"] isa AbstractString || error("diagnostic text must be a string")
+    haskey(d, "details") && !(d["details"] isa AbstractDict) &&
+        error("diagnostic details must be an object")
+    true
+end
+
+function validate_json_diagnostics(x)::Nothing
+    if x isa AbstractDict
+        validate_diag_object(x)
+        for v in values(x)
+            validate_json_diagnostics(v)
+        end
+    elseif x isa AbstractVector
+        for v in x
+            validate_json_diagnostics(v)
+        end
+    end
+    nothing
+end
+
+function validate_json_output_diagnostics(text::AbstractString)::Nothing
+    startswith(strip(text), "{") || return nothing
+    payload = try
+        JSON.parse(text)
+    catch
+        nothing
+    end
+    payload === nothing || validate_json_diagnostics(payload)
+    nothing
+end
+
+function validate_rendered_diagnostics(text::AbstractString)::Nothing
+    for line in split(text, '\n'; keepempty=false)
+        toks = split(strip(line))
+        length(toks) >= 3 || continue
+        toks[1] in ("error", "warning", "info") || continue
+        toks[2] in string.(G.DIAG_CODES) || error("bad diagnostic code $(toks[2])")
+    end
+    nothing
+end
+
 function normalize_text(s::AbstractString, paths, tokens)::String
     s = replace(s, "\r\n" => "\n")
     s = replace(s, "\r" => "\n")
@@ -137,6 +182,8 @@ function exec_step(sc, i::Int, raw::Vector{String}, root::AbstractString,
         args = [sub(a) for a in step]
         rc, out, err = capture_cmd(() -> G.main(vcat(args, ["--root=$target"])))
     end
+    validate_rendered_diagnostics(err)
+    validate_json_output_diagnostics(out)
     lockp = joinpath(target, ".grove", "state.lock")
     jp = joinpath(target, ".grove", "journal.log")
     locktxt = isfile(lockp) ? norm(read(lockp, String)) : nothing

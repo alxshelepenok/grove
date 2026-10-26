@@ -1,3 +1,4 @@
+use crate::message::{Code, Diagnostic};
 use crate::model::{Kind, Node};
 use crate::times::{parse_rfc3339_utc_second, unix_now, utc_stamp_second};
 use sha2::{Digest, Sha256};
@@ -44,21 +45,31 @@ pub fn progress_session_display_stale(w: &Node, eff: &str) -> bool {
     session_claim_age_stale(w)
 }
 
-pub fn session_release_denied_message(w: &Node) -> String {
-    format!(
-        "I11/session: cannot release {}: token differs and claim is fresh (<{}h); pass the owning GROVE_SESSION/--session, use `grove resume`, or wait",
-        w.id, SESSION_DISPLAY_STALE_AFTER_HOURS
+pub fn session_release_denied_message(w: &Node) -> Diagnostic {
+    Diagnostic::error_details(
+        Code::Invariant,
+        &format!(
+            "cannot release {}, the token differs and the claim is fresh (under {}h)",
+            w.id, SESSION_DISPLAY_STALE_AFTER_HOURS
+        ),
+        vec![(
+            "recover".to_string(),
+            "pass the owning GROVE_SESSION or --session, adopt the claim, or wait".to_string(),
+        )],
     )
 }
 
-pub fn session_mutate_denied_message(w: &Node) -> String {
-    format!(
-        "I11/session: {} is `progress` and owned by another session; try `grove resume {}` after adopting, or coordinate a `grove handoff`",
-        w.id, w.id
+pub fn session_mutate_denied_message(w: &Node) -> Diagnostic {
+    Diagnostic::error(
+        Code::Invariant,
+        &format!(
+            "{} is progress and owned by another session, adopt the claim or coordinate a handoff",
+            w.id
+        ),
     )
 }
 
-pub fn session_denial_progress_mutate(w: &Node, eff: &str) -> Option<String> {
+pub fn session_denial_progress_mutate(w: &Node, eff: &str) -> Option<Diagnostic> {
     if w.kind != Kind::W {
         return None;
     }
@@ -74,7 +85,7 @@ pub fn session_denial_progress_mutate(w: &Node, eff: &str) -> Option<String> {
     Some(session_mutate_denied_message(w))
 }
 
-pub fn session_denial_progress_release(w: &Node, eff: &str) -> Option<String> {
+pub fn session_denial_progress_release(w: &Node, eff: &str) -> Option<Diagnostic> {
     if w.kind != Kind::W {
         return None;
     }

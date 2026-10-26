@@ -6,15 +6,15 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 47 | validated B 1 · answered Q 3 · accepted D 23 · active Discovery 20 |
-| V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
+| C (content) | 52 | validated B 1 · answered Q 6 · accepted D 25 · active Discovery 20 |
+| V (uncertainty) | 14 | open Q 3 · pending B 4 · W below DoR 2 · uncovered surface 5 |
 
 ## Areas
 
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
 | A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-02 | API | 4 | 3 | C: validated B 0 · answered Q 0 · accepted D 3 · active Discovery 1; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
+| A-02 | API | 10 | 7 | C: validated B 0 · answered Q 0 · accepted D 5 · active Discovery 5; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 5 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 11 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 4; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -33,12 +33,13 @@
 | G-45 | Decision immutability holds for accepted decisions across CLI mutations in both implementations | count; current=3 target=3 | verified |
 | G-46 | Supersession completes the old decision in one command | count; current= target=1 | unverified |
 | G-47 | Accepted-decision guard texts are precise and single-sourced | count; current= target=2 | unverified |
+| G-52 | Unify result formats across CLI and MCP surfaces | manual | unverified |
 
 ## Work items
 
 | ID | Type | Title | Goals | Cynefin | DoR | Status | Critical |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed | ★ |
+| W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed |  |
 | W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-17 | complicated | ⊥ | proposed |  |
 | W-192 | feature | Parse mcp.toml tool config | G-44 | clear | ⊤ | done |  |
 | W-193 | feature | Filter grove-mcp tools by role | G-44 | clear | ⊤ | done |  |
@@ -61,6 +62,12 @@
 | W-210 | bug | Guard text for rejected attempts stops advising supersession | G-47 | clear | ⊤ | ready |  |
 | W-211 | refactor | Accepted-decision predicate collapses into a single helper | G-47 | clear | ⊤ | ready |  |
 | W-212 | refactor | Test catalogs derive from production field catalogs | G-45 | clear | ⊤ | done |  |
+| W-226 | feature | Carry structured diagnostics in Rust results | G-52 | complicated | ⊤ | done |  |
+| W-227 | feature | Match structured diagnostics in Julia | G-52 | complicated | ⊤ | ready | ★ |
+| W-228 | feature | Expose neutral diagnostics through MCP | G-52 | complicated | ⊤ | ready |  |
+| W-229 | feature | Pin diagnostic contract in specification and conformance | G-52 | complicated | ⊤ | ready | ★ |
+| W-230 | feature | Verify unified diagnostics end to end | G-52 | complicated | ⊤ | ready | ★ |
+| W-231 | feature | Collapse diagnostic codes into four semantic categories | G-52 | complicated | ⊤ | done |  |
 
 ## Decisions
 
@@ -90,6 +97,8 @@
 | D-54 | I8 (chaotic-question human-only transitions) stays at the skill layer | accepted |  |
 | D-55 | Archive cascade rewrites goal citations and archives the orphaned shared resource | accepted | D-53 |
 | D-56 | Archive completion sweep takes the shared resource with the last goal | accepted | D-55 |
+| D-57 | Use structured interface-neutral diagnostics | accepted |  |
+| D-58 | Classify diagnostics by four semantic categories | accepted |  |
 
 ## Open questions
 
@@ -100,6 +109,10 @@
 | Q-07 | How Neo4j integrates into Grove: role, pattern, and boundaries | complicated |  | answered |
 | Q-11 | Cone lattice lines cut one-pixel breaks into edges: which fix removes the artifact? | complicated |  | answered |
 | Q-15 | Where should natural id ordering be fixed: core listnodes or desktop views? | clear |  | answered |
+| Q-17 | Which error-message format classes exist across rust CLI commands | clear | G-52 | answered |
+| Q-18 | How does the MCP result envelope differ from the CLI result contract | clear | G-52 | answered |
+| Q-19 | What does the specification require for result formats and MCP output | clear | G-52 | answered |
+| Q-20 | Where do julia and rust outputs diverge outside corpus coverage | complicated | G-52 | open |
 
 ## Assumptions
 
@@ -197,7 +210,8 @@ graph TD
   G_45["G-45: Decision immutability holds for accepted decisions across CLI mutations in both implementations"]:::goal
   G_46["G-46: Supersession completes the old decision in one command"]:::goal
   G_47["G-47: Accepted-decision guard texts are precise and single-sourced"]:::goal
-  W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
+  G_52["G-52: Unify result formats across CLI and MCP surfaces"]:::goal
+  W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_192["W-192: Parse mcp.toml tool config"]:::done
   W_193["W-193: Filter grove-mcp tools by role"]:::done
@@ -220,6 +234,12 @@ graph TD
   W_210["W-210: Guard text for rejected attempts stops advising supersession"]:::ready
   W_211["W-211: Accepted-decision predicate collapses into a single helper"]:::ready
   W_212["W-212: Test catalogs derive from production field catalogs"]:::done
+  W_226["W-226: Carry structured diagnostics in Rust results"]:::done
+  W_227["W-227: Match structured diagnostics in Julia"]:::ready,critical
+  W_228["W-228: Expose neutral diagnostics through MCP"]:::ready
+  W_229["W-229: Pin diagnostic contract in specification and conformance"]:::ready,critical
+  W_230["W-230: Verify unified diagnostics end to end"]:::ready,critical
+  W_231["W-231: Collapse diagnostic codes into four semantic categories"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
@@ -244,11 +264,17 @@ graph TD
   D_54["D-54: I8 (chaotic-question human-only transitions) stays at the skill layer"]:::decision
   D_55["D-55: Archive cascade rewrites goal citations and archives the orphaned shared resource"]:::decision
   D_56["D-56: Archive completion sweep takes the shared resource with the last goal"]:::decision
+  D_57["D-57: Use structured interface-neutral diagnostics"]:::decision
+  D_58["D-58: Classify diagnostics by four semantic categories"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_07["Q-07: How Neo4j integrates into Grove: role, pattern, and boundaries"]:::question
   Q_11["Q-11: Cone lattice lines cut one-pixel breaks into edges: which fix removes the artifact?"]:::question
   Q_15["Q-15: Where should natural id ordering be fixed: core listnodes or desktop views?"]:::question
+  Q_17["Q-17: Which error-message format classes exist across rust CLI commands"]:::question
+  Q_18["Q-18: How does the MCP result envelope differ from the CLI result contract"]:::question
+  Q_19["Q-19: What does the specification require for result formats and MCP output"]:::question
+  Q_20["Q-20: Where do julia and rust outputs diverge outside corpus coverage"]:::question
   B_01["B-01: Surprise rate declines as C grows"]:::assumption
   B_02["B-02: Rework proxies are lower on covered surfaces than uncovered"]:::assumption
   B_03["B-03: Distill yield stays above noise at archive gates"]:::assumption
@@ -365,6 +391,10 @@ graph TD
   Q_14 -->|asks| W_177
   Q_14 -->|asks| W_179
   Q_16 -->|asks| W_189
+  Q_17 -->|asks| G_52
+  Q_18 -->|asks| G_52
+  Q_19 -->|asks| G_52
+  Q_20 -->|asks| G_52
   T_02 -->|causes| W_17
   T_02 -->|causes| W_85
   T_03 -->|causes| W_85
@@ -491,6 +521,20 @@ graph TD
   W_214 -->|produces| Y_61
   W_216 -->|produces| Y_61
   W_222 -->|produces| Y_61
+  W_226 ==>|blocks| W_228
+  W_226 -->|implements| D_57
+  W_227 ==>|blocks| W_229
+  W_227 -->|implements| D_57
+  W_228 ==>|blocks| W_229
+  W_228 -->|implements| D_57
+  W_229 ==>|blocks| W_230
+  W_229 -->|implements| D_57
+  W_230 -->|implements| D_57
+  W_231 ==>|blocks| W_227
+  W_231 ==>|blocks| W_228
+  W_231 ==>|blocks| W_229
+  W_231 ==>|blocks| W_230
+  W_231 -->|implements| D_58
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78
@@ -565,7 +609,7 @@ graph TD
   Y_56 -->|distills| Q_14
   Y_57 -->|distills| D_38
   Y_58 -->|distills| D_39
-  class W_04 critical
+  class W_227,W_229,W_230 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff
 classDef theme fill:#2a4a3a,color:#fff

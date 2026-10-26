@@ -2,8 +2,9 @@ use crate::cli::{abspath, journal_session_token, json_cli_out, load, persist, Cl
 use crate::ids::next_id;
 use crate::journal::{jinv_rm_node, stamp_journal_session, wrap_journal_record};
 use crate::json::{JVal, JuliaDict};
+use crate::message::{Code, Diagnostic};
 use crate::model::{Kind, Node};
-use crate::ops::{kw_get, OpResult, EXIT_ERR, EXIT_GUARD, EXIT_NOTFOUND};
+use crate::ops::{kw_get, usage_fail, OpResult, EXIT_ERR, EXIT_GUARD, EXIT_NOTFOUND};
 use crate::renumber::glossary_terms;
 use crate::status::listnodes;
 use crate::times::{stamp_new_node, utc_stamp_second};
@@ -233,7 +234,7 @@ fn basename_normpath(p: &str) -> String {
     }
 }
 
-pub fn registry_note_open(root: &str, cmd: &str) -> Option<String> {
+pub fn registry_note_open(root: &str, cmd: &str) -> Option<Diagnostic> {
     if cmd != "init" && !Path::new(root).join(".grove").join("state.lock").is_file() {
         return None;
     }
@@ -241,9 +242,10 @@ pub fn registry_note_open(root: &str, cmd: &str) -> Option<String> {
     let mut reg = match registry_load(&rp) {
         Some(r) => r,
         None => {
-            return Some(format!(
-                "warning: malformed registry {}; registry features disabled",
-                rp.display()
+            return Some(Diagnostic::warning_details(
+                Code::System,
+                "malformed registry, registry features are disabled",
+                vec![("path".to_string(), rp.display().to_string())],
             ))
         }
     };
@@ -262,9 +264,10 @@ pub fn registry_note_open(root: &str, cmd: &str) -> Option<String> {
         }
     }
     if registry_save(&reg, &rp).is_err() {
-        return Some(format!(
-            "warning: could not write registry {}",
-            rp.display()
+        return Some(Diagnostic::warning_details(
+            Code::System,
+            "could not write the registry",
+            vec![("path".to_string(), rp.display().to_string())],
         ));
     }
     None
@@ -288,7 +291,7 @@ pub fn walk_up_root(start: &str) -> String {
     }
 }
 
-pub fn resolve_project_target(v: &str) -> Result<String, String> {
+pub fn resolve_project_target(v: &str) -> Result<String, Diagnostic> {
     if Path::new(v).is_dir() {
         return Ok(abspath(v));
     }
@@ -296,14 +299,17 @@ pub fn resolve_project_target(v: &str) -> Result<String, String> {
     if let Some(p) = registry_path_for_name(&reg, v) {
         return Ok(p);
     }
-    Err(format!("unknown project: {v}"))
+    Err(Diagnostic::error(
+        Code::Interface,
+        &format!("unknown project {v}"),
+    ))
 }
 
 pub fn resolve_root(
     default_root: &str,
     kw: &[(String, String)],
     root_given: bool,
-) -> Result<Option<String>, String> {
+) -> Result<Option<String>, Diagnostic> {
     if root_given {
         return Ok(Some(default_root.to_string()));
     }
@@ -331,9 +337,10 @@ pub fn cmd_projects(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> 
     let reg = match registry_load(&rp) {
         Some(reg) => reg,
         None => {
-            r.err.push_str(&format!(
-                "warning: malformed registry {}; registry features disabled\n",
-                rp.display()
+            r.push_diag(Diagnostic::warning_details(
+                Code::System,
+                "malformed registry, registry features are disabled",
+                vec![("path".to_string(), rp.display().to_string())],
             ));
             Vec::new()
         }
@@ -365,12 +372,15 @@ pub fn cmd_projects(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> 
 
 pub fn cmd_promote(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, "usage: grove promote Y-NN --to=<project>");
+        return usage_fail("promote", "usage: grove promote Y-NN --to=<project>");
     }
     let id = pos[0].clone();
     let to = kw_get(kw, "to");
     if to.map(|t| t.trim().is_empty()).unwrap_or(true) {
-        return OpResult::fail(EXIT_ERR, "promote: --to=<project> is required");
+        return OpResult::fail_diag(
+            EXIT_ERR,
+            Diagnostic::error(Code::Interface, "missing --to=<project>"),
+        );
     }
     let to = to.unwrap_or("");
     let st = match load(ctx, true) {
@@ -378,20 +388,29 @@ pub fn cmd_promote(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
         Err(e) => return e,
     };
     let Some(src) = st.nodes.get(&id) else {
-        return OpResult::fail(EXIT_NOTFOUND, &format!("not found: {id}"));
+        return OpResult::fail_diag(
+            EXIT_NOTFOUND,
+            Diagnostic::error(Code::Interface, &format!("not found {id}")),
+        );
     };
     if src.kind != Kind::Y {
-        return OpResult::fail(
+        return OpResult::fail_diag(
             EXIT_ERR,
-            &format!("promote: {id} is kind {}, not y", src.kind.as_str()),
+            Diagnostic::error(
+                Code::Interface,
+                &format!("{} is kind {}, not y", id, src.kind.as_str()),
+            ),
         );
     }
     let target_root = match resolve_project_target(to) {
         Ok(p) => p,
-        Err(msg) => return OpResult::fail(EXIT_NOTFOUND, &msg),
+        Err(d) => return OpResult::fail_diag(EXIT_NOTFOUND, d),
     };
     if abspath(&target_root) == abspath(&ctx.root) {
-        return OpResult::fail(EXIT_ERR, "promote: target is the source project");
+        return OpResult::fail_diag(
+            EXIT_ERR,
+            Diagnostic::error(Code::Interface, "target is the source project"),
+        );
     }
     let tctx = CliCtx {
         root: target_root.clone(),
@@ -400,11 +419,15 @@ pub fn cmd_promote(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
         no_render: ctx.no_render,
     };
     if !tctx.lockpath().is_file() {
-        return OpResult::fail(
+        return OpResult::fail_diag(
             EXIT_ERR,
-            &format!(
-                "promote: target lock not found: {} (run `grove init --root={target_root}`)",
-                tctx.lockpath().display()
+            Diagnostic::error_details(
+                Code::System,
+                "target lock is absent, initialize the target project first",
+                vec![
+                    ("path".to_string(), tctx.lockpath().display().to_string()),
+                    ("root".to_string(), target_root),
+                ],
             ),
         );
     }
@@ -415,26 +438,19 @@ pub fn cmd_promote(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
         promote_into_target(ctx, src, &tctx)
     }) {
         Ok((mut r, warnings)) => {
-            let mut pre = String::new();
-            for w in &warnings {
-                pre.push_str(w);
-                pre.push('\n');
-            }
-            r.err = format!("{pre}{}", r.err);
+            let mut pre = warnings;
+            pre.extend(r.diags.drain(..));
+            r.diags = pre;
             r
         }
         Err(t) => {
-            let mut err = String::new();
-            for w in &t.warnings {
-                err.push_str(w);
-                err.push('\n');
-            }
-            err.push_str(&t.msg);
-            err.push('\n');
+            let mut diags = t.warnings;
+            diags.push(t.diag);
             OpResult {
                 code: EXIT_GUARD,
                 out: String::new(),
-                err,
+                diags,
+                raw_err: String::new(),
                 journal: Vec::new(),
             }
         }
@@ -452,9 +468,9 @@ fn promote_into_target(sctx: &CliCtx, src: &Node, tctx: &CliCtx) -> OpResult {
     let origin_id = src.id.clone();
     for x in listnodes(&tst, Kind::Y, false) {
         if x.attr("origin_project") == origin_project && x.attr("origin_id") == origin_id {
-            return OpResult::fail(
+            return OpResult::fail_diag(
                 EXIT_GUARD,
-                &format!("promote: already promoted as {}", x.id),
+                Diagnostic::error(Code::Invariant, &format!("already promoted as {}", x.id)),
             );
         }
     }

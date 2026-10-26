@@ -13,3 +13,20 @@ end
     @test got == "<ts> sha256:<sha> <sha> session=<session> <root>/.grove <root>/x\nkeep\n"
     @test Conformance.normalize_text(got, paths, tokens) == got
 end
+
+@testset "conformance: diagnostic validators accept only four categories" begin
+    for code in string.(M.DIAG_CODES)
+        d = Dict("severity" => "error", "code" => code, "text" => "message")
+        @test Conformance.validate_diag_object(d)
+        Conformance.validate_json_diagnostics(d)
+        Conformance.validate_rendered_diagnostics("error $code message\n")
+    end
+    for legacy in ("GENERAL", "OTHER", "INFO", "ERR", "NOT_FOUND", "DOR_NOT_SATISFIED")
+        d = Dict("severity" => "error", "code" => legacy, "text" => "message")
+        @test_throws ErrorException Conformance.validate_diag_object(d)
+        @test_throws ErrorException Conformance.validate_rendered_diagnostics("error $legacy message\n")
+    end
+    @test !Conformance.validate_diag_object(Dict("command" => "ready", "items" => []))
+    Conformance.validate_rendered_diagnostics("grove help and documents: remain unchanged\n")
+    Conformance.validate_json_output_diagnostics("not JSON")
+end

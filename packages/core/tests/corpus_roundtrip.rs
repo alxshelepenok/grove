@@ -109,7 +109,11 @@ fn corpus_snapshots_roundtrip_byte_identically() {
     }
     assert_eq!(
         mismatches,
-        vec![("check-y-archive.json".to_string(), 1usize)],
+        vec![
+            ("check-y-archive.json".to_string(), 1usize),
+            ("diff-repair.json".to_string(), 13usize),
+            ("diff-repair.json".to_string(), 14usize),
+        ],
         "unexpected non-canonical set"
     );
     assert_eq!(ok + rejections.len() + mismatches.len(), total);

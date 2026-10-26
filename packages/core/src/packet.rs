@@ -6,8 +6,9 @@ use crate::cli::{json_cli_out, load, CliCtx};
 use crate::dor::{dor, dor_breakdown, ready};
 use crate::ids::id_cmp;
 use crate::json::{JVal, JuliaDict};
+use crate::message::Code;
 use crate::model::{Kind, Node, State};
-use crate::ops::{kw_get, OpResult, EXIT_ERR, EXIT_NOTFOUND};
+use crate::ops::{kw_get, usage_fail, OpResult, EXIT_ERR, EXIT_NOTFOUND};
 use std::collections::BTreeSet;
 
 fn jsym(v: &Option<String>) -> &str {
@@ -278,7 +279,7 @@ pub fn cmd_next(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> OpRe
     let rs = ready(&st);
     if rs.is_empty() {
         let mut r = OpResult::ok();
-        r.err = "no ready work items\n".to_string();
+        r.push_info(Code::Operational, "no ready work items");
         return r;
     }
     let cp: BTreeSet<String> = critical_path(&st).into_iter().collect();
@@ -302,7 +303,7 @@ pub fn cmd_next(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> OpRe
 
 pub fn cmd_packet(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, "usage: grove packet <W-NN>");
+        return usage_fail("packet", "usage: grove packet <W-NN>");
     }
     let mut depth = 4usize;
     let mut maxcount = 50usize;
@@ -310,11 +311,15 @@ pub fn cmd_packet(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpRe
         let v: i64 = match raw.parse() {
             Ok(v) => v,
             Err(_) => {
-                return OpResult::fail(EXIT_ERR, "bad --cone-depth (expected integer)");
+                return OpResult::fail(
+                    EXIT_ERR,
+                    Code::Interface,
+                    "bad --cone-depth (expected integer)",
+                );
             }
         };
         if v < 1 {
-            return OpResult::fail(EXIT_ERR, "--cone-depth must be ≥ 1");
+            return OpResult::fail(EXIT_ERR, Code::Interface, "--cone-depth must be ≥ 1");
         }
         depth = v as usize;
     }
@@ -322,11 +327,15 @@ pub fn cmd_packet(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpRe
         let v: i64 = match raw.parse() {
             Ok(v) => v,
             Err(_) => {
-                return OpResult::fail(EXIT_ERR, "bad --cone-max (expected integer)");
+                return OpResult::fail(
+                    EXIT_ERR,
+                    Code::Interface,
+                    "bad --cone-max (expected integer)",
+                );
             }
         };
         if v < 1 {
-            return OpResult::fail(EXIT_ERR, "--cone-max must be ≥ 1");
+            return OpResult::fail(EXIT_ERR, Code::Interface, "--cone-max must be ≥ 1");
         }
         maxcount = v as usize;
     }
@@ -335,10 +344,10 @@ pub fn cmd_packet(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpRe
         Err(e) => return e,
     };
     let Some(n) = st.nodes.get(&pos[0]) else {
-        return OpResult::fail(EXIT_NOTFOUND, "not found");
+        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, "not found");
     };
     if n.kind != Kind::W {
-        return OpResult::fail(EXIT_ERR, "not a work item");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "not a work item");
     }
     let cone = kw_get(kw, "cone").is_some();
     let mut pkt = packet(&st, n);

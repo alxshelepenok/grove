@@ -79,7 +79,7 @@ fn stats_scripted_gate_step_matches_fixture() {
     ctx.quiet = true;
     let r = cmd_gate(&ctx, &[], &[]);
     assert_eq!(r.code, 0);
-    assert_eq!(r.err, "");
+    assert_eq!(r.err_rendered(false), "");
     assert_eq!(r.out, step_field(&sc, 16, "stdout"));
     let lines = journal_lines(&dir);
     assert_eq!(lines.len(), 16);
@@ -144,7 +144,7 @@ fn gate_scenario_two_runs_match_fixture() {
     pin("2031-01-02T00:00:00Z");
     let r1 = cmd_gate(&ctx, &[], &kw(&[("theta", "0")]));
     assert_eq!(r1.code, 0);
-    assert_eq!(r1.err, "");
+    assert_eq!(r1.err_rendered(false), "");
     assert_eq!(r1.out, step_field(&sc, 25, "stdout"));
     let want_last1 = step_field(&sc, 25, "journal");
     let tok = journal_session_token(&ctx, &kw(&[("theta", "0")]));
@@ -159,7 +159,7 @@ fn gate_scenario_two_runs_match_fixture() {
     pin("2031-01-03T00:00:00Z");
     let r2 = cmd_gate(&ctx, &[], &kw(&[("theta", "0")]));
     assert_eq!(r2.code, 0);
-    assert_eq!(r2.err, "");
+    assert_eq!(r2.err_rendered(false), "");
     assert_eq!(
         r2.out,
         step_field(&sc, 26, "stdout").replace("<ts>", "2031-01-02T00:00:00Z")
@@ -303,16 +303,22 @@ fn cmd_gate_arg_errors() {
     let dir = tmpdir("gate_args");
     let ctx = CliCtx::new(dir.to_string_lossy().into_owned());
     let cases: [(&[(&str, &str)], &str); 4] = [
-        (&[("theta", "abc")], "bad --theta (expected integer)\n"),
-        (&[("theta", "-1")], "--theta must be ≥ 0\n"),
-        (&[("n", "x")], "bad --n (expected integer)\n"),
-        (&[("n", "0")], "--n must be ≥ 1\n"),
+        (
+            &[("theta", "abc")],
+            "error INTERFACE bad --theta (expected integer)\n",
+        ),
+        (&[("theta", "-1")], "error INTERFACE --theta must be ≥ 0\n"),
+        (
+            &[("n", "x")],
+            "error INTERFACE bad --n (expected integer)\n",
+        ),
+        (&[("n", "0")], "error INTERFACE --n must be ≥ 1\n"),
     ];
     for (pairs, want) in cases {
         let r = cmd_gate(&ctx, &[], &kw(pairs));
         assert_eq!(r.code, 1);
         assert_eq!(r.out, "");
-        assert_eq!(r.err, want);
+        assert_eq!(r.err_rendered(false), want);
     }
     let _ = std::fs::remove_dir_all(&dir);
 }
@@ -413,7 +419,7 @@ fn cmd_gate_text_baseline_and_negative_delta() {
     let ctx = CliCtx::new(dir.to_string_lossy().into_owned());
     let r = cmd_gate(&ctx, &[], &[]);
     assert_eq!(r.code, 0);
-    assert_eq!(r.err, "");
+    assert_eq!(r.err_rendered(false), "");
     assert_eq!(
         r.out,
         "baseline: 2030-12-31T00:00:00Z\ntreewidth: 0 (Δ -3)\ndone since baseline: 0\ndue: false\nwould distill: none\n"
@@ -437,7 +443,7 @@ fn cmd_gate_due_true_and_quiet_still_prints() {
     ctx.quiet = true;
     let r = cmd_gate(&ctx, &[], &kw(&[("n", "1")]));
     assert_eq!(r.code, 0);
-    assert_eq!(r.err, "");
+    assert_eq!(r.err_rendered(false), "");
     assert_eq!(
         r.out,
         "baseline: none\ntreewidth: 0 (Δ +0)\ndone since baseline: 1\ndue: true\nwould distill: none\n"

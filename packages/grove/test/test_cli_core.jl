@@ -216,11 +216,11 @@ end
 
         rc, err = capture_stderr_core(["set", "W-01", "status=progress", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
-        @test occursin("I5: predecessors not cleared", err)
+        @test occursin("predecessors not cleared", err)
 
         rc, err = capture_stderr_core(["set", "W-01", "status=done", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
-        @test occursin("I5: predecessors not cleared", err)
+        @test occursin("predecessors not cleared", err)
 
         @test M.main(["set", "Q-01", "status=answered", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["evidence", "W-01", "e", "--root=$tmp", "--quiet"]) == 0
@@ -245,7 +245,7 @@ end
 
         rc, err = capture_stderr_core(["set", "W-01", "status=done", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
-        @test occursin("I2: W-01 is a done spike but `produces` is empty", err)
+        @test occursin("W-01 is a done spike but produces is empty", err)
 
         @test M.main(["add", "d", "--title=Finding", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["link", "W-01", "produces", "D-01", "--root=$tmp", "--quiet"]) == 0
@@ -318,7 +318,7 @@ end
                      ["fitness", "W-01", "G-01", "+1"])
             rc, err = capture_stderr_core([args..., "--root=$tmp"])
             @test rc == M.EXIT_GUARD
-            @test occursin("W-01 is terminal (done); create a successor node or use grove undo", err)
+            @test occursin("error INVARIANT W-01 is terminal (done)", err)
         end
 
         @test M.main(["undo", "--root=$tmp", "--quiet"]) == 0
@@ -338,7 +338,7 @@ end
         @test M.main(["set", "D-02", "status=accepted", "--root=$tmp", "--quiet"]) == 0
         rc, err = capture_stderr_core(["set", "D-02", "title=X", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
-        @test occursin("decision D-02 is accepted; create a new D with --supersedes", err)
+        @test occursin("error INVARIANT decision D-02 is accepted, create a successor D with --supersedes", err)
         @test M.main(["add", "d", "--title=Newer", "--supersedes=D-02", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "D-03", "status=accepted", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "D-02", "status=superseded", "--root=$tmp", "--quiet"]) == 0
@@ -369,7 +369,7 @@ end
 
         rc, err = capture_stderr_core(["set", "W-01", "status=ready", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
-        @test occursin("I9: W-01 cannot enter `ready`", err)
+        @test occursin("W-01 cannot enter ready", err)
         @test occursin("B-01 (proposed)", err)
 
         @test M.main(["set", "B-01", "status=validated", "--root=$tmp", "--quiet"]) == 0
@@ -378,7 +378,7 @@ end
         @test M.main(["set", "B-01", "status=proposed", "--root=$tmp", "--quiet"]) == 0
         rc, err = capture_stderr_core(["check", "--root=$tmp"])
         @test rc == 3
-        @test occursin("I9: W-01 is `ready` but B-01 is `proposed`", err)
+        @test occursin("W-01 is ready but B-01 is proposed", err)
 
         @test M.main(["add", "w", "--type=bug", "--cynefin=clear", "--goals=G-01",
                       "--title=Bugfix", "--root=$tmp", "--quiet"]) == 0

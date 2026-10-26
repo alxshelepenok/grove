@@ -228,7 +228,8 @@ fn run_step(roots: &Roots, raw: &[String]) -> (i32, String, String) {
     let mut args = step;
     args.push(format!("--root={}", target.to_string_lossy()));
     let r = run_cli(&args);
-    (r.code, r.out, r.err)
+    let quiet = args.iter().any(|a| a == "--quiet");
+    (r.code, r.out.clone(), r.err_rendered(quiet))
 }
 
 fn step_cmd(raw: &[String]) -> &str {
@@ -253,6 +254,8 @@ fn replay(name: &str, skip: &dyn Fn(usize, &[String]) -> bool) {
             continue;
         }
         let (code, out, err) = run_step(&roots, &raw);
+        common::assert_json_output_diag_codes(&out);
+        common::assert_rendered_diag_codes(&err);
         assert_eq!(
             norm(&out, &paths),
             step_field(&sc, i, "stdout"),
@@ -413,7 +416,11 @@ fn resolve_project_target_cases() {
     std::fs::create_dir_all(&home).unwrap();
     let _env = EnvGuard::new(&home);
     let err = resolve_project_target("definitely-not-a-grove-project-xyz").unwrap_err();
-    assert_eq!(err, "unknown project: definitely-not-a-grove-project-xyz");
+    assert_eq!(err.code, Code::Interface);
+    assert_eq!(
+        err.text,
+        "unknown project definitely-not-a-grove-project-xyz"
+    );
     let proj = dir.join("main");
     std::fs::create_dir_all(&proj).unwrap();
     let ps = proj.to_string_lossy().into_owned();
@@ -473,15 +480,17 @@ fn malformed_registry_warning() {
     let _env = EnvGuard::new(&home);
     std::fs::write(registry_path(), "[[projects]]\nname = \"unterminated\n").unwrap();
     assert!(registry_load(&registry_path()).is_none());
-    let want = format!(
-        "warning: malformed registry {}; registry features disabled",
-        registry_path().display()
+    let want_diag = grove_core::Diagnostic::warning_details(
+        Code::System,
+        "malformed registry, registry features are disabled",
+        vec![("path".to_string(), registry_path().display().to_string())],
     );
+    let want = want_diag.render();
     let ctx = CliCtx::new(dir.to_string_lossy().into_owned());
     let r = cmd_projects(&ctx, &[], &[]);
     assert_eq!(r.code, 0);
     assert_eq!(r.out, "");
-    assert_eq!(r.err, format!("{want}\n"));
+    assert_eq!(r.err_rendered(false), format!("{want}\n"));
     let jctx = CliCtx {
         root: ctx.root.clone(),
         quiet: false,
@@ -491,13 +500,13 @@ fn malformed_registry_warning() {
     let r = cmd_projects(&jctx, &[], &[]);
     assert_eq!(r.code, 0);
     assert_eq!(r.out, "{\"command\":\"projects\",\"projects\":[]}\n");
-    assert_eq!(r.err, format!("{want}\n"));
+    assert_eq!(r.err_rendered(false), format!("{want}\n"));
     let root = dir.join("main");
     std::fs::create_dir_all(root.join(".grove")).unwrap();
     std::fs::write(root.join(".grove").join("state.lock"), "").unwrap();
     assert_eq!(
         registry_note_open(&root.to_string_lossy(), "projects"),
-        Some(want)
+        Some(want_diag)
     );
     std::fs::remove_dir_all(&dir).ok();
 }

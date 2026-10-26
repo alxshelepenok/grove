@@ -941,12 +941,12 @@ fn build_argv(
 
 fn tool_result_json(r: &OpResult) -> String {
     let mut text = r.out.trim_end().to_string();
-    let errt = r.err.trim_end();
+    let errt = r.err_rendered(false).trim_end().to_string();
     if !errt.is_empty() {
         if !text.is_empty() {
             text.push_str("\n\n--- stderr ---\n");
         }
-        text.push_str(errt);
+        text.push_str(&errt);
     }
     if r.code != EXIT_OK {
         if !text.is_empty() {

@@ -97,13 +97,16 @@ fn assert_step(sc: &serde_json::Value, i: usize, dir: &PathBuf) {
         step_exit(sc, i),
         "{name} step {i} {args:?} exit"
     );
+    let quiet = args.iter().any(|a| a == "--quiet");
+    common::assert_json_output_diag_codes(&r.out);
+    common::assert_rendered_diag_codes(&r.err_rendered(quiet));
     assert_eq!(
-        norm(r.out),
+        norm(r.out.clone()),
         norm(step_field(sc, i, "stdout").replace("<root>", &root)),
         "{name} step {i} {args:?} stdout"
     );
     assert_eq!(
-        norm(r.err),
+        norm(r.err_rendered(quiet)),
         norm(step_field(sc, i, "stderr").replace("<root>", &root)),
         "{name} step {i} {args:?} stderr"
     );
@@ -349,7 +352,7 @@ fn distill_candidates_filters_and_sorts() {
 fn distill_skeleton_is_byte_exact() {
     assert_eq!(
         distill_skeleton("B-01"),
-        "grove add y --from=B-01 --title=\"…\" --tags=<glossary-term> --surface=<path>  # xor --why=\"…\""
+        "create a discovery from B-01 with a title, at least one glossary tag, and a surface path or why prose"
     );
 }
 
@@ -364,10 +367,10 @@ fn cmd_distill_worksheet_variants() {
     let pos = vec!["G-01".to_string()];
     let r = cmd_distill(&ctx, &pos, &[]);
     assert_eq!(r.code, EXIT_OK);
-    assert_eq!(r.err, "");
+    assert_eq!(r.err_rendered(false), "");
     assert_eq!(
         r.out,
-        "distillation worksheet for G-01 (Goal)\narchive precondition: not met; `grove archive G-01` refuses until a Discovery is linked or a null-distill attestation exists\nno validated B / answered Q / accepted D in the goal's mass\nnothing worth distilling? `grove distill G-01 --null`\n"
+        "distillation worksheet for G-01 (Goal)\narchive precondition not met, archiving G-01 refuses until a discovery is linked or a null-distillation attestation exists\nno validated B / answered Q / accepted D in the goal's mass\nnothing worth distilling, attest a null distillation for G-01\n"
     );
     append_journal_record(
         &ctx.journalpath(),
@@ -378,7 +381,7 @@ fn cmd_distill_worksheet_variants() {
     assert_eq!(r.code, EXIT_OK);
     assert_eq!(
         r.out,
-        "distillation worksheet for G-01 (Goal)\narchive precondition: met (null-distill attested)\nno validated B / answered Q / accepted D in the goal's mass\nnothing worth distilling? `grove distill G-01 --null`\n"
+        "distillation worksheet for G-01 (Goal)\narchive precondition: met (null-distill attested)\nno validated B / answered Q / accepted D in the goal's mass\nnothing worth distilling, attest a null distillation for G-01\n"
     );
     let mut st2 = State::default();
     let mut g2 = plain(Kind::G, "G-01", "verified");
@@ -396,7 +399,7 @@ fn cmd_distill_worksheet_variants() {
     assert_eq!(r.code, EXIT_OK);
     assert_eq!(
         r.out,
-        "distillation worksheet for G-01 (Goal)\narchive precondition: met (linked Discovery: Y-01)\nno validated B / answered Q / accepted D in the goal's mass\nnothing worth distilling? `grove distill G-01 --null`\n"
+        "distillation worksheet for G-01 (Goal)\narchive precondition: met (linked Discovery: Y-01)\nno validated B / answered Q / accepted D in the goal's mass\nnothing worth distilling, attest a null distillation for G-01\n"
     );
 }
 
@@ -411,7 +414,10 @@ fn cmd_distill_null_attests_and_json() {
     let r = cmd_distill(&ctx, &pos, &kw);
     assert_eq!(r.code, EXIT_OK);
     assert_eq!(r.out, "");
-    assert_eq!(r.err, "null-distill attested for G-01\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "info OPERATIONAL null-distill attested for G-01\n"
+    );
     let (raw, _) = journal_read_nonempty_pairs(&ctx.journalpath());
     let tok = journal_session_token(&ctx, &kw);
     assert_eq!(
@@ -446,7 +452,7 @@ fn cmd_revalidate_from_edges_and_json() {
     let r = cmd_revalidate(&ctx, &["Y-01".to_string()], &kw);
     assert_eq!(r.code, EXIT_OK);
     assert_eq!(r.out, "");
-    assert_eq!(r.err, "");
+    assert_eq!(r.err_rendered(false), "");
     let st2 = load(&ctx, true).ok().expect("reload");
     let y1 = &st2.nodes["Y-01"];
     assert_eq!(y1.status, "active");
@@ -515,127 +521,147 @@ fn cmd_error_paths_byte_exact() {
     let kw = |k: &str, v: &str| vec![(k.to_string(), v.to_string())];
     let r = cmd_archive(&ctx, &[], &[]);
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_ERR, "", "usage: grove archive <G-NN>\n")
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (
+            EXIT_ERR,
+            "",
+            "error INTERFACE invalid arguments for archive\nusage: grove archive <G-NN>\n"
+        )
     );
     let r = cmd_archive(&ctx, &p("G-09"), &[]);
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
         (EXIT_NOTFOUND, "", "")
     );
     let r = cmd_archive(&ctx, &p("G-02"), &[]);
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_GUARD, "", "goal must be verified\n")
-    );
-    let r = cmd_distill(&ctx, &[], &[]);
-    assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_ERR, "", "usage: grove distill <G-NN> [--null]\n")
-    );
-    let r = cmd_distill(&ctx, &p("G-09"), &[]);
-    assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_NOTFOUND, "", "not found: G-09\n")
-    );
-    let r = cmd_distill(&ctx, &p("W-01"), &[]);
-    assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_ERR, "", "distill: W-01 is not a goal\n")
-    );
-    let r = cmd_distill(&ctx, &p("G-02"), &[]);
-    assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
         (
             EXIT_GUARD,
             "",
-            "distill: G-02 is `unverified`; distillation happens at `verified`\n"
+            "error INVARIANT goal must be verified before archiving\n"
+        )
+    );
+    let r = cmd_distill(&ctx, &[], &[]);
+    assert_eq!(
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (
+            EXIT_ERR,
+            "",
+            "error INTERFACE invalid arguments for distill\nusage: grove distill <G-NN> [--null]\n"
+        )
+    );
+    let r = cmd_distill(&ctx, &p("G-09"), &[]);
+    assert_eq!(
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (EXIT_NOTFOUND, "", "error INTERFACE not found G-09\n")
+    );
+    let r = cmd_distill(&ctx, &p("W-01"), &[]);
+    assert_eq!(
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (EXIT_ERR, "", "error INTERFACE W-01 is not a goal\n")
+    );
+    let r = cmd_distill(&ctx, &p("G-02"), &[]);
+    assert_eq!(
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (
+            EXIT_GUARD,
+            "",
+            "error INVARIANT G-02 is unverified, distillation happens at verified\n"
         )
     );
     let r = cmd_revalidate(&ctx, &[], &[]);
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
         (
             EXIT_ERR,
             "",
-            "usage: grove revalidate <Y-NN> [--surface=p1,p2] [--from=ID,...]\n"
+            "error INTERFACE invalid arguments for revalidate\nusage: grove revalidate <Y-NN> [--surface=p1,p2] [--from=ID,...]\n"
         )
     );
     let r = cmd_revalidate(&ctx, &p("Y-09"), &kw("from", "D-02"));
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_NOTFOUND, "", "not found: Y-09\n")
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (EXIT_NOTFOUND, "", "error INTERFACE not found Y-09\n")
     );
     let r = cmd_revalidate(&ctx, &p("W-01"), &kw("from", "D-02"));
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_ERR, "", "revalidate: W-01 is not a discovery\n")
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (EXIT_ERR, "", "error INTERFACE W-01 is not a discovery\n")
     );
     let r = cmd_revalidate(&ctx, &p("Y-02"), &kw("from", "D-02"));
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
         (
             EXIT_GUARD,
             "",
-            "revalidate: Y-02 is `active`, not `stale`\n"
+            "error INVARIANT Y-02 is active, not stale\n"
         )
     );
     let r = cmd_revalidate(&ctx, &p("Y-01"), &[]);
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
         (
             EXIT_GUARD,
             "",
-            "revalidate: refusing without payment; pass --surface=<paths> and/or --from=<ID>\n"
+            "error INVARIANT refusing without payment, pass --surface=<paths> and/or --from=<ID>\n"
         )
     );
     let r = cmd_revalidate(&ctx, &p("Y-01"), &kw("surface", " , "));
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_ERR, "", "revalidate: --surface given but empty\n")
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (EXIT_ERR, "", "error INTERFACE --surface given but empty\n")
     );
     let r = cmd_revalidate(&ctx, &p("Y-01"), &kw("from", " ,"));
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_ERR, "", "revalidate: --from given but empty\n")
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (EXIT_ERR, "", "error INTERFACE --from given but empty\n")
     );
     let r = cmd_revalidate(&ctx, &p("Y-01"), &kw("surface", "nope.txt"));
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
         (
             EXIT_GUARD,
             "",
-            "revalidate: surface path does not exist under root: nope.txt\n"
+            "error SYSTEM surface path does not exist under root\n  path=nope.txt\n"
         )
     );
     let r = cmd_revalidate(&ctx, &p("Y-01"), &kw("from", "D-99"));
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_GUARD, "", "revalidate: unknown --from id: D-99\n")
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (EXIT_GUARD, "", "error INTERFACE unknown --from id D-99\n")
     );
     let r = cmd_revalidate(&ctx, &p("Y-01"), &kw("from", "G-01"));
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
         (
             EXIT_GUARD,
             "",
-            "revalidate: --from G-01 must reference W or D/Q/B\n"
+            "error INTERFACE --from G-01 must reference W or D, Q or B\n"
         )
     );
     let r = cmd_revalidate(&ctx, &p("Y-01"), &kw("from", "D-02"));
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_GUARD, "", "revalidate: --from D-02 is superseded\n")
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (
+            EXIT_GUARD,
+            "",
+            "error INVARIANT --from D-02 is superseded\n"
+        )
     );
     let r = cmd_revalidate(&ctx, &p("Y-01"), &kw("from", "B-01"));
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_GUARD, "", "revalidate: --from B-01 is invalidated\n")
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (
+            EXIT_GUARD,
+            "",
+            "error INVARIANT --from B-01 is invalidated\n"
+        )
     );
     let r = cmd_repair(&ctx, &[], &[]);
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_ERR, "", "refusing without --confirm\n")
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (EXIT_ERR, "", "error INTERFACE refusing without --confirm\n")
     );
 }
 
@@ -645,14 +671,14 @@ fn cmd_check_ok_text_and_json() {
     let (_dir, ctx) = project_with_state("chk", &State::default());
     let r = cmd_check(&ctx, &[], &[]);
     assert_eq!(
-        (r.code, r.out.as_str(), r.err.as_str()),
-        (EXIT_OK, "", "ok\n")
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (EXIT_OK, "", "info OPERATIONAL ok\n")
     );
     let mut ctxj = CliCtx::new(ctx.root.clone());
     ctxj.json = true;
     let r = cmd_check(&ctxj, &[], &[]);
     assert_eq!(r.code, EXIT_OK);
-    assert_eq!(r.err, "");
+    assert_eq!(r.err_rendered(false), "");
     let v = parse_json(&r.out).unwrap();
     assert_eq!(v.get("command").and_then(|x| x.as_str()), Some("check"));
     assert_eq!(v.get("ok").and_then(|x| x.as_bool()), Some(true));
@@ -690,7 +716,7 @@ fn archive_orphan_ids_covers_transitive_d_and_skips_goal_less_and_themes() {
     put(&mut st, plain(Kind::T, "T-01", "open"));
     edge(&mut st, "W-01", "implements", "D-01");
     edge(&mut st, "T-01", "causes", "W-01");
-    let mut orphan = work("W-02", "bug", "proposed", "clear");
+    let orphan = work("W-02", "bug", "proposed", "clear");
     put(&mut st, orphan);
     let orphans = archive_orphan_ids(&st, "G-02");
     let want: BTreeSet<String> = ["W-01", "D-01"].iter().map(|s| s.to_string()).collect();

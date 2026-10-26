@@ -88,13 +88,20 @@ fn wave2b_next_log_cmd_steps_byte_identical() {
             other => panic!("unexpected command {other}"),
         };
         assert_eq!(r.code as i64, step_exit(&sc, i), "step {i} exit");
+        let quiet = args.iter().any(|a| a == "--quiet");
+        common::assert_json_output_diag_codes(&r.out);
+        common::assert_rendered_diag_codes(&r.err_rendered(quiet));
         let ver = env!("CARGO_PKG_VERSION");
         let out = r.out.replace(
             &format!("skill v{ver}, binary v{ver}"),
             "skill <ver>, binary <ver>",
         );
         assert_eq!(out, step_field(&sc, i, "stdout"), "step {i} stdout");
-        assert_eq!(r.err, step_field(&sc, i, "stderr"), "step {i} stderr");
+        assert_eq!(
+            r.err_rendered(quiet),
+            step_field(&sc, i, "stderr"),
+            "step {i} stderr"
+        );
     }
 }
 
@@ -109,37 +116,55 @@ fn cmd_packet_error_paths() {
     let r = cmd_packet(&ctx, &[], &[]);
     assert_eq!(r.code, EXIT_ERR);
     assert_eq!(r.out, "");
-    assert_eq!(r.err, "usage: grove packet <W-NN>\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE invalid arguments for packet\nusage: grove packet <W-NN>\n"
+    );
 
     let r = cmd_packet(&ctx, &pos("W-99"), &[]);
     assert_eq!(r.code, EXIT_NOTFOUND);
     assert_eq!(r.out, "");
-    assert_eq!(r.err, "not found\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not found\n");
 
     let r = cmd_packet(&ctx, &pos("G-01"), &[]);
     assert_eq!(r.code, EXIT_ERR);
     assert_eq!(r.out, "");
-    assert_eq!(r.err, "not a work item\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not a work item\n");
 
     let r = cmd_packet(&ctx, &pos("W-03"), &kw("cone-depth", "x"));
     assert_eq!(r.code, EXIT_ERR);
-    assert_eq!(r.err, "bad --cone-depth (expected integer)\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE bad --cone-depth (expected integer)\n"
+    );
 
     let r = cmd_packet(&ctx, &pos("W-03"), &kw("cone-depth", "0"));
     assert_eq!(r.code, EXIT_ERR);
-    assert_eq!(r.err, "--cone-depth must be ≥ 1\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE --cone-depth must be ≥ 1\n"
+    );
 
     let r = cmd_packet(&ctx, &pos("W-03"), &kw("cone-max", "y"));
     assert_eq!(r.code, EXIT_ERR);
-    assert_eq!(r.err, "bad --cone-max (expected integer)\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE bad --cone-max (expected integer)\n"
+    );
 
     let r = cmd_packet(&ctx, &pos("W-03"), &kw("cone-max", "0"));
     assert_eq!(r.code, EXIT_ERR);
-    assert_eq!(r.err, "--cone-max must be ≥ 1\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE --cone-max must be ≥ 1\n"
+    );
 
     let r = cmd_packet(&ctx, &pos("W-99"), &kw("cone-depth", "0"));
     assert_eq!(r.code, EXIT_ERR);
-    assert_eq!(r.err, "--cone-depth must be ≥ 1\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE --cone-depth must be ≥ 1\n"
+    );
 }
 
 #[test]
@@ -154,7 +179,7 @@ fn cmd_packet_cone_text_matches_corpus() {
     );
     assert_eq!(r.code, EXIT_OK);
     assert_eq!(r.out, step_field(&sc, 16, "stdout"));
-    assert_eq!(r.err, "");
+    assert_eq!(r.err_rendered(false), "");
 }
 
 #[test]
@@ -164,7 +189,10 @@ fn cmd_next_no_ready_items_reports_on_stderr() {
     let r = cmd_next(&ctx, &[], &[]);
     assert_eq!(r.code, EXIT_OK);
     assert_eq!(r.out, "");
-    assert_eq!(r.err, "no ready work items\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "info OPERATIONAL no ready work items\n"
+    );
 }
 
 #[test]

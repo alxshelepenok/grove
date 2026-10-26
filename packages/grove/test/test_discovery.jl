@@ -183,7 +183,7 @@ end
     st.nodes["Y-01"] = x
     issues = M.discovery_anchor_issues(st, x)
     @test length(issues) == 3
-    @test all(i -> startswith(i, "I12:"), issues)
+    @test all(i -> i.code == M.CODE_INVARIANT, issues)
     @test length(M.check_all(st)) == 3
 
     x.fields[:tags] = ["auth"]
@@ -238,7 +238,8 @@ end
         rc, d = run_json_cmd(["check", "--root=$tmp", "--json"])
         @test rc != 0
         @test d["ok"] == false
-        @test any(e -> occursin("decay: Y-01", e) && occursin("unlisted", e), d["errors"])
+        @test any(e -> occursin("lost a glossary term", e["text"]) &&
+                       occursin("unlisted", e["text"]), d["errors"])
 
         open(gpath, "a") do io
             println(io, "| unlisted | a term | test |")
@@ -251,7 +252,7 @@ end
         rm(gpath)
         rc, d = run_json_cmd(["check", "--root=$tmp", "--json"])
         @test rc != 0
-        @test any(e -> occursin("decay: Y-01", e), d["errors"])
+        @test any(e -> occursin("lost a glossary term", e["text"]), d["errors"])
     finally
         rm(tmp; recursive=true, force=true)
     end

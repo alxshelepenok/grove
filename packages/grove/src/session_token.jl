@@ -68,16 +68,17 @@ function progress_session_display_stale(w::Node, eff::AbstractString)::Bool
     session_claim_age_stale(w)
 end
 
-function session_release_denied_message(w::Node)::String
-    "I11/session: cannot release $(w.id): token differs and claim is fresh (<$(SESSION_DISPLAY_STALE_AFTER_HOURS)h); pass the owning GROVE_SESSION/--session, use `grove resume`, or wait"
+function session_release_denied_message(w::Node)::Diagnostic
+    invariant_error("cannot release $(w.id), the token differs and the claim is fresh (under $(SESSION_DISPLAY_STALE_AFTER_HOURS)h)",
+        Pair{String,String}["recover" => "pass the owning GROVE_SESSION or --session, adopt the claim, or wait"])
 end
 
-function session_mutate_denied_message(w::Node)::String
-    "I11/session: $(w.id) is `progress` and owned by another session; try `grove resume $(w.id)` after adopting, or coordinate a `grove handoff`"
+function session_mutate_denied_message(w::Node)::Diagnostic
+    invariant_error("$(w.id) is progress and owned by another session, adopt the claim or coordinate a handoff")
 end
 
 """Block arbitrary edits to a claimed `progress` W."""
-function session_denial_progress_mutate(w::Node, eff::AbstractString)::Union{Nothing,String}
+function session_denial_progress_mutate(w::Node, eff::AbstractString)::Union{Nothing,Diagnostic}
     w.kind !== :w && return nothing
     w.status !== :progress && return nothing
     !progress_has_session_record(w) && return nothing
@@ -96,7 +97,7 @@ function session_journal_snap(w::Node)::Dict{String,Any}
 end
 
 """Block leaving `progress` (set status, revert) unless owner or stale claim."""
-function session_denial_progress_release(w::Node, eff::AbstractString)::Union{Nothing,String}
+function session_denial_progress_release(w::Node, eff::AbstractString)::Union{Nothing,Diagnostic}
     w.kind !== :w && return nothing
     w.status !== :progress && return nothing
     !progress_has_session_record(w) && return nothing

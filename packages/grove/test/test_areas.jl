@@ -106,7 +106,7 @@ end
 
         rc, etxt = areas_capture_err(["add", "g", "--title=NoArea", "--root=$tmp", "--quiet"])
         @test rc == M.EXIT_ERR
-        @test occursin("add g: --area=A-NN is required", etxt)
+        @test occursin("add g, --area=A-NN is required", etxt)
 
         rc2, etxt2 = areas_capture_err(["add", "g", "--title=BadArea", "--area=A-99",
                                         "--root=$tmp", "--quiet"])
@@ -181,10 +181,10 @@ end
     st.nodes["G-04"] = g4
     msgs = M.check_area_membership(st)
     @test length(msgs) == 3
-    @test all(m -> startswith(m, "I13:"), msgs)
-    @test any(m -> occursin("G-02", m) && occursin("no `area`", m), msgs)
-    @test any(m -> occursin("G-03", m) && occursin("A-99", m), msgs)
-    @test any(m -> occursin("G-04", m), msgs)
+    @test all(m -> m.code == M.CODE_INVARIANT, msgs)
+    @test any(m -> occursin("G-02", tdiag(m)) && occursin("has no area field", tdiag(m)), msgs)
+    @test any(m -> occursin("G-03", tdiag(m)) && occursin("A-99", tdiag(m)), msgs)
+    @test any(m -> occursin("G-04", tdiag(m)), msgs)
 end
 
 @testset "areas: @grove 1 lock with area-less goal is I13 and never silently repaired" begin
@@ -198,7 +198,7 @@ end
         rc, d = areas_run_json(["check", "--root=$tmp", "--json"])
         @test rc == M.EXIT_INVARIANT
         @test d["ok"] == false
-        @test any(e -> startswith(e, "I13:") && occursin("G-01", e), d["errors"])
+        @test any(e -> e["code"] == "INVARIANT" && occursin("G-01", e["text"]), d["errors"])
 
         rc2, etxt2 = areas_capture_err(["add", "w", "--title=W", "--root=$tmp", "--quiet"])
         @test rc2 == 0
@@ -209,7 +209,7 @@ end
 
         rc3, d3 = areas_run_json(["check", "--root=$tmp", "--json"])
         @test rc3 == M.EXIT_INVARIANT
-        @test any(e -> startswith(e, "I13:"), d3["errors"])
+        @test any(e -> e["code"] == "INVARIANT", d3["errors"])
     finally
         rm(tmp; recursive=true, force=true)
     end

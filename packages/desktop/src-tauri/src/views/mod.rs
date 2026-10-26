@@ -27,11 +27,8 @@ pub const LEVELS: [&str; 9] = [
 pub fn load_state(root: &str) -> Result<State, String> {
     let ctx = CliCtx::new(root.to_string());
     load(&ctx, true).map_err(|r| {
-        let msg = if r.err.trim().is_empty() {
-            r.out
-        } else {
-            r.err
-        };
+        let err = r.err_rendered(false);
+        let msg = if err.trim().is_empty() { r.out } else { err };
         msg.trim().to_string()
     })
 }

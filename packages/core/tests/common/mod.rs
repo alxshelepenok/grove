@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use grove_core::{Edge, FieldValue, Kind, Node, State};
+use grove_core::{Code, Edge, FieldValue, Kind, Node, State};
 use std::collections::BTreeMap;
 
 pub fn corpus_json(name: &str) -> serde_json::Value {
@@ -26,6 +26,67 @@ pub fn step_args(sc: &serde_json::Value, i: usize) -> Vec<String> {
 
 pub fn step_exit(sc: &serde_json::Value, i: usize) -> i64 {
     sc["steps"][i]["exit"].as_i64().unwrap()
+}
+
+pub fn assert_rendered_diag_codes(text: &str) {
+    for line in text.lines() {
+        let mut tokens = line.split_whitespace();
+        let Some(severity) = tokens.next() else {
+            continue;
+        };
+        if !matches!(severity, "error" | "warning" | "info") {
+            continue;
+        }
+        let code = tokens.next().expect("diagnostic code must be present");
+        assert!(
+            Code::parse(code).is_some(),
+            "bad diagnostic code {code} in {line}"
+        );
+        assert!(
+            tokens.next().is_some(),
+            "diagnostic text is missing in {line}"
+        );
+    }
+}
+
+pub fn assert_json_diag_codes(value: &serde_json::Value) {
+    match value {
+        serde_json::Value::Object(obj) => {
+            if obj.contains_key("severity") && obj.contains_key("code") && obj.contains_key("text")
+            {
+                let severity = obj["severity"]
+                    .as_str()
+                    .expect("diagnostic severity must be a string");
+                assert!(matches!(severity, "error" | "warning" | "info"));
+                let code = obj["code"]
+                    .as_str()
+                    .expect("diagnostic code must be a string");
+                assert!(Code::parse(code).is_some(), "bad diagnostic code {code}");
+                assert!(obj["text"].is_string(), "diagnostic text must be a string");
+                if let Some(details) = obj.get("details") {
+                    assert!(details.is_object(), "diagnostic details must be an object");
+                }
+            }
+            for child in obj.values() {
+                assert_json_diag_codes(child);
+            }
+        }
+        serde_json::Value::Array(items) => {
+            for child in items {
+                assert_json_diag_codes(child);
+            }
+        }
+        _ => {}
+    }
+}
+
+pub fn assert_json_output_diag_codes(text: &str) {
+    if !text.trim_start().starts_with('{') {
+        return;
+    }
+    if let Ok(value) = serde_json::from_str(text) {
+        assert_json_diag_codes(&value);
+    }
 }
 
 pub fn scenario_len(sc: &serde_json::Value) -> usize {

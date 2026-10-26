@@ -495,8 +495,76 @@ fn guard_refusal_is_tool_error_not_protocol_error() {
     assert!(v["error"].is_null(), "{v}");
     assert!(is_error(&v));
     let t = text_of(&v);
+    assert!(t.contains("error INVARIANT"), "{t}");
     assert!(t.contains("DoR"), "{t}");
     assert!(t.contains("exit code: 4"), "{t}");
+}
+
+#[test]
+fn four_diagnostic_categories_flow_through_real_tool_calls() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("four-codes");
+    let mut s = server(&f.root);
+    handshake(&mut s);
+
+    let v = call(&mut s, 10, "init", serde_json::json!({}));
+    assert!(!is_error(&v), "{}", text_of(&v));
+    assert!(text_of(&v).starts_with("info OPERATIONAL initialised"));
+
+    let v = call(&mut s, 11, "init", serde_json::json!({}));
+    assert!(is_error(&v));
+    let system = text_of(&v);
+    assert!(
+        system.starts_with("error SYSTEM lock already exists"),
+        "{system}"
+    );
+    assert!(system.contains("exit code: 1"), "{system}");
+
+    let v = call(
+        &mut s,
+        12,
+        "set",
+        serde_json::json!({"id": "W-99", "key": "status", "value": "ready"}),
+    );
+    assert!(is_error(&v));
+    let interface = text_of(&v);
+    assert!(
+        interface.starts_with("error INTERFACE not found: W-99"),
+        "{interface}"
+    );
+    assert!(interface.contains("exit code: 5"), "{interface}");
+
+    let v = call(
+        &mut s,
+        13,
+        "add",
+        serde_json::json!({"kind": "d", "title": "Decision"}),
+    );
+    assert_eq!(text_of(&v), "D-01");
+    let v = call(
+        &mut s,
+        14,
+        "set",
+        serde_json::json!({"id": "D-01", "key": "status", "value": "accepted"}),
+    );
+    assert!(!is_error(&v), "{}", text_of(&v));
+    let v = call(
+        &mut s,
+        15,
+        "set",
+        serde_json::json!({"id": "D-01", "key": "title", "value": "Changed"}),
+    );
+    assert!(is_error(&v));
+    let invariant = text_of(&v);
+    assert!(
+        invariant.starts_with("error INVARIANT decision D-01 is accepted"),
+        "{invariant}"
+    );
+    assert!(!invariant.contains("grove undo"), "{invariant}");
+
+    let v = call(&mut s, 16, "check", serde_json::json!({}));
+    assert!(!is_error(&v), "{}", text_of(&v));
+    assert_eq!(text_of(&v), "info OPERATIONAL ok");
 }
 
 #[test]
@@ -567,6 +635,12 @@ fn scripted_session_drives_full_work_loop() {
         lock.contains(token),
         "lock must hold the server session token:\n{lock}"
     );
+    s.session = "mcp-other-session".to_string();
+    let v = step(&mut s, "status", serde_json::json!({}));
+    let status = text_of(&v);
+    assert!(status.contains("options: resume, revert, or handoff the claim for W-01"));
+    assert!(!status.contains("grove resume"), "{status}");
+    s.session = token.to_string();
     let v = step(
         &mut s,
         "evidence",
@@ -597,7 +671,7 @@ fn binary_smoke_ndjson_session() {
     let home = temp_dir("binsmoke-childhome");
     let root = f.root.to_string_lossy().into_owned();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let script = [
         "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"smoke\",\"version\":\"0\"}}}",
         "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",
@@ -649,7 +723,7 @@ fn binary_smoke_ndjson_session() {
     let check = &parsed[4];
     assert_eq!(check["result"]["isError"], false);
     let check_text = check["result"]["content"][0]["text"].as_str().unwrap();
-    assert_eq!(check_text, "ok");
+    assert_eq!(check_text, "info OPERATIONAL ok");
 }
 
 #[test]
@@ -777,7 +851,7 @@ fn binary_serves_role_instructions_from_config() {
     )
     .unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let script = [
         "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"smoke\",\"version\":\"0\"}}}",
         "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",
@@ -831,7 +905,7 @@ fn binary_rejects_unknown_role() {
     let f = fixture("binaryrole");
     let root = f.root.to_string_lossy().into_owned();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let out = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
         .arg(format!("--root={root}"))
         .arg("--role=stranger")
@@ -855,7 +929,7 @@ fn binary_rejects_unknown_role_against_configured_set() {
     let cfg = f._home.join("mcp.toml");
     std::fs::write(&cfg, "[roles.keeper]\ntools = [\"check\"]\n").unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let out = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
         .arg(format!("--root={root}"))
         .arg("--role=stranger")
@@ -876,7 +950,7 @@ fn binary_warns_once_on_malformed_config_and_serves_all_tools() {
     let root = f.root.to_string_lossy().into_owned();
     std::fs::write(f._home.join("mcp.toml"), "not toml at all\n").unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let script = [
         "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"smoke\",\"version\":\"0\"}}}",
         "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",
@@ -931,7 +1005,7 @@ fn binary_malformed_config_warning_precedes_role_refusal() {
     let root = f.root.to_string_lossy().into_owned();
     std::fs::write(f._home.join("mcp.toml"), "not toml at all\n").unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let out = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
         .arg(format!("--root={root}"))
         .arg("--role=worker")
@@ -967,7 +1041,7 @@ fn config_backed_role_flow_via_binary() {
     )
     .unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let script = [
         "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"smoke\",\"version\":\"0\"}}}",
         "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",

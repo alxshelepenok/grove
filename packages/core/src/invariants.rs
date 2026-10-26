@@ -1,5 +1,6 @@
 use crate::algebra::{bchain, blocked_by};
 use crate::dor::dor;
+use crate::message::{Code, Diagnostic};
 use crate::model::{Edge, Kind, Node, State};
 use crate::session::progress_has_session_record;
 use crate::status::{clears_blocks_predecessor, listnodes, prose_field_nonempty, EDGE_LABELS};
@@ -8,20 +9,23 @@ use std::collections::{BTreeMap, BTreeSet};
 
 pub const WIP_LIMIT_DEFAULT: i64 = 2;
 
-pub fn i1_dor_on_progress(st: &State) -> Vec<String> {
+pub fn i1_dor_on_progress(st: &State) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     for w in listnodes(st, Kind::W, false) {
         if w.status != "progress" {
             continue;
         }
         if !dor(st, w, true) {
-            out.push(format!("I1: {} is `progress` but DoR ≢ ⊤", w.id));
+            out.push(Diagnostic::error(
+                Code::Invariant,
+                &format!("{} is progress but DoR is not satisfied", w.id),
+            ));
         }
     }
     out
 }
 
-pub fn i2_spike_outputs(st: &State) -> Vec<String> {
+pub fn i2_spike_outputs(st: &State) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     for w in listnodes(st, Kind::W, false) {
         if !(w.wtype.as_deref() == Some("spike") && w.status == "done") {
@@ -32,45 +36,58 @@ pub fn i2_spike_outputs(st: &State) -> Vec<String> {
             .iter()
             .any(|e| e.label == "produces" && e.from == w.id);
         if !has_any {
-            out.push(format!(
-                "I2: {} is a done spike but `produces` is empty (no outgoing `produces` edges)",
-                w.id
+            out.push(Diagnostic::error(
+                Code::Invariant,
+                &format!(
+                    "{} is a done spike but produces is empty (no outgoing produces edges)",
+                    w.id
+                ),
             ));
         }
     }
     out
 }
 
-pub fn i3_done_has_evidence(st: &State) -> Vec<String> {
+pub fn i3_done_has_evidence(st: &State) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     for w in listnodes(st, Kind::W, false) {
         if w.status != "done" {
             continue;
         }
         if w.lines("evidence").is_empty() {
-            out.push(format!("I3: {} is `done` but `evidence` is empty", w.id));
+            out.push(Diagnostic::error(
+                Code::Invariant,
+                &format!("{} is done but evidence is empty", w.id),
+            ));
         }
     }
     out
 }
 
-pub fn i4_wip_limit(st: &State) -> Vec<String> {
+pub fn i4_wip_limit(st: &State) -> Vec<Diagnostic> {
     i4_wip_limit_with(st, WIP_LIMIT_DEFAULT)
 }
 
-pub fn i4_wip_limit_with(st: &State, limit: i64) -> Vec<String> {
+pub fn i4_wip_limit_with(st: &State, limit: i64) -> Vec<Diagnostic> {
     let n = listnodes(st, Kind::W, false)
         .iter()
         .filter(|w| w.status == "progress")
         .count() as i64;
     if n > limit {
-        vec![format!("I4: WIP {} exceeds limit {}", n, limit)]
+        vec![Diagnostic::error_details(
+            Code::Invariant,
+            "WIP count exceeds the limit",
+            vec![
+                ("wip".to_string(), n.to_string()),
+                ("limit".to_string(), limit.to_string()),
+            ],
+        )]
     } else {
         Vec::new()
     }
 }
 
-pub fn i5_blocks_terminal(st: &State) -> Vec<String> {
+pub fn i5_blocks_terminal(st: &State) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     for w in listnodes(st, Kind::W, false) {
         if w.status != "progress" {
@@ -79,14 +96,20 @@ pub fn i5_blocks_terminal(st: &State) -> Vec<String> {
         for p in blocked_by(st, &w.id) {
             match st.nodes.get(&p) {
                 None => {
-                    out.push(format!("I5: {} blocked by missing {}", w.id, p));
+                    out.push(Diagnostic::error(
+                        Code::Invariant,
+                        &format!("{} is blocked by missing predecessor {}", w.id, p),
+                    ));
                     continue;
                 }
                 Some(np) => {
                     if !clears_blocks_predecessor(np) {
-                        out.push(format!(
-                            "I5: {} is `progress` but blocker {} ({}) does not satisfy blocks clearance (goals must be verified)",
-                            w.id, p, np.status
+                        out.push(Diagnostic::error(
+                            Code::Invariant,
+                            &format!(
+                                "{} is progress but blocker {} ({}) does not satisfy blocks clearance (goals must be verified)",
+                                w.id, p, np.status
+                            ),
                         ));
                     }
                 }
@@ -96,7 +119,7 @@ pub fn i5_blocks_terminal(st: &State) -> Vec<String> {
     out
 }
 
-pub fn i7_blocks_dag(st: &State) -> Vec<String> {
+pub fn i7_blocks_dag(st: &State) -> Vec<Diagnostic> {
     let mut succ: BTreeMap<String, Vec<String>> = BTreeMap::new();
     let mut nodes: BTreeSet<String> = BTreeSet::new();
     for e in &st.edges {
@@ -135,11 +158,14 @@ pub fn i7_blocks_dag(st: &State) -> Vec<String> {
     if visited == nodes.len() {
         Vec::new()
     } else {
-        vec!["I7: blocks graph contains a cycle".to_string()]
+        vec![Diagnostic::error(
+            Code::Invariant,
+            "blocks graph contains a cycle",
+        )]
     }
 }
 
-pub fn i9_feature_bchain(st: &State) -> Vec<String> {
+pub fn i9_feature_bchain(st: &State) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     for w in listnodes(st, Kind::W, false) {
         if !(w.wtype.as_deref() == Some("feature")
@@ -153,9 +179,9 @@ pub fn i9_feature_bchain(st: &State) -> Vec<String> {
                 None => continue,
             };
             if !matches!(n.status.as_str(), "validated" | "invalidated_acceptable") {
-                out.push(format!(
-                    "I9: {} is `{}` but {} is `{}`",
-                    w.id, w.status, b, n.status
+                out.push(Diagnostic::error(
+                    Code::Invariant,
+                    &format!("{} is {} but {} is {}", w.id, w.status, b, n.status),
                 ));
             }
         }
@@ -163,7 +189,7 @@ pub fn i9_feature_bchain(st: &State) -> Vec<String> {
     out
 }
 
-pub fn i10_done_fitness(st: &State) -> Vec<String> {
+pub fn i10_done_fitness(st: &State) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     for w in listnodes(st, Kind::W, false) {
         if w.status != "done" {
@@ -172,9 +198,9 @@ pub fn i10_done_fitness(st: &State) -> Vec<String> {
         let f = w.fitness();
         for g in w.lines("goals") {
             if !f.contains_key(&g) {
-                out.push(format!(
-                    "I10: {} is `done` but no fitness delta for {}",
-                    w.id, g
+                out.push(Diagnostic::error(
+                    Code::Invariant,
+                    &format!("{} is done but no fitness delta for {}", w.id, g),
                 ));
             }
         }
@@ -182,36 +208,42 @@ pub fn i10_done_fitness(st: &State) -> Vec<String> {
     out
 }
 
-pub fn i11_progress_has_session_claim(st: &State) -> Vec<String> {
+pub fn i11_progress_has_session_claim(st: &State) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     for w in listnodes(st, Kind::W, false) {
         if w.status != "progress" {
             continue;
         }
         if !progress_has_session_record(w) {
-            out.push(format!(
-                "I11: {} is `progress` but has no session token",
-                w.id
+            out.push(Diagnostic::error(
+                Code::Invariant,
+                &format!("{} is progress but has no session token", w.id),
             ));
         }
     }
     out
 }
 
-pub fn check_orphan_edges(st: &State) -> Vec<String> {
+pub fn check_orphan_edges(st: &State) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     for e in &st.edges {
         if !st.nodes.contains_key(&e.from) {
-            out.push(format!("edge endpoint missing: {}", e.from));
+            out.push(Diagnostic::error(
+                Code::Invariant,
+                &format!("edge endpoint missing {}", e.from),
+            ));
         }
         if !st.nodes.contains_key(&e.to) {
-            out.push(format!("edge endpoint missing: {}", e.to));
+            out.push(Diagnostic::error(
+                Code::Invariant,
+                &format!("edge endpoint missing {}", e.to),
+            ));
         }
     }
     out
 }
 
-pub fn check_edge_types(st: &State) -> Vec<String> {
+pub fn check_edge_types(st: &State) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     for e in &st.edges {
         let from = match st.nodes.get(&e.from) {
@@ -240,16 +272,16 @@ pub fn check_edge_types(st: &State) -> Vec<String> {
             _ => false,
         };
         if !ok {
-            out.push(format!(
-                "edge type mismatch: {} -{}-> {}",
-                e.from, e.label, e.to
+            out.push(Diagnostic::error(
+                Code::Invariant,
+                &format!("edge type mismatch {} -{}-> {}", e.from, e.label, e.to),
             ));
         }
     }
     out
 }
 
-pub fn discovery_anchor_issues(st: &State, x: &Node) -> Vec<String> {
+pub fn discovery_anchor_issues(st: &State, x: &Node) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     if x.kind != Kind::Y {
         return out;
@@ -277,27 +309,36 @@ pub fn discovery_anchor_issues(st: &State, x: &Node) -> Vec<String> {
         }
     }
     if !has_origin {
-        out.push(format!(
-            "I12: {} has no provenance edge (needs `produces` from a W or `distills` to a D/Q/B)",
-            x.id
+        out.push(Diagnostic::error(
+            Code::Invariant,
+            &format!(
+                "{} has no provenance edge (needs produces from a W or distills to a D, Q or B)",
+                x.id
+            ),
         ));
     }
     if x.lines("surface").is_empty() && !prose_field_nonempty(&x.lines("why")) {
-        out.push(format!(
-            "I12: {} has empty `surface` and empty `why` (≥1 anchor required)",
-            x.id
+        out.push(Diagnostic::error(
+            Code::Invariant,
+            &format!(
+                "{} has empty surface and empty why (at least one anchor is required)",
+                x.id
+            ),
         ));
     }
     if x.lines("tags").is_empty() {
-        out.push(format!(
-            "I12: {} has empty `tags` (≥1 glossary term required)",
-            x.id
+        out.push(Diagnostic::error(
+            Code::Invariant,
+            &format!(
+                "{} has empty tags (at least one glossary term is required)",
+                x.id
+            ),
         ));
     }
     out
 }
 
-pub fn check_discovery_anchors(st: &State) -> Vec<String> {
+pub fn check_discovery_anchors(st: &State) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     for x in listnodes(st, Kind::Y, false) {
         out.extend(discovery_anchor_issues(st, x));
@@ -305,29 +346,35 @@ pub fn check_discovery_anchors(st: &State) -> Vec<String> {
     out
 }
 
-pub fn check_area_membership(st: &State) -> Vec<String> {
+pub fn check_area_membership(st: &State) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     for g in listnodes(st, Kind::G, true) {
         let aref = g.single("area");
         if aref.trim().is_empty() {
-            out.push(format!(
-                "I13: {} has no `area` field (every goal belongs to an area: `grove set {} area=A-NN`)",
-                g.id, g.id
+            out.push(Diagnostic::error(
+                Code::Invariant,
+                &format!(
+                    "{} has no area field (every goal belongs to an area, assign one on the goal)",
+                    g.id
+                ),
             ));
             continue;
         }
         match st.nodes.get(&aref) {
             Some(zn) if zn.kind == Kind::A => {}
-            _ => out.push(format!(
-                "I13: {} area {} does not reference an existing area (a) node",
-                g.id, aref
+            _ => out.push(Diagnostic::error(
+                Code::Invariant,
+                &format!(
+                    "{} area {} does not reference an existing area (a) node",
+                    g.id, aref
+                ),
             )),
         }
     }
     out
 }
 
-pub fn check_all(st: &State) -> Vec<String> {
+pub fn check_all(st: &State) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     out.extend(i1_dor_on_progress(st));
     out.extend(i2_spike_outputs(st));
@@ -351,17 +398,26 @@ pub fn validate_and_push_edge(
     label: &str,
     to: &str,
     bump_nodes: bool,
-) -> Option<String> {
+) -> Option<Diagnostic> {
     let from = from.trim().to_string();
     let to = to.trim().to_string();
     if !EDGE_LABELS.contains(&label) {
-        return Some(format!("unknown edge label: {}", label));
+        return Some(Diagnostic::error(
+            Code::Interface,
+            &format!("unknown edge label {label}"),
+        ));
     }
     if !st.nodes.contains_key(&from) {
-        return Some(format!("missing node {}", from));
+        return Some(Diagnostic::error(
+            Code::Interface,
+            &format!("missing node {from}"),
+        ));
     }
     if !st.nodes.contains_key(&to) {
-        return Some(format!("missing node {}", to));
+        return Some(Diagnostic::error(
+            Code::Interface,
+            &format!("missing node {to}"),
+        ));
     }
     if st
         .edges
@@ -375,7 +431,10 @@ pub fn validate_and_push_edge(
     st.edges.push(e);
     if label == "blocks" && !i7_blocks_dag(st).is_empty() {
         st.edges.pop();
-        return Some("I7: blocks introduces a cycle".to_string());
+        return Some(Diagnostic::error(
+            Code::Invariant,
+            "blocks introduces a cycle",
+        ));
     }
     let et = check_edge_types(st);
     if !et.is_empty() {

@@ -58,7 +58,9 @@ end
         st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
         @test haskey(st.nodes, "G-01")
         @test M.main(["undo", "--steps=2", "--root=$tmp", "--quiet"]) == 0
-        @test !isfile(jp)
+
+        @test isfile(jp) && length(filter(!isempty, readlines(jp))) == 1
+        @test occursin("\"cmd\":\"undo\"", read(jp, String))
         stU = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
         @test !haskey(stU.nodes, "G-01")
         @test M.main(["add", "a", "--title=Area", "--root=$tmp", "--quiet"]) == 0

@@ -1,6 +1,7 @@
 use grove_core::{
     acquire_exclusive, acquire_shared, release_exclusive, release_shared, run_cli,
-    run_cli_session_locked, CliCtx, COMMAND_NAMES, SESSION_MUTATE_COMMANDS, SESSION_READ_COMMANDS,
+    run_cli_session_locked, CliCtx, Code, COMMAND_NAMES, SESSION_MUTATE_COMMANDS,
+    SESSION_READ_COMMANDS,
 };
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -97,9 +98,9 @@ fn run_cli_stays_lock_free() {
     let home = temp_root("nolock-home");
     let _env = EnvGuard::set(&home);
     let r = run_cli(&args("init", &root));
-    assert_eq!(r.code, 0, "init failed: {}", r.err);
+    assert_eq!(r.code, 0, "init failed: {}", r.err_rendered(false));
     let r = run_cli(&args("status", &root));
-    assert_eq!(r.code, 0, "status failed: {}", r.err);
+    assert_eq!(r.code, 0, "status failed: {}", r.err_rendered(false));
     assert!(
         !locks_dir(&root).exists(),
         "in-process run_cli must not create lock dirs"
@@ -115,7 +116,7 @@ fn locked_cli_acquires_and_releases() {
     let home = temp_root("locked-home");
     let _env = EnvGuard::set(&home);
     let r = run_cli_session_locked(&args("init", &root));
-    assert_eq!(r.code, 0, "init failed: {}", r.err);
+    assert_eq!(r.code, 0, "init failed: {}", r.err_rendered(false));
     assert!(locks_dir(&root).is_dir(), "locks root should exist");
     assert!(
         locks_dir(&root).join("readers").is_dir(),
@@ -126,7 +127,7 @@ fn locked_cli_acquires_and_releases() {
         "exclusive slot must be released after init"
     );
     let r = run_cli_session_locked(&args("status", &root));
-    assert_eq!(r.code, 0, "status failed: {}", r.err);
+    assert_eq!(r.code, 0, "status failed: {}", r.err_rendered(false));
     let leftover: Vec<_> = std::fs::read_dir(locks_dir(&root).join("readers"))
         .unwrap()
         .filter_map(|e| e.ok())
@@ -198,7 +199,8 @@ fn stale_exclusive_is_broken_with_warning() {
     let h = acquire_shared(&ctx, &mut warn).unwrap();
     assert!(
         warn.iter()
-            .any(|m| m.contains("broke stale grove exclusive session lock")),
+            .any(|m| m.code == Code::System
+                && m.text.contains("broke a stale exclusive session lock")),
         "expected stale-break warning, got {warn:?}"
     );
     release_shared(h);
@@ -221,15 +223,17 @@ fn timeout_messages_match_julia() {
     let h = acquire_exclusive(&ctx, &mut warn).unwrap();
     let mut w2 = Vec::new();
     let err = grove_core::acquire_shared_with_limit(&ctx, &mut w2, 3).unwrap_err();
+    assert_eq!(err.diag.code, Code::System);
     assert_eq!(
-        err.msg,
-        "timeout waiting for grove shared session lock (~>0s); try later"
+        err.diag.text,
+        "timed out waiting for the shared session lock, try again later"
     );
     let mut w3 = Vec::new();
     let err2 = grove_core::acquire_exclusive_with_limit(&ctx, &mut w3, 3).unwrap_err();
+    assert_eq!(err2.diag.code, Code::System);
     assert_eq!(
-        err2.msg,
-        "timeout waiting for grove exclusive session lock (held ~>0s); try later"
+        err2.diag.text,
+        "timed out waiting for the exclusive session lock, try again later"
     );
     release_exclusive(h);
     let _ = std::fs::remove_dir_all(&root);

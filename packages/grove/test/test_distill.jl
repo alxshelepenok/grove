@@ -62,14 +62,14 @@ distill_jlines(jp::AbstractString) = [JSON.parse(l) for l in readlines(jp) if !i
         rc, out = distill_capture(["distill", "G-01", "--root=$tmp"])
         @test rc == 0
         @test occursin("distillation worksheet for G-01", out)
-        @test occursin("archive precondition: not met", out)
+        @test occursin("archive precondition not met", out)
         @test occursin("- B-01 (validated B): Bench", out)
         @test occursin("- Q-01 (answered Q): Quest", out)
         @test occursin("- D-01 (accepted D): Dec", out)
-        @test occursin("grove add y --from=B-01", out)
-        @test occursin("grove add y --from=Q-01", out)
-        @test occursin("grove add y --from=D-01", out)
-        @test occursin("grove distill G-01 --null", out)
+        @test occursin("create a discovery from B-01", out)
+        @test occursin("create a discovery from Q-01", out)
+        @test occursin("create a discovery from D-01", out)
+        @test occursin("attest a null distillation for G-01", out)
         rcj, outj = distill_capture(["distill", "G-01", "--root=$tmp", "--json"])
         @test rcj == 0
         d = JSON.parse(outj)
@@ -78,7 +78,7 @@ distill_jlines(jp::AbstractString) = [JSON.parse(l) for l in readlines(jp) if !i
         @test d["precondition_met"] == false
         ids = [c["id"] for c in d["candidates"]]
         @test "B-01" in ids && "Q-01" in ids && "D-01" in ids
-        @test all(c -> occursin("grove add y --from=", c["skeleton"]), d["candidates"])
+        @test all(c -> occursin("create a discovery from ", c["skeleton"]), d["candidates"])
     finally
         rm(tmp; recursive=true, force=true)
     end
@@ -140,7 +140,7 @@ end
         distill_drive_verified(tmp)
         rc, etxt = distill_capture_err(["archive", "G-01", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
-        @test occursin("archive: distill G-01 first (grove distill G-01, or grove distill G-01 --null)",
+        @test occursin("error INVARIANT archive G-01 requires distillation first, distill the goal or attest a null distillation",
                        etxt)
         st0 = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
         @test !st0.nodes["G-01"].archived
@@ -205,12 +205,12 @@ end
                       "--from=W-01", "--root=$tmp", "--quiet"]) == 0
         rc, etxt = distill_capture_err(["archive", "G-01", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
-        @test occursin("archive: distill G-01 first", etxt)
+        @test occursin("archive G-01 requires distillation first", etxt)
         @test M.main(["set", "Y-01", "status=active", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "Y-01", "status=stale", "--root=$tmp", "--quiet"]) == 0
         rc, etxt = distill_capture_err(["archive", "G-01", "--root=$tmp"])
         @test rc == M.EXIT_GUARD
-        @test occursin("archive: distill G-01 first", etxt)
+        @test occursin("archive G-01 requires distillation first", etxt)
         @test M.main(["add", "y", "--title=Live", "--tags=auth", "--surface=src/a.jl",
                       "--from=W-01", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "Y-02", "status=active", "--root=$tmp", "--quiet"]) == 0
@@ -249,10 +249,11 @@ end
         @test M.main(["evidence", "W-01", "e", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "W-01", "status=ready", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "W-01", "status=progress", "--root=$tmp", "--quiet"]) == 0
-        rc, etxt = distill_capture_err(["set", "W-01", "status=done", "--root=$tmp", "--quiet"])
+        rc, etxt = distill_capture_err(["set", "W-01", "status=done", "--root=$tmp"])
         @test rc == 0
-        @test occursin("grove: goal G-01", etxt)
-        @test occursin("grove distill G-01", etxt)
+        @test occursin("goal G-01", tdiag(etxt))
+        @test occursin("is verified, distill its content", tdiag(etxt))
+        @test occursin("--distill-deferred", tdiag(etxt))
     finally
         rm(tmp; recursive=true, force=true)
     end

@@ -2,6 +2,7 @@ use crate::fitness::rederive_goals;
 use crate::ids::reconcile_counters;
 use crate::invariants::validate_and_push_edge;
 use crate::json::{emit_jval, parse_json, JVal, Json, JuliaDict};
+use crate::message::{Code, Diagnostic, Severity};
 use crate::model::{field_form, FieldValue, Form, Node, State};
 use crate::renumber::apply_renumber;
 use crate::session::progress_has_session_record;
@@ -563,8 +564,12 @@ fn restore_session_attrs_if_present(w: &mut Node, inv: &Json) {
     }
 }
 
-fn fail(msg: impl Into<String>) -> Option<String> {
-    Some(format!("journal undo: {}", msg.into()))
+fn fail(msg: impl Into<String>) -> Option<Diagnostic> {
+    Some(Diagnostic::raw(
+        Severity::Error,
+        Code::System,
+        &format!("journal undo, {}", msg.into()),
+    ))
 }
 
 macro_rules! req {
@@ -593,7 +598,7 @@ fn vector_field_for_insert<'a>(n: &'a mut Node, field: &str) -> Option<&'a mut V
     }
 }
 
-pub fn journal_apply_inverse(st: &mut State, inv: &Json) -> Option<String> {
+pub fn journal_apply_inverse(st: &mut State, inv: &Json) -> Option<Diagnostic> {
     let op = inv_str(inv, "op").unwrap_or("");
     match op {
         "rm_node" => {
@@ -636,7 +641,7 @@ pub fn journal_apply_inverse(st: &mut State, inv: &Json) -> Option<String> {
                 return None;
             }
             if let Some(r) = validate_and_push_edge(st, from, label, to, true) {
-                return fail(r);
+                return Some(r);
             }
             let tc = inv_str(inv, "t_created").unwrap_or("").trim().to_string();
             let Some(ee) = st

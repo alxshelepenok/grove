@@ -93,9 +93,10 @@ function prune_stale_exclusive!(ctx::CliCtx)::Nothing
     holder_age_sec(slot) === nothing && time() - mtime(slot) < SESSION_HOLD_GRACE_SEC &&
         return nothing
     rm(slot, recursive=true, force=true)
-    info(ctx,
-        "warning: broke stale grove exclusive session lock (> " *
-        string(Int(SESSION_STALE_SEC)) * " s or abandoned): " * slot)
+    emit_diag(ctx, system_warning("broke a stale exclusive session lock", Pair{String,String}[
+        "stale_after_s" => string(Int(SESSION_STALE_SEC)),
+        "path" => slot,
+    ]))
     nothing
 end
 
@@ -112,7 +113,9 @@ function prune_stale_readers!(ctx::CliCtx)::Nothing
         holder_age_sec(d) === nothing && time() - mtime(d) < SESSION_HOLD_GRACE_SEC &&
             continue
         rm(d, recursive=true, force=true)
-        info(ctx, "warning: cleaned stale grove shared session lock: $(d)")
+        emit_diag(ctx, operational_warning("cleaned a stale shared session lock", Pair{String,String}[
+            "path" => d,
+        ]))
     end
     nothing
 end
@@ -131,10 +134,8 @@ function count_fresh_readers(ctx::CliCtx)::Int
 end
 
 struct SessionLockTimeoutError <: Exception
-    msg::String
+    diag::Diagnostic
 end
-
-Base.showerror(io::IO, e::SessionLockTimeoutError) = print(io, e.msg)
 
 """Block until exclusive session lock acquired (writers wait for readers to drain)."""
 function acquire_exclusive!(ctx::CliCtx)::SessionExclusiveHold
@@ -148,10 +149,9 @@ function acquire_exclusive!(ctx::CliCtx)::SessionExclusiveHold
     spins = 0
     while true
         spins += 1
-        spins > SESSION_LOCK_MAX_SPIN && throw(SessionLockTimeoutError(string(
-            "timeout waiting for grove exclusive session lock (held ~>",
-            round(Int, SESSION_LOCK_MAX_SPIN * SESSION_POLL_SEC),
-            "s); try later")))
+        spins > SESSION_LOCK_MAX_SPIN && throw(SessionLockTimeoutError(system_error(
+            "timed out waiting for the exclusive session lock, try again later",
+            Pair{String,String}["waited_s" => string(round(Int, SESSION_LOCK_MAX_SPIN * SESSION_POLL_SEC))])))
 
         prune_stale_exclusive!(ctx)
         prune_stale_readers!(ctx)
@@ -190,10 +190,9 @@ function acquire_shared!(ctx::CliCtx)::SessionSharedHold
     spins = 0
     while true
         spins += 1
-        spins > SESSION_LOCK_MAX_SPIN && throw(SessionLockTimeoutError(string(
-            "timeout waiting for grove shared session lock (~>",
-            round(Int, SESSION_LOCK_MAX_SPIN * SESSION_POLL_SEC),
-            "s); try later")))
+        spins > SESSION_LOCK_MAX_SPIN && throw(SessionLockTimeoutError(system_error(
+            "timed out waiting for the shared session lock, try again later",
+            Pair{String,String}["waited_s" => string(round(Int, SESSION_LOCK_MAX_SPIN * SESSION_POLL_SEC))])))
 
         prune_stale_exclusive!(ctx)
 

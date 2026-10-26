@@ -331,7 +331,7 @@ fn journal_records_carry_effective_session_token() {
     let d = tmpdir("session");
     let ctx = CliCtx::new(d.to_string_lossy().into_owned());
     let r = cmd_init(&ctx, &[], &[]);
-    assert_eq!(r.code, EXIT_OK, "{}", r.err);
+    assert_eq!(r.code, EXIT_OK, "{}", r.err_rendered(false));
     let r = cmd_add(
         &ctx,
         &["a".to_string()],
@@ -340,13 +340,13 @@ fn journal_records_carry_effective_session_token() {
             ("session".to_string(), "tok-x".to_string()),
         ],
     );
-    assert_eq!(r.code, EXIT_OK, "{}", r.err);
+    assert_eq!(r.code, EXIT_OK, "{}", r.err_rendered(false));
     let r = cmd_add(
         &ctx,
         &["a".to_string()],
         &[("title".to_string(), "Other".to_string())],
     );
-    assert_eq!(r.code, EXIT_OK, "{}", r.err);
+    assert_eq!(r.code, EXIT_OK, "{}", r.err_rendered(false));
     let (raw, recs) = journal_read_nonempty_pairs(&ctx.journalpath());
     assert_eq!(recs.len(), 2);
     assert_eq!(
@@ -425,13 +425,13 @@ fn archive_record_is_audit_only_and_not_undoable() {
     let d = tmpdir("archive");
     let ctx = CliCtx::new(d.to_string_lossy().into_owned());
     let r = cmd_init(&ctx, &[], &[]);
-    assert_eq!(r.code, EXIT_OK, "{}", r.err);
+    assert_eq!(r.code, EXIT_OK, "{}", r.err_rendered(false));
     let r = cmd_add(
         &ctx,
         &["a".to_string()],
         &[("title".to_string(), "Area".to_string())],
     );
-    assert_eq!(r.code, EXIT_OK, "{}", r.err);
+    assert_eq!(r.code, EXIT_OK, "{}", r.err_rendered(false));
     let r = cmd_add(
         &ctx,
         &["g".to_string()],
@@ -441,21 +441,21 @@ fn archive_record_is_audit_only_and_not_undoable() {
             ("fitness-kind".to_string(), "manual".to_string()),
         ],
     );
-    assert_eq!(r.code, EXIT_OK, "{}", r.err);
+    assert_eq!(r.code, EXIT_OK, "{}", r.err_rendered(false));
     let r = cmd_set(
         &ctx,
         &["G-01".to_string(), "status=verified".to_string()],
         &[],
     );
-    assert_eq!(r.code, EXIT_OK, "{}", r.err);
+    assert_eq!(r.code, EXIT_OK, "{}", r.err_rendered(false));
     let r = cmd_distill(
         &ctx,
         &["G-01".to_string()],
         &[("null".to_string(), String::new())],
     );
-    assert_eq!(r.code, EXIT_OK, "{}", r.err);
+    assert_eq!(r.code, EXIT_OK, "{}", r.err_rendered(false));
     let r = cmd_archive(&ctx, &["G-01".to_string()], &[]);
-    assert_eq!(r.code, EXIT_OK, "{}", r.err);
+    assert_eq!(r.code, EXIT_OK, "{}", r.err_rendered(false));
     let (raw, recs) = journal_read_nonempty_pairs(&ctx.journalpath());
     let last = recs.last().expect("journal nonempty");
     assert_eq!(last.get("cmd").and_then(|v| v.as_str()), Some("archive"));
@@ -481,10 +481,10 @@ fn archive_record_is_audit_only_and_not_undoable() {
         raw.last().expect("raw line")
     );
     let r = cmd_undo(&ctx, &[], &[("steps".to_string(), "1".to_string())]);
-    assert_eq!(r.code, EXIT_OK, "{}", r.err);
+    assert_eq!(r.code, EXIT_OK, "{}", r.err_rendered(false));
     let st = match load(&ctx, true) {
         Ok(s) => s,
-        Err(e) => panic!("lock loads: {}", e.err),
+        Err(e) => panic!("lock loads: {}", e.err_rendered(false)),
     };
     assert!(st.nodes["G-01"].archived);
     assert_eq!(st.nodes["G-01"].status, "unverified");

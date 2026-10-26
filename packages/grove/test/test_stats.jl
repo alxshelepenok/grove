@@ -330,7 +330,10 @@ end
         @test haskey(last, "session")
         @test haskey(recs[end-1], "session")
         @test !M.journal_record_mutation(last)
-        @test M.journal_apply_inverse!(M.State(), last["inv"]) isa String
+        @test begin
+                   d = M.journal_apply_inverse!(M.State(), last["inv"])
+                   d isa M.Diagnostic && d.code == M.CODE_SYSTEM && occursin("unknown inverse op", d.text)
+               end
         @test M.main(["undo", "--steps=1", "--root=$tmp", "--quiet"]) == 0
         st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
         @test st.nodes["G-01"].archived

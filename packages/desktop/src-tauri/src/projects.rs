@@ -90,11 +90,8 @@ pub fn create(project: &ProjectState, path: &str, name: &str) -> Result<Value, S
     let root = abspath(path);
     let r = cmd_init(&CliCtx::new(root.clone()), &[], &[]);
     if r.code != EXIT_OK {
-        let msg = if r.err.trim().is_empty() {
-            r.out
-        } else {
-            r.err
-        };
+        let err = r.err_rendered(false);
+        let msg = if err.trim().is_empty() { r.out } else { err };
         return Err(msg.trim().to_string());
     }
     if !lock_exists(&root) {

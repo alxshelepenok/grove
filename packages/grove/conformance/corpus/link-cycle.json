@@ -123,7 +123,7 @@
       ],
       "exit": 4,
       "stdout": "",
-      "stderr": "I7: blocks introduces a cycle\n",
+      "stderr": "error INVARIANT blocks introduces a cycle\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Two\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Three\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-02 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n"
     },
@@ -137,7 +137,7 @@
       ],
       "exit": 4,
       "stdout": "",
-      "stderr": "edge type mismatch: G-01 -implements-> W-01\n",
+      "stderr": "error INVARIANT edge type mismatch G-01 -implements-> W-01\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"One\"\n\nw W-02 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Two\"\n\nw W-03 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Three\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne W-01 blocks W-02 t_created=<ts>\ne W-02 blocks W-03 t_created=<ts>\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-02\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-03\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-02\",\"op\":\"unlink_edge\",\"from\":\"W-01\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"link\",\"ts\":\"<ts>\",\"inv\":{\"label\":\"blocks\",\"to\":\"W-03\",\"op\":\"unlink_edge\",\"from\":\"W-02\"}}\n"
     },

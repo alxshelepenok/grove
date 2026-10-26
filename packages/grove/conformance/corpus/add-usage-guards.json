@@ -20,7 +20,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "usage: grove add <kind> --title=\"…\" [...] (unexpected positional argument: Positional title)\n",
+      "stderr": "error INTERFACE usage: grove add <kind> --title=\"…\" [...] (unexpected positional argument: Positional title)\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
       "journal": null
     },
@@ -31,7 +31,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "usage: grove add <kind> --title=\"…\" [...]\n",
+      "stderr": "error INTERFACE invalid arguments for add\nusage: grove add <kind> --title=\"…\" [...]\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
       "journal": null
     },
@@ -53,7 +53,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "usage: grove add <kind> --title=\"…\" [...]\n",
+      "stderr": "error INTERFACE invalid arguments for add\nusage: grove add <kind> --title=\"…\" [...]\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
       "journal": null
     },

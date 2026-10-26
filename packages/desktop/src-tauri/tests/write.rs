@@ -22,7 +22,7 @@ fn tmpdir(tag: &str) -> PathBuf {
 
 fn init_root(root: &PathBuf) -> String {
     let r = run_cli(&["init".to_string(), format!("--root={}", root.display())]);
-    assert_eq!(r.code, EXIT_OK, "init failed: {}", r.err);
+    assert_eq!(r.code, EXIT_OK, "init failed: {}", r.err_rendered(false));
     root.to_string_lossy().into_owned()
 }
 

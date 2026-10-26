@@ -1,17 +1,20 @@
 use crate::archive::{
     distill_linked_da_ids, distill_null_attested, exclusive_archive_ids, goal_reference_sets,
 };
-use crate::cli::{info, journal_session_token, json_cli_out, load, CliCtx};
+use crate::cli::{journal_session_token, json_cli_out, load, CliCtx};
 use crate::journal::{
     append_journal_record, stamp_journal_session, wrap_journal_record, JOURNAL_DISTILL_OP,
 };
 use crate::json::{JVal, JuliaDict};
+use crate::message::{Code, Diagnostic};
 use crate::model::{Kind, State};
-use crate::ops::{kw_get, OpResult, EXIT_ERR, EXIT_GUARD, EXIT_NOTFOUND};
+use crate::ops::{kw_get, usage_fail, OpResult, EXIT_ERR, EXIT_GUARD, EXIT_NOTFOUND};
 use std::collections::BTreeSet;
 
 pub fn distill_skeleton(id: &str) -> String {
-    format!("grove add y --from={id} --title=\"…\" --tags=<glossary-term> --surface=<path>  # xor --why=\"…\"")
+    format!(
+        "create a discovery from {id} with a title, at least one glossary tag, and a surface path or why prose"
+    )
 }
 
 pub fn distill_candidates(st: &State, pool: &BTreeSet<String>) -> Vec<(String, String, String)> {
@@ -36,7 +39,7 @@ pub fn distill_candidates(st: &State, pool: &BTreeSet<String>) -> Vec<(String, S
 
 pub fn cmd_distill(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, "usage: grove distill <G-NN> [--null]");
+        return usage_fail("distill", "usage: grove distill <G-NN> [--null]");
     }
     let gid = &pos[0];
     let st = match load(ctx, true) {
@@ -44,17 +47,23 @@ pub fn cmd_distill(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
         Err(e) => return e,
     };
     let Some(g) = st.nodes.get(gid) else {
-        return OpResult::fail(EXIT_NOTFOUND, &format!("not found: {gid}"));
+        return OpResult::fail_diag(
+            EXIT_NOTFOUND,
+            Diagnostic::error(Code::Interface, &format!("not found {gid}")),
+        );
     };
     if g.kind != Kind::G {
-        return OpResult::fail(EXIT_ERR, &format!("distill: {gid} is not a goal"));
+        return OpResult::fail_diag(
+            EXIT_ERR,
+            Diagnostic::error(Code::Interface, &format!("{gid} is not a goal")),
+        );
     }
     if g.status != "verified" {
-        return OpResult::fail(
+        return OpResult::fail_diag(
             EXIT_GUARD,
-            &format!(
-                "distill: {gid} is `{}`; distillation happens at `verified`",
-                g.status
+            Diagnostic::error(
+                Code::Invariant,
+                &format!("{gid} is {}, distillation happens at verified", g.status),
             ),
         );
     }
@@ -75,7 +84,12 @@ pub fn cmd_distill(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
             &stamp_journal_session(&jr, &journal_session_token(ctx, kw)),
         );
         let mut r = OpResult::ok();
-        info(ctx, &mut r, &format!("null-distill attested for {gid}"));
+        if !ctx.quiet {
+            r.push_info(
+                Code::Operational,
+                &format!("null-distill attested for {gid}"),
+            );
+        }
         if ctx.json {
             r.out = json_cli_out(JuliaDict::from_pairs(vec![
                 ("command".to_string(), JVal::Str("distill".to_string())),
@@ -139,7 +153,7 @@ pub fn cmd_distill(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
         out.push_str(&format!("archive precondition: met ({how})\n"));
     } else {
         out.push_str(&format!(
-            "archive precondition: not met; `grove archive {gid}` refuses until a Discovery is linked or a null-distill attestation exists\n"
+            "archive precondition not met, archiving {gid} refuses until a discovery is linked or a null-distillation attestation exists\n"
         ));
     }
     if cands.is_empty() {
@@ -159,7 +173,7 @@ pub fn cmd_distill(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
         }
     }
     out.push_str(&format!(
-        "nothing worth distilling? `grove distill {gid} --null`\n"
+        "nothing worth distilling, attest a null distillation for {gid}\n"
     ));
     let mut r = OpResult::ok();
     r.out = out;

@@ -45,7 +45,7 @@
         etxt = read(err_path, String)
         rm(err_path, force=true)
         @test rc[] != 0
-        @test occursin("I12", etxt)
+        @test occursin("anchors not satisfied", tdiag(etxt))
         @test M.read_lock(lock).nodes["Y-03"].status === :proposed
     finally
         rm(tmp; recursive=true, force=true)
@@ -89,7 +89,7 @@ end
         rc, d = run_json_cmd(["check", "--root=$tmp", "--json"])
         @test rc != 0
         @test d["ok"] == false
-        @test any(e -> occursin("decay: Y-01", e) && occursin("dead surface", e), d["errors"])
+        @test any(e -> occursin("dead surface path", e["text"]), d["errors"])
 
         @test M.main(["set", "Y-01", "status=stale", "--root=$tmp", "--quiet"]) == 0
         rc, d = run_json_cmd(["check", "--root=$tmp", "--json"])
@@ -136,14 +136,14 @@ end
         @test M.main(["set", "D-01", "status=superseded", "--root=$tmp", "--quiet"]) == 0
         rc, d = run_json_cmd(["check", "--root=$tmp", "--json"])
         @test rc != 0
-        @test any(e -> occursin("decay: Y-01", e) && occursin("rotted origin", e), d["errors"])
-        @test !any(e -> occursin("decay: Y-02", e), d["errors"])
+        @test any(e -> occursin("rotted origin", e["text"]), d["errors"])
+        @test !any(e -> occursin("Y-02", e["text"]), d["errors"])
 
         @test M.main(["set", "B-01", "status=invalidated_blocking", "--root=$tmp", "--quiet"]) == 0
         rc, d = run_json_cmd(["check", "--root=$tmp", "--json"])
         @test rc != 0
-        @test any(e -> occursin("decay: Y-01", e), d["errors"])
-        @test any(e -> occursin("decay: Y-02", e) && occursin("invalidated_blocking", e), d["errors"])
+        @test any(e -> occursin("Y-01", e["text"]), d["errors"])
+        @test any(e -> occursin("rotted origin", e["text"]) && get(get(e, "details", Dict()), "status", "") == "invalidated_blocking", d["errors"])
 
         @test M.main(["set", "Y-01", "status=active", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["set", "Y-02", "status=active", "--root=$tmp", "--quiet"]) == 0
@@ -199,7 +199,7 @@ end
 
         rc, d = run_json_cmd(["check", "--root=$tmp", "--json"])
         @test rc != 0
-        @test any(e -> occursin("decay: Y-01", e) && occursin("rotted origin", e), d["errors"])
+        @test any(e -> occursin("rotted origin", e["text"]), d["errors"])
 
         @test M.main(["distill", "G-01", "--null", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["archive", "G-01", "--root=$tmp", "--quiet"]) == 0
@@ -250,8 +250,8 @@ end
         write(gpath, join(kept, "\n"))
         rc, d = run_json_cmd(["check", "--root=$tmp", "--json"])
         @test rc != 0
-        @test any(e -> occursin("decay: Y-01", e) && occursin("lost glossary term", e) &&
-                      occursin("auth", e), d["errors"])
+        @test any(e -> occursin("lost a glossary term", e["text"]) &&
+                      occursin("auth", get(get(e, "details", Dict()), "term", "")), d["errors"])
     finally
         rm(tmp; recursive=true, force=true)
     end

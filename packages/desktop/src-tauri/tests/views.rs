@@ -275,7 +275,12 @@ fn areas_temp_root() -> (std::sync::MutexGuard<'static, ()>, std::path::PathBuf)
         "--confirm".to_string(),
         format!("--root={}", dir.display()),
     ]);
-    assert_eq!(r.code, grove_core::EXIT_OK, "repair failed: {}", r.err);
+    assert_eq!(
+        r.code,
+        grove_core::EXIT_OK,
+        "repair failed: {}",
+        r.err_rendered(false)
+    );
     (guard, dir)
 }
 
@@ -1920,7 +1925,12 @@ fn packet_temp_root() -> (std::sync::MutexGuard<'static, ()>, std::path::PathBuf
         "--confirm".to_string(),
         format!("--root={}", dir.display()),
     ]);
-    assert_eq!(r.code, grove_core::EXIT_OK, "repair failed: {}", r.err);
+    assert_eq!(
+        r.code,
+        grove_core::EXIT_OK,
+        "repair failed: {}",
+        r.err_rendered(false)
+    );
     (guard, dir)
 }
 
@@ -2047,7 +2057,12 @@ fn overview_temp_root(tag: &str) -> (std::sync::MutexGuard<'static, ()>, std::pa
         "--confirm".to_string(),
         format!("--root={}", dir.display()),
     ]);
-    assert_eq!(r.code, grove_core::EXIT_OK, "repair failed: {}", r.err);
+    assert_eq!(
+        r.code,
+        grove_core::EXIT_OK,
+        "repair failed: {}",
+        r.err_rendered(false)
+    );
     (guard, dir)
 }
 
@@ -2502,7 +2517,12 @@ fn work_temp_root() -> (std::sync::MutexGuard<'static, ()>, std::path::PathBuf) 
         "--confirm".to_string(),
         format!("--root={}", dir.display()),
     ]);
-    assert_eq!(r.code, grove_core::EXIT_OK, "repair failed: {}", r.err);
+    assert_eq!(
+        r.code,
+        grove_core::EXIT_OK,
+        "repair failed: {}",
+        r.err_rendered(false)
+    );
     (guard, dir)
 }
 

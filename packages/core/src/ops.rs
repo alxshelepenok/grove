@@ -7,6 +7,7 @@ use crate::guards::{guard_status_transition, terminal_freeze_msg, GuardVerdict};
 use crate::ids::id_cmp;
 use crate::journal::*;
 use crate::json::{parse_json, JuliaDict};
+use crate::message::{Code, Diagnostic, Severity};
 use crate::model::{field_form, FieldValue, Form, Kind, Node, State};
 use crate::renumber::{
     apply_renumber, glossary_rename_in_text, glossary_terms, renumber_blocked_by_done_evidence,
@@ -25,7 +26,8 @@ pub const EXIT_NOTFOUND: i32 = 5;
 pub struct OpResult {
     pub code: i32,
     pub out: String,
-    pub err: String,
+    pub diags: Vec<Diagnostic>,
+    pub raw_err: String,
     pub journal: Vec<String>,
 }
 
@@ -34,33 +36,80 @@ impl OpResult {
         OpResult {
             code: EXIT_OK,
             out: String::new(),
-            err: String::new(),
+            diags: Vec::new(),
+            raw_err: String::new(),
             journal: Vec::new(),
         }
     }
 
-    pub fn fail(code: i32, msg: &str) -> OpResult {
+    pub fn fail(code: i32, c: Code, msg: &str) -> OpResult {
         OpResult {
             code,
             out: String::new(),
-            err: format!("{msg}\n"),
+            diags: vec![Diagnostic::raw(Severity::Error, c, msg)],
+            raw_err: String::new(),
             journal: Vec::new(),
         }
     }
 
-    pub fn fail_lines(code: i32, msgs: &[String]) -> OpResult {
-        let mut err = String::new();
-        for m in msgs {
-            err.push_str(m);
-            err.push('\n');
-        }
+    pub fn fail_lines(code: i32, c: Code, msgs: &[String]) -> OpResult {
+        let diags = msgs
+            .iter()
+            .map(|m| Diagnostic::raw(Severity::Error, c, m))
+            .collect();
         OpResult {
             code,
             out: String::new(),
-            err,
+            diags,
+            raw_err: String::new(),
             journal: Vec::new(),
         }
     }
+
+    pub fn fail_diag(code: i32, diag: Diagnostic) -> OpResult {
+        OpResult {
+            code,
+            out: String::new(),
+            diags: vec![diag],
+            raw_err: String::new(),
+            journal: Vec::new(),
+        }
+    }
+
+    pub fn push_diag(&mut self, d: Diagnostic) {
+        self.diags.push(d);
+    }
+
+    pub fn push_info(&mut self, c: Code, text: &str) {
+        self.diags.push(Diagnostic::info(c, text));
+    }
+
+    pub fn push_warning(&mut self, c: Code, text: &str) {
+        self.diags.push(Diagnostic::warning(c, text));
+    }
+
+    pub fn err_rendered(&self, quiet: bool) -> String {
+        let mut s = String::new();
+        for d in &self.diags {
+            if quiet && d.severity == Severity::Info {
+                continue;
+            }
+            s.push_str(&d.render());
+            s.push('\n');
+        }
+        s.push_str(&self.raw_err);
+        s
+    }
+}
+
+pub fn usage_fail(cmd: &str, usage: &str) -> OpResult {
+    let mut r = OpResult::fail_diag(
+        EXIT_ERR,
+        Diagnostic::error(Code::Interface, &format!("invalid arguments for {cmd}")),
+    );
+    r.raw_err.push_str(usage);
+    r.raw_err.push('\n');
+    r
 }
 
 pub fn kw_get<'a>(kw: &'a [(String, String)], key: &str) -> Option<&'a str> {
@@ -88,16 +137,22 @@ fn csv_filtered(raw: &str) -> Vec<String> {
 pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResult {
     let kind: Kind = match kind_str.parse() {
         Ok(k) => k,
-        Err(()) => return OpResult::fail(EXIT_ERR, &format!("unknown kind: {kind_str}")),
+        Err(()) => {
+            return OpResult::fail(
+                EXIT_ERR,
+                Code::Interface,
+                &format!("unknown kind: {kind_str}"),
+            )
+        }
     };
     let backup = st.clone();
     let id = crate::ids::next_id(st, kind);
     let mut n = Node::new(kind, id.clone());
     n.title = kw_get(kw, "title").unwrap_or("").to_string();
     macro_rules! bail {
-        ($code:expr, $msg:expr) => {{
+        ($code:expr, $c:expr, $msg:expr) => {{
             *st = backup;
-            return OpResult::fail($code, $msg);
+            return OpResult::fail($code, $c, $msg);
         }};
     }
     match kind {
@@ -122,14 +177,14 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
             n.status = kw_get(kw, "status").unwrap_or("unverified").to_string();
             if kw_has(kw, "fitness") {
                 bail!(
-                    EXIT_ERR,
+                    EXIT_ERR, Code::Interface,
                     "add g: --fitness is retired (legacy label); use --fitness-kind + --fitness-target"
                 );
             }
             if let Some(fk_raw) = kw_get(kw, "fitness-kind") {
                 let fk = fk_raw.trim().to_lowercase();
                 if !GOAL_FITNESS_KINDS.contains(&fk.as_str()) {
-                    bail!(EXIT_ERR, "bad --fitness-kind");
+                    bail!(EXIT_ERR, Code::Interface, "bad --fitness-kind");
                 }
                 n.attrs.insert("fitness_kind".to_string(), fk);
             }
@@ -139,14 +194,16 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
             if n.status == "verified" && goal_structured_kind(&n) != Some("manual") {
                 bail!(
                     EXIT_GUARD,
-                    "add g: --status=verified is derived from fitness deltas"
+                    Code::Invariant,
+                    "add g, --status=verified is derived from fitness deltas"
                 );
             }
             let aref = kw_get(kw, "area").unwrap_or("").trim().to_string();
             if aref.is_empty() {
                 bail!(
                     EXIT_ERR,
-                    "add g: --area=A-NN is required (create one with grove add a --title=...)"
+                    Code::Interface,
+                    "add g, --area=A-NN is required (create an area node first)"
                 );
             }
             let ok_area = st
@@ -155,13 +212,17 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
                 .map(|an| an.kind == Kind::A)
                 .unwrap_or(false);
             if !ok_area {
-                bail!(EXIT_ERR, &format!("add g: unknown --area id: {aref}"));
+                bail!(
+                    EXIT_ERR,
+                    Code::Interface,
+                    &format!("add g: unknown --area id: {aref}")
+                );
             }
             n.set_single("area", aref);
             let has_fitness = kw_has(kw, "fitness-kind");
             if !has_fitness {
                 bail!(
-                    EXIT_ERR,
+                    EXIT_ERR, Code::Interface,
                     "add g: fitness is required (pass --fitness-kind + --fitness-target, or --fitness-kind=manual for n/a)"
                 );
             }
@@ -172,6 +233,7 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
                 {
                     bail!(
                         EXIT_ERR,
+                        Code::Interface,
                         &format!("add g: --fitness-target is required for --fitness-kind={fk}")
                     );
                 }
@@ -194,12 +256,13 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
         Kind::Y => {
             n.status = "proposed".to_string();
             if n.title.trim().is_empty() {
-                bail!(EXIT_ERR, "add y: --title is required");
+                bail!(EXIT_ERR, Code::Interface, "add y: --title is required");
             }
             let tags = csv_filtered(kw_get(kw, "tags").unwrap_or(""));
             if tags.is_empty() {
                 bail!(
                     EXIT_ERR,
+                    Code::Interface,
                     "add y: --tags=<t1,t2> is required (≥1 glossary term)"
                 );
             }
@@ -220,13 +283,18 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
                     _ => false,
                 };
                 if !ok_why {
-                    bail!(EXIT_ERR, "add y: --surface absent requires --why prose");
+                    bail!(
+                        EXIT_ERR,
+                        Code::Interface,
+                        "add y: --surface absent requires --why prose"
+                    );
                 }
             }
             let from = csv_filtered(kw_get(kw, "from").unwrap_or(""));
             if from.is_empty() {
                 bail!(
                     EXIT_ERR,
+                    Code::Interface,
                     "add y: --from=<W-NN|D-NN|Q-NN|B-NN> is required (≥1 provenance record)"
                 );
             }
@@ -234,7 +302,7 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
         Kind::A => {
             n.status = "present".to_string();
             if n.title.trim().is_empty() {
-                bail!(EXIT_ERR, "add a: --title is required");
+                bail!(EXIT_ERR, Code::Interface, "add a: --title is required");
             }
             let surface = csv_filtered(kw_get(kw, "surface").unwrap_or(""));
             if !surface.is_empty() {
@@ -247,7 +315,7 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
     stamp_new_node(st.nodes.get_mut(&id).expect("just inserted"));
     if let Err((code, msg)) = flush_add_edges(st, kind, &id, kw) {
         *st = backup;
-        return OpResult::fail(code, &msg);
+        return OpResult::fail_diag(code, msg);
     }
     rederive_artifacts(st);
     let mut r = OpResult::ok();
@@ -262,13 +330,14 @@ fn flush_add_edges(
     kind: Kind,
     id: &str,
     kw: &[(String, String)],
-) -> Result<(), (i32, String)> {
-    let push = |st: &mut State, from: &str, label: &str, to: &str| -> Result<(), (i32, String)> {
-        match crate::invariants::validate_and_push_edge(st, from, label, to, true) {
-            Some(msg) => Err((EXIT_GUARD, msg)),
-            None => Ok(()),
-        }
-    };
+) -> Result<(), (i32, Diagnostic)> {
+    let push =
+        |st: &mut State, from: &str, label: &str, to: &str| -> Result<(), (i32, Diagnostic)> {
+            match crate::invariants::validate_and_push_edge(st, from, label, to, true) {
+                Some(msg) => Err((EXIT_GUARD, msg)),
+                None => Ok(()),
+            }
+        };
     if kind == Kind::D && kw_has(kw, "supersedes") {
         for oid in kw_get(kw, "supersedes").unwrap_or("").split(',') {
             let oid = oid.trim();
@@ -312,7 +381,10 @@ fn flush_add_edges(
             }
             let src_kind = st.nodes.get(oid).map(|n| n.kind);
             let Some(src_kind) = src_kind else {
-                return Err((EXIT_GUARD, format!("add y: unknown --from id: {oid}")));
+                return Err((
+                    EXIT_GUARD,
+                    Diagnostic::error(Code::Interface, &format!("add y, unknown --from id {oid}")),
+                ));
             };
             match src_kind {
                 Kind::W => push(st, oid, "produces", id)?,
@@ -320,7 +392,10 @@ fn flush_add_edges(
                 _ => {
                     return Err((
                         EXIT_GUARD,
-                        format!("add y: --from {oid} must reference W or D/Q/B"),
+                        Diagnostic::error(
+                            Code::Interface,
+                            &format!("add y, --from {oid} must reference W or D, Q or B"),
+                        ),
                     ))
                 }
             }
@@ -338,7 +413,11 @@ fn goal_notes_distill_deferred(g: &Node) -> bool {
         .any(|ln| ln.contains("--distill-deferred"))
 }
 
-fn lazy_distill_prompts(st: &State, w: &Node, old_goal_status: &[(String, String)]) -> Vec<String> {
+fn lazy_distill_prompts(
+    st: &State,
+    w: &Node,
+    old_goal_status: &[(String, String)],
+) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     if w.kind != Kind::W {
         return out;
@@ -367,9 +446,12 @@ fn lazy_distill_prompts(st: &State, w: &Node, old_goal_status: &[(String, String
         if goal_notes_distill_deferred(g) {
             continue;
         }
-        out.push(format!(
-            "grove: goal {} ({}) verified, distill content: `grove distill {}` (or `grove distill {} --null` when nothing is worth keeping; lazy distill, see the Delivery loop section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.",
-            gid, g.title, gid, gid
+        out.push(Diagnostic::info(
+            Code::Operational,
+            &format!(
+                "goal {gid} ({}) is verified, distill its content or attest a null distillation, or add a notes line containing --distill-deferred to skip",
+                g.title
+            ),
         ));
     }
     out
@@ -380,7 +462,7 @@ fn guard_sessions_for_progress_endpoints(
     eff: &str,
     from: &str,
     to: &str,
-) -> Option<String> {
+) -> Option<Diagnostic> {
     for id in [from, to] {
         let Some(n) = st.nodes.get(id) else {
             continue;
@@ -406,7 +488,7 @@ fn op_set_key_supported(kind: Kind, key: &str) -> bool {
 
 pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpResult {
     if !st.nodes.contains_key(id) {
-        return OpResult::fail(EXIT_NOTFOUND, &format!("not found: {id}"));
+        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("not found: {id}"));
     }
     if key == "status" {
         let new_status = val;
@@ -414,7 +496,7 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
             let n = st.nodes.get(id).expect("checked");
             if n.kind == Kind::W && n.status == "progress" && new_status != "progress" {
                 if let Some(msg) = session_denial_progress_release(n, eff) {
-                    return OpResult::fail(EXIT_GUARD, &msg);
+                    return OpResult::fail_diag(EXIT_GUARD, msg);
                 }
             }
         }
@@ -426,9 +508,15 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
                     .filter(|(_, ok, _)| !ok)
                     .map(|(label, _, _)| label.clone())
                     .collect();
-                let mut r = OpResult::fail(
+                let mut r = OpResult::fail_diag(
                     EXIT_GUARD,
-                    &format!("DoR ≢ ⊤ for {}; see `grove dor {}`", n.id, n.id),
+                    Diagnostic::error(
+                        Code::Invariant,
+                        &format!(
+                            "DoR is not satisfied for {}, inspect readiness for the failing conjuncts",
+                            n.id
+                        ),
+                    ),
                 );
                 r.journal
                     .push(wrap_journal_record("set", jinv_dor_reject(&n.id, &missing)));
@@ -441,10 +529,26 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
         };
         match verdict {
             GuardVerdict::Ok => {}
-            GuardVerdict::Invalid(msgs) => return OpResult::fail_lines(EXIT_ERR, &msgs),
-            GuardVerdict::Reject(msgs) => return OpResult::fail_lines(EXIT_GUARD, &msgs),
+            GuardVerdict::Invalid(diags) => {
+                return OpResult {
+                    code: EXIT_ERR,
+                    out: String::new(),
+                    diags,
+                    raw_err: String::new(),
+                    journal: Vec::new(),
+                }
+            }
+            GuardVerdict::Reject(diags) => {
+                return OpResult {
+                    code: EXIT_GUARD,
+                    out: String::new(),
+                    diags,
+                    raw_err: String::new(),
+                    journal: Vec::new(),
+                }
+            }
         }
-        let (line, prompts): (String, Vec<String>);
+        let (line, prompts): (String, Vec<Diagnostic>);
         {
             let n = st.nodes.get(id).expect("checked");
             let old_status = n.status.clone();
@@ -503,8 +607,7 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
         rederive_artifacts(st);
         let mut r = OpResult::ok();
         for p in prompts {
-            r.err.push_str(&p);
-            r.err.push('\n');
+            r.push_diag(p);
         }
         r.journal.push(line);
         return r;
@@ -513,17 +616,17 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
         let n = st.nodes.get(id).expect("checked");
         if n.kind == Kind::W && n.status == "progress" {
             if let Some(msg) = session_denial_progress_mutate(n, eff) {
-                return OpResult::fail(EXIT_GUARD, &msg);
+                return OpResult::fail_diag(EXIT_GUARD, msg);
             }
         }
     }
 
     let kind = st.nodes.get(id).map(|n| n.kind).expect("checked");
     if !op_set_key_supported(kind, key) {
-        return OpResult::fail(EXIT_ERR, &format!("unsupported key: {key}"));
+        return OpResult::fail(EXIT_ERR, Code::Interface, &format!("unsupported key {key}"));
     }
     if let Some(msg) = terminal_freeze_msg(st.nodes.get(id).expect("checked")) {
-        return OpResult::fail(EXIT_GUARD, &msg);
+        return OpResult::fail_diag(EXIT_GUARD, msg);
     }
 
     let line: String;
@@ -549,7 +652,7 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
         "fitness" if kind == Kind::G => {
             if !val.trim().is_empty() {
                 return OpResult::fail(
-                    EXIT_ERR,
+                    EXIT_ERR, Code::Interface,
                     "set: key fitness is retired (legacy label); use fitness_kind + set <G> fitness_target=N (empty value removes a legacy label)",
                 );
             }
@@ -585,6 +688,7 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
             if !GOAL_FITNESS_KINDS.contains(&ks.as_str()) {
                 return OpResult::fail(
                     EXIT_ERR,
+                    Code::Interface,
                     &format!(
                         "bad fitness_kind (expected one of: {})",
                         GOAL_FITNESS_KINDS.join(", ")
@@ -610,6 +714,7 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
             if !ok_area {
                 return OpResult::fail(
                     EXIT_ERR,
+                    Code::Interface,
                     &format!("set: unknown area: {aref} (expected an existing A-NN node)"),
                 );
             }
@@ -623,6 +728,7 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
             if parse_requires_coverage(Some(val)).is_none() {
                 return OpResult::fail(
                     EXIT_ERR,
+                    Code::Interface,
                     "bad requires_coverage (expected `true` or a float in (0,1])",
                 );
             }
@@ -634,7 +740,7 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
                 .insert("requires_coverage".to_string(), val.to_string());
         }
         _ => {
-            return OpResult::fail(EXIT_ERR, &format!("unsupported key: {key}"));
+            return OpResult::fail(EXIT_ERR, Code::Interface, &format!("unsupported key {key}"));
         }
     }
     stamp_touch_node(st.nodes.get_mut(id).expect("checked"));
@@ -653,13 +759,13 @@ pub fn op_field(
     eff: &str,
 ) -> OpResult {
     if !st.nodes.contains_key(id) {
-        return OpResult::fail(EXIT_NOTFOUND, &format!("not found: {id}"));
+        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("not found: {id}"));
     }
     {
         let n = st.nodes.get(id).expect("checked");
         if n.kind == Kind::W && n.status == "progress" {
             if let Some(msg) = session_denial_progress_mutate(n, eff) {
-                return OpResult::fail(EXIT_GUARD, &msg);
+                return OpResult::fail_diag(EXIT_GUARD, msg);
             }
         }
     }
@@ -667,13 +773,14 @@ pub fn op_field(
     let Some(form) = field_form(kind, fname) else {
         return OpResult::fail(
             EXIT_ERR,
+            Code::Interface,
             &format!("unknown field {fname} on {}", kind.as_str()),
         );
     };
     {
         let n = st.nodes.get(id).expect("checked");
         if let Some(msg) = terminal_freeze_msg(n) {
-            return OpResult::fail(EXIT_GUARD, &msg);
+            return OpResult::fail_diag(EXIT_GUARD, msg);
         }
     }
     if kind == Kind::G && fname == "fitness_current" {
@@ -681,8 +788,8 @@ pub fn op_field(
         if let Some(kg) = goal_structured_kind(n) {
             if kg != "manual" {
                 return OpResult::fail(
-                    EXIT_GUARD,
-                    "grove field: `fitness_current` is derived for structured goals; use kind=manual to author it",
+                    EXIT_GUARD, Code::Invariant,
+                    "fitness_current is derived for structured goals, set fitness_kind to manual to author it",
                 );
             }
         }
@@ -717,7 +824,7 @@ pub fn op_field(
         },
         "add" => {
             let Some(val) = value else {
-                return OpResult::fail(EXIT_ERR, "missing value");
+                return OpResult::fail(EXIT_ERR, Code::Interface, "missing value");
             };
             match form {
                 Form::Prose | Form::RefList => {
@@ -750,13 +857,17 @@ pub fn op_field(
                     n.set_single(fname, val.to_string());
                 }
                 Form::Fitness => {
-                    return OpResult::fail(EXIT_ERR, &format!("field {fname} not addable"));
+                    return OpResult::fail(
+                        EXIT_ERR,
+                        Code::Interface,
+                        &format!("field {fname} not addable"),
+                    );
                 }
             }
         }
         "rm" => {
             let Some(raw_idx) = value else {
-                return OpResult::fail(EXIT_ERR, "missing index");
+                return OpResult::fail(EXIT_ERR, Code::Interface, "missing index");
             };
             let idx: i64 = match raw_idx.parse() {
                 Ok(v) => v,
@@ -764,7 +875,8 @@ pub fn op_field(
                     return OpResult {
                         code: EXIT_ERR,
                         out: String::new(),
-                        err: String::new(),
+                        diags: Vec::new(),
+                        raw_err: String::new(),
                         journal: Vec::new(),
                     }
                 }
@@ -775,7 +887,7 @@ pub fn op_field(
                 _ => Vec::new(),
             };
             if idx < 1 || idx > v.len() as i64 {
-                return OpResult::fail(EXIT_ERR, "index out of range");
+                return OpResult::fail(EXIT_ERR, Code::Interface, "index out of range");
             }
             let removed = v[(idx - 1) as usize].clone();
             line = wrap_journal_record("field", jinv_field_insert_line(id, fname, idx, &removed));
@@ -787,7 +899,7 @@ pub fn op_field(
             }
         }
         _ => {
-            return OpResult::fail(EXIT_ERR, &format!("unknown op: {op}"));
+            return OpResult::fail(EXIT_ERR, Code::Interface, &format!("unknown op: {op}"));
         }
     }
     if kind == Kind::G && fname == "fitness_target" && (op == "add" || op == "clear") {
@@ -806,13 +918,17 @@ pub fn op_evidence(st: &mut State, id: &str, text: &str, eff: &str) -> OpResult 
 
 pub fn op_link(st: &mut State, from: &str, label: &str, to: &str, eff: &str) -> OpResult {
     if !EDGE_LABELS.contains(&label) {
-        return OpResult::fail(EXIT_ERR, &format!("unknown label: {label}"));
+        return OpResult::fail(
+            EXIT_ERR,
+            Code::Interface,
+            &format!("unknown label: {label}"),
+        );
     }
     if let Some(msg) = guard_sessions_for_progress_endpoints(st, eff, from, to) {
-        return OpResult::fail(EXIT_GUARD, &msg);
+        return OpResult::fail_diag(EXIT_GUARD, msg);
     }
     if let Some(msg) = crate::invariants::validate_and_push_edge(st, from, label, to, true) {
-        return OpResult::fail(EXIT_GUARD, &msg);
+        return OpResult::fail_diag(EXIT_GUARD, msg);
     }
     rederive_artifacts(st);
     let mut r = OpResult::ok();
@@ -829,11 +945,11 @@ pub fn op_unlink(st: &mut State, from: &str, label: &str, to: &str, eff: &str) -
         .iter()
         .find(|e| e.from == from && e.label == label && e.to == to)
     {
-        None => return OpResult::fail(EXIT_NOTFOUND, "no such edge"),
+        None => return OpResult::fail(EXIT_NOTFOUND, Code::Interface, "no such edge"),
         Some(e) => e.t_created.clone(),
     };
     if let Some(msg) = guard_sessions_for_progress_endpoints(st, eff, from, to) {
-        return OpResult::fail(EXIT_GUARD, &msg);
+        return OpResult::fail_diag(EXIT_GUARD, msg);
     }
     let line = wrap_journal_record(
         "unlink",
@@ -855,18 +971,18 @@ pub fn op_unlink(st: &mut State, from: &str, label: &str, to: &str, eff: &str) -
 
 pub fn op_fitness(st: &mut State, wid: &str, gid: &str, delta: i64, eff: &str) -> OpResult {
     if !st.nodes.contains_key(wid) {
-        return OpResult::fail(EXIT_NOTFOUND, &format!("missing: {wid}"));
+        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("missing: {wid}"));
     }
     if !st.nodes.contains_key(gid) {
-        return OpResult::fail(EXIT_NOTFOUND, &format!("missing: {gid}"));
+        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("missing: {gid}"));
     }
     if let Some(msg) = terminal_freeze_msg(st.nodes.get(wid).expect("checked")) {
-        return OpResult::fail(EXIT_GUARD, &msg);
+        return OpResult::fail_diag(EXIT_GUARD, msg);
     }
     {
         let w = st.nodes.get(wid).expect("checked");
         if let Some(msg) = session_denial_progress_mutate(w, eff) {
-            return OpResult::fail(EXIT_GUARD, &msg);
+            return OpResult::fail_diag(EXIT_GUARD, msg);
         }
     }
     let w = st.nodes.get_mut(wid).expect("checked");
@@ -896,7 +1012,7 @@ pub fn op_renumber(st: &mut State, old_id: &str, new_id: &str, eff: &str) -> OpR
     let old = old_id.trim();
     let new = new_id.trim();
     if new.is_empty() {
-        return OpResult::fail(EXIT_ERR, "bad --to");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "bad --to");
     }
     if old == new {
         return OpResult::ok();
@@ -904,18 +1020,19 @@ pub fn op_renumber(st: &mut State, old_id: &str, new_id: &str, eff: &str) -> OpR
     if let Some(ow) = st.nodes.get(old) {
         if ow.kind == Kind::W && ow.status == "progress" {
             if let Some(msg) = session_denial_progress_mutate(ow, eff) {
-                return OpResult::fail(EXIT_GUARD, &msg);
+                return OpResult::fail_diag(EXIT_GUARD, msg);
             }
         }
     }
     if renumber_blocked_by_done_evidence(st, old) {
         return OpResult::fail(
             EXIT_GUARD,
-            "grove renumber: refusing; id occurs in evidence on a done W",
+            Code::Invariant,
+            "renumber refuses, the id occurs in evidence on a done work item",
         );
     }
     if let Err(msg) = apply_renumber(st, old, new) {
-        return OpResult::fail(EXIT_ERR, &msg);
+        return OpResult::fail(EXIT_ERR, Code::Interface, &msg);
     }
     rederive_artifacts(st);
     let mut r = OpResult::ok();
@@ -935,10 +1052,14 @@ pub fn op_glossary_rename(
     let old = old_raw.trim().to_string();
     let new = new_raw.trim().to_string();
     if old.is_empty() || new.is_empty() {
-        return OpResult::fail(EXIT_ERR, "glossary rename: empty term");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "glossary rename: empty term");
     }
     if old == new {
-        return OpResult::fail(EXIT_ERR, "glossary rename: old and new are identical");
+        return OpResult::fail(
+            EXIT_ERR,
+            Code::Interface,
+            "glossary rename: old and new are identical",
+        );
     }
     let gtext = glossary.as_deref().unwrap_or("");
     let terms = glossary_terms(gtext);
@@ -952,6 +1073,7 @@ pub fn op_glossary_rename(
     if !in_glossary && users.is_empty() {
         return OpResult::fail(
             EXIT_NOTFOUND,
+            Code::Interface,
             &format!(
                 "glossary rename: `{old}` is neither in glossary.md nor used by any discovery"
             ),
@@ -960,6 +1082,7 @@ pub fn op_glossary_rename(
     if terms.contains(&new) {
         return OpResult::fail(
             EXIT_GUARD,
+            Code::Invariant,
             &format!("glossary rename: `{new}` already present in glossary.md"),
         );
     }
@@ -970,6 +1093,7 @@ pub fn op_glossary_rename(
         if !changed {
             return OpResult::fail(
                 EXIT_NOTFOUND,
+                Code::Interface,
                 &format!("glossary rename: `{old}` not found in glossary.md"),
             );
         }
@@ -1017,15 +1141,20 @@ pub fn op_resume(st: &mut State, id: &str, eff: &str) -> OpResult {
         return OpResult {
             code: EXIT_NOTFOUND,
             out: String::new(),
-            err: String::new(),
+            diags: Vec::new(),
+            raw_err: String::new(),
             journal: Vec::new(),
         };
     };
     if w.kind != Kind::W {
-        return OpResult::fail(EXIT_ERR, "not a work item");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "not a work item");
     }
     if w.status != "progress" {
-        return OpResult::fail(EXIT_GUARD, &format!("{id} is not in progress"));
+        return OpResult::fail(
+            EXIT_GUARD,
+            Code::Invariant,
+            &format!("{id} is not in progress"),
+        );
     }
     let line = wrap_journal_record("resume", jinv_session_restore_claim(id, w));
     let w = st.nodes.get_mut(id).expect("checked");
@@ -1039,36 +1168,47 @@ pub fn op_resume(st: &mut State, id: &str, eff: &str) -> OpResult {
 
 pub fn op_handoff(st: &mut State, id: &str, to: Option<&str>, eff: &str) -> OpResult {
     let Some(to_raw) = to else {
-        return OpResult::fail(EXIT_ERR, "missing --to=<session-token>");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "missing --to=<session-token>");
     };
     let to_tok = to_raw.trim().to_string();
     if to_tok.is_empty() {
-        return OpResult::fail(EXIT_ERR, "empty --to");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "empty --to");
     }
     let Some(w) = st.nodes.get(id) else {
         return OpResult {
             code: EXIT_NOTFOUND,
             out: String::new(),
-            err: String::new(),
+            diags: Vec::new(),
+            raw_err: String::new(),
             journal: Vec::new(),
         };
     };
     if w.kind != Kind::W {
-        return OpResult::fail(EXIT_ERR, "not a work item");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "not a work item");
     }
     if w.status != "progress" {
-        return OpResult::fail(EXIT_GUARD, &format!("{id} is not in progress"));
-    }
-    if !progress_has_session_record(w) {
         return OpResult::fail(
             EXIT_GUARD,
-            &format!("{id} has no session claim; use `grove resume`"),
+            Code::Invariant,
+            &format!("{id} is not in progress"),
+        );
+    }
+    if !progress_has_session_record(w) {
+        return OpResult::fail_diag(
+            EXIT_GUARD,
+            Diagnostic::error(
+                Code::Invariant,
+                &format!("no session claim on {id}, adopt the claim before handing off"),
+            ),
         );
     }
     if !session_token_matches(w, eff) {
-        return OpResult::fail(
+        return OpResult::fail_diag(
             EXIT_GUARD,
-            "only the holding session can hand off; use `grove resume` first",
+            Diagnostic::error(
+                Code::Invariant,
+                "only the holding session can hand off, adopt the claim first",
+            ),
         );
     }
     let line = wrap_journal_record("handoff", jinv_session_restore_claim(id, w));
@@ -1086,18 +1226,23 @@ pub fn op_revert(st: &mut State, id: &str, eff: &str) -> OpResult {
         return OpResult {
             code: EXIT_NOTFOUND,
             out: String::new(),
-            err: String::new(),
+            diags: Vec::new(),
+            raw_err: String::new(),
             journal: Vec::new(),
         };
     };
     if w.kind != Kind::W {
-        return OpResult::fail(EXIT_ERR, "not a work item");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "not a work item");
     }
     if w.status != "progress" {
-        return OpResult::fail(EXIT_GUARD, &format!("{id} is not in progress"));
+        return OpResult::fail(
+            EXIT_GUARD,
+            Code::Invariant,
+            &format!("{id} is not in progress"),
+        );
     }
     if let Some(msg) = session_denial_progress_release(w, eff) {
-        return OpResult::fail(EXIT_GUARD, &msg);
+        return OpResult::fail_diag(EXIT_GUARD, msg);
     }
     let gs = goal_statuses_jdict(st, w);
     let inv = jinv_set_w_status_with_goals(id, "progress", gs, w);
@@ -1127,15 +1272,24 @@ pub fn op_undo(
         .map(|m| m.is_file() && m.len() > 0)
         .unwrap_or(false);
     if !meta_ok {
-        return OpResult::fail(
+        return OpResult::fail_diag(
             EXIT_ERR,
-            &format!("grove undo: no journal at {}", journal_path.display()),
+            Diagnostic::error_details(
+                Code::System,
+                "no journal to undo",
+                vec![("path".to_string(), journal_path.display().to_string())],
+            ),
         );
     }
     let steps: i64 = match steps_arg {
         Some(v) => match v.parse::<i64>() {
             Ok(n) => n.max(0),
-            Err(_) => return OpResult::fail(EXIT_ERR, "grove undo: bad --steps"),
+            Err(_) => {
+                return OpResult::fail_diag(
+                    EXIT_ERR,
+                    Diagnostic::error(Code::Interface, "bad --steps, expected an integer"),
+                )
+            }
         },
         None => 1,
     };
@@ -1144,22 +1298,26 @@ pub fn op_undo(
     }
     let (_, recs) = journal_read_nonempty_pairs(journal_path);
     let Some(idxs) = journal_tail_mutation_view(&recs, steps as usize) else {
-        return OpResult::fail(
+        let unit = if steps == 1 { "entry" } else { "entries" };
+        return OpResult::fail_diag(
             EXIT_ERR,
-            &format!(
-                "grove undo: journal has fewer than {} mutation entr{}",
-                steps,
-                if steps == 1 { "y" } else { "ies" }
+            Diagnostic::error_details(
+                Code::Interface,
+                &format!("journal has fewer than {steps} mutation {unit}"),
+                vec![("steps".to_string(), steps.to_string())],
             ),
         );
     };
     for i in idxs.iter().rev() {
         let rec = &recs[*i];
         let Some(inv) = rec.get("inv") else {
-            return OpResult::fail(EXIT_ERR, "grove undo: record missing inverse");
+            return OpResult::fail_diag(
+                EXIT_ERR,
+                Diagnostic::error(Code::System, "journal record is missing an inverse"),
+            );
         };
         if let Some(msg) = journal_apply_inverse(st, inv) {
-            return OpResult::fail(EXIT_INVARIANT, &msg);
+            return OpResult::fail_diag(EXIT_INVARIANT, msg);
         }
         let is_glossary = inv.get("op").and_then(|v| v.as_str()) == Some("glossary_rename_restore")
             && inv.get("glossary_changed").and_then(|v| v.as_bool()) == Some(true);
@@ -1181,7 +1339,10 @@ pub fn op_undo(
     }
     crate::ids::reconcile_counters(st);
     if journal_drop_lines_inplace(journal_path, &idxs).is_err() {
-        return OpResult::fail(EXIT_ERR, "grove undo: could not truncate journal");
+        return OpResult::fail_diag(
+            EXIT_ERR,
+            Diagnostic::error(Code::System, "could not truncate the journal"),
+        );
     }
     rederive_artifacts(st);
     let mut r = OpResult::ok();
