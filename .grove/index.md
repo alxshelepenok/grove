@@ -6,17 +6,17 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 47 | validated B 1 · answered Q 3 · accepted D 24 · active Discovery 19 |
-| V (uncertainty) | 11 | open Q 2 · pending B 4 · W below DoR 3 · uncovered surface 2 |
+| C (content) | 47 | validated B 1 · answered Q 3 · accepted D 23 · active Discovery 20 |
+| V (uncertainty) | 9 | open Q 2 · pending B 4 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
 
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
-| A-01 | Evals | 0 | 2 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 1 · uncovered surface 1 |
-| A-02 | API | 3 | 3 | C: validated B 0 · answered Q 0 · accepted D 3; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
+| A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-02 | API | 4 | 3 | C: validated B 0 · answered Q 0 · accepted D 3 · active Discovery 1; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-04 | MCP server | 10 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
+| A-04 | MCP server | 11 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 4; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-06 | Release | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-07 | Agent integrations | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -33,10 +33,6 @@
 | G-45 | Decision immutability holds for accepted decisions across CLI mutations in both implementations | count; current=3 target=3 | verified |
 | G-46 | Supersession completes the old decision in one command | count; current= target=1 | unverified |
 | G-47 | Accepted-decision guard texts are precise and single-sourced | count; current= target=2 | unverified |
-| G-48 | Completion guards cover blocks clearance and spike outputs at status=done in both implementations | count; current=4 target=4 | verified |
-| G-49 | Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations | count; current=5 target=5 | verified |
-| G-50 | Goal status derivation stays truthful across work transitions in both implementations | count; current=5 target=5 | verified |
-| G-51 | Archive cascade completes across shared resources in both implementations | count; current=3 target=4 | partial |
 
 ## Work items
 
@@ -65,19 +61,6 @@
 | W-210 | bug | Guard text for rejected attempts stops advising supersession | G-47 | clear | ⊤ | ready |  |
 | W-211 | refactor | Accepted-decision predicate collapses into a single helper | G-47 | clear | ⊤ | ready |  |
 | W-212 | refactor | Test catalogs derive from production field catalogs | G-45 | clear | ⊤ | done |  |
-| W-213 | bug | Julia reference rejects status=done with unmet blocks clearance (I5) and produces-less spikes (I2) | G-48 | clear | ⊤ | done |  |
-| W-214 | bug | Julia reference restricts manual goal verification to manual-fitness goals | G-49 | clear | ⊤ | done |  |
-| W-215 | refactor | Julia reference freezes terminal nodes behind one immutability predicate (I14) | G-49 | clear | ⊤ | done |  |
-| W-216 | bug | Julia reference gates feature ready transitions on a validated assumption chain | G-50 | clear | ⊤ | done |  |
-| W-217 | bug | Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals | G-50 | clear | ⊤ | done |  |
-| W-218 | bug | Rust core ports completion guards, the manual-verify tunnel and the terminal freeze | G-48, G-49 | clear | ⊤ | done |  |
-| W-219 | bug | Rust core ports the ready-transition gate and derivation truthfulness fixes | G-50 | clear | ⊤ | done |  |
-| W-220 | refactor | Conformance corpus pins completion guards, terminal immutability and derivation truthfulness | G-48, G-49, G-50 | clear | ⊤ | done |  |
-| W-221 | refactor | Skill docs sync for the terminal-immutability family | G-48, G-49, G-50 | clear | ⊤ | done |  |
-| W-222 | bug | Julia reference completes the archive cascade for shared resources | G-51 | clear | ⊤ | done |  |
-| W-223 | bug | Rust core ports the archive-cascade completion fix | G-51 | clear | ⊤ | done |  |
-| W-224 | refactor | Conformance corpus pins the archive cascade scenario | G-51 | clear | ⊤ | done |  |
-| W-225 | refactor | Skill docs sync for the archive cascade semantics | G-51 | clear | ⊥ | proposed |  |
 
 ## Decisions
 
@@ -91,7 +74,6 @@
 | D-10 | License changed from MIT to AGPL-3.0-only before the first release | accepted | D-08 |
 | D-13 | Bun toolchain and project code style for the dsh plugin | accepted |  |
 | D-16 | Neo4j integrates as a read-only Cypher projection of state.lock | proposed |  |
-| D-17 | Graph view geometry lives in a DOM-free module | accepted |  |
 | D-41 | Role-scoped MCP tool access configured in .grove/mcp.toml | accepted |  |
 | D-42 | Role-interdicted tool calls mirror unknown-tool responses | accepted |  |
 | D-43 | Per-role instructions replace the default text with automatic role echo | accepted |  |
@@ -204,6 +186,7 @@
 | Y-58 | Canonical node order compares family then number | natural-id-order | proposed |
 | Y-59 | Markdown prose reflows to a hard 80-column limit | markdown-reflow | proposed |
 | Y-60 | Skill corpus changes need fixture refresh and page mapping sync | embedded-skill, markdown-reflow | proposed |
+| Y-61 | Terminal-state integrity: freeze, falsifiable validation, honest derivation, last-goal retirement | terminal-integrity | active |
 
 ## Dependency graph
 
@@ -214,10 +197,6 @@ graph TD
   G_45["G-45: Decision immutability holds for accepted decisions across CLI mutations in both implementations"]:::goal
   G_46["G-46: Supersession completes the old decision in one command"]:::goal
   G_47["G-47: Accepted-decision guard texts are precise and single-sourced"]:::goal
-  G_48["G-48: Completion guards cover blocks clearance and spike outputs at status=done in both implementations"]:::goal
-  G_49["G-49: Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations"]:::goal
-  G_50["G-50: Goal status derivation stays truthful across work transitions in both implementations"]:::goal
-  G_51["G-51: Archive cascade completes across shared resources in both implementations"]:::goal
   W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_192["W-192: Parse mcp.toml tool config"]:::done
@@ -241,19 +220,6 @@ graph TD
   W_210["W-210: Guard text for rejected attempts stops advising supersession"]:::ready
   W_211["W-211: Accepted-decision predicate collapses into a single helper"]:::ready
   W_212["W-212: Test catalogs derive from production field catalogs"]:::done
-  W_213["W-213: Julia reference rejects status=done with unmet blocks clearance (I5) and produces-less spikes (I2)"]:::done
-  W_214["W-214: Julia reference restricts manual goal verification to manual-fitness goals"]:::done
-  W_215["W-215: Julia reference freezes terminal nodes behind one immutability predicate (I14)"]:::done
-  W_216["W-216: Julia reference gates feature ready transitions on a validated assumption chain"]:::done
-  W_217["W-217: Julia reference re-derives goal status on rejected and archived contributors and demotes below-target verified goals"]:::done
-  W_218["W-218: Rust core ports completion guards, the manual-verify tunnel and the terminal freeze"]:::done
-  W_219["W-219: Rust core ports the ready-transition gate and derivation truthfulness fixes"]:::done
-  W_220["W-220: Conformance corpus pins completion guards, terminal immutability and derivation truthfulness"]:::done
-  W_221["W-221: Skill docs sync for the terminal-immutability family"]:::done
-  W_222["W-222: Julia reference completes the archive cascade for shared resources"]:::done
-  W_223["W-223: Rust core ports the archive-cascade completion fix"]:::done
-  W_224["W-224: Conformance corpus pins the archive cascade scenario"]:::done
-  W_225["W-225: Skill docs sync for the archive cascade semantics"]:::feature
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
@@ -262,7 +228,6 @@ graph TD
   D_10["D-10: License changed from MIT to AGPL-3.0-only before the first release"]:::decision
   D_13["D-13: Bun toolchain and project code style for the dsh plugin"]:::decision
   D_16["D-16: Neo4j integrates as a read-only Cypher projection of state.lock"]:::decision
-  D_17["D-17: Graph view geometry lives in a DOM-free module"]:::decision
   D_41["D-41: Role-scoped MCP tool access configured in .grove/mcp.toml"]:::decision
   D_42["D-42: Role-interdicted tool calls mirror unknown-tool responses"]:::decision
   D_43["D-43: Per-role instructions replace the default text with automatic role echo"]:::decision
@@ -355,6 +320,7 @@ graph TD
   Y_58["Y-58: Canonical node order compares family then number"]:::discovery
   Y_59["Y-59: Markdown prose reflows to a hard 80-column limit"]:::discovery
   Y_60["Y-60: Skill corpus changes need fixture refresh and page mapping sync"]:::discovery
+  Y_61["Y-61: Terminal-state integrity: freeze, falsifiable validation, honest derivation, last-goal retirement"]:::discovery
   A_01["A-01: Evals"]:::area
   A_02["A-02: API"]:::area
   A_03["A-03: Rust core"]:::area
@@ -521,6 +487,10 @@ graph TD
   W_207 -->|implements| D_50
   W_209 -->|implements| D_51
   W_210 -->|implements| D_52
+  W_213 -->|produces| Y_61
+  W_214 -->|produces| Y_61
+  W_216 -->|produces| Y_61
+  W_222 -->|produces| Y_61
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78
