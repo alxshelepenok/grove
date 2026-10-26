@@ -7,13 +7,13 @@
 | Measure | Count | Composition |
 | --- | --- | --- |
 | C (content) | 47 | validated B 1 · answered Q 3 · accepted D 24 · active Discovery 19 |
-| V (uncertainty) | 13 | open Q 2 · pending B 4 · W below DoR 4 · uncovered surface 3 |
+| V (uncertainty) | 11 | open Q 2 · pending B 4 · W below DoR 3 · uncovered surface 2 |
 
 ## Areas
 
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
-| A-01 | Evals | 0 | 4 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 2 |
+| A-01 | Evals | 0 | 2 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 1 · uncovered surface 1 |
 | A-02 | API | 3 | 3 | C: validated B 0 · answered Q 0 · accepted D 3; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 10 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 3; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -36,7 +36,7 @@
 | G-48 | Completion guards cover blocks clearance and spike outputs at status=done in both implementations | count; current=4 target=4 | verified |
 | G-49 | Terminal status confers immutability (I14) with a manual-verify tunnel in both implementations | count; current=5 target=5 | verified |
 | G-50 | Goal status derivation stays truthful across work transitions in both implementations | count; current=5 target=5 | verified |
-| G-51 | Archive cascade completes across shared resources in both implementations | count; current=2 target=4 | partial |
+| G-51 | Archive cascade completes across shared resources in both implementations | count; current=3 target=4 | partial |
 
 ## Work items
 
@@ -76,7 +76,7 @@
 | W-221 | refactor | Skill docs sync for the terminal-immutability family | G-48, G-49, G-50 | clear | ⊤ | done |  |
 | W-222 | bug | Julia reference completes the archive cascade for shared resources | G-51 | clear | ⊤ | done |  |
 | W-223 | bug | Rust core ports the archive-cascade completion fix | G-51 | clear | ⊤ | done |  |
-| W-224 | refactor | Conformance corpus pins the archive cascade scenario | G-51 | clear | ⊥ | proposed |  |
+| W-224 | refactor | Conformance corpus pins the archive cascade scenario | G-51 | clear | ⊤ | done |  |
 | W-225 | refactor | Skill docs sync for the archive cascade semantics | G-51 | clear | ⊥ | proposed |  |
 
 ## Decisions
@@ -138,7 +138,7 @@
 | T-09 | Shared TOML machinery concentrates inside the projects module | done | W-196 | W-196 |
 | T-10 | Accepted-decision rule is duplicated across core call sites | open | W-211 | – |
 | T-11 | Test suites restate the production field catalog | open | W-212 | – |
-| T-12 | Terminal integrity and completion gates across engines | open | W-215, W-220, W-221 | – |
+| T-12 | Terminal integrity and completion gates across engines | open | W-215, W-220, W-221, W-224 | – |
 
 ## Discoveries
 
@@ -252,7 +252,7 @@ graph TD
   W_221["W-221: Skill docs sync for the terminal-immutability family"]:::done
   W_222["W-222: Julia reference completes the archive cascade for shared resources"]:::done
   W_223["W-223: Rust core ports the archive-cascade completion fix"]:::done
-  W_224["W-224: Conformance corpus pins the archive cascade scenario"]:::feature
+  W_224["W-224: Conformance corpus pins the archive cascade scenario"]:::done
   W_225["W-225: Skill docs sync for the archive cascade semantics"]:::feature
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -421,6 +421,7 @@ graph TD
   T_12 -->|causes| W_215
   T_12 -->|causes| W_220
   T_12 -->|causes| W_221
+  T_12 -->|causes| W_224
   W_02 -->|produces| Y_02
   W_03 ==>|blocks| W_06
   W_03 -->|produces| D_11

@@ -523,6 +523,7 @@ scenario!(manual_tunnel, "manual-tunnel");
 scenario!(terminal_immutability, "terminal-immutability");
 scenario!(ready_gate, "ready-gate");
 scenario!(derivation_demotion, "derivation-demotion");
+scenario!(archive_cascade, "archive-cascade");
 scenario!(next_log, "next-log");
 scenario!(decay_render, "decay-render");
 scenario!(diff_repair, "diff-repair");

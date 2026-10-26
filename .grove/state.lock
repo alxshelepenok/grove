@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:2638ef49614e6537d3776e9b444fb41bd58b8065ca4920e701070a2c4ffed7b1
+# checksum: sha256:59320d22da404650791b02ecbaa87b963d290d2bfa4b9aaa5bbda17c5ff68300
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -41,7 +41,7 @@ g G-50 status=verified fitness_kind=count t_created=2026-10-24T15:34:47Z t_updat
 g G-51 status=partial fitness_kind=count t_created=2026-10-24T15:45:33Z t_updated=2026-10-25T23:50:32Z "Archive cascade completes across shared resources in both implementations"
   area: A-01
   fitness_target: 4
-  fitness_current: 2
+  fitness_current: 3
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -594,7 +594,7 @@ w W-223 type=bug status=done cynefin=clear t_created=2026-10-24T15:45:35Z t_upda
   evidence:
     | rust: archive_orphan_ids mirrors the julia sweep per D-56 (non-archived w/d/q/b with a non-empty raw goal-reference set and no live non-archived citations, closing goal treated as archived; themes, discoveries, areas and goal-less nodes excluded; goals fields untouched); cmd_archive computes the sweep before mutations, extends the progress-session guard to swept work items, applies it after the exclusive mass and lists mass plus swept ids in the same journal archive record; goal_reference_sets untouched so distill pools and stats archive pools stay byte-stable; stderr texts byte-identical to the julia reference; tests/archive.rs +2 unit testsets (shared pair retirement, transitive d coverage with goal-less and theme exclusions); full cargo test all binaries green.
 
-w W-224 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:45:36Z t_updated=2026-10-24T16:18:03Z "Conformance corpus pins the archive cascade scenario"
+w W-224 type=refactor status=done cynefin=clear t_created=2026-10-24T15:45:36Z t_updated=2026-10-26T00:23:26Z "Conformance corpus pins the archive cascade scenario"
   goals: G-51
   fitness: G-51=+1
   surface: packages/grove/conformance/scenarios.jl, packages/grove/conformance/corpus
@@ -604,6 +604,8 @@ w W-224 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:45:3
     | the corpus is the single parity contract for the cascade semantics (W-207 pattern)
   evidence_strategy:
     | conformance run prints N scenarios green including archive-cascade; rust corpus_replay byte-identical.
+  evidence:
+    | conformance: new archive-cascade scenario (18 steps) recorded from the fixed julia - shared bug W citing two verified goals, distill-null both; after archive G-01 the W stays active with its goals field still reading G-01,G-02 (field-intactness pinned via show W-01); after archive G-02 the W is archived with the goals field still intact; journal archive record ids pin G-02 then G-02+W-01; final check green. julia verify 36 scenarios green; rust corpus_replay 39/39 byte-identical on first pass (scenario! archive_cascade registered); full cargo test green; full julia runtests green except one known Windows ENOTEMPTY teardown flake (test_discovery_behavior.jl:103, ninth location this session, 0 failed assertions, standalone rerun green with conformance).
 
 w W-225 type=refactor status=proposed cynefin=clear t_created=2026-10-24T15:45:38Z t_updated=2026-10-24T16:18:04Z "Skill docs sync for the archive cascade semantics"
   goals: G-51
@@ -979,7 +981,7 @@ t T-10 status=open t_created=2026-10-24T00:32:10Z t_updated=2026-10-24T00:32:41Z
 
 t T-11 status=open t_created=2026-10-24T00:32:11Z t_updated=2026-10-24T00:32:43Z "Test suites restate the production field catalog"
 
-t T-12 status=open t_created=2026-10-24T18:57:59Z t_updated=2026-10-25T08:40:53Z "Terminal integrity and completion gates across engines"
+t T-12 status=open t_created=2026-10-24T18:57:59Z t_updated=2026-10-25T23:56:55Z "Terminal integrity and completion gates across engines"
 
 y Y-01 status=active t_created=2026-07-20T03:15:28Z t_updated=2026-09-26T00:18:53Z "Normalize at capture, never inject test clocks"
   tags: normalization
@@ -1385,6 +1387,7 @@ e T-11 causes W-212 t_created=2026-10-24T00:32:43Z
 e T-12 causes W-215 t_created=2026-10-24T18:59:00Z
 e T-12 causes W-220 t_created=2026-10-24T20:51:59Z
 e T-12 causes W-221 t_created=2026-10-25T08:40:53Z
+e T-12 causes W-224 t_created=2026-10-25T23:56:55Z
 e W-02 produces Y-02 t_created=2026-07-27T18:20:21Z
 e W-03 blocks W-06 t_created=2026-07-19T01:21:11Z
 e W-03 produces D-11 t_created=2026-08-08T23:06:24Z
