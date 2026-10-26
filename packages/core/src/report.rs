@@ -12,16 +12,6 @@ use crate::session::{
 use crate::status::{alignment_triggers, listnodes};
 use std::path::Path;
 
-fn silent(code: i32) -> OpResult {
-    OpResult {
-        code,
-        out: String::new(),
-        diags: Vec::new(),
-        raw_err: String::new(),
-        journal: Vec::new(),
-    }
-}
-
 fn julia_dict_copy(pairs: impl Iterator<Item = (String, JVal)>) -> JuliaDict {
     let mut stage1 = JuliaDict::new();
     for (k, v) in pairs {
@@ -96,7 +86,7 @@ fn load_state(ctx: &CliCtx) -> Result<State, OpResult> {
 
 pub fn cmd_deps(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return silent(EXIT_ERR);
+        return OpResult::fail(EXIT_ERR, Code::Interface, "deps requires a node id");
     }
     let st = match load_state(ctx) {
         Ok(s) => s,
@@ -126,7 +116,7 @@ pub fn cmd_deps(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpRes
 
 pub fn cmd_impact(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return silent(EXIT_ERR);
+        return OpResult::fail(EXIT_ERR, Code::Interface, "impact requires a node id");
     }
     let st = match load_state(ctx) {
         Ok(s) => s,
@@ -230,14 +220,18 @@ pub fn cmd_triage(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> Op
 
 pub fn cmd_dor(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return silent(EXIT_ERR);
+        return OpResult::fail(EXIT_ERR, Code::Interface, "dor requires a work id");
     }
     let st = match load_state(ctx) {
         Ok(s) => s,
         Err(e) => return e,
     };
     let Some(n) = st.nodes.get(&pos[0]) else {
-        return silent(EXIT_NOTFOUND);
+        return OpResult::fail(
+            EXIT_NOTFOUND,
+            Code::Interface,
+            &format!("not found {}", pos[0]),
+        );
     };
     if ctx.json {
         let conj: Vec<JVal> = dor_breakdown(&st, n, false)
@@ -282,14 +276,18 @@ pub fn cmd_dor(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpResu
 
 pub fn cmd_show(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return silent(EXIT_ERR);
+        return OpResult::fail(EXIT_ERR, Code::Interface, "show requires a node id");
     }
     let st = match load_state(ctx) {
         Ok(s) => s,
         Err(e) => return e,
     };
     let Some(n) = st.nodes.get(&pos[0]) else {
-        return silent(EXIT_NOTFOUND);
+        return OpResult::fail(
+            EXIT_NOTFOUND,
+            Code::Interface,
+            &format!("not found {}", pos[0]),
+        );
     };
     if ctx.json {
         let mut r = OpResult::ok();
@@ -761,7 +759,7 @@ pub fn cmd_log(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResul
             ok = true;
         }
         if !ok {
-            return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("not found: {id0}"));
+            return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("not found {id0}"));
         }
         lfilt = Some(id0.clone());
     }

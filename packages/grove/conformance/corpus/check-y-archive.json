@@ -43,7 +43,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "error SYSTEM lock parse error at line 6: y record in :archive section\n",
+      "stderr": "error SYSTEM lock file could not be parsed\n  error=lock parse error at line 6: y record in :archive section\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n:archive\ny Y-99 status=active \"Corrupt\"\n",
       "journal": null
     }

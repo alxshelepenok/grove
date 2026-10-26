@@ -83,7 +83,7 @@ end
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         rc, etxt = areas_capture_err(["add", "a", "--root=$tmp", "--quiet"])
         @test rc != 0
-        @test occursin("add a: --title is required", etxt)
+        @test occursin("add a, --title is required", etxt)
         @test M.main(["add", "a", "--title=Platform", "--root=$tmp", "--quiet"]) == 0
         @test M.main(["add", "a", "--title=CLI", "--surface=src/a.jl,src/b.jl",
                       "--root=$tmp", "--quiet"]) == 0
@@ -111,7 +111,7 @@ end
         rc2, etxt2 = areas_capture_err(["add", "g", "--title=BadArea", "--area=A-99",
                                         "--root=$tmp", "--quiet"])
         @test rc2 == M.EXIT_ERR
-        @test occursin("add g: unknown --area id: A-99", etxt2)
+        @test occursin("add g, unknown --area id A-99", etxt2)
 
         rc3, _ = areas_capture_err(["add", "g", "--title=NotArea", "--area=W-01",
                                     "--root=$tmp", "--quiet"])
@@ -140,7 +140,7 @@ end
 
         rc, etxt = areas_capture_err(["set", "G-01", "area=A-99", "--root=$tmp", "--quiet"])
         @test rc != 0
-        @test occursin("set: unknown area: A-99", etxt)
+        @test occursin("set unknown area A-99, expected an existing A-NN node", etxt)
         @test M.read_lock(lock).nodes["G-01"].fields[:area] == "A-02"
 
         @test M.main(["undo", "--root=$tmp", "--quiet"]) == 0

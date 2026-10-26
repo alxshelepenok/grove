@@ -261,7 +261,7 @@ fn replay_truth_scenario() {
         op_add(&mut ctx.st, "g", &kw(&[("title", "Goal bad")])),
         1,
         "",
-        "error INTERFACE add g, --area=A-NN is required (create an area node first)\n",
+        "error INTERFACE add g, --area=A-NN is required, create an area node first\n",
         &[]
     );
     step!(
@@ -274,11 +274,11 @@ fn replay_truth_scenario() {
         ),
         1,
         "",
-        "error INTERFACE add g: unknown --area id: A-99\n",
+        "error INTERFACE add g, unknown --area id A-99\n",
         &[]
     );
     step!(ctx, "add_g_nofitness", op_add(&mut ctx.st, "g", &kw(&[("title", "Goal bad"), ("area", "A-01")])), 1, "",
-        "error INTERFACE add g: fitness is required (pass --fitness-kind + --fitness-target, or --fitness-kind=manual for n/a)\n", &[]);
+        "error INTERFACE add g, fitness is required, pass --fitness-kind and --fitness-target or --fitness-kind=manual\n", &[]);
     step!(
         ctx,
         "add_g_notarget",
@@ -293,7 +293,7 @@ fn replay_truth_scenario() {
         ),
         1,
         "",
-        "error INTERFACE add g: --fitness-target is required for --fitness-kind=count\n",
+        "error INTERFACE add g, --fitness-target is required for --fitness-kind=count\n",
         &[]
     );
     step!(
@@ -306,7 +306,7 @@ fn replay_truth_scenario() {
         ),
         1,
         "",
-        "error INTERFACE add y: --title is required\n",
+        "error INTERFACE add y, --title is required\n",
         &[]
     );
     step!(
@@ -315,7 +315,7 @@ fn replay_truth_scenario() {
         op_add(&mut ctx.st, "y", &kw(&[("title", "X"), ("from", "W-01")])),
         1,
         "",
-        "error INTERFACE add y: --tags=<t1,t2> is required (≥1 glossary term)\n",
+        "error INTERFACE add y, --tags requires at least one glossary term\n",
         &[]
     );
     step!(
@@ -328,7 +328,7 @@ fn replay_truth_scenario() {
         ),
         1,
         "",
-        "error INTERFACE add y: --surface absent requires --why prose\n",
+        "error INTERFACE add y, --surface absent requires --why prose\n",
         &[]
     );
     step!(
@@ -345,7 +345,7 @@ fn replay_truth_scenario() {
         ),
         1,
         "",
-        "error INTERFACE add y: --from=<W-NN|D-NN|Q-NN|B-NN> is required (≥1 provenance record)\n",
+        "error INTERFACE add y, --from requires at least one provenance record\n",
         &[]
     );
     step!(
@@ -601,7 +601,7 @@ fn replay_truth_scenario() {
         ]
     );
     step!(ctx, "set_g_fitness_legacy_rejected", op_set(&mut ctx.st, "G-02", "fitness", "1/2", EFF), 1, "",
-        "error INTERFACE set: key fitness is retired (legacy label); use fitness_kind + set <G> fitness_target=N (empty value removes a legacy label)\n", &[]);
+        "error INTERFACE set fitness is retired, use fitness_kind and fitness_target or an empty value to remove a legacy label\n", &[]);
     step!(
         ctx,
         "set_g_fitness_target",
@@ -669,7 +669,7 @@ fn replay_truth_scenario() {
         op_set(&mut ctx.st, "G-02", "fitness_kind", "bogus", EFF),
         1,
         "",
-        "error INTERFACE bad fitness_kind (expected one of: count, ratio, boolean, metric, manual)\n",
+        "error INTERFACE bad fitness_kind, expected one of count, ratio, boolean, metric, manual\n",
         &[]
     );
     step!(
@@ -689,7 +689,7 @@ fn replay_truth_scenario() {
         op_set(&mut ctx.st, "G-02", "area", "A-99", EFF),
         1,
         "",
-        "error INTERFACE set: unknown area: A-99 (expected an existing A-NN node)\n",
+        "error INTERFACE set unknown area A-99, expected an existing A-NN node\n",
         &[]
     );
     step!(
@@ -913,7 +913,7 @@ fn replay_truth_scenario() {
             r,
             5,
             "",
-            "error INTERFACE glossary rename: `nosuchterm` is neither in glossary.md nor used by any discovery\n",
+            "error INTERFACE glossary term nosuchterm is absent and unused by discoveries\n",
             &[],
         );
         let r = op_glossary_rename(&mut ctx.st, &mut g, "term-two", "term-five");
@@ -922,7 +922,7 @@ fn replay_truth_scenario() {
             r,
             4,
             "",
-            "error INVARIANT glossary rename: `term-five` already present in glossary.md\n",
+            "error INVARIANT glossary term term-five already exists\n",
             &[],
         );
         let r = op_glossary_rename(&mut ctx.st, &mut g, "term-two", "term-two");
@@ -931,7 +931,7 @@ fn replay_truth_scenario() {
             r,
             1,
             "",
-            "error INTERFACE glossary rename: old and new are identical\n",
+            "error INTERFACE glossary rename terms are identical\n",
             &[],
         );
     }
@@ -1177,7 +1177,7 @@ fn replay_truth_scenario() {
         op_resume(&mut ctx.st, "W-02", EFF),
         5,
         "",
-        "",
+        "error INTERFACE not found W-02\n",
         &[]
     );
     pin(TS_OLD);
@@ -1283,21 +1283,21 @@ fn renumber_rewires_goal_fitness_theme_refs() {
     assert_eq!(r.code, 1);
     assert_eq!(
         r.err_rendered(false),
-        "error INTERFACE rename: missing record G-77\n"
+        "error INTERFACE renumber could not be applied\n  error=rename: missing record G-77\n"
     );
 
     let r = op_renumber(&mut st, "G-01", "T-09", EFF);
     assert_eq!(r.code, 1);
     assert_eq!(
         r.err_rendered(false),
-        "error INTERFACE rename: target already exists T-09\n"
+        "error INTERFACE renumber could not be applied\n  error=rename: target already exists T-09\n"
     );
 
     let r = op_renumber(&mut st, "G-01", "W-77", EFF);
     assert_eq!(r.code, 1);
     assert_eq!(
         r.err_rendered(false),
-        "error INTERFACE rename: family mismatch G-01 vs W-77\n"
+        "error INTERFACE renumber could not be applied\n  error=rename: family mismatch G-01 vs W-77\n"
     );
 }
 
@@ -1308,31 +1308,31 @@ fn missing_node_and_bad_arg_messages() {
 
     let r = op_set(&mut st, "W-99", "title", "x", EFF);
     assert_eq!(r.code, 5);
-    assert_eq!(r.err_rendered(false), "error INTERFACE not found: W-99\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not found W-99\n");
 
     let r = op_field(&mut st, "W-99", "ac", "add", Some("x"), EFF);
     assert_eq!(r.code, 5);
-    assert_eq!(r.err_rendered(false), "error INTERFACE not found: W-99\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not found W-99\n");
 
     let r = op_fitness(&mut st, "W-99", "G-01", 1, EFF);
     assert_eq!(r.code, 5);
-    assert_eq!(r.err_rendered(false), "error INTERFACE missing: W-99\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE missing W-99\n");
 
     let r = op_fitness(&mut st, "W-01", "G-99", 1, EFF);
     assert_eq!(r.code, 5);
-    assert_eq!(r.err_rendered(false), "error INTERFACE missing: G-99\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE missing G-99\n");
 
     let r = op_handoff(&mut st, "W-99", Some("tok"), EFF);
     assert_eq!(r.code, 5);
-    assert_eq!(r.err_rendered(false), "");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not found W-99\n");
 
     let r = op_revert(&mut st, "W-99", EFF);
     assert_eq!(r.code, 5);
-    assert_eq!(r.err_rendered(false), "");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not found W-99\n");
 
     let r = op_add(&mut st, "z", &kw(&[("title", "x")]));
     assert_eq!(r.code, 1);
-    assert_eq!(r.err_rendered(false), "error INTERFACE unknown kind: z\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE unknown kind z\n");
 
     let r = op_add(
         &mut st,
@@ -1349,12 +1349,12 @@ fn missing_node_and_bad_arg_messages() {
     assert_eq!(r.code, 1);
     assert_eq!(
         r.err_rendered(false),
-        "error INTERFACE unknown label: bogus\n"
+        "error INTERFACE unknown label bogus\n"
     );
 
     let r = op_field(&mut st, "W-01", "ac", "bogus", Some("x"), EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err_rendered(false), "error INTERFACE unknown op: bogus\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE unknown op bogus\n");
 
     let r = op_field(&mut st, "W-01", "ac", "add", None, EFF);
     assert_eq!(r.code, 1);
@@ -1382,8 +1382,7 @@ fn missing_node_and_bad_arg_messages() {
     assert_eq!(r.code, 1);
     assert_eq!(
         r.err_rendered(false),
-        "",
-        "non-numeric rm index: empty stderr (Julia crashes)"
+        "error INTERFACE index must be an integer\n"
     );
 }
 
@@ -1427,7 +1426,7 @@ fn add_g_legacy_label_rejected() {
     assert_eq!(r.code, 1);
     assert_eq!(
         r.err_rendered(false),
-        "error INTERFACE add g: --fitness is retired (legacy label); use --fitness-kind + --fitness-target\n"
+        "error INTERFACE add g, --fitness is retired, use --fitness-kind and --fitness-target\n"
     );
     assert!(r.journal.is_empty(), "rejected add must not journal");
     assert_eq!(serialize(&st), before, "rejected add must not mutate");

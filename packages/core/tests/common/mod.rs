@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use grove_core::{Code, Edge, FieldValue, Kind, Node, State};
+use grove_core::{validate_diag_text, Code, Edge, FieldValue, Kind, Node, State};
 use std::collections::BTreeMap;
 
 pub fn corpus_json(name: &str) -> serde_json::Value {
@@ -28,25 +28,33 @@ pub fn step_exit(sc: &serde_json::Value, i: usize) -> i64 {
     sc["steps"][i]["exit"].as_i64().unwrap()
 }
 
-pub fn assert_rendered_diag_codes(text: &str) {
+pub fn assert_rendered_diagnostics(text: &str, allow_raw: bool) {
+    let mut diagnostic_open = false;
     for line in text.lines() {
         let mut tokens = line.split_whitespace();
-        let Some(severity) = tokens.next() else {
+        let first = tokens.next().unwrap_or("");
+        if matches!(first, "error" | "warning" | "info") {
+            let code = tokens.next().expect("diagnostic code must be present");
+            assert!(
+                Code::parse(code).is_some(),
+                "bad diagnostic code {code} in {line}"
+            );
+            let authored = tokens.collect::<Vec<_>>().join(" ");
+            assert!(!authored.is_empty(), "diagnostic text is missing in {line}");
+            validate_diag_text(&authored).unwrap_or_else(|e| panic!("{e} in {line}"));
+            diagnostic_open = true;
+        } else if line.starts_with("  ") && line.contains('=') && diagnostic_open {
             continue;
-        };
-        if !matches!(severity, "error" | "warning" | "info") {
-            continue;
+        } else if line.starts_with("usage:") || allow_raw {
+            diagnostic_open = false;
+        } else {
+            panic!("unstructured stderr line {line:?}");
         }
-        let code = tokens.next().expect("diagnostic code must be present");
-        assert!(
-            Code::parse(code).is_some(),
-            "bad diagnostic code {code} in {line}"
-        );
-        assert!(
-            tokens.next().is_some(),
-            "diagnostic text is missing in {line}"
-        );
     }
+}
+
+pub fn assert_rendered_diag_codes(text: &str) {
+    assert_rendered_diagnostics(text, true);
 }
 
 pub fn assert_json_diag_codes(value: &serde_json::Value) {
@@ -54,6 +62,9 @@ pub fn assert_json_diag_codes(value: &serde_json::Value) {
         serde_json::Value::Object(obj) => {
             if obj.contains_key("severity") && obj.contains_key("code") && obj.contains_key("text")
             {
+                assert!(obj
+                    .keys()
+                    .all(|k| matches!(k.as_str(), "severity" | "code" | "text" | "details")));
                 let severity = obj["severity"]
                     .as_str()
                     .expect("diagnostic severity must be a string");
@@ -62,9 +73,13 @@ pub fn assert_json_diag_codes(value: &serde_json::Value) {
                     .as_str()
                     .expect("diagnostic code must be a string");
                 assert!(Code::parse(code).is_some(), "bad diagnostic code {code}");
-                assert!(obj["text"].is_string(), "diagnostic text must be a string");
+                let text = obj["text"]
+                    .as_str()
+                    .expect("diagnostic text must be a string");
+                validate_diag_text(text).unwrap();
                 if let Some(details) = obj.get("details") {
-                    assert!(details.is_object(), "diagnostic details must be an object");
+                    let details = details.as_object().expect("details must be an object");
+                    assert!(details.values().all(|v| v.is_string()));
                 }
             }
             for child in obj.values() {

@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:7033f2e8a4afaf23fa6a066afd1b12653ad6bc961c0f4ba46844efa9a1fb7939
+# checksum: sha256:39afd0ff2466e46f14a1f8225254282e6e1dbde616e07e01d4ef73fd976ee5cb
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -23,8 +23,10 @@ g G-47 status=unverified fitness_kind=count t_created=2026-10-24T00:32:10Z t_upd
   area: A-02
   fitness_target: 2
 
-g G-52 status=unverified fitness_kind=manual t_created=2026-10-26T01:41:46Z t_updated=2026-10-26T01:41:58Z "Unify result formats across CLI and MCP surfaces"
+g G-52 status=verified fitness_kind=manual t_created=2026-10-26T01:41:46Z t_updated=2026-10-26T22:29:50Z "Unify result formats across CLI and MCP surfaces"
   area: A-02
+  notes:
+    | Defer distillation while accepted decisions D-57 and D-58 retain the design rationale. --distill-deferred
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -429,7 +431,7 @@ w W-226 type=feature status=done cynefin=complicated t_created=2026-10-26T03:12:
     | Executed real CLI calls: init prints `info INITIALISED` with a path detail and exits 0; `set W-99 status=ready` prints `error NOT_FOUND not found W-99` and exits 5; `set W-01 status=bogus` prints `error STATUS_INVALID invalid status` and exits 1; an unknown command prints `error UNKNOWN_COMMAND` plus the help document on stderr; `--quiet` suppresses info notices; `check --json` on a decayed project prints errors as diagnostic objects with severity, code, text, and details and exits 3.
     | Executed: cargo build -p grove-core --bin grove and cargo build -p grove-mcp succeed with zero warnings under cargo check --all-targets; the grove-mcp suite passes 24 tests; a real tools/call set request for a missing id returns content text `error NOT_FOUND not found W-99` with isError true, preserving the protocol envelope for the W-228 adaptation.
 
-w W-227 type=feature status=ready cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T15:41:25Z "Match structured diagnostics in Julia"
+w W-227 type=feature status=done cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T22:26:59Z "Match structured diagnostics in Julia"
   goals: G-52
   fitness: G-52=+1
   surface: packages/grove/src, packages/grove/test
@@ -442,8 +444,14 @@ w W-227 type=feature status=ready cynefin=complicated t_created=2026-10-26T03:12
     | An equivalent Julia diagnostic value and shared emit path can produce the same canonical text and JSON objects without changing integer exit codes or document output.
   evidence_strategy:
     | Run focused Julia diagnostic testsets and Pkg.test. Exercise equivalent Julia CLI success and failure calls and compare canonical text, JSON diagnostics, and exit codes with Rust.
+  evidence:
+    | Executed focused Julia diagnostic tests with 106 assertions passing, covering the closed categories, severity independence, text rejection, canonical rendering, JSON objects, real CLI diagnostics, missing locks, quiet success, missing nodes, and absent arguments. The missing-lock path now returns from main with exit 1 instead of terminating the process.
+    | Executed real target/debug/grove.exe and julia bin/grove.jl comparison. Seven equivalent scenarios per implementation produced identical normalized stdout stderr and exits for initialisation, check, duplicate init, missing node, decision creation and acceptance, and terminal mutation. This covered OPERATIONAL SYSTEM INTERFACE and INVARIANT with exits 0 1 4 and 5.
+    | Executed six additional exact Rust and Julia CLI failure comparisons. Missing deps argument, nonnumeric field index, nonnumeric fitness delta, missing archive goal, missing resume work, and missing glossary operation all returned identical canonical INTERFACE text and exits 1 or 5. Separate real checksum checks returned SYSTEM with exit 2 in both implementations.
+    | Executed real check --json failure against a recanonicalized lock with a goal missing its area. Rust and Julia both returned exit 3 without duplicate stderr and emitted an errors array containing a structured INVARIANT object with severity and text.
+    | Executed julia --project=packages/grove -e "using Pkg; Pkg.test()" to completion with final output Testing grove tests passed. The suite included 39 byte-identical conformance scenarios and all diagnostic validator testsets with no failures.
 
-w W-228 type=feature status=ready cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T15:41:25Z "Expose neutral diagnostics through MCP"
+w W-228 type=feature status=done cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T21:20:03Z "Expose neutral diagnostics through MCP"
   goals: G-52
   fitness: G-52=+1
   surface: packages/core/src/mcp.rs, packages/mcp/tests/mcp.rs
@@ -456,8 +464,11 @@ w W-228 type=feature status=ready cynefin=complicated t_created=2026-10-26T03:12
     | Structured Rust diagnostics let MCP preserve compatible text content and isError while removing stream separators, textual exit suffixes, and CLI redirection from operational messages.
   evidence_strategy:
     | Run MCP tests covering argument failure, DoR refusal, terminal immutability, status guidance, and info-only success. Validate structure, punctuation, numeric errors, and absence of CLI invocations through real tools/call requests.
+  evidence:
+    | Executed cargo test -p grove-mcp --test mcp with 25 passed and 0 failed. Real tools/call tests cover System Interface Invariant and Operational diagnostics, structuredContent exitCode values 1 4 and 5, diagnostic JSON objects, argument errors, DoR refusal, accepted decision immutability, status guidance, info-only check success, and binary NDJSON. Assertions reject stderr separators textual exit suffixes and grove undo guidance.
+    | Executed real JSON-RPC parse and protocol tests. Protocol errors retain JSON-RPC numeric codes and expose canonical rendered diagnostics plus structured diagnostic data. Document payload tests for specification packets and arbitrary graph content remain green.
 
-w W-229 type=feature status=ready cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T15:41:25Z "Pin diagnostic contract in specification and conformance"
+w W-229 type=feature status=done cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T22:27:27Z "Pin diagnostic contract in specification and conformance"
   goals: G-52
   fitness: G-52=+1
   surface: docs/specification.md, packages/grove/conformance, packages/core/tests/common/mod.rs, packages/core/tests/corpus_replay.rs
@@ -470,8 +481,11 @@ w W-229 type=feature status=ready cynefin=complicated t_created=2026-10-26T03:12
     | Normative grammar plus validators in the Julia recorder and Rust replay can enforce diagnostic parity while excluding help, documents, pure data, and user-authored content.
   evidence_strategy:
     | Run conformance verification and byte-identical Rust corpus replay after regenerating affected fixtures from Julia. Run the Markdown formatter check for the specification.
+  evidence:
+    | Executed julia --project=packages/grove packages/grove/conformance/run.jl verify with all 39 scenarios green. Fixtures were generated by the Julia recorder. Julia and Rust validators reject legacy codes, forbidden authored punctuation, CLI invocation guidance, unknown JSON fields, non-string details, unstructured stderr, and allow only usage help documents data and raw detail exclusions.
+    | Executed cargo test --workspace with all tests passing, including 39 byte-identical Rust corpus replay tests and 26 MCP tests. Executed bash bin/md-format.sh --check docs/specification.md successfully. Specification section 8.5 defines the exact diagnostic object categories grammar and exclusions, and section 8.6 defines structuredContent exitCode diagnostics isError and JSON-RPC error data.
 
-w W-230 type=feature status=ready cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T15:41:25Z "Verify unified diagnostics end to end"
+w W-230 type=feature status=done cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T22:28:17Z "Verify unified diagnostics end to end"
   goals: G-52
   fitness: G-52=+1
   surface: packages/core, packages/grove, packages/mcp, docs/specification.md
@@ -484,6 +498,10 @@ w W-230 type=feature status=ready cynefin=complicated t_created=2026-10-26T03:12
     | Workspace tests, Julia tests, conformance replay, and real CLI and MCP calls can demonstrate the complete diagnostic contract on the deliverable.
   evidence_strategy:
     | Run cargo test --workspace, Julia Pkg.test, conformance verify, and Markdown checks. Exercise actual CLI and MCP success and failure scenarios and run grove check.
+  evidence:
+    | Final deliverable verification passed cargo fmt --all and cargo test --workspace, including 39 Rust corpus replay tests, desktop tests, and 26 MCP tests. Julia Pkg.test completed with Testing grove tests passed. Julia conformance verify reported 39 scenarios green. Markdown check, cargo fmt check, and git diff --check passed.
+    | Real Rust and Julia CLI calls matched across 13 success and failure scenarios with normalized output and exits 0 1 4 and 5. Separate checksum calls returned SYSTEM exit 2 and check --json returned structured INVARIANT exit 3. Real MCP NDJSON verified OPERATIONAL and INTERFACE diagnostics, structuredContent exitCode, isError, no stderr separator, no textual exit suffix, and no CLI redirection. Real MCP startup argument and role failures also used canonical diagnostics.
+    | W-226 and W-231 were already done with evidence. W-227 W-228 W-229 now have executed semantic evidence and fitness records before completion. Intentional compatibility changes are four diagnostic categories replacing condition-specific codes, validated neutral authored text, diagnostics on formerly silent failures, structuredContent for MCP, and removal of MCP stderr separators and textual exit suffixes. No verification remains blocked.
 
 w W-231 type=feature status=done cynefin=complicated t_created=2026-10-26T15:38:06Z t_updated=2026-10-26T20:20:57Z "Collapse diagnostic codes into four semantic categories"
   goals: G-52

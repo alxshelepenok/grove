@@ -89,7 +89,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "error INTERFACE add y: --surface absent requires --why prose\n",
+      "stderr": "error INTERFACE add y, --surface absent requires --why prose\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n"
     },
@@ -136,7 +136,7 @@
       ],
       "exit": 5,
       "stdout": "",
-      "stderr": "",
+      "stderr": "error INTERFACE not found Y-01\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
       "journal": null
     },
@@ -174,7 +174,7 @@
       ],
       "exit": 5,
       "stdout": "",
-      "stderr": "",
+      "stderr": "error INTERFACE not found Y-01\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
       "journal": null
     },

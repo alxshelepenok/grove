@@ -258,13 +258,10 @@ pub fn cmd_archive(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
         Err(e) => return e,
     };
     let Some(g) = st.nodes.get(gid) else {
-        return OpResult {
-            code: EXIT_NOTFOUND,
-            out: String::new(),
-            diags: Vec::new(),
-            raw_err: String::new(),
-            journal: Vec::new(),
-        };
+        return OpResult::fail_diag(
+            EXIT_NOTFOUND,
+            Diagnostic::error(Code::Interface, &format!("not found {gid}")),
+        );
     };
     if g.status != "verified" {
         return OpResult::fail_diag(

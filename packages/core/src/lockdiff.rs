@@ -465,22 +465,43 @@ pub fn cmd_diff(_ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRe
     };
     let st_wt = match parse_strict(&wt_text) {
         Ok(st) => st,
-        Err(e) => return OpResult::fail(EXIT_ERR, Code::System, &e.to_string()),
+        Err(e) => {
+            return OpResult::fail_diag(
+                EXIT_ERR,
+                Diagnostic::error_details(
+                    Code::System,
+                    "worktree lock could not be parsed",
+                    vec![("error".to_string(), e.to_string())],
+                ),
+            )
+        }
     };
     let blob = match git_show_path(&rp, git_ref, ".grove/state.lock") {
         Ok(b) => b,
-        Err(e) => return OpResult::fail(EXIT_ERR, Code::System, &e),
+        Err(e) => {
+            return OpResult::fail_diag(
+                EXIT_ERR,
+                Diagnostic::error_details(
+                    Code::System,
+                    "lock could not be resolved from git",
+                    vec![("error".to_string(), e)],
+                ),
+            )
+        }
     };
     let st_ref = match parse_strict(&blob) {
         Ok(st) => st,
         Err(e) => {
-            return OpResult::fail_lines(
+            return OpResult::fail_diag(
                 EXIT_ERR,
-                Code::System,
-                &[
-                    e.to_string(),
-                    format!(" (while parsing `{git_ref}:.grove/state.lock`)"),
-                ],
+                Diagnostic::error_details(
+                    Code::System,
+                    "reference lock could not be parsed",
+                    vec![
+                        ("error".to_string(), e.to_string()),
+                        ("git_ref".to_string(), git_ref.to_string()),
+                    ],
+                ),
             )
         }
     };

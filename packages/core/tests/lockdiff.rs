@@ -212,13 +212,16 @@ fn cmd_diff_worktree_parse_error() {
     let r = cmd_diff(&ctx, &[], &[]);
     assert_eq!(r.code, EXIT_ERR);
     let want = parse_strict("nonsense\n").unwrap_err().to_string();
-    assert_eq!(r.err_rendered(false), format!("error SYSTEM {want}\n"),);
+    assert_eq!(
+        r.err_rendered(false),
+        format!("error SYSTEM worktree lock could not be parsed\n  error={want}\n")
+    );
     assert_eq!(r.out, "");
     let _ = std::fs::remove_dir_all(&dir);
 }
 
 #[test]
-fn cmd_diff_blob_parse_error_suffix() {
+fn cmd_diff_blob_parse_error_details() {
     let dir = tmpdir("blobparse");
     let grove_dir = dir.join(".grove");
     std::fs::create_dir_all(&grove_dir).unwrap();
@@ -232,7 +235,9 @@ fn cmd_diff_blob_parse_error_suffix() {
     let want = parse_strict("nonsense\n").unwrap_err().to_string();
     assert_eq!(
         r.err_rendered(false),
-        format!("error SYSTEM {want}\nerror SYSTEM  (while parsing `HEAD:.grove/state.lock`)\n")
+        format!(
+            "error SYSTEM reference lock could not be parsed\n  error={want}\n  git_ref=HEAD\n"
+        )
     );
     assert_eq!(r.out, "");
     let _ = std::fs::remove_dir_all(&dir);

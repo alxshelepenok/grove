@@ -46,17 +46,14 @@ impl OpResult {
         OpResult {
             code,
             out: String::new(),
-            diags: vec![Diagnostic::raw(Severity::Error, c, msg)],
+            diags: vec![Diagnostic::error(c, msg)],
             raw_err: String::new(),
             journal: Vec::new(),
         }
     }
 
     pub fn fail_lines(code: i32, c: Code, msgs: &[String]) -> OpResult {
-        let diags = msgs
-            .iter()
-            .map(|m| Diagnostic::raw(Severity::Error, c, m))
-            .collect();
+        let diags = msgs.iter().map(|m| Diagnostic::error(c, m)).collect();
         OpResult {
             code,
             out: String::new(),
@@ -141,7 +138,7 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
             return OpResult::fail(
                 EXIT_ERR,
                 Code::Interface,
-                &format!("unknown kind: {kind_str}"),
+                &format!("unknown kind {kind_str}"),
             )
         }
     };
@@ -177,8 +174,9 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
             n.status = kw_get(kw, "status").unwrap_or("unverified").to_string();
             if kw_has(kw, "fitness") {
                 bail!(
-                    EXIT_ERR, Code::Interface,
-                    "add g: --fitness is retired (legacy label); use --fitness-kind + --fitness-target"
+                    EXIT_ERR,
+                    Code::Interface,
+                    "add g, --fitness is retired, use --fitness-kind and --fitness-target"
                 );
             }
             if let Some(fk_raw) = kw_get(kw, "fitness-kind") {
@@ -203,7 +201,7 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
                 bail!(
                     EXIT_ERR,
                     Code::Interface,
-                    "add g, --area=A-NN is required (create an area node first)"
+                    "add g, --area=A-NN is required, create an area node first"
                 );
             }
             let ok_area = st
@@ -215,7 +213,7 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
                 bail!(
                     EXIT_ERR,
                     Code::Interface,
-                    &format!("add g: unknown --area id: {aref}")
+                    &format!("add g, unknown --area id {aref}")
                 );
             }
             n.set_single("area", aref);
@@ -223,7 +221,7 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
             if !has_fitness {
                 bail!(
                     EXIT_ERR, Code::Interface,
-                    "add g: fitness is required (pass --fitness-kind + --fitness-target, or --fitness-kind=manual for n/a)"
+                    "add g, fitness is required, pass --fitness-kind and --fitness-target or --fitness-kind=manual"
                 );
             }
             if let Some(fk_raw) = kw_get(kw, "fitness-kind") {
@@ -234,7 +232,7 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
                     bail!(
                         EXIT_ERR,
                         Code::Interface,
-                        &format!("add g: --fitness-target is required for --fitness-kind={fk}")
+                        &format!("add g, --fitness-target is required for --fitness-kind={fk}")
                     );
                 }
             }
@@ -256,14 +254,14 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
         Kind::Y => {
             n.status = "proposed".to_string();
             if n.title.trim().is_empty() {
-                bail!(EXIT_ERR, Code::Interface, "add y: --title is required");
+                bail!(EXIT_ERR, Code::Interface, "add y, --title is required");
             }
             let tags = csv_filtered(kw_get(kw, "tags").unwrap_or(""));
             if tags.is_empty() {
                 bail!(
                     EXIT_ERR,
                     Code::Interface,
-                    "add y: --tags=<t1,t2> is required (≥1 glossary term)"
+                    "add y, --tags requires at least one glossary term"
                 );
             }
             n.fields
@@ -286,7 +284,7 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
                     bail!(
                         EXIT_ERR,
                         Code::Interface,
-                        "add y: --surface absent requires --why prose"
+                        "add y, --surface absent requires --why prose"
                     );
                 }
             }
@@ -295,14 +293,14 @@ pub fn op_add(st: &mut State, kind_str: &str, kw: &[(String, String)]) -> OpResu
                 bail!(
                     EXIT_ERR,
                     Code::Interface,
-                    "add y: --from=<W-NN|D-NN|Q-NN|B-NN> is required (≥1 provenance record)"
+                    "add y, --from requires at least one provenance record"
                 );
             }
         }
         Kind::A => {
             n.status = "present".to_string();
             if n.title.trim().is_empty() {
-                bail!(EXIT_ERR, Code::Interface, "add a: --title is required");
+                bail!(EXIT_ERR, Code::Interface, "add a, --title is required");
             }
             let surface = csv_filtered(kw_get(kw, "surface").unwrap_or(""));
             if !surface.is_empty() {
@@ -488,7 +486,7 @@ fn op_set_key_supported(kind: Kind, key: &str) -> bool {
 
 pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpResult {
     if !st.nodes.contains_key(id) {
-        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("not found: {id}"));
+        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("not found {id}"));
     }
     if key == "status" {
         let new_status = val;
@@ -653,7 +651,7 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
             if !val.trim().is_empty() {
                 return OpResult::fail(
                     EXIT_ERR, Code::Interface,
-                    "set: key fitness is retired (legacy label); use fitness_kind + set <G> fitness_target=N (empty value removes a legacy label)",
+                    "set fitness is retired, use fitness_kind and fitness_target or an empty value to remove a legacy label",
                 );
             }
             {
@@ -690,7 +688,7 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
                     EXIT_ERR,
                     Code::Interface,
                     &format!(
-                        "bad fitness_kind (expected one of: {})",
+                        "bad fitness_kind, expected one of {}",
                         GOAL_FITNESS_KINDS.join(", ")
                     ),
                 );
@@ -715,7 +713,7 @@ pub fn op_set(st: &mut State, id: &str, key: &str, val: &str, eff: &str) -> OpRe
                 return OpResult::fail(
                     EXIT_ERR,
                     Code::Interface,
-                    &format!("set: unknown area: {aref} (expected an existing A-NN node)"),
+                    &format!("set unknown area {aref}, expected an existing A-NN node"),
                 );
             }
             let n = st.nodes.get_mut(id).expect("checked");
@@ -759,7 +757,7 @@ pub fn op_field(
     eff: &str,
 ) -> OpResult {
     if !st.nodes.contains_key(id) {
-        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("not found: {id}"));
+        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("not found {id}"));
     }
     {
         let n = st.nodes.get(id).expect("checked");
@@ -872,13 +870,7 @@ pub fn op_field(
             let idx: i64 = match raw_idx.parse() {
                 Ok(v) => v,
                 Err(_) => {
-                    return OpResult {
-                        code: EXIT_ERR,
-                        out: String::new(),
-                        diags: Vec::new(),
-                        raw_err: String::new(),
-                        journal: Vec::new(),
-                    }
+                    return OpResult::fail(EXIT_ERR, Code::Interface, "index must be an integer");
                 }
             };
             let n = st.nodes.get_mut(id).expect("checked");
@@ -899,7 +891,7 @@ pub fn op_field(
             }
         }
         _ => {
-            return OpResult::fail(EXIT_ERR, Code::Interface, &format!("unknown op: {op}"));
+            return OpResult::fail(EXIT_ERR, Code::Interface, &format!("unknown op {op}"));
         }
     }
     if kind == Kind::G && fname == "fitness_target" && (op == "add" || op == "clear") {
@@ -918,11 +910,7 @@ pub fn op_evidence(st: &mut State, id: &str, text: &str, eff: &str) -> OpResult 
 
 pub fn op_link(st: &mut State, from: &str, label: &str, to: &str, eff: &str) -> OpResult {
     if !EDGE_LABELS.contains(&label) {
-        return OpResult::fail(
-            EXIT_ERR,
-            Code::Interface,
-            &format!("unknown label: {label}"),
-        );
+        return OpResult::fail(EXIT_ERR, Code::Interface, &format!("unknown label {label}"));
     }
     if let Some(msg) = guard_sessions_for_progress_endpoints(st, eff, from, to) {
         return OpResult::fail_diag(EXIT_GUARD, msg);
@@ -971,10 +959,10 @@ pub fn op_unlink(st: &mut State, from: &str, label: &str, to: &str, eff: &str) -
 
 pub fn op_fitness(st: &mut State, wid: &str, gid: &str, delta: i64, eff: &str) -> OpResult {
     if !st.nodes.contains_key(wid) {
-        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("missing: {wid}"));
+        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("missing {wid}"));
     }
     if !st.nodes.contains_key(gid) {
-        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("missing: {gid}"));
+        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("missing {gid}"));
     }
     if let Some(msg) = terminal_freeze_msg(st.nodes.get(wid).expect("checked")) {
         return OpResult::fail_diag(EXIT_GUARD, msg);
@@ -1032,7 +1020,14 @@ pub fn op_renumber(st: &mut State, old_id: &str, new_id: &str, eff: &str) -> OpR
         );
     }
     if let Err(msg) = apply_renumber(st, old, new) {
-        return OpResult::fail(EXIT_ERR, Code::Interface, &msg);
+        return OpResult::fail_diag(
+            EXIT_ERR,
+            Diagnostic::error_details(
+                Code::Interface,
+                "renumber could not be applied",
+                vec![("error".to_string(), msg)],
+            ),
+        );
     }
     rederive_artifacts(st);
     let mut r = OpResult::ok();
@@ -1052,13 +1047,17 @@ pub fn op_glossary_rename(
     let old = old_raw.trim().to_string();
     let new = new_raw.trim().to_string();
     if old.is_empty() || new.is_empty() {
-        return OpResult::fail(EXIT_ERR, Code::Interface, "glossary rename: empty term");
+        return OpResult::fail(
+            EXIT_ERR,
+            Code::Interface,
+            "glossary rename requires nonempty terms",
+        );
     }
     if old == new {
         return OpResult::fail(
             EXIT_ERR,
             Code::Interface,
-            "glossary rename: old and new are identical",
+            "glossary rename terms are identical",
         );
     }
     let gtext = glossary.as_deref().unwrap_or("");
@@ -1074,16 +1073,14 @@ pub fn op_glossary_rename(
         return OpResult::fail(
             EXIT_NOTFOUND,
             Code::Interface,
-            &format!(
-                "glossary rename: `{old}` is neither in glossary.md nor used by any discovery"
-            ),
+            &format!("glossary term {old} is absent and unused by discoveries"),
         );
     }
     if terms.contains(&new) {
         return OpResult::fail(
             EXIT_GUARD,
             Code::Invariant,
-            &format!("glossary rename: `{new}` already present in glossary.md"),
+            &format!("glossary term {new} already exists"),
         );
     }
     let mut changed_in_glossary = false;
@@ -1094,7 +1091,7 @@ pub fn op_glossary_rename(
             return OpResult::fail(
                 EXIT_NOTFOUND,
                 Code::Interface,
-                &format!("glossary rename: `{old}` not found in glossary.md"),
+                &format!("glossary term {old} is absent"),
             );
         }
         *glossary = Some(renamed);
@@ -1138,13 +1135,7 @@ pub fn op_glossary_rename(
 
 pub fn op_resume(st: &mut State, id: &str, eff: &str) -> OpResult {
     let Some(w) = st.nodes.get(id) else {
-        return OpResult {
-            code: EXIT_NOTFOUND,
-            out: String::new(),
-            diags: Vec::new(),
-            raw_err: String::new(),
-            journal: Vec::new(),
-        };
+        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("not found {id}"));
     };
     if w.kind != Kind::W {
         return OpResult::fail(EXIT_ERR, Code::Interface, "not a work item");
@@ -1175,13 +1166,7 @@ pub fn op_handoff(st: &mut State, id: &str, to: Option<&str>, eff: &str) -> OpRe
         return OpResult::fail(EXIT_ERR, Code::Interface, "empty --to");
     }
     let Some(w) = st.nodes.get(id) else {
-        return OpResult {
-            code: EXIT_NOTFOUND,
-            out: String::new(),
-            diags: Vec::new(),
-            raw_err: String::new(),
-            journal: Vec::new(),
-        };
+        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("not found {id}"));
     };
     if w.kind != Kind::W {
         return OpResult::fail(EXIT_ERR, Code::Interface, "not a work item");
@@ -1223,13 +1208,7 @@ pub fn op_handoff(st: &mut State, id: &str, to: Option<&str>, eff: &str) -> OpRe
 
 pub fn op_revert(st: &mut State, id: &str, eff: &str) -> OpResult {
     let Some(w) = st.nodes.get(id) else {
-        return OpResult {
-            code: EXIT_NOTFOUND,
-            out: String::new(),
-            diags: Vec::new(),
-            raw_err: String::new(),
-            journal: Vec::new(),
-        };
+        return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("not found {id}"));
     };
     if w.kind != Kind::W {
         return OpResult::fail(EXIT_ERR, Code::Interface, "not a work item");

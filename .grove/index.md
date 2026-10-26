@@ -7,14 +7,14 @@
 | Measure | Count | Composition |
 | --- | --- | --- |
 | C (content) | 52 | validated B 1 · answered Q 6 · accepted D 25 · active Discovery 20 |
-| V (uncertainty) | 14 | open Q 3 · pending B 4 · W below DoR 2 · uncovered surface 5 |
+| V (uncertainty) | 10 | open Q 3 · pending B 4 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
 
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
 | A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-02 | API | 10 | 7 | C: validated B 0 · answered Q 0 · accepted D 5 · active Discovery 5; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 5 |
+| A-02 | API | 10 | 3 | C: validated B 0 · answered Q 0 · accepted D 5 · active Discovery 5; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 11 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 4; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -33,13 +33,13 @@
 | G-45 | Decision immutability holds for accepted decisions across CLI mutations in both implementations | count; current=3 target=3 | verified |
 | G-46 | Supersession completes the old decision in one command | count; current= target=1 | unverified |
 | G-47 | Accepted-decision guard texts are precise and single-sourced | count; current= target=2 | unverified |
-| G-52 | Unify result formats across CLI and MCP surfaces | manual | unverified |
+| G-52 | Unify result formats across CLI and MCP surfaces | manual | verified |
 
 ## Work items
 
 | ID | Type | Title | Goals | Cynefin | DoR | Status | Critical |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed |  |
+| W-04 | feature | Benchmark suite: 10k-node lock, cone, render budgets | G-17 | complicated | ⊥ | proposed | ★ |
 | W-05 | refactor | Adjacency-list max-flow and lazy min-fill for treewidth | G-17 | complicated | ⊥ | proposed |  |
 | W-192 | feature | Parse mcp.toml tool config | G-44 | clear | ⊤ | done |  |
 | W-193 | feature | Filter grove-mcp tools by role | G-44 | clear | ⊤ | done |  |
@@ -63,10 +63,10 @@
 | W-211 | refactor | Accepted-decision predicate collapses into a single helper | G-47 | clear | ⊤ | ready |  |
 | W-212 | refactor | Test catalogs derive from production field catalogs | G-45 | clear | ⊤ | done |  |
 | W-226 | feature | Carry structured diagnostics in Rust results | G-52 | complicated | ⊤ | done |  |
-| W-227 | feature | Match structured diagnostics in Julia | G-52 | complicated | ⊤ | ready | ★ |
-| W-228 | feature | Expose neutral diagnostics through MCP | G-52 | complicated | ⊤ | ready |  |
-| W-229 | feature | Pin diagnostic contract in specification and conformance | G-52 | complicated | ⊤ | ready | ★ |
-| W-230 | feature | Verify unified diagnostics end to end | G-52 | complicated | ⊤ | ready | ★ |
+| W-227 | feature | Match structured diagnostics in Julia | G-52 | complicated | ⊤ | done |  |
+| W-228 | feature | Expose neutral diagnostics through MCP | G-52 | complicated | ⊤ | done |  |
+| W-229 | feature | Pin diagnostic contract in specification and conformance | G-52 | complicated | ⊤ | done |  |
+| W-230 | feature | Verify unified diagnostics end to end | G-52 | complicated | ⊤ | done |  |
 | W-231 | feature | Collapse diagnostic codes into four semantic categories | G-52 | complicated | ⊤ | done |  |
 
 ## Decisions
@@ -211,7 +211,7 @@ graph TD
   G_46["G-46: Supersession completes the old decision in one command"]:::goal
   G_47["G-47: Accepted-decision guard texts are precise and single-sourced"]:::goal
   G_52["G-52: Unify result formats across CLI and MCP surfaces"]:::goal
-  W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature
+  W_04["W-04: Benchmark suite: 10k-node lock, cone, render budgets"]:::feature,critical
   W_05["W-05: Adjacency-list max-flow and lazy min-fill for treewidth"]:::feature
   W_192["W-192: Parse mcp.toml tool config"]:::done
   W_193["W-193: Filter grove-mcp tools by role"]:::done
@@ -235,10 +235,10 @@ graph TD
   W_211["W-211: Accepted-decision predicate collapses into a single helper"]:::ready
   W_212["W-212: Test catalogs derive from production field catalogs"]:::done
   W_226["W-226: Carry structured diagnostics in Rust results"]:::done
-  W_227["W-227: Match structured diagnostics in Julia"]:::ready,critical
-  W_228["W-228: Expose neutral diagnostics through MCP"]:::ready
-  W_229["W-229: Pin diagnostic contract in specification and conformance"]:::ready,critical
-  W_230["W-230: Verify unified diagnostics end to end"]:::ready,critical
+  W_227["W-227: Match structured diagnostics in Julia"]:::done
+  W_228["W-228: Expose neutral diagnostics through MCP"]:::done
+  W_229["W-229: Pin diagnostic contract in specification and conformance"]:::done
+  W_230["W-230: Verify unified diagnostics end to end"]:::done
   W_231["W-231: Collapse diagnostic codes into four semantic categories"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
@@ -609,7 +609,7 @@ graph TD
   Y_56 -->|distills| Q_14
   Y_57 -->|distills| D_38
   Y_58 -->|distills| D_39
-  class W_227,W_229,W_230 critical
+  class W_04 critical
 classDef area fill:#5a1e4a,color:#fff
 classDef goal fill:#1e3a5f,color:#fff
 classDef theme fill:#2a4a3a,color:#fff

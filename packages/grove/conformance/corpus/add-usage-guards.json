@@ -20,7 +20,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "error INTERFACE usage: grove add <kind> --title=\"…\" [...] (unexpected positional argument: Positional title)\n",
+      "stderr": "error INTERFACE add received unexpected positional argument Positional title\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
       "journal": null
     },

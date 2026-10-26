@@ -645,19 +645,19 @@ fn apply_inverse_reports_malformed_records() {
     let inv = parse_json(r#"{"id":"A-01"}"#).unwrap();
     let e = journal_apply_inverse(&mut st, &inv).expect("error expected");
     assert_eq!(e.code, Code::System);
-    assert_eq!(e.text, "journal undo, unknown inverse op ``");
+    assert_eq!(e.text, "journal undo failed");
+    assert_eq!(e.details[0].1, "unknown inverse op ``");
     let inv = parse_json(r#"{"op":"rm_node"}"#).unwrap();
     let e = journal_apply_inverse(&mut st, &inv).expect("error expected");
     assert_eq!(e.code, Code::System);
-    assert_eq!(e.text, "journal undo, malformed record: missing `id`");
+    assert_eq!(e.text, "journal undo failed");
+    assert_eq!(e.details[0].1, "malformed record: missing `id`");
     let inv = parse_json(r#"{"op":"rm_node","id":"A-99"}"#).unwrap();
     assert_eq!(journal_apply_inverse(&mut st, &inv), None);
     let inv =
         parse_json(r#"{"op":"unlink_edge","from":"A-01","label":"blocks","to":"A-02"}"#).unwrap();
     let e = journal_apply_inverse(&mut st, &inv).expect("error expected");
     assert_eq!(e.code, Code::System);
-    assert_eq!(
-        e.text,
-        "journal undo, unlink_edge: missing edge A-01 blocks A-02"
-    );
+    assert_eq!(e.text, "journal undo failed");
+    assert_eq!(e.details[0].1, "unlink_edge: missing edge A-01 blocks A-02");
 }

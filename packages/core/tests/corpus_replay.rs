@@ -463,7 +463,10 @@ fn replay(name: &str) {
         }
         let want_err = norm_want(common::step_field(&sc, i, "stderr"));
         let got_err = normalize(&err, &paths, &tokens);
-        common::assert_rendered_diag_codes(&got_err);
+        let allow_raw = step[0].starts_with('!')
+            || matches!(step[0].as_str(), "-h" | "--help" | "help")
+            || !grove_core::COMMAND_NAMES.contains(&step[0].as_str());
+        common::assert_rendered_diagnostics(&got_err, allow_raw);
         if got_err != want_err {
             print_drift(name, i, &raw, "stderr", &want_err, &got_err);
             panic!("drift in scenario {name} step {i} stderr");

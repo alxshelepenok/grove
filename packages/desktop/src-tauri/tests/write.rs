@@ -199,7 +199,7 @@ fn write_surfaces_guard_refusal_verbatim() {
         err.contains("exited"),
         "not-found exit code surfaced: {err}"
     );
-    assert!(err.contains("not found: W-99"), "stderr verbatim: {err}");
+    assert!(err.contains("not found W-99"), "stderr verbatim: {err}");
 }
 
 #[test]

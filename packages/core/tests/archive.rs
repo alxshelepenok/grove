@@ -531,7 +531,7 @@ fn cmd_error_paths_byte_exact() {
     let r = cmd_archive(&ctx, &p("G-09"), &[]);
     assert_eq!(
         (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
-        (EXIT_NOTFOUND, "", "")
+        (EXIT_NOTFOUND, "", "error INTERFACE not found G-09\n")
     );
     let r = cmd_archive(&ctx, &p("G-02"), &[]);
     assert_eq!(

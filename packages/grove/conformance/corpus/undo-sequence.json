@@ -158,7 +158,7 @@
       ],
       "exit": 5,
       "stdout": "",
-      "stderr": "",
+      "stderr": "error INTERFACE not found W-01\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":1,\"op\":\"undo\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"undo\",\"ts\":\"<ts>\",\"inv\":{\"steps\":2,\"op\":\"undo\"}}\n"
     },

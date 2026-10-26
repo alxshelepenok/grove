@@ -120,11 +120,11 @@ function fail_diag(ctx::CliCtx, exitcode::Int, d::Diagnostic)::Int
 end
 
 ferr(ctx::CliCtx, exitcode::Int, text::AbstractString)::Int =
-    fail_diag(ctx, exitcode, raw_diag("error", CODE_INTERFACE, text))
+    fail_diag(ctx, exitcode, interface_error(text))
 finv(ctx::CliCtx, exitcode::Int, text::AbstractString)::Int =
-    fail_diag(ctx, exitcode, raw_diag("error", CODE_INVARIANT, text))
+    fail_diag(ctx, exitcode, invariant_error(text))
 fsys(ctx::CliCtx, exitcode::Int, text::AbstractString)::Int =
-    fail_diag(ctx, exitcode, raw_diag("error", CODE_SYSTEM, text))
+    fail_diag(ctx, exitcode, system_error(text))
 
 function fusage(ctx::CliCtx, cmd::AbstractString, usage::AbstractString)::Int
     println(stderr, render_diag(interface_error("invalid arguments for $(cmd)")))
@@ -132,17 +132,21 @@ function fusage(ctx::CliCtx, cmd::AbstractString, usage::AbstractString)::Int
     EXIT_ERR
 end
 
+struct CliFailure <: Exception
+    code::Int
+    diag::Diagnostic
+end
+
 function load(ctx::CliCtx; verify::Bool=true)::State
     p = lockpath(ctx)
-    isfile(p) ||
-        exit(fail_diag(ctx, EXIT_ERR, system_error(
-            "lock file is absent, initialize the project first",
-            Pair{String,String}["path" => p])))
+    isfile(p) || throw(CliFailure(EXIT_ERR, system_error(
+        "lock file is absent, initialize the project first",
+        Pair{String,String}["path" => p])))
     try
         return read_lock(p; verify=verify)
     catch e
         if e isa ChecksumMismatch
-            exit(fail_diag(ctx, EXIT_CHECKSUM, system_error(
+            throw(CliFailure(EXIT_CHECKSUM, system_error(
                 "lock checksum mismatch, the file may have been edited by hand, accept the current contents with a repair",
                 Pair{String,String}["expected" => e.expected, "actual" => e.actual])))
         end
@@ -234,10 +238,10 @@ const USAGE_ADD = "usage: grove add <kind> --title=\"…\" [...]"
 function cmd_add(ctx::CliCtx, pos, kw)
     haskey(kw, "help") && (println(USAGE_ADD); return EXIT_OK)
     length(pos) >= 1 || (return fusage(ctx, "add", USAGE_ADD))
-    length(pos) > 1 && (return ferr(ctx, EXIT_ERR, "$USAGE_ADD (unexpected positional argument: $(pos[2]))"))
+    length(pos) > 1 && (return ferr(ctx, EXIT_ERR, "add received unexpected positional argument $(pos[2])"))
     isempty(kw) && !(pos[1] in ("a", "y")) && (return fusage(ctx, "add", USAGE_ADD))
     kind = Symbol(pos[1])
-    kind in NODE_KINDS || (return ferr(ctx, EXIT_ERR, "unknown kind: $kind"))
+    kind in NODE_KINDS || (return ferr(ctx, EXIT_ERR, "unknown kind $kind"))
     st = load(ctx)
     id = next_id!(st, kind)
     n = Node(kind, id)
@@ -260,7 +264,7 @@ function cmd_add(ctx::CliCtx, pos, kw)
     elseif kind === :g
         n.status = Symbol(get(kw, "status", "unverified"))
         haskey(kw, "fitness") &&
-            (return ferr(ctx, EXIT_ERR, "add g: --fitness is retired (legacy label); use --fitness-kind + --fitness-target"))
+            (return ferr(ctx, EXIT_ERR, "add g, --fitness is retired, use --fitness-kind and --fitness-target"))
         if haskey(kw, "fitness-kind")
             fk = Symbol(lowercase(strip(kw["fitness-kind"])))
             fk in GOAL_FITNESS_KINDS || (return ferr(ctx, EXIT_ERR, "bad --fitness-kind"))
@@ -268,17 +272,17 @@ function cmd_add(ctx::CliCtx, pos, kw)
         end
         haskey(kw, "fitness-target") && (n.fields[:fitness_target] = kw["fitness-target"])
         aref = strip(get(kw, "area", ""))
-        isempty(aref) && (return ferr(ctx, EXIT_ERR, "add g, --area=A-NN is required (create an area node first)"))
+        isempty(aref) && (return ferr(ctx, EXIT_ERR, "add g, --area=A-NN is required, create an area node first"))
         an = get(st.nodes, aref, nothing)
-        (an === nothing || an.kind !== :a) && (return ferr(ctx, EXIT_ERR, "add g: unknown --area id: $aref"))
+        (an === nothing || an.kind !== :a) && (return ferr(ctx, EXIT_ERR, "add g, unknown --area id $aref"))
         n.fields[:area] = aref
         has_fitness = haskey(kw, "fitness-kind")
-        has_fitness || (return ferr(ctx, EXIT_ERR, "add g: fitness is required (pass --fitness-kind + --fitness-target, or --fitness-kind=manual for n/a)"))
+        has_fitness || (return ferr(ctx, EXIT_ERR, "add g, fitness is required, pass --fitness-kind and --fitness-target or --fitness-kind=manual"))
         if haskey(kw, "fitness-kind")
             fk2 = lowercase(strip(kw["fitness-kind"]))
             if fk2 in ("count", "metric", "ratio")
                 isempty(strip(get(kw, "fitness-target", ""))) &&
-                    (return ferr(ctx, EXIT_ERR, "add g: --fitness-target is required for --fitness-kind=$fk2"))
+                    (return ferr(ctx, EXIT_ERR, "add g, --fitness-target is required for --fitness-kind=$fk2"))
             end
         end
         if n.status === :verified && goal_structured_kind(n) !== :manual
@@ -297,9 +301,9 @@ function cmd_add(ctx::CliCtx, pos, kw)
         n.status = Symbol(get(kw, "status", "open"))
     elseif kind === :y
         n.status = :proposed
-        isempty(strip(n.title)) && (return ferr(ctx, EXIT_ERR, "add y: --title is required"))
+        isempty(strip(n.title)) && (return ferr(ctx, EXIT_ERR, "add y, --title is required"))
         tags = String[String(t) for t in split(get(kw, "tags", ""), ',') if !isempty(strip(t))]
-        isempty(tags) && (return ferr(ctx, EXIT_ERR, "add y: --tags=<t1,t2> is required (≥1 glossary term)"))
+        isempty(tags) && (return ferr(ctx, EXIT_ERR, "add y, --tags requires at least one glossary term"))
         rc = csv_dup_guard(ctx, kind, "tags", tags)
         rc !== nothing && return rc
         n.fields[:tags] = tags
@@ -310,13 +314,13 @@ function cmd_add(ctx::CliCtx, pos, kw)
         haskey(kw, "why") && (n.fields[:why] = String[kw["why"]])
         if !haskey(n.fields, :surface)
             ok_why = haskey(n.fields, :why) && prose_field_nonempty(n.fields[:why])
-            ok_why || (return ferr(ctx, EXIT_ERR, "add y: --surface absent requires --why prose"))
+            ok_why || (return ferr(ctx, EXIT_ERR, "add y, --surface absent requires --why prose"))
         end
         from = String[String(t) for t in split(get(kw, "from", ""), ',') if !isempty(strip(t))]
-        isempty(from) && (return ferr(ctx, EXIT_ERR, "add y: --from=<W-NN|D-NN|Q-NN|B-NN> is required (≥1 provenance record)"))
+        isempty(from) && (return ferr(ctx, EXIT_ERR, "add y, --from requires at least one provenance record"))
     elseif kind === :a
         n.status = :present
-        isempty(strip(n.title)) && (return ferr(ctx, EXIT_ERR, "add a: --title is required"))
+        isempty(strip(n.title)) && (return ferr(ctx, EXIT_ERR, "add a, --title is required"))
         surface = String[String(s) for s in split(get(kw, "surface", ""), ',') if !isempty(strip(s))]
         rc = csv_dup_guard(ctx, kind, "surface", surface)
         rc !== nothing && return rc
@@ -468,7 +472,7 @@ function json_node_snapshot(n::Node)::Dict{String,Any}
 end
 
 function cmd_set(ctx::CliCtx, pos, kw)
-    length(pos) >= 2 || (return ferr(ctx, EXIT_ERR, "usage: grove set <ID> <key>=<value>"))
+    length(pos) >= 2 || (return ferr(ctx, EXIT_ERR, "set requires an id and key=value"))
     id = pos[1]
     eq = findfirst('=', pos[2])
     eq === nothing && (return ferr(ctx, EXIT_ERR, "expected key=value"))
@@ -476,7 +480,7 @@ function cmd_set(ctx::CliCtx, pos, kw)
     val = pos[2][eq+1:end]
     st = load(ctx)
     n = get(st.nodes, id, nothing)
-    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found: $id"))
+    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
     eff = effective_session_token(ctx.root, kw)
     jr = nothing
 
@@ -558,7 +562,7 @@ function cmd_set(ctx::CliCtx, pos, kw)
         n.title = val
     elseif key == "fitness" && n.kind === :g
         isempty(strip(val)) ||
-            (return ferr(ctx, EXIT_ERR, "set: key fitness is retired (legacy label); use fitness_kind + set <G> fitness_target=N (empty value removes a legacy label)"))
+            (return ferr(ctx, EXIT_ERR, "set fitness is retired, use fitness_kind and fitness_target or an empty value to remove a legacy label"))
         hb = haskey(n.attrs, "fitness")
         jr = wrap_journal_record("set", Dict{String,Any}(
             "op" => "set_g_attr_fitness",
@@ -586,7 +590,7 @@ function cmd_set(ctx::CliCtx, pos, kw)
         ks = Symbol(lowercase(strip(val)))
         ks in GOAL_FITNESS_KINDS || begin
                 return ferr(ctx, EXIT_ERR,
-                    "bad fitness_kind (expected one of: $(join(string.(GOAL_FITNESS_KINDS), ", ")))")
+                    "bad fitness_kind, expected one of $(join(string.(GOAL_FITNESS_KINDS), ", "))")
             end
         hb = haskey(n.attrs, "fitness_kind")
         oldk = hb ? String(n.attrs["fitness_kind"]) : ""
@@ -603,7 +607,7 @@ function cmd_set(ctx::CliCtx, pos, kw)
         aref = strip(val)
         an = get(st.nodes, aref, nothing)
         (an === nothing || an.kind !== :a) &&
-            (return ferr(ctx, EXIT_ERR, "set: unknown area: $aref (expected an existing A-NN node)"))
+            (return ferr(ctx, EXIT_ERR, "set unknown area $aref, expected an existing A-NN node"))
         hb = haskey(n.fields, :area)
         jr = wrap_journal_record("set", Dict{String,Any}(
             "op" => "set_g_area",
@@ -739,11 +743,11 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
 end
 
 function cmd_field(ctx::CliCtx, pos, kw)
-    length(pos) >= 3 || (return ferr(ctx, EXIT_ERR, "usage: grove field <ID> <field> add|rm|clear [value]"))
+    length(pos) >= 3 || (return ferr(ctx, EXIT_ERR, "field requires an id, field, and operation"))
     id, fname, op = pos[1], Symbol(pos[2]), pos[3]
     st = load(ctx)
     n = get(st.nodes, id, nothing)
-    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found: $id"))
+    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
     eff = effective_session_token(ctx.root, kw)
     if n.kind === :w && n.status === :progress
         msg = session_denial_progress_mutate(n, eff)
@@ -826,7 +830,8 @@ function cmd_field(ctx::CliCtx, pos, kw)
         end
     elseif op == "rm"
         length(pos) >= 4 || (return ferr(ctx, EXIT_ERR, "missing index"))
-        idx = parse(Int, pos[4])
+        idx = tryparse(Int, pos[4])
+        idx === nothing && (return ferr(ctx, EXIT_ERR, "index must be an integer"))
         v = String.(copy(get_vector_field!(n, fname)))
         (idx < 1 || idx > length(v)) && (return ferr(ctx, EXIT_ERR, "index out of range"))
         removed = v[idx]
@@ -839,7 +844,7 @@ function cmd_field(ctx::CliCtx, pos, kw)
         ))
         deleteat!(n.fields[fname], idx)
     else
-        (return ferr(ctx, EXIT_ERR, "unknown op: $op"))
+        (return ferr(ctx, EXIT_ERR, "unknown op $op"))
     end
     if n.kind === :g && fname === :fitness_target && op in ("add", "clear")
         refresh_goal_structured_fitness!(st, n)
@@ -864,9 +869,9 @@ function guard_sessions_for_progress_endpoints!(ctx::CliCtx, st::State, kw,
 end
 
 function cmd_link(ctx::CliCtx, pos, kw)
-    length(pos) >= 3 || (return ferr(ctx, EXIT_ERR, "usage: grove link <from> <label> <to>"))
+    length(pos) >= 3 || (return ferr(ctx, EXIT_ERR, "link requires a source, label, and target"))
     from, label, to = pos[1], Symbol(pos[2]), pos[3]
-    label in EDGE_LABELS || (return ferr(ctx, EXIT_ERR, "unknown label: $label"))
+    label in EDGE_LABELS || (return ferr(ctx, EXIT_ERR, "unknown label $label"))
     st = load(ctx)
     rc = guard_sessions_for_progress_endpoints!(ctx, st, kw, from, to)
     rc != EXIT_OK && return rc
@@ -881,7 +886,7 @@ function cmd_link(ctx::CliCtx, pos, kw)
 end
 
 function cmd_unlink(ctx::CliCtx, pos, kw)
-    length(pos) >= 3 || (return ferr(ctx, EXIT_ERR, "usage: grove unlink <from> <label> <to>"))
+    length(pos) >= 3 || (return ferr(ctx, EXIT_ERR, "unlink requires a source, label, and target"))
     from, label, to = pos[1], Symbol(pos[2]), pos[3]
     st = load(ctx)
     ee = nothing
@@ -903,16 +908,18 @@ function cmd_unlink(ctx::CliCtx, pos, kw)
 end
 
 function cmd_evidence(ctx::CliCtx, pos, kw)
-    length(pos) >= 2 || (return ferr(ctx, EXIT_ERR, "usage: grove evidence <W-NN> \"…\""))
+    length(pos) >= 2 || (return ferr(ctx, EXIT_ERR, "evidence requires a work id and text"))
     cmd_field(ctx, [pos[1], "evidence", "add", pos[2]], kw)
 end
 
 function cmd_fitness(ctx::CliCtx, pos, kw)
-    length(pos) >= 3 || (return ferr(ctx, EXIT_ERR, "usage: grove fitness <W-NN> <G-NN> <±delta>"))
-    wid, gid, delta = pos[1], pos[2], parse(Int, pos[3])
+    length(pos) >= 3 || (return ferr(ctx, EXIT_ERR, "fitness requires a work id, goal id, and delta"))
+    wid, gid = pos[1], pos[2]
+    delta = tryparse(Int, pos[3])
+    delta === nothing && (return ferr(ctx, EXIT_ERR, "bad delta (expected integer)"))
     st = load(ctx)
-    w = get(st.nodes, wid, nothing); w === nothing && (return ferr(ctx, EXIT_NOTFOUND, "missing: $wid"))
-    haskey(st.nodes, gid) || (return ferr(ctx, EXIT_NOTFOUND, "missing: $gid"))
+    w = get(st.nodes, wid, nothing); w === nothing && (return ferr(ctx, EXIT_NOTFOUND, "missing $wid"))
+    haskey(st.nodes, gid) || (return ferr(ctx, EXIT_NOTFOUND, "missing $gid"))
     msg = terminal_freeze_msg(w)
     msg !== nothing && (return fail_diag(ctx, EXIT_GUARD, msg))
     eff = effective_session_token(ctx.root, kw)
@@ -932,7 +939,8 @@ function cmd_archive(ctx::CliCtx, pos, kw)
     length(pos) >= 1 || (return fusage(ctx, "archive", "usage: grove archive <G-NN>"))
     gid = pos[1]
     st = load(ctx)
-    g = get(st.nodes, gid, nothing); g === nothing && return EXIT_NOTFOUND
+    g = get(st.nodes, gid, nothing)
+    g === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $gid"))
     g.status === :verified || (return finv(ctx, EXIT_GUARD, "goal must be verified before archiving"))
     ids = exclusive_archive_ids(st, gid)
     distilled = !isempty(distill_linked_da_ids(st, ids)) || distill_null_attested(journalpath(ctx), gid)
@@ -992,10 +1000,10 @@ function cmd_distill(ctx::CliCtx, pos, kw)
     gid = pos[1]
     st = load(ctx)
     g = get(st.nodes, gid, nothing)
-    g === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found: $gid"))
-    g.kind === :g || (return ferr(ctx, EXIT_ERR, "distill: $gid is not a goal"))
+    g === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $gid"))
+    g.kind === :g || (return ferr(ctx, EXIT_ERR, "$gid is not a goal"))
     g.status === :verified ||
-        (return finv(ctx, EXIT_GUARD, "distill: $gid is `$(g.status)`; distillation happens at `verified`"))
+        (return finv(ctx, EXIT_GUARD, "$gid is $(g.status), distillation happens at verified"))
     mass = exclusive_archive_ids(st, gid)
     linked = distill_linked_da_ids(st, mass)
     attested = distill_null_attested(journalpath(ctx), gid)
@@ -1056,7 +1064,7 @@ function cmd_distill(ctx::CliCtx, pos, kw)
 end
 
 function cmd_renumber(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "usage: grove renumber <ID> --to=<NEW-ID>"))
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "renumber requires an id and target id"))
     haskey(kw, "to") || (return ferr(ctx, EXIT_ERR, "missing --to=<NEW-ID>"))
     old_id = strip(pos[1])
     new_id = strip(kw["to"])
@@ -1078,7 +1086,8 @@ function cmd_renumber(ctx::CliCtx, pos, kw)
     try
         apply_renumber!(st, old_id, new_id)
     catch e
-        fail_diag(ctx, EXIT_ERR, raw_diag("error", CODE_INTERFACE, sprint(showerror, e)))
+        fail_diag(ctx, EXIT_ERR, interface_error("renumber could not be applied",
+            Pair{String,String}["error" => sprint(showerror, e)]))
         return EXIT_ERR
     end
     jr = wrap_journal_record("renumber",
@@ -1089,11 +1098,11 @@ function cmd_renumber(ctx::CliCtx, pos, kw)
 end
 
 function cmd_resume(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "usage: grove resume <W-NN>"))
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "resume requires a work id"))
     id = pos[1]
     st = load(ctx)
     w = get(st.nodes, id, nothing)
-    w === nothing && return EXIT_NOTFOUND
+    w === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
     w.kind === :w || (return ferr(ctx, EXIT_ERR, "not a work item"))
     w.status === :progress || (return finv(ctx, EXIT_GUARD, "$(id) is not in progress"))
     eff = effective_session_token(ctx.root, kw)
@@ -1109,14 +1118,14 @@ function cmd_resume(ctx::CliCtx, pos, kw)
 end
 
 function cmd_handoff(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "usage: grove handoff <W-NN> --to=<token>"))
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "handoff requires a work id and target session"))
     haskey(kw, "to") || (return ferr(ctx, EXIT_ERR, "missing --to=<session-token>"))
     to_tok = strip(String(kw["to"]))
     isempty(to_tok) && (return ferr(ctx, EXIT_ERR, "empty --to"))
     id = pos[1]
     st = load(ctx)
     w = get(st.nodes, id, nothing)
-    w === nothing && return EXIT_NOTFOUND
+    w === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
     w.kind === :w || (return ferr(ctx, EXIT_ERR, "not a work item"))
     w.status === :progress || (return finv(ctx, EXIT_GUARD, "$(id) is not in progress"))
     eff = effective_session_token(ctx.root, kw)
@@ -1134,11 +1143,11 @@ function cmd_handoff(ctx::CliCtx, pos, kw)
 end
 
 function cmd_revert(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "usage: grove revert <W-NN>"))
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "revert requires a work id"))
     id = pos[1]
     st = load(ctx)
     w = get(st.nodes, id, nothing)
-    w === nothing && return EXIT_NOTFOUND
+    w === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
     w.kind === :w || (return ferr(ctx, EXIT_ERR, "not a work item"))
     w.status === :progress || (return finv(ctx, EXIT_GUARD, "$(id) is not in progress"))
     eff = effective_session_token(ctx.root, kw)
@@ -1193,7 +1202,11 @@ function cmd_undo(ctx::CliCtx, pos, kw)
     st = load(ctx)
     for rec in reverse(tail_recs)
         inv = get(rec, "inv", nothing)
-        inv isa AbstractDict || begin fail_diag(ctx, EXIT_INVARIANT, raw_diag("error", CODE_SYSTEM, "journal undo, malformed record: missing `inv`")); return EXIT_INVARIANT end
+        inv isa AbstractDict || begin
+            fail_diag(ctx, EXIT_INVARIANT, system_error("journal undo failed",
+                Pair{String,String}["error" => "malformed record missing inv"]))
+            return EXIT_INVARIANT
+        end
         msg = journal_apply_inverse!(st, inv)
         msg !== nothing && begin return fail_diag(ctx, EXIT_INVARIANT, msg) end
         if get(inv, "op", "") == "glossary_rename_restore" && get(inv, "glossary_changed", false) === true &&
@@ -1308,7 +1321,7 @@ function cmd_packet(ctx::CliCtx, pos, kw)
 end
 
 function cmd_deps(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || return EXIT_ERR
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "deps requires a node id"))
     st = load(ctx)
     pred = deps(st, pos[1])
     if ctx.json
@@ -1326,7 +1339,7 @@ function cmd_deps(ctx::CliCtx, pos, kw)
 end
 
 function cmd_impact(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || return EXIT_ERR
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "impact requires a node id"))
     st = load(ctx)
     succ = impact(st, pos[1])
     if ctx.json
@@ -1386,10 +1399,10 @@ function cmd_triage(ctx::CliCtx, pos, kw)
 end
 
 function cmd_dor(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || return EXIT_ERR
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "dor requires a work id"))
     st = load(ctx)
     n = get(st.nodes, pos[1], nothing)
-    n === nothing && return EXIT_NOTFOUND
+    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $(pos[1])"))
     if ctx.json
         conj = [
             Dict{String,Any}("label" => label, "ok" => ok, "detail" => detail)
@@ -1418,10 +1431,10 @@ function cmd_dor(ctx::CliCtx, pos, kw)
 end
 
 function cmd_show(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || return EXIT_ERR
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "show requires a node id"))
     st = load(ctx)
     n = get(st.nodes, pos[1], nothing)
-    n === nothing && return EXIT_NOTFOUND
+    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $(pos[1])"))
     if ctx.json
         json_cli_out(json_node_snapshot(n))
         return EXIT_OK
@@ -1493,7 +1506,7 @@ function cmd_log(ctx::CliCtx, pos, kw)
         jp0 = journalpath(ctx)
         ok = haskey(st.nodes, id0) || any(e -> e.from == id0 || e.to == id0, st.edges)
         !ok && journal_file_mentions_id(jp0, id0) && (ok = true)
-        !ok && (return ferr(ctx, EXIT_NOTFOUND, "not found: $id0"))
+        !ok && (return ferr(ctx, EXIT_NOTFOUND, "not found $id0"))
         lfilt = id0
     end
     lim = if haskey(kw, "limit")
@@ -1544,20 +1557,22 @@ function cmd_diff(ctx::CliCtx, pos, kw)
         parse_lock(wt_text)[1]
     catch e
         e isa LockParseError || rethrow()
-        fail_diag(ctx, EXIT_ERR, raw_diag("error", CODE_SYSTEM, sprint(showerror, e)))
+        fail_diag(ctx, EXIT_ERR, system_error("worktree lock could not be parsed",
+            Pair{String,String}["error" => sprint(showerror, e)]))
         return EXIT_ERR
     end
     blob, gerr = git_show_path(rp, ref, ".grove/state.lock")
     blob === nothing && begin
-            fail_diag(ctx, EXIT_ERR, raw_diag("error", CODE_SYSTEM, String(gerr)))
+            fail_diag(ctx, EXIT_ERR, system_error("lock could not be resolved from git",
+                Pair{String,String}["error" => String(gerr)]))
             return EXIT_ERR
         end
     st_ref = try
         parse_lock(blob)[1]
     catch e
         e isa LockParseError || rethrow()
-        fail_diag(ctx, EXIT_ERR, raw_diag("error", CODE_SYSTEM, sprint(showerror, e)))
-        fail_diag(ctx, EXIT_ERR, raw_diag("error", CODE_SYSTEM, " (while parsing `$(ref):.grove/state.lock`)"))
+        fail_diag(ctx, EXIT_ERR, system_error("reference lock could not be parsed",
+            Pair{String,String}["error" => sprint(showerror, e), "git_ref" => ref]))
         return EXIT_ERR
     end
     if ctx.json
@@ -1732,17 +1747,17 @@ function cmd_revalidate(ctx::CliCtx, pos, kw)
     id = pos[1]
     st = load(ctx)
     n = get(st.nodes, id, nothing)
-    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found: $id"))
-    n.kind === :y || (return ferr(ctx, EXIT_ERR, "revalidate: $id is not a discovery"))
-    n.status === :stale || (return finv(ctx, EXIT_GUARD, "revalidate: $id is `$(n.status)`, not `stale`"))
+    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
+    n.kind === :y || (return ferr(ctx, EXIT_ERR, "$id is not a discovery"))
+    n.status === :stale || (return finv(ctx, EXIT_GUARD, "$id is $(n.status), not stale"))
     has_surface = haskey(kw, "surface")
     has_from = haskey(kw, "from")
     (has_surface || has_from) ||
-        (return finv(ctx, EXIT_GUARD, "revalidate: refusing without payment; pass --surface=<paths> and/or --from=<ID>"))
+        (return finv(ctx, EXIT_GUARD, "refusing without payment, pass --surface=<paths> and/or --from=<ID>"))
     surface = String[String(s) for s in split(get(kw, "surface", ""), ',') if !isempty(strip(s))]
     froms = String[String(t) for t in split(get(kw, "from", ""), ',') if !isempty(strip(t))]
-    has_surface && isempty(surface) && (return ferr(ctx, EXIT_ERR, "revalidate: --surface given but empty"))
-    has_from && isempty(froms) && (return ferr(ctx, EXIT_ERR, "revalidate: --from given but empty"))
+    has_surface && isempty(surface) && (return ferr(ctx, EXIT_ERR, "--surface given but empty"))
+    has_from && isempty(froms) && (return ferr(ctx, EXIT_ERR, "--from given but empty"))
     for p in surface
         pth = isabspath(p) ? p : joinpath(ctx.root, p)
         ispath(pth) || (return fail_diag(ctx, EXIT_GUARD, system_error("surface path does not exist under root", Pair{String,String}["path" => p])))
@@ -1753,9 +1768,9 @@ function cmd_revalidate(ctx::CliCtx, pos, kw)
         src.kind in (:w, :d, :q, :b) ||
             (return ferr(ctx, EXIT_GUARD, "--from $oid must reference W or D, Q or B"))
         (src.kind === :d && src.status === :superseded) &&
-            (return finv(ctx, EXIT_GUARD, "revalidate: --from $oid is superseded"))
+            (return finv(ctx, EXIT_GUARD, "--from $oid is superseded"))
         (src.kind === :b && src.status in (:invalidated_acceptable, :invalidated_blocking)) &&
-            (return finv(ctx, EXIT_GUARD, "revalidate: --from $oid is invalidated"))
+            (return finv(ctx, EXIT_GUARD, "--from $oid is invalidated"))
     end
     paid = String[]
     has_surface && push!(paid, "surface=" * join(surface, ","))
@@ -1791,30 +1806,30 @@ end
 
 function cmd_glossary(ctx::CliCtx, pos, kw)
     (length(pos) >= 1 && pos[1] == "rename") ||
-        (return ferr(ctx, EXIT_ERR, "usage: grove glossary rename <old> <new>"))
+        (return ferr(ctx, EXIT_ERR, "glossary requires the rename operation"))
     cmd_glossary_rename(ctx, pos[2:end], kw)
 end
 
 function cmd_glossary_rename(ctx::CliCtx, pos, kw)
-    length(pos) >= 2 || (return ferr(ctx, EXIT_ERR, "usage: grove glossary rename <old> <new>"))
+    length(pos) >= 2 || (return ferr(ctx, EXIT_ERR, "glossary rename requires old and new terms"))
     old = String(strip(pos[1]))
     new = String(strip(pos[2]))
-    (isempty(old) || isempty(new)) && (return ferr(ctx, EXIT_ERR, "glossary rename: empty term"))
-    old == new && (return ferr(ctx, EXIT_ERR, "glossary rename: old and new are identical"))
+    (isempty(old) || isempty(new)) && (return ferr(ctx, EXIT_ERR, "glossary rename requires nonempty terms"))
+    old == new && (return ferr(ctx, EXIT_ERR, "glossary rename terms are identical"))
     st = load(ctx)
     gpath = glossarypath(ctx)
     terms = glossary_terms(gpath)
     users = Node[x for x in listnodes(st, :y) if any(t -> String(t) == old, get(x.fields, :tags, String[]))]
     in_glossary = old in terms
     if !in_glossary && isempty(users)
-        (return ferr(ctx, EXIT_NOTFOUND, "glossary rename: `$old` is neither in glossary.md nor used by any discovery"))
+        (return ferr(ctx, EXIT_NOTFOUND, "glossary term $old is absent and unused by discoveries"))
     end
     new in terms &&
-        (return finv(ctx, EXIT_GUARD, "glossary rename: `$new` already present in glossary.md"))
+        (return finv(ctx, EXIT_GUARD, "glossary term $new already exists"))
     changed_in_glossary = false
     if in_glossary
         renamed, changed = glossary_rename_in_text(read(gpath, String), old, new)
-        changed || (return ferr(ctx, EXIT_NOTFOUND, "glossary rename: `$old` not found in glossary.md"))
+        changed || (return ferr(ctx, EXIT_NOTFOUND, "glossary term $old is absent"))
         write(gpath, renamed)
         changed_in_glossary = true
     end
@@ -1966,11 +1981,11 @@ function cmd_promote(ctx::CliCtx, pos, kw)
     src = get(st.nodes, id, nothing)
     src === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
     src.kind === :y ||
-        (return ferr(ctx, EXIT_ERR, "promote: $id is kind $(src.kind), not y"))
+        (return ferr(ctx, EXIT_ERR, "$id is kind $(src.kind), not y"))
     target_root = resolve_project_target(to)
     target_root === nothing && return EXIT_NOTFOUND
     abspath(target_root) == abspath(ctx.root) &&
-        (return ferr(ctx, EXIT_ERR, "promote: target is the source project"))
+        (return ferr(ctx, EXIT_ERR, "target is the source project"))
     tctx = CliCtx(target_root, ctx.quiet, ctx.json, ctx.no_render)
     isfile(lockpath(tctx)) ||
         (return fail_diag(ctx, EXIT_ERR, system_error("target lock is absent, initialize the target project first",
@@ -2170,12 +2185,16 @@ function main(args::Vector{String})::Int
         end
         return rc
     catch e
+        if e isa CliFailure
+            return fail_diag(ctx, e.code, e.diag)
+        end
         if e isa SessionLockTimeoutError
             emit_diag(ctx, e.diag)
             return EXIT_GUARD
         end
         if e isa LockParseError
-            fail_diag(ctx, EXIT_ERR, raw_diag("error", CODE_SYSTEM, sprint(showerror, e)))
+            fail_diag(ctx, EXIT_ERR, system_error("lock file could not be parsed",
+                Pair{String,String}["error" => sprint(showerror, e)]))
             return EXIT_ERR
         end
         rethrow()

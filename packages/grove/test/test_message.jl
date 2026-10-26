@@ -65,3 +65,54 @@ end
     plain = JSON.parse(M.diag_json_str(M.interface_error("plain message")))
     @test plain == Dict("severity" => "error", "code" => "INTERFACE", "text" => "plain message")
 end
+
+function capture_cli(f)
+    opath, oio = mktemp()
+    close(oio)
+    epath, eio = mktemp()
+    close(eio)
+    rc = -1
+    open(opath, "w") do out
+        open(epath, "w") do err
+            redirect_stdout(out) do
+                redirect_stderr(err) do
+                    rc = f()
+                end
+            end
+        end
+    end
+    result = (rc, read(opath, String), read(epath, String))
+    rm(opath; force=true)
+    rm(epath; force=true)
+    result
+end
+
+@testset "cli failures emit diagnostics and success keeps quiet behavior" begin
+    tmp = mktempdir()
+    try
+        rc, out, err = capture_cli(() -> M.main(["check", "--root=$tmp"]))
+        @test rc == 1
+        @test isempty(out)
+        @test startswith(err, "error SYSTEM lock file is absent, initialize the project first\n  path=")
+        M.validate_diag_text(split(err, '\n')[1][length("error SYSTEM ") + 1:end])
+
+        @test capture_cli(() -> M.main(["init", "--root=$tmp", "--quiet"])) == (0, "", "")
+        rc, out, err = capture_cli(() -> M.main(["init", "--root=$tmp"]))
+        @test (rc, out) == (1, "")
+        @test startswith(err, "error SYSTEM lock already exists\n  path=")
+
+        rc, out, err = capture_cli(() -> M.main(["add", "w", "Positional", "--root=$tmp"]))
+        @test (rc, out, err) == (1, "", "error INTERFACE add received unexpected positional argument Positional\n")
+
+        rc, out, err = capture_cli(() -> M.main(["show", "W-99", "--root=$tmp"]))
+        @test (rc, out, err) == (5, "", "error INTERFACE not found W-99\n")
+
+        rc, out, err = capture_cli(() -> M.main(["deps", "--root=$tmp"]))
+        @test (rc, out, err) == (1, "", "error INTERFACE deps requires a node id\n")
+
+        rc, out, err = capture_cli(() -> M.main(["check", "--root=$tmp"]))
+        @test (rc, out, err) == (0, "", "info OPERATIONAL ok\n")
+    finally
+        rm(tmp; recursive=true, force=true)
+    end
+end

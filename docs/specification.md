@@ -880,12 +880,14 @@ include `command`. Exit codes are unchanged. `check` failure returns exit 3 with
 ignore `--json`; `add y`, `distill`, `revalidate`, `glossary rename`, and
 `promote` define small JSON results.
 
-A diagnostic is a structured value with `severity`, `code`, `text`, and optional
-`details`. Severity is `error`, `warning`, or `info` and remains independent of
-the diagnostic category. Human rendering is `severity code text`, followed by
-indented `key=value` lines for details in their deterministic insertion order.
-JSON diagnostics are objects with the same field names. The `errors` array from
-`check` contains diagnostic objects rather than untyped strings.
+A diagnostic is a structured value with exactly `severity`, `code`, `text`, and
+optional `details`. No other fields are permitted. Severity is `error`,
+`warning`, or `info` and remains independent of the diagnostic category.
+`details` is an object whose values are strings. Human rendering is
+`severity code text`, followed by two-space-indented `key=value` lines for
+details in their deterministic insertion order. JSON diagnostics are objects
+with the same field names. The `errors` array from `check` contains diagnostic
+objects rather than untyped strings.
 
 The diagnostic code set is closed and contains exactly these serialized values.
 
@@ -965,3 +967,20 @@ Methods are `initialize`, `notifications/initialized`, `ping`, `tools/list`, and
 `tools/call`. Tool argument and Grove guard failures are tool results with
 `isError:true`. Protocol failures are JSON-RPC errors. Roles and disabled tools
 are configured through `$GROVE_HOME/mcp.toml`.
+
+Every `tools/call` result contains `content`, `structuredContent`, and
+`isError`. `structuredContent` contains numeric `exitCode` and a
+`diagnostics` array of diagnostic objects. The numeric value is the same exit
+the equivalent CLI command returns, including zero for informational success.
+`isError` is true exactly when `exitCode` is nonzero. Text content
+preserves document or data output and appends canonically rendered diagnostics
+with a newline when both are present. It MUST NOT add stderr separators, an
+error header to info-only success, or a textual exit-code suffix. Operational
+messages MUST NOT redirect the caller to CLI invocations.
+
+Tool argument failures use `INTERFACE` diagnostics and Grove exit 1 in the tool
+result. JSON-RPC errors retain their protocol numeric codes. Their `message` is
+the canonical rendered diagnostic and `data.diagnostics` contains the structured
+diagnostic array. Protocol diagnostics do not invent a Grove exit. Dynamic
+parser or argument errors are carried in exempt diagnostic details rather than
+punctuation in authored text.

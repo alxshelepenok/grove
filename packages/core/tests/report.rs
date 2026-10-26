@@ -343,37 +343,37 @@ fn empty_ctx(tag: &str) -> CliCtx {
 }
 
 #[test]
-fn silent_and_usage_error_paths() {
+fn diagnostic_and_usage_error_paths() {
     let ctx = empty_ctx("errors");
     let r = cmd_deps(&ctx, &[], &[]);
     assert_eq!(
         (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
-        (1, "", "")
+        (1, "", "error INTERFACE deps requires a node id\n")
     );
     let r = cmd_impact(&ctx, &[], &[]);
     assert_eq!(
         (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
-        (1, "", "")
+        (1, "", "error INTERFACE impact requires a node id\n")
     );
     let r = cmd_show(&ctx, &[], &[]);
     assert_eq!(
         (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
-        (1, "", "")
+        (1, "", "error INTERFACE show requires a node id\n")
     );
     let r = cmd_show(&ctx, &["W-99".to_string()], &[]);
     assert_eq!(
         (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
-        (5, "", "")
+        (5, "", "error INTERFACE not found W-99\n")
     );
     let r = cmd_dor(&ctx, &[], &[]);
     assert_eq!(
         (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
-        (1, "", "")
+        (1, "", "error INTERFACE dor requires a work id\n")
     );
     let r = cmd_dor(&ctx, &["W-99".to_string()], &[]);
     assert_eq!(
         (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
-        (5, "", "")
+        (5, "", "error INTERFACE not found W-99\n")
     );
     let r = cmd_list(&ctx, &[], &[]);
     assert_eq!(
@@ -391,7 +391,7 @@ fn silent_and_usage_error_paths() {
     let r = cmd_log(&ctx, &["W-99".to_string()], &[]);
     assert_eq!(
         (r.code, r.err_rendered(false).as_str()),
-        (5, "error INTERFACE not found: W-99\n")
+        (5, "error INTERFACE not found W-99\n")
     );
 }
 

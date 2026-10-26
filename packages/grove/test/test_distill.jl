@@ -228,7 +228,7 @@ end
         @test M.main(["init", "--root=$tmp", "--quiet"]) == 0
         rc, etxt = distill_capture_err(["add", "r", "--title=Retro", "--root=$tmp"])
         @test rc != 0
-        @test occursin("unknown kind: r", etxt)
+        @test occursin("error INTERFACE unknown kind r", etxt)
     finally
         rm(tmp; recursive=true, force=true)
     end

@@ -198,7 +198,14 @@ pub fn load(ctx: &CliCtx, verify: bool) -> Result<State, OpResult> {
             }
             Ok(st)
         }
-        Err(e) => Err(OpResult::fail(EXIT_ERR, Code::System, &e.to_string())),
+        Err(e) => Err(OpResult::fail_diag(
+            EXIT_ERR,
+            Diagnostic::error_details(
+                Code::System,
+                "lock file could not be parsed",
+                vec![("error".to_string(), e.to_string())],
+            ),
+        )),
     }
 }
 
@@ -317,7 +324,7 @@ pub fn cmd_init(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRes
     if !ctx.quiet {
         r.push_diag(Diagnostic::info_details(
             Code::Operational,
-            "initialised the project directory",
+            "initialised",
             vec![("path".to_string(), ctx.devdir().display().to_string())],
         ));
     }
@@ -340,7 +347,7 @@ pub fn cmd_add(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResul
         return OpResult::fail(
             EXIT_ERR,
             Code::Interface,
-            &format!("{USAGE_ADD} (unexpected positional argument: {})", pos[1]),
+            &format!("add received unexpected positional argument {}", pos[1]),
         );
     }
     if kw.is_empty() && pos[0].as_str() != "a" && pos[0].as_str() != "y" {
@@ -360,16 +367,12 @@ pub fn cmd_set(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResul
         return OpResult::fail(
             EXIT_ERR,
             Code::Interface,
-            "usage: grove set <ID> <key>=<value>",
+            "set requires an id and key=value",
         );
     }
     let id = &pos[0];
     let Some(eq) = pos[1].find('=') else {
-        return OpResult::fail(
-            EXIT_ERR,
-            Code::Interface,
-            "usage: grove set <ID> <key>=<value>",
-        );
+        return OpResult::fail(EXIT_ERR, Code::Interface, "expected key=value");
     };
     let (key, val) = (&pos[1][..eq], &pos[1][eq + 1..]);
     let mut st = match load(ctx, true) {
@@ -387,7 +390,7 @@ pub fn cmd_field(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpRes
         return OpResult::fail(
             EXIT_ERR,
             Code::Interface,
-            "usage: grove field <ID> <field> add|rm|clear [value]",
+            "field requires an id, field, and operation",
         );
     }
     let mut st = match load(ctx, true) {
@@ -406,7 +409,7 @@ pub fn cmd_link(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResu
         return OpResult::fail(
             EXIT_ERR,
             Code::Interface,
-            "usage: grove link <from> <label> <to>",
+            "link requires a source, label, and target",
         );
     }
     let mut st = match load(ctx, true) {
@@ -424,7 +427,7 @@ pub fn cmd_unlink(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpRe
         return OpResult::fail(
             EXIT_ERR,
             Code::Interface,
-            "usage: grove unlink <from> <label> <to>",
+            "unlink requires a source, label, and target",
         );
     }
     let mut st = match load(ctx, true) {
@@ -442,7 +445,7 @@ pub fn cmd_evidence(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> Op
         return OpResult::fail(
             EXIT_ERR,
             Code::Interface,
-            "usage: grove evidence <W-NN> \"…\"",
+            "evidence requires a work id and text",
         );
     }
     let args = vec![
@@ -459,7 +462,7 @@ pub fn cmd_fitness(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
         return OpResult::fail(
             EXIT_ERR,
             Code::Interface,
-            "usage: grove fitness <W-NN> <G-NN> <±delta>",
+            "fitness requires a work id, goal id, and delta",
         );
     }
     let delta: i64 = match pos[2].parse() {
@@ -481,7 +484,7 @@ pub fn cmd_renumber(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> Op
         return OpResult::fail(
             EXIT_ERR,
             Code::Interface,
-            "usage: grove renumber <ID> --to=<NEW-ID>",
+            "renumber requires an id and target id",
         );
     }
     let Some(new_id) = kw_get(kw, "to") else {
@@ -507,7 +510,7 @@ pub fn cmd_renumber(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> Op
 
 pub fn cmd_resume(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, Code::Interface, "usage: grove resume <W-NN>");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "resume requires a work id");
     }
     let mut st = match load(ctx, true) {
         Ok(s) => s,
@@ -524,7 +527,7 @@ pub fn cmd_handoff(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
         return OpResult::fail(
             EXIT_ERR,
             Code::Interface,
-            "usage: grove handoff <W-NN> --to=<token>",
+            "handoff requires a work id and target session",
         );
     }
     let mut st = match load(ctx, true) {
@@ -539,7 +542,7 @@ pub fn cmd_handoff(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
 
 pub fn cmd_revert(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, Code::Interface, "usage: grove revert <W-NN>");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "revert requires a work id");
     }
     let mut st = match load(ctx, true) {
         Ok(s) => s,
@@ -580,7 +583,7 @@ pub fn cmd_glossary(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> Op
     OpResult::fail(
         EXIT_ERR,
         Code::Interface,
-        "usage: grove glossary rename <old> <new>",
+        "glossary requires the rename operation",
     )
 }
 
@@ -589,7 +592,7 @@ pub fn cmd_glossary_rename(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]
         return OpResult::fail(
             EXIT_ERR,
             Code::Interface,
-            "usage: grove glossary rename <old> <new>",
+            "glossary rename requires old and new terms",
         );
     }
     let mut st = match load(ctx, true) {

@@ -2,7 +2,7 @@ use crate::fitness::rederive_goals;
 use crate::ids::reconcile_counters;
 use crate::invariants::validate_and_push_edge;
 use crate::json::{emit_jval, parse_json, JVal, Json, JuliaDict};
-use crate::message::{Code, Diagnostic, Severity};
+use crate::message::{Code, Diagnostic};
 use crate::model::{field_form, FieldValue, Form, Node, State};
 use crate::renumber::apply_renumber;
 use crate::session::progress_has_session_record;
@@ -565,10 +565,10 @@ fn restore_session_attrs_if_present(w: &mut Node, inv: &Json) {
 }
 
 fn fail(msg: impl Into<String>) -> Option<Diagnostic> {
-    Some(Diagnostic::raw(
-        Severity::Error,
+    Some(Diagnostic::error_details(
         Code::System,
-        &format!("journal undo, {}", msg.into()),
+        "journal undo failed",
+        vec![("error".to_string(), msg.into())],
     ))
 }
 

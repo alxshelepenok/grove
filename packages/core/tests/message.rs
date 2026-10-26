@@ -253,3 +253,40 @@ fn conformance_validators_accept_only_four_categories() {
     common::assert_rendered_diag_codes("grove help and documents: remain unchanged\n");
     common::assert_json_output_diag_codes("not JSON");
 }
+
+#[test]
+fn conformance_validators_enforce_the_complete_grammar() {
+    for text in ["bad; text", "bad: text", "bad—text", "run grove undo now"] {
+        let rendered = format!("error INTERFACE {text}\n");
+        assert!(std::panic::catch_unwind(|| {
+            common::assert_rendered_diagnostics(&rendered, false)
+        })
+        .is_err());
+        let json = serde_json::json!({"severity": "error", "code": "INTERFACE", "text": text});
+        assert!(std::panic::catch_unwind(|| { common::assert_json_diag_codes(&json) }).is_err());
+    }
+    assert!(std::panic::catch_unwind(|| {
+        common::assert_rendered_diagnostics("legacy: untyped failure\n", false)
+    })
+    .is_err());
+    assert!(std::panic::catch_unwind(|| {
+        common::assert_rendered_diagnostics("error INTERFACE\n", false)
+    })
+    .is_err());
+    for json in [
+        serde_json::json!({"severity": "error", "code": "SYSTEM", "text": "failure", "extra": true}),
+        serde_json::json!({"severity": "error", "code": "SYSTEM", "text": "failure", "details": []}),
+        serde_json::json!({"severity": "error", "code": "SYSTEM", "text": "failure", "details": {"line": 3}}),
+    ] {
+        assert!(std::panic::catch_unwind(|| { common::assert_json_diag_codes(&json) }).is_err());
+    }
+    common::assert_rendered_diagnostics(
+        "error INTERFACE invalid arguments for add\nusage: grove add\n",
+        false,
+    );
+    common::assert_rendered_diagnostics("error SYSTEM failure\n  path=C:/tmp:root\n", false);
+    common::assert_json_diag_codes(&serde_json::json!({
+        "severity": "error", "code": "SYSTEM", "text": "failure",
+        "details": {"raw": "dynamic: value; —"}
+    }));
+}

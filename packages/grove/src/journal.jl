@@ -152,7 +152,7 @@ function journal_apply_inverse!(st::State, inv)::Union{Nothing,Diagnostic}
     op = get(inv, "op", "")::String
 
     function fail(msg::AbstractString)::Diagnostic
-        raw_diag("error", CODE_SYSTEM, "journal undo, $(msg)")
+        system_error("journal undo failed", Pair{String,String}["error" => String(msg)])
     end
 
     if op == "rm_node"

@@ -39,11 +39,19 @@ end
 
 function validate_diag_object(d::AbstractDict)::Bool
     haskey(d, "severity") && haskey(d, "code") && haskey(d, "text") || return false
-    d["severity"] in ("error", "warning", "info") || error("bad diagnostic severity $(d["severity"])")
-    d["code"] in string.(G.DIAG_CODES) || error("bad diagnostic code $(d["code"])")
+    Set(String.(keys(d))) ⊆ Set(["severity", "code", "text", "details"]) ||
+        error("diagnostic object has unknown fields")
+    d["severity"] isa AbstractString && d["severity"] in ("error", "warning", "info") ||
+        error("bad diagnostic severity $(d["severity"])")
+    d["code"] isa AbstractString && d["code"] in string.(G.DIAG_CODES) ||
+        error("bad diagnostic code $(d["code"])")
     d["text"] isa AbstractString || error("diagnostic text must be a string")
-    haskey(d, "details") && !(d["details"] isa AbstractDict) &&
-        error("diagnostic details must be an object")
+    G.validate_diag_text(d["text"])
+    if haskey(d, "details")
+        d["details"] isa AbstractDict || error("diagnostic details must be an object")
+        all(v -> v isa AbstractString, values(d["details"])) ||
+            error("diagnostic detail values must be strings")
+    end
     true
 end
 
@@ -72,12 +80,24 @@ function validate_json_output_diagnostics(text::AbstractString)::Nothing
     nothing
 end
 
-function validate_rendered_diagnostics(text::AbstractString)::Nothing
+function validate_rendered_diagnostics(text::AbstractString; allow_raw::Bool=false)::Nothing
+    diagnostic_open = false
     for line in split(text, '\n'; keepempty=false)
         toks = split(strip(line))
-        length(toks) >= 3 || continue
-        toks[1] in ("error", "warning", "info") || continue
-        toks[2] in string.(G.DIAG_CODES) || error("bad diagnostic code $(toks[2])")
+        if !isempty(toks) && toks[1] in ("error", "warning", "info")
+            length(toks) >= 3 || error("diagnostic text is missing")
+            toks[2] in string.(G.DIAG_CODES) || error("bad diagnostic code $(toks[2])")
+            G.validate_diag_text(join(toks[3:end], ' '))
+            diagnostic_open = true
+        elseif startswith(line, "  ") && occursin('=', line) && diagnostic_open
+            continue
+        elseif startswith(line, "usage:")
+            diagnostic_open = false
+        elseif allow_raw
+            diagnostic_open = false
+        else
+            error("unstructured stderr line $(repr(line))")
+        end
     end
     nothing
 end
@@ -176,13 +196,16 @@ function exec_step(sc, i::Int, raw::Vector{String}, root::AbstractString,
     end
     isempty(step) && error("scenario $(sc.name) step $i is empty")
     sub(s) = replace(replace(s, "{root2}" => root2), "{root}" => root)
-    if startswith(step[1], "!")
+    pseudo = startswith(step[1], "!")
+    if pseudo
         rc, out, err = run_pseudo([sub(a) for a in step], target)
     else
         args = [sub(a) for a in step]
         rc, out, err = capture_cmd(() -> G.main(vcat(args, ["--root=$target"])))
     end
-    validate_rendered_diagnostics(err)
+    allow_raw = pseudo || step[1] in ("-h", "--help", "help") ||
+        (!haskey(G.COMMANDS, step[1]) && step[1] != "@2")
+    validate_rendered_diagnostics(err; allow_raw=allow_raw)
     validate_json_output_diagnostics(out)
     lockp = joinpath(target, ".grove", "state.lock")
     jp = joinpath(target, ".grove", "journal.log")
@@ -236,7 +259,7 @@ function run_scenario(sc)
         catch
         end
     end
-    pending === nothing || rethrow(pending)
+    pending === nothing || throw(pending)
     recs
 end
 

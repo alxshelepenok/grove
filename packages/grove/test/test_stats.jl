@@ -332,7 +332,8 @@ end
         @test !M.journal_record_mutation(last)
         @test begin
                    d = M.journal_apply_inverse!(M.State(), last["inv"])
-                   d isa M.Diagnostic && d.code == M.CODE_SYSTEM && occursin("unknown inverse op", d.text)
+                   d isa M.Diagnostic && d.code == M.CODE_SYSTEM && d.text == "journal undo failed" &&
+                   any(p -> p.first == "error" && occursin("unknown inverse op", p.second), d.details)
                end
         @test M.main(["undo", "--steps=1", "--root=$tmp", "--quiet"]) == 0
         st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))
