@@ -21,7 +21,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "add g: --area=A-NN is required (create one with grove add a --title=...)\n",
+      "stderr": "error INTERFACE add g, --area=A-NN is required, create an area node first\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
       "journal": null
     },
@@ -36,7 +36,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "add y: --from=<W-NN|D-NN|Q-NN|B-NN> is required (≥1 provenance record)\n",
+      "stderr": "error INTERFACE add y, --from requires at least one provenance record\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
       "journal": null
     },
@@ -49,7 +49,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "unknown kind: r\n",
+      "stderr": "error INTERFACE unknown kind r\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\n\n",
       "journal": null
     },

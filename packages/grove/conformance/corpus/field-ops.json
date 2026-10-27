@@ -141,7 +141,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "index out of range\n",
+      "stderr": "error INTERFACE index out of range\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ng G-01 status=unverified fitness_kind=manual t_created=<ts> t_updated=<ts> \"Goal\"\n  area: A-01\n\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n  goals: G-01\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"G-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"line\":\"first\",\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_insert_line\",\"index\":1}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"field\":\"ac\",\"lines\":[\"second\",\"third\"],\"op\":\"field_restore_lines\"}}\n"
     },

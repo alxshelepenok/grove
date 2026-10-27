@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:8c8363e1ecdeada89a989ce57d767c57812f78b398c1001beabcc14dc3b4a80c
+# checksum: sha256:f296c148d5023f978d680288b2d1625ee2f257d92e028764f3cb32d625ee2cc1
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -22,6 +22,11 @@ g G-46 status=unverified fitness_kind=count t_created=2026-10-24T00:32:10Z t_upd
 g G-47 status=unverified fitness_kind=count t_created=2026-10-24T00:32:10Z t_updated=2026-10-24T00:32:10Z "Accepted-decision guard texts are precise and single-sourced"
   area: A-02
   fitness_target: 2
+
+g G-52 status=verified fitness_kind=manual t_created=2026-10-26T01:41:46Z t_updated=2026-10-26T22:29:50Z "Unify result formats across CLI and MCP surfaces"
+  area: A-02
+  notes:
+    | Defer distillation while accepted decisions D-57 and D-58 retain the design rationale. --distill-deferred
 
 w W-04 type=feature status=proposed cynefin=complicated t_created=2026-07-19T01:15:07Z t_updated=2026-08-08T23:05:11Z "Benchmark suite: 10k-node lock, cone, render budgets"
   goals: G-17
@@ -405,6 +410,150 @@ w W-212 type=refactor status=done cynefin=clear t_created=2026-10-24T00:32:42Z t
   evidence:
     | Rust: guards suite 28/28 with the field loop now iterating field_order(Kind::D) and the setup deriving forms via field_form; corpus replay 29/29 byte-identical; cargo test -p grove-core green. Julia: test_cli_core derives the tuple from FIELD_ORDER[:d], the ordered catalog the lock writer iterates; Pkg.test passed with conformance 28 scenarios green and the decision-immutability replay byte-identical. lib.rs re-exports field_form and field_order so integration tests reach the production catalog; the diff removes no tests (28 guards tests before and after).
 
+w W-226 type=feature status=done cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T12:18:14Z "Carry structured diagnostics in Rust results"
+  goals: G-52
+  fitness: G-52=+1
+  surface: packages/core/src, packages/core/tests
+  ac:
+    | A Rust diagnostic type provides severity, stable upper snake case code, text, optional details, constructor validation, deterministic human rendering, and JSON conversion.
+    | Rust results retain structured errors, warnings, and informational notices until the CLI or MCP boundary, including diagnostics produced outside cli.rs.
+    | Authored Rust diagnostic text rejects semicolons, colons, em dashes, and CLI invocation guidance while raw details can retain paths and other dynamic values.
+    | Existing Rust exit codes, stdout and stderr intent, quiet behavior, and command-specific data keys remain stable except for fields that themselves carry diagnostic strings.
+  hypothesis:
+    | A diagnostic value with severity, code, text, and optional details can replace untyped Rust error strings while preserving exit codes, streams, quiet behavior, and unrelated payloads.
+  evidence_strategy:
+    | Run focused Rust diagnostic tests and the Rust core suite. Exercise real CLI success and failure calls and compare canonical rendering, JSON diagnostics, exit codes, streams, and quiet behavior.
+  evidence:
+    | packages/core/src/message.rs adds the Diagnostic type with severity, stable upper snake case code, concise text, optional raw details, constructor validation, deterministic `severity code text` rendering with indented key=value details, and JSON conversion; packages/core/tests/message.rs passes 10 focused tests covering valid codes, every forbidden character, CLI invocation detection, path details, stable rendering, JSON objects, and the quiet grammar.
+    | OpResult in packages/core/src/ops.rs now carries Vec<Diagnostic> plus a raw_err document lane for help payloads; err_rendered renders the canonical grammar, suppresses info under quiet, and appends documents; bin/grove.rs writes rendered stderr while exit codes, stdout intent, and command data keys stay stable.
+    | Migrated producers to structured diagnostics with stable codes and operation-neutral wording: guards.rs (I9_ASSUMPTION_CHAIN, I5_PREDECESSORS, I4_WIP_LIMIT, TERMINAL_FROZEN and others), session.rs (I11 codes), invariants.rs (I1 through I13 plus edge checks), decay.rs, journal.rs inverse lane, archive.rs, check.rs, distill.rs, lockdiff.rs, packet.rs, projects.rs, revalidate.rs, report.rs status guidance, session_lock.rs, and ops.rs recovery hints; check --json now emits errors as diagnostic objects.
+    | Executed: cargo test in packages/core passes 315 tests including the new message suite; the 40 remaining failures are all Julia-parity corpus fixtures (corpus_replay scenarios, archive corpus_*, projects corpus_promote_fixture and wave2b_projects_fixture, report golden_*) that pin recorded Julia output and are scheduled for regeneration from Julia in W-229 after W-227 parity, per the accepted plan sequencing.
+    | Executed real CLI calls: init prints `info INITIALISED` with a path detail and exits 0; `set W-99 status=ready` prints `error NOT_FOUND not found W-99` and exits 5; `set W-01 status=bogus` prints `error STATUS_INVALID invalid status` and exits 1; an unknown command prints `error UNKNOWN_COMMAND` plus the help document on stderr; `--quiet` suppresses info notices; `check --json` on a decayed project prints errors as diagnostic objects with severity, code, text, and details and exits 3.
+    | Executed: cargo build -p grove-core --bin grove and cargo build -p grove-mcp succeed with zero warnings under cargo check --all-targets; the grove-mcp suite passes 24 tests; a real tools/call set request for a missing id returns content text `error NOT_FOUND not found W-99` with isError true, preserving the protocol envelope for the W-228 adaptation.
+
+w W-227 type=feature status=done cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T22:26:59Z "Match structured diagnostics in Julia"
+  goals: G-52
+  fitness: G-52=+1
+  surface: packages/grove/src, packages/grove/test
+  ac:
+    | A Julia diagnostic type matches the Rust fields, validation, deterministic human rendering, and JSON conversion.
+    | Julia CLI and shared diagnostic-producing modules route errors, warnings, and informational notices through the common structure instead of ad hoc stderr strings.
+    | Diagnostic-bearing Julia JSON fields use objects with severity, code, text, and optional details while unrelated payloads and pure documents remain unchanged.
+    | Julia exit codes, stream intent, quiet behavior, and non-diagnostic output remain stable and recovery wording is operation-neutral.
+  hypothesis:
+    | An equivalent Julia diagnostic value and shared emit path can produce the same canonical text and JSON objects without changing integer exit codes or document output.
+  evidence_strategy:
+    | Run focused Julia diagnostic testsets and Pkg.test. Exercise equivalent Julia CLI success and failure calls and compare canonical text, JSON diagnostics, and exit codes with Rust.
+  evidence:
+    | Executed focused Julia diagnostic tests with 106 assertions passing, covering the closed categories, severity independence, text rejection, canonical rendering, JSON objects, real CLI diagnostics, missing locks, quiet success, missing nodes, and absent arguments. The missing-lock path now returns from main with exit 1 instead of terminating the process.
+    | Executed real target/debug/grove.exe and julia bin/grove.jl comparison. Seven equivalent scenarios per implementation produced identical normalized stdout stderr and exits for initialisation, check, duplicate init, missing node, decision creation and acceptance, and terminal mutation. This covered OPERATIONAL SYSTEM INTERFACE and INVARIANT with exits 0 1 4 and 5.
+    | Executed six additional exact Rust and Julia CLI failure comparisons. Missing deps argument, nonnumeric field index, nonnumeric fitness delta, missing archive goal, missing resume work, and missing glossary operation all returned identical canonical INTERFACE text and exits 1 or 5. Separate real checksum checks returned SYSTEM with exit 2 in both implementations.
+    | Executed real check --json failure against a recanonicalized lock with a goal missing its area. Rust and Julia both returned exit 3 without duplicate stderr and emitted an errors array containing a structured INVARIANT object with severity and text.
+    | Executed julia --project=packages/grove -e "using Pkg; Pkg.test()" to completion with final output Testing grove tests passed. The suite included 39 byte-identical conformance scenarios and all diagnostic validator testsets with no failures.
+
+w W-228 type=feature status=done cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T21:20:03Z "Expose neutral diagnostics through MCP"
+  goals: G-52
+  fitness: G-52=+1
+  surface: packages/core/src/mcp.rs, packages/mcp/tests/mcp.rs
+  ac:
+    | MCP builds operational results from structured diagnostics and preserves content, isError, protocol error mapping, and numeric Grove exit information.
+    | MCP operational errors and notices contain no semicolons, colons, em dashes, stderr separator, textual exit-code suffix, or CLI command redirection.
+    | MCP argument and protocol diagnostics use the same contract and successful info-only output has no error header.
+    | Status and distillation guidance uses operation-neutral wording while skill, specification, packets, and arbitrary graph content remain exempt documents or data.
+  hypothesis:
+    | Structured Rust diagnostics let MCP preserve compatible text content and isError while removing stream separators, textual exit suffixes, and CLI redirection from operational messages.
+  evidence_strategy:
+    | Run MCP tests covering argument failure, DoR refusal, terminal immutability, status guidance, and info-only success. Validate structure, punctuation, numeric errors, and absence of CLI invocations through real tools/call requests.
+  evidence:
+    | Executed cargo test -p grove-mcp --test mcp with 25 passed and 0 failed. Real tools/call tests cover System Interface Invariant and Operational diagnostics, structuredContent exitCode values 1 4 and 5, diagnostic JSON objects, argument errors, DoR refusal, accepted decision immutability, status guidance, info-only check success, and binary NDJSON. Assertions reject stderr separators textual exit suffixes and grove undo guidance.
+    | Executed real JSON-RPC parse and protocol tests. Protocol errors retain JSON-RPC numeric codes and expose canonical rendered diagnostics plus structured diagnostic data. Document payload tests for specification packets and arbitrary graph content remain green.
+
+w W-229 type=feature status=done cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T22:27:27Z "Pin diagnostic contract in specification and conformance"
+  goals: G-52
+  fitness: G-52=+1
+  surface: docs/specification.md, packages/grove/conformance, packages/core/tests/common/mod.rs, packages/core/tests/corpus_replay.rs
+  ac:
+    | The specification defines the diagnostic object, human grammar, code rules, forbidden punctuation, neutral recovery wording, raw details exception, and document and data exclusions.
+    | Julia conformance recording and Rust replay validate stderr diagnostics and diagnostic objects in JSON with explicit exclusions for help, documents, pure data, and user-authored content.
+    | Affected conformance fixtures are regenerated from Julia rather than hand-edited and Rust replay remains byte-identical.
+    | The MCP transport specification preserves exit codes, isError behavior, and unrelated command envelopes while describing structured diagnostics and neutral operational messages.
+  hypothesis:
+    | Normative grammar plus validators in the Julia recorder and Rust replay can enforce diagnostic parity while excluding help, documents, pure data, and user-authored content.
+  evidence_strategy:
+    | Run conformance verification and byte-identical Rust corpus replay after regenerating affected fixtures from Julia. Run the Markdown formatter check for the specification.
+  evidence:
+    | Executed julia --project=packages/grove packages/grove/conformance/run.jl verify with all 39 scenarios green. Fixtures were generated by the Julia recorder. Julia and Rust validators reject legacy codes, forbidden authored punctuation, CLI invocation guidance, unknown JSON fields, non-string details, unstructured stderr, and allow only usage help documents data and raw detail exclusions.
+    | Executed cargo test --workspace with all tests passing, including 39 byte-identical Rust corpus replay tests and 26 MCP tests. Executed bash bin/md-format.sh --check docs/specification.md successfully. Specification section 8.5 defines the exact diagnostic object categories grammar and exclusions, and section 8.6 defines structuredContent exitCode diagnostics isError and JSON-RPC error data.
+
+w W-230 type=feature status=done cynefin=complicated t_created=2026-10-26T03:12:07Z t_updated=2026-10-26T22:28:17Z "Verify unified diagnostics end to end"
+  goals: G-52
+  fitness: G-52=+1
+  surface: packages/core, packages/grove, packages/mcp, docs/specification.md
+  ac:
+    | The Rust workspace, Julia package, conformance corpus, and relevant Markdown checks pass on the final deliverable.
+    | Real CLI and MCP success and failure scenarios demonstrate equivalent diagnostic structure, stable exit behavior, and MCP guidance without CLI invocation.
+    | Every implementation work item has executed semantic evidence and fitness records before completion and the Grove graph passes its final invariant check.
+    | The final report identifies intentional diagnostic compatibility changes and any verification that remains blocked without claiming unexecuted checks.
+  hypothesis:
+    | Workspace tests, Julia tests, conformance replay, and real CLI and MCP calls can demonstrate the complete diagnostic contract on the deliverable.
+  evidence_strategy:
+    | Run cargo test --workspace, Julia Pkg.test, conformance verify, and Markdown checks. Exercise actual CLI and MCP success and failure scenarios and run grove check.
+  evidence:
+    | Final deliverable verification passed cargo fmt --all and cargo test --workspace, including 39 Rust corpus replay tests, desktop tests, and 26 MCP tests. Julia Pkg.test completed with Testing grove tests passed. Julia conformance verify reported 39 scenarios green. Markdown check, cargo fmt check, and git diff --check passed.
+    | Real Rust and Julia CLI calls matched across 13 success and failure scenarios with normalized output and exits 0 1 4 and 5. Separate checksum calls returned SYSTEM exit 2 and check --json returned structured INVARIANT exit 3. Real MCP NDJSON verified OPERATIONAL and INTERFACE diagnostics, structuredContent exitCode, isError, no stderr separator, no textual exit suffix, and no CLI redirection. Real MCP startup argument and role failures also used canonical diagnostics.
+    | W-226 and W-231 were already done with evidence. W-227 W-228 W-229 now have executed semantic evidence and fitness records before completion. Intentional compatibility changes are four diagnostic categories replacing condition-specific codes, validated neutral authored text, diagnostics on formerly silent failures, structuredContent for MCP, and removal of MCP stderr separators and textual exit suffixes. No verification remains blocked.
+
+w W-231 type=feature status=done cynefin=complicated t_created=2026-10-26T15:38:06Z t_updated=2026-10-26T20:20:57Z "Collapse diagnostic codes into four semantic categories"
+  goals: G-52
+  fitness: G-52=+1
+  surface: packages/core/src, packages/core/tests, packages/grove/src, packages/grove/test, packages/grove/conformance, packages/mcp/tests, docs/specification.md
+  ac:
+    | Rust Diagnostic.code becomes a closed Code enum with exactly System, Interface, Invariant, and Operational. Julia gains an equivalent closed representation, and both serialize only SYSTEM, INTERFACE, INVARIANT, and OPERATIONAL.
+    | All Rust and Julia diagnostic producers are reclassified using D-58, including missing nodes as Interface, missing locks and registry or filesystem failures as System, guards and numbered rules as Invariant, and successful or ordinary lifecycle notices as Operational.
+    | Severity remains independent from category. System warnings and Operational info or warning notices are representable, no category encodes criticality, and convenience constructors establish coherent defaults without accepting free-form code strings.
+    | Numeric process exits remain unchanged and independent from Code. default_code_for_exit and equivalent reverse-classification fallbacks are removed from active construction paths, while legacy raw adapters cannot silently invent a different category.
+    | String-code validation is removed because unsupported categories are unrepresentable. Text validation, forbidden punctuation, CLI-invocation rejection, optional details, deterministic rendering, and JSON conversion continue to pass their existing behavioral checks.
+    | MCP forwards the four semantic categories unchanged for equivalent CLI and Julia failures and does not derive categories from transport, exit codes, tool names, or rendered text. Existing content, isError, protocol error behavior, and numeric exit information remain intact.
+    | Focused tests cover every enum variant and serialized spelling, constructor defaults, valid severity combinations, caller-action borderline cases, independent exit codes, and representative migrations from every former code family. Tests also prove removed legacy codes are no longer emitted.
+    | The normative specification documents all four categories, their inclusion and boundary rules, independence of severity and exit codes, closed-set evolution, and uppercase serialization. It no longer describes a stable condition-specific code catalog.
+    | Conformance validators accept exactly the four codes and reject General, Other, Info, Err, and former condition-specific values. Affected fixtures are regenerated from Julia and Rust replay remains byte-identical.
+    | Real CLI and MCP scenarios exercise all four categories and confirm identical semantic classification across surfaces, stable streams and exits, correct MCP error mapping, and no CLI redirection in operational messages.
+    | Pure data, documents, packets, skill and specification payloads, user-authored graph content, unrelated command keys, quiet behavior, and stdout or stderr intent remain unchanged except for the intentional four-category diagnostic code values.
+  hypothesis:
+    | A closed four-category Code model will eliminate redundant condition-specific strings without losing useful semantics because severity remains independent, OpResult retains numeric exits, normative rule identifiers remain available as text or details, and all producers can be classified by the caller-action rule in D-58.
+  evidence_strategy:
+    | Run focused Rust and Julia diagnostic tests proving the closed category set, serialization, constructor severity pairs, caller-action boundary cases, and unchanged numeric exits. Run cargo test --workspace, Julia Pkg.test, and conformance verification after fixture regeneration from Julia.
+    | Exercise real CLI and MCP calls for System, Interface, Invariant, and Operational diagnostics. Verify canonical rendering and JSON codes, warning and info behavior, MCP isError mapping, unchanged exit codes, and the absence of legacy condition codes in production diagnostic construction.
+  evidence:
+    | Implemented D-58 with a closed Rust Code enum and validated Julia DiagCode containing exactly System, Interface, Invariant, and Operational, serialized as SYSTEM, INTERFACE, INVARIANT, and OPERATIONAL. Removed default_code_for_exit and free-form code validation, preserved independent severity and numeric OpResult exits, reclassified producers including filesystem and lock failures as System, request failures as Interface, guards and rules as Invariant, and ordinary notices as Operational. The obsolete 83-code diagnostic-codes.md inventory is removed.
+    | Executed cargo test --workspace successfully, including 39 byte-identical Rust corpus replay scenarios, roundtrip checks, desktop tests, and 25 MCP tests. Added MCP runtime coverage for all four categories, unchanged exit codes and isError behavior, accepted-decision guidance without grove undo, and stale status options without grove resume. Real Rust and Julia CLI scripts also passed init, repeated init, missing node, accepted decision, and check scenarios with the expected categories and exit codes.
+    | Updated docs/specification.md section 8.5 with the closed category set, caller-action classification, independent severity and exits, uppercase serialization, text rules, details, and document exclusions. Added exact-code validators to Julia recording and Rust replay, added decay-render, diff-repair, and projects to recorded scenarios, and regenerated affected fixtures from Julia. Executed julia --project=packages/grove packages/grove/conformance/run.jl verify with the result conformance: 39 scenarios green.
+    | Executed cargo fmt --all -- --check, bash bin/md-format.sh --check docs/specification.md, and git diff --check successfully on the deliverable. Focused Rust diagnostic tests cover all variants, legacy rejection, constructors, independent exits, rendering, JSON, and validator rejection. Julia diagnostic tests cover the same closed set, severity combinations, punctuation, CLI-invocation rejection, rendering, and JSON conversion.
+    | Executed julia --project=packages/grove -e "using Pkg; Pkg.test()" on the final deliverable. The suite passed, including diagnostic validators, all CLI regression tests, and conformance: 39 scenarios green. The final output ends with Testing grove tests passed.
+
+w W-232 type=bug status=done cynefin=clear t_created=2026-10-27T09:57:54Z t_updated=2026-10-27T10:42:43Z "Julia diff attribute details drift in Linux CI"
+  goals: G-52
+  fitness: G-52=+0
+  surface: packages/grove/src/lockdiff.jl, packages/grove/conformance/corpus/diff-repair.json, packages/core/src/lockdiff.rs, packages/grove/test/test_lockdiff.jl, packages/grove/conformance/scenarios.jl, packages/core/tests/lockdiff.rs, packages/core/tests/corpus_roundtrip.rs, packages/core/tests/archive.rs, packages/core/tests/fixtures/wave2b/diff-repair.json
+  ac:
+    | The root cause of the missing attrs detail is identified and recorded, including any platform-dependent parsing or normalization behavior.
+    | Julia and Rust emit identical diff and diff --json output for the diff-repair status transition on Linux CI and the local development platform.
+    | The canonical expected behavior is established before changing the fixture. Regenerating diff-repair.json alone is not accepted as a fix for implementation drift.
+    | Focused regression coverage pins the attrs detail in both human detail lines and JSON detail_lines, while unrelated diff output and diagnostic behavior remain unchanged.
+  hypothesis:
+    | The Julia lock loading or structural diff path normalizes node attrs differently across the fixture recording environment and Linux CI. Identifying and aligning that normalization should restore parity without weakening the diagnostic or diff contracts.
+  repro:
+    | GitHub Actions Linux conformance verification reports DRIFT for scenario diff-repair at step 12 with args `diff` and step 13 with args `diff --json`. After `set W-01 status=ready`, the canonical fixture contains `  attrs: changed` for W-01, while Julia output omits that line from both human stdout and the JSON detail_lines array. The remaining output matches and conformance fails with drift detected.
+  exit:
+    | The diff-repair scenario passes without stdout drift on Linux CI and the local development platform. Rust and Julia produce byte-identical human and JSON diff output for the W-01 status transition, and the focused lockdiff tests, full Julia suite, conformance verification, and Rust workspace tests pass.
+  evidence_strategy:
+    | Preserve the GitHub Actions failure as the pre-fix reproduction. Isolate the differing attrs in the baseline and worktree states, add a focused regression test, then run the same diff-repair scenario on Linux and the local platform. Compare Rust and Julia stdout, stderr, JSON, and exits, and run the full Julia, conformance, and Rust workspace suites.
+  evidence:
+    | Root cause established as a second-resolution timing race rather than platform-specific lock parsing. The fixture expected t_updated to change between add W-01 and set status=ready, but fast Linux runs could perform both within one timestamp second and legitimately omit attrs changed. packages/grove/conformance/scenarios.jl now inserts !sleep 1.1 before the status mutation, and the canonical fixture was regenerated from Julia.
+    | Focused Julia lockdiff tests pass with new coverage asserting attrs changed in both human detail lines and JSON detail_lines. The diff-repair scenario is byte-identical on Windows with 19 steps. Rust positional consumers and the fallback fixture were synchronized, and cargo fmt --all -- --check plus cargo test --workspace pass on the final fixture state.
+    | Executed Linux Julia 1.12.6 through WSL using the release workflow download URL and SHA-256. The targeted diff-repair run is byte-identical with 19 steps, and the complete Linux conformance run finishes with conformance: 39 scenarios green including diff-repair.
+    | Executed julia --project=packages/grove -e "using Pkg; Pkg.test()" to completion on Windows. Final output is Testing grove tests passed, with the new lockdiff regression test passing and conformance: 39 scenarios green including diff-repair with 19 steps. git diff --check also passes.
+
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
     | the reference system's strongest invariant was 'CI never sees the signing key' (offline hardware host, PIV slots); Grove is a single-maintainer OSS project with no paid certificate story
@@ -681,6 +830,38 @@ d D-56 status=accepted t_created=2026-10-24T16:17:58Z t_updated=2026-10-24T16:18
   validation:
     | corpus scenario archive-cascade.json recorded from the fixed julia: shared W citing two verified goals; after archive G-01 the W stays active and its goals field still reads G-01,G-02 (field intactness assertion); after archive G-02 the W is archived with the goals field still intact; a legacy-orphan step archives a node citing only already-archived goals at the next archive; rust corpus_replay byte-identical on first pass.
 
+d D-57 status=accepted t_created=2026-10-26T03:10:50Z t_updated=2026-10-26T03:15:05Z "Use structured interface-neutral diagnostics"
+  context:
+    | Rust CLI accumulates untyped diagnostic strings, Julia prints them directly, and MCP flattens both streams into text with CLI-oriented recovery hints.
+  options:
+    | Rewrite message literals only, or introduce a shared diagnostic structure with deterministic human rendering and structured JSON while preserving unrelated payloads.
+  decision:
+    | Use diagnostics with severity, stable upper snake case code, concise text, and optional raw details. Forbid semicolons, colons, em dashes, and CLI invocation guidance in authored text. Exempt documents, pure data, and user-authored graph content.
+  consequences:
+    | Rust results retain diagnostic values until their CLI or MCP boundary. Julia mirrors the same structure and rendering. MCP keeps content and isError while exposing diagnostics without stderr separators or CLI exit suffixes. Existing exit codes and unrelated data payloads stay stable.
+
+d D-58 status=accepted t_created=2026-10-26T15:33:09Z t_updated=2026-10-26T15:41:25Z "Classify diagnostics by four semantic categories"
+  context:
+    | W-226 introduced structured diagnostics with numerous free-form condition codes. Many codes duplicate information already carried by severity, message text, invariant identifiers, or process exit codes. The project needs a small semantic classification shared by Rust, Julia, CLI, and MCP rather than a growing catalog of condition-specific strings.
+  options:
+    | Retain the fine-grained string catalog, collapse it into exit-oriented categories such as Guard and NotFound, or classify diagnostics by four semantic sources named System, Interface, Invariant, and Operational.
+  decision:
+    | Use exactly four diagnostic codes represented by the enum variants System, Interface, Invariant, and Operational. Serialize them as SYSTEM, INTERFACE, INVARIANT, and OPERATIONAL in JSON and canonical human rendering. Do not add General, Other, Info, Err, Usage, Guard, NotFound, Checksum, Io, or condition-specific variants.
+    | System covers infrastructure, environment, filesystem, external process, registry, integrity, checksum, and session-lock failures. System describes the source rather than criticality and may therefore occur with warning or error severity. Missing project locks, malformed registries, failed writes, and lock timeouts belong here.
+    | Interface covers invalid caller input and request interpretation. Unknown commands and tools, missing or malformed arguments, unsupported keys, wrong node kinds in a request, and references to requested objects that do not exist belong here. CLI and MCP use the same classification for equivalent failures.
+    | Invariant covers graph logic, integrity invariants, blocking rules, lifecycle rules, ownership rules, and business rules. It includes both operations rejected to protect a rule and checks that discover an already violated rule. DoR refusal, terminal immutability, session ownership denial, archive preconditions, decay, and all numbered I-rule diagnostics belong here.
+    | Operational covers expected lifecycle outcomes and ordinary notices that require no error recovery. Successful initialization, repair, check, null distillation, verification reminders, informational lock cleanup, and an empty ready queue belong here. Operational normally uses info severity and may use warning severity for a non-error operational condition.
+    | Classify borderline cases by the action available to the caller. Fix the request means Interface. Change graph state or follow another protocol operation means Invariant. Fix the environment or infrastructure means System. No recovery action means Operational. A missing requested node is Interface while a missing project lock is System.
+    | Keep Severity independent from Code. Info, warning, and error describe presentation and urgency while the four codes describe the source of the result. Do not encode severity in category names or comments and do not require System to mean a critical failure.
+    | Keep process exit codes independent from diagnostic categories. OpResult remains the authority for its numeric exit code. Do not derive exit codes from Code and do not use default_code_for_exit to invent semantic categories. Interface may accompany exit 1 or 5, Invariant may accompany exit 3 or 4, and System may accompany exit 1 or 2.
+    | Replace the stringly typed code with an enum in Rust and an equivalent closed representation in Julia so unsupported categories cannot be constructed. Remove string-code validation while retaining authored-text validation, punctuation rules, CLI-invocation rejection, details, deterministic rendering, and JSON conversion.
+    | Provide semantic constructors that establish the intended severity and category pairs, including info and warning constructors for Operational and warning or error constructors for System. Interface and Invariant constructors represent errors unless a concrete use case requires otherwise. Constructor convenience must not reopen free-form category strings.
+    | Do not preserve legacy condition codes merely for textual compatibility. Numbered invariant identifiers may remain in diagnostic text or details when they identify the normative rule, but they do not create additional Code variants. Add machine-readable detail only for an actual consumer rather than speculative future use.
+  consequences:
+    | Rendered diagnostics and JSON code values intentionally change from fine-grained legacy strings to the four serialized categories. Exit codes, severity, text rules, details, streams, MCP isError behavior, and unrelated command payloads remain stable.
+    | Rust and Julia producers must be reclassified at their call sites. MCP must forward the same semantic categories without transport-specific reinterpretation. Tests, the normative specification, and conformance fixtures must be updated together to prevent parity drift.
+    | The four-category model is closed. Adding a category requires a new accepted decision. A new condition within an existing category changes only diagnostic text or structured details and does not expand the enum.
+
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
     | attestations already give a GitHub-backed second path; cosign keyless would add a Sigstore-anchored one without storing another key, at the cost of another tool in the sign job; deferred from v1, revisit after the first releases
@@ -713,6 +894,26 @@ q Q-11 status=answered cynefin=complicated t_created=2026-09-04T11:30:56Z t_upda
 q Q-15 status=answered cynefin=clear t_created=2026-09-17T23:15:34Z t_updated=2026-09-17T23:26:28Z "Where should natural id ordering be fixed: core listnodes or desktop views?"
   outcome:
     | Fix at the core level in every toolchain (Rust core, Julia CLI, desktop JS), not per view: the canonical order is tuple comparison of (family prefix, numeric id), identical everywhere. Column sorting in desktop is a later, separate feature.
+
+q Q-17 status=answered cynefin=clear t_created=2026-10-26T01:41:56Z t_updated=2026-10-26T01:42:33Z "Which error-message format classes exist across rust CLI commands"
+  tags: discovery
+  outcome:
+    | Seven format classes: (1) NotFound four phrasings - not found:{id} x4, missing:{wid} x2, no such edge, bare not found; (2) command prefix three styles - revalidate:/promote:/distill:/glossary rename: vs grove undo:/grove diff: vs bare (goal must be verified, refusing without --confirm, bad --to, not a work item); (3) usage lines on 18 mutations, absent on several ERR paths; (4) bad-value three shapes - bad --X (expected integer) x8, --X must be >= N x6, singles (bad delta, bad --to, empty --to, missing --to=...); (5) invariant prefixes I2/I3/I5/I9/I10 + DoR not-top symbol style + freeze text; (6) refusal styles - refusing without X vs grove renumber: refusing;; (7) hint tails - some messages carry use-grove hints, most do not. Exit codes 0/1/2/3/4/5 with NOTFOUND(5) overloaded across node/edge/project and some not-a-work-item paths exiting ERR(1).
+
+q Q-18 status=answered cynefin=clear t_created=2026-10-26T01:41:57Z t_updated=2026-10-26T01:42:33Z "How does the MCP result envelope differ from the CLI result contract"
+  tags: discovery
+  outcome:
+    | MCP tool_result_json concatenates stdout and stderr with a literal '--- stderr ---' separator, appends '(grove exit code: N)' as text for non-zero codes, and sets isError=bool. The structured exit class (0/1/3/4/5) degrades to a parenthetical string; stdout/stderr distinction becomes a textual marker; JSON mode output of read commands is embedded as an opaque text blob inside the MCP content array.
+
+q Q-19 status=answered cynefin=clear t_created=2026-10-26T01:41:57Z t_updated=2026-10-26T01:42:33Z "What does the specification require for result formats and MCP output"
+  tags: discovery
+  outcome:
+    | specification.md line 878 pins distill JSON key linked_das - both engines emit linked_discoveries (drift). Section 6.1 line 428 requires an exclusive file lock on .grove/state.lock with a 60-second staleness break - rust uses directory slots under .grove/locks and never breaks stale locks (drift). Section 8 does not define MCP resources (D19 resolved). The specification does not prescribe a unified error-message grammar - the unification format is an open design decision.
+
+q Q-20 status=open cynefin=complicated t_created=2026-10-26T01:41:58Z t_updated=2026-10-26T01:42:32Z "Where do julia and rust outputs diverge outside corpus coverage"
+  tags: discovery
+  outcome:
+    | Within corpus coverage (39 replay steps + 36 verify scenarios) julia and rust are pinned byte-identical. Outside corpus: the MCP surface is rust-only (no julia counterpart); sampled unpinned read commands (show/list/graph/status) matched in spot checks; exhaustive divergence sampling remains open for the unification goal.
 
 b B-01 status=testing cynefin=complicated t_created=2026-07-19T01:19:39Z t_updated=2026-07-27T18:00:12Z "Surprise rate declines as C grows"
   vm:
@@ -1144,6 +1345,10 @@ e Q-13 asks W-174 t_created=2026-09-17T13:05:36Z
 e Q-14 asks W-177 t_created=2026-09-17T13:05:36Z
 e Q-14 asks W-179 t_created=2026-09-17T13:05:36Z
 e Q-16 asks W-189 t_created=2026-09-25T22:58:12Z
+e Q-17 asks G-52 t_created=2026-10-26T01:41:56Z
+e Q-18 asks G-52 t_created=2026-10-26T01:41:57Z
+e Q-19 asks G-52 t_created=2026-10-26T01:41:57Z
+e Q-20 asks G-52 t_created=2026-10-26T01:41:58Z
 e T-02 causes W-17 t_created=2026-07-28T02:40:29Z
 e T-02 causes W-85 t_created=2026-08-05T18:45:04Z
 e T-03 causes W-85 t_created=2026-08-05T18:45:33Z
@@ -1270,6 +1475,20 @@ e W-213 produces Y-61 t_created=2026-10-26T00:47:00Z
 e W-214 produces Y-61 t_created=2026-10-26T00:47:00Z
 e W-216 produces Y-61 t_created=2026-10-26T00:47:00Z
 e W-222 produces Y-61 t_created=2026-10-26T00:47:00Z
+e W-226 blocks W-228 t_created=2026-10-26T03:15:05Z
+e W-226 implements D-57 t_created=2026-10-26T03:15:05Z
+e W-227 blocks W-229 t_created=2026-10-26T03:15:05Z
+e W-227 implements D-57 t_created=2026-10-26T03:15:05Z
+e W-228 blocks W-229 t_created=2026-10-26T03:15:05Z
+e W-228 implements D-57 t_created=2026-10-26T03:15:05Z
+e W-229 blocks W-230 t_created=2026-10-26T03:15:05Z
+e W-229 implements D-57 t_created=2026-10-26T03:15:05Z
+e W-230 implements D-57 t_created=2026-10-26T03:15:05Z
+e W-231 blocks W-227 t_created=2026-10-26T15:41:25Z
+e W-231 blocks W-228 t_created=2026-10-26T15:41:25Z
+e W-231 blocks W-229 t_created=2026-10-26T15:41:25Z
+e W-231 blocks W-230 t_created=2026-10-26T15:41:25Z
+e W-231 implements D-58 t_created=2026-10-26T15:41:25Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z

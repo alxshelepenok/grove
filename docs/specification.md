@@ -673,9 +673,9 @@ two steps:
    last active goal is archived. A resource whose goals were all archived
    earlier is archived during the next archive operation.
 
-Themes are archived only as members of the goal-exclusive set. Discoveries (`Y`) and
-areas (`A`) are never archived. A node with an empty goal-reference set is not
-archived by the second step.
+Themes are archived only as members of the goal-exclusive set. Discoveries (`Y`)
+and areas (`A`) are never archived. A node with an empty goal-reference set is
+not archived by the second step.
 
 Both sets are computed before any mutation. Session guards are checked over both
 sets at the same time. If any affected progress `W` is held by a foreign
@@ -880,6 +880,52 @@ include `command`. Exit codes are unchanged. `check` failure returns exit 3 with
 ignore `--json`; `add y`, `distill`, `revalidate`, `glossary rename`, and
 `promote` define small JSON results.
 
+A diagnostic is a structured value with exactly `severity`, `code`, `text`, and
+optional `details`. No other fields are permitted. Severity is `error`,
+`warning`, or `info` and remains independent of the diagnostic category.
+`details` is an object whose values are strings. Human rendering is
+`severity code text`, followed by two-space-indented `key=value` lines for
+details in their deterministic insertion order. JSON diagnostics are objects
+with the same field names. The `errors` array from `check` contains diagnostic
+objects rather than untyped strings.
+
+The diagnostic code set is closed and contains exactly these serialized values.
+
+| Code          | Meaning                                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `SYSTEM`      | Infrastructure, environment, filesystem, external processes, registries, integrity, checksums, and session locks.               |
+| `INTERFACE`   | Caller input and request interpretation, including arguments, commands, tools, unsupported keys, and missing requested objects. |
+| `INVARIANT`   | Graph logic, integrity invariants, blocking rules, lifecycle rules, ownership rules, and business rules.                        |
+| `OPERATIONAL` | Expected lifecycle outcomes and ordinary notices that need no error recovery.                                                   |
+
+`SYSTEM` describes the source rather than criticality and may carry warning or
+error severity. `INVARIANT` covers both operations rejected to protect a rule
+and checks that discover an already violated rule. `OPERATIONAL` normally
+carries info severity and may carry warning severity for a non-error condition.
+
+Borderline cases follow the action available to the caller. Correcting the
+request means `INTERFACE`. Changing graph state or following another protocol
+operation means `INVARIANT`. Fixing the environment or infrastructure means
+`SYSTEM`. No recovery action means `OPERATIONAL`. A missing requested node is
+`INTERFACE`, while a missing project lock is `SYSTEM`.
+
+Numeric process exits remain independent of diagnostic categories and are
+defined by section 8.2. An implementation MUST NOT derive an exit from the
+category or invent a category from an exit. MCP forwards the same category as
+the equivalent command failure and MUST NOT reclassify it from the transport,
+exit code, tool name, or rendered text.
+
+Authored diagnostic text MUST NOT contain semicolons, colons, em dashes, or CLI
+command invocations. Numbered invariant identifiers MAY remain in text or
+details without creating additional code values. Raw dynamic values such as
+paths and timestamps belong in `details` and are exempt from punctuation
+rewriting. Documents, pure data, packets, skill and specification payloads, and
+user-authored graph content are not diagnostics and remain unchanged.
+
+Adding a diagnostic category requires a new accepted decision. A new condition
+within an existing category changes only text or details and MUST NOT expand the
+code set. Legacy condition-specific codes are not valid diagnostic codes.
+
 | Command          | Principal keys besides `command`                                                                                 |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `ready`          | `items: [{id,title,critical}]`.                                                                                  |
@@ -921,3 +967,20 @@ Methods are `initialize`, `notifications/initialized`, `ping`, `tools/list`, and
 `tools/call`. Tool argument and Grove guard failures are tool results with
 `isError:true`. Protocol failures are JSON-RPC errors. Roles and disabled tools
 are configured through `$GROVE_HOME/mcp.toml`.
+
+Every `tools/call` result contains `content`, `structuredContent`, and
+`isError`. `structuredContent` contains numeric `exitCode` and a
+`diagnostics` array of diagnostic objects. The numeric value is the same exit
+the equivalent CLI command returns, including zero for informational success.
+`isError` is true exactly when `exitCode` is nonzero. Text content
+preserves document or data output and appends canonically rendered diagnostics
+with a newline when both are present. It MUST NOT add stderr separators, an
+error header to info-only success, or a textual exit-code suffix. Operational
+messages MUST NOT redirect the caller to CLI invocations.
+
+Tool argument failures use `INTERFACE` diagnostics and Grove exit 1 in the tool
+result. JSON-RPC errors retain their protocol numeric codes. Their `message` is
+the canonical rendered diagnostic and `data.diagnostics` contains the structured
+diagnostic array. Protocol diagnostics do not invent a Grove exit. Dynamic
+parser or argument errors are carried in exempt diagnostic details rather than
+punctuation in authored text.

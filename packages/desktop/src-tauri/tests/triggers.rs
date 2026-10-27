@@ -316,7 +316,7 @@ fn detect_on_temp_root_matches_status_output() {
     let (_guard, _home) = common::isolated_grove_home("detect-root-home");
     let dir = tmpdir("detect-root");
     let r = run_cli(&["init".to_string(), format!("--root={}", dir.display())]);
-    assert_eq!(r.code, EXIT_OK, "init failed: {}", r.err);
+    assert_eq!(r.code, EXIT_OK, "init failed: {}", r.err_rendered(false));
     let root = dir.to_string_lossy().into_owned();
     run_write(
         &root,

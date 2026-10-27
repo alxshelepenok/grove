@@ -437,7 +437,8 @@ fn replay(name: &str) {
             let mut args = step.clone();
             args.push(format!("--root={target_s}"));
             let r = run_cli(&args);
-            (r.code, r.out, r.err)
+            let quiet = args.iter().any(|a| a == "--quiet");
+            (r.code, r.out.clone(), r.err_rendered(quiet))
         };
         let norm_want = |s: String| -> String {
             let mut s = s;
@@ -455,12 +456,17 @@ fn replay(name: &str) {
         );
         let want_out = norm_want(common::step_field(&sc, i, "stdout"));
         let got_out = normalize(&out, &paths, &tokens);
+        common::assert_json_output_diag_codes(&got_out);
         if got_out != want_out {
             print_drift(name, i, &raw, "stdout", &want_out, &got_out);
             panic!("drift in scenario {name} step {i} stdout");
         }
         let want_err = norm_want(common::step_field(&sc, i, "stderr"));
         let got_err = normalize(&err, &paths, &tokens);
+        let allow_raw = step[0].starts_with('!')
+            || matches!(step[0].as_str(), "-h" | "--help" | "help")
+            || !grove_core::COMMAND_NAMES.contains(&step[0].as_str());
+        common::assert_rendered_diagnostics(&got_err, allow_raw);
         if got_err != want_err {
             print_drift(name, i, &raw, "stderr", &want_err, &got_err);
             panic!("drift in scenario {name} step {i} stderr");

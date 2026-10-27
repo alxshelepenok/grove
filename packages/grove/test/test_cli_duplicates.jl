@@ -28,7 +28,8 @@ end
         rc, err = capture_stderr(["field", "W-01", "tags", "add", "thin adapter",
                                   "--root=$tmp", "--quiet"])
         @test rc == M.EXIT_GUARD
-        @test occursin("W-01", err) && occursin("tags", err) && occursin("thin adapter", err)
+        @test occursin("error INVARIANT W-01 tags already contains", err)
+        @test occursin("thin adapter", err)
         @test read(joinpath(tmp, ".grove", "state.lock"), String) == lock_before
         @test journal_line_count(tmp) == jlines
         st = M.read_lock(joinpath(tmp, ".grove", "state.lock"))

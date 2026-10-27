@@ -1,5 +1,6 @@
 use crate::decay::dashboard_decay_count;
 use crate::json::{emit_jval, JVal, JuliaDict};
+use crate::message::{Code, Diagnostic};
 use crate::model::State;
 use crate::ops::*;
 use crate::render::render_index;
@@ -120,8 +121,7 @@ pub fn parse_args(args: &[String]) -> (CliCtx, Vec<String>, Vec<(String, String)
 
 pub fn info(ctx: &CliCtx, r: &mut OpResult, msg: &str) {
     if !ctx.quiet {
-        r.err.push_str(msg);
-        r.err.push('\n');
+        r.push_info(Code::Operational, msg);
     }
 }
 
@@ -155,17 +155,25 @@ pub fn atomic_write_same_dir(path: &Path, payload: &str) -> std::io::Result<()> 
 pub fn load(ctx: &CliCtx, verify: bool) -> Result<State, OpResult> {
     let p = ctx.lockpath();
     if !p.is_file() {
-        return Err(OpResult::fail(
+        return Err(OpResult::fail_diag(
             EXIT_ERR,
-            &format!("lock not found: {} (run `grove init`)", p.display()),
+            Diagnostic::error_details(
+                Code::System,
+                "lock file is absent, initialize the project first",
+                vec![("path".to_string(), p.display().to_string())],
+            ),
         ));
     }
     let text = match std::fs::read_to_string(&p) {
         Ok(t) => t,
         Err(_) => {
-            return Err(OpResult::fail(
+            return Err(OpResult::fail_diag(
                 EXIT_ERR,
-                &format!("lock not found: {} (run `grove init`)", p.display()),
+                Diagnostic::error_details(
+                    Code::System,
+                    "lock file is absent, initialize the project first",
+                    vec![("path".to_string(), p.display().to_string())],
+                ),
             ))
         }
     };
@@ -175,14 +183,29 @@ pub fn load(ctx: &CliCtx, verify: bool) -> Result<State, OpResult> {
             if verify {
                 let actual = crate::checksum::checksum_of(&body);
                 if actual != expected {
-                    return Err(OpResult::fail(EXIT_CHECKSUM, &format!(
-                        "lock checksum mismatch (expected {expected}, got {actual}). Did you edit state.lock by hand? Run `grove repair --confirm` to accept the current contents."
-                    )));
+                    return Err(OpResult::fail_diag(
+                        EXIT_CHECKSUM,
+                        Diagnostic::error_details(
+                            Code::System,
+                            "lock checksum mismatch, the file may have been edited by hand, accept the current contents with a repair",
+                            vec![
+                                ("expected".to_string(), expected),
+                                ("actual".to_string(), actual),
+                            ],
+                        ),
+                    ));
                 }
             }
             Ok(st)
         }
-        Err(e) => Err(OpResult::fail(EXIT_ERR, &e.to_string())),
+        Err(e) => Err(OpResult::fail_diag(
+            EXIT_ERR,
+            Diagnostic::error_details(
+                Code::System,
+                "lock file could not be parsed",
+                vec![("error".to_string(), e.to_string())],
+            ),
+        )),
     }
 }
 
@@ -238,9 +261,13 @@ pub fn journal_session_token(ctx: &CliCtx, kw: &[(String, String)]) -> String {
 
 pub fn cmd_init(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpResult {
     if ctx.lockpath().is_file() {
-        return OpResult::fail(
+        return OpResult::fail_diag(
             EXIT_ERR,
-            &format!("lock already exists at {}", ctx.lockpath().display()),
+            Diagnostic::error_details(
+                Code::System,
+                "lock already exists",
+                vec![("path".to_string(), ctx.lockpath().display().to_string())],
+            ),
         );
     }
     let _ = std::fs::create_dir_all(ctx.devdir());
@@ -248,22 +275,40 @@ pub fn cmd_init(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRes
     if let Some(v) = kw_get(kw, "id-stride") {
         match v.parse::<i64>() {
             Ok(n) if n >= 1 => st.id_stride = n,
-            Ok(_) => return OpResult::fail(EXIT_ERR, "--id-stride must be ≥ 1"),
-            Err(_) => return OpResult::fail(EXIT_ERR, "bad --id-stride (expected integer)"),
+            Ok(_) => return OpResult::fail(EXIT_ERR, Code::Interface, "--id-stride must be ≥ 1"),
+            Err(_) => {
+                return OpResult::fail(
+                    EXIT_ERR,
+                    Code::Interface,
+                    "bad --id-stride (expected integer)",
+                )
+            }
         }
     }
     if let Some(v) = kw_get(kw, "id-offset") {
         match v.parse::<i64>() {
             Ok(n) if n >= 1 => st.id_offset = n,
-            Ok(_) => return OpResult::fail(EXIT_ERR, "--id-offset must be ≥ 1"),
-            Err(_) => return OpResult::fail(EXIT_ERR, "bad --id-offset (expected integer)"),
+            Ok(_) => return OpResult::fail(EXIT_ERR, Code::Interface, "--id-offset must be ≥ 1"),
+            Err(_) => {
+                return OpResult::fail(
+                    EXIT_ERR,
+                    Code::Interface,
+                    "bad --id-offset (expected integer)",
+                )
+            }
         }
     }
     if let Some(v) = kw_get(kw, "id-width") {
         match v.parse::<i64>() {
             Ok(n) if n >= 2 => st.id_pad_width = n,
-            Ok(_) => return OpResult::fail(EXIT_ERR, "--id-width must be ≥ 2"),
-            Err(_) => return OpResult::fail(EXIT_ERR, "bad --id-width (expected integer)"),
+            Ok(_) => return OpResult::fail(EXIT_ERR, Code::Interface, "--id-width must be ≥ 2"),
+            Err(_) => {
+                return OpResult::fail(
+                    EXIT_ERR,
+                    Code::Interface,
+                    "bad --id-width (expected integer)",
+                )
+            }
         }
     } else if st.id_stride != 1 || st.id_offset != 1 {
         st.id_pad_width = st.id_pad_width.max(3);
@@ -276,11 +321,13 @@ pub fn cmd_init(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRes
         );
     }
     let mut r = OpResult::ok();
-    info(
-        ctx,
-        &mut r,
-        &format!("initialised: {}", ctx.devdir().display()),
-    );
+    if !ctx.quiet {
+        r.push_diag(Diagnostic::info_details(
+            Code::Operational,
+            "initialised",
+            vec![("path".to_string(), ctx.devdir().display().to_string())],
+        ));
+    }
     r
 }
 
@@ -294,16 +341,17 @@ pub fn cmd_add(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResul
         return r;
     }
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, USAGE_ADD);
+        return usage_fail("add", USAGE_ADD);
     }
     if pos.len() > 1 {
         return OpResult::fail(
             EXIT_ERR,
-            &format!("{USAGE_ADD} (unexpected positional argument: {})", pos[1]),
+            Code::Interface,
+            &format!("add received unexpected positional argument {}", pos[1]),
         );
     }
     if kw.is_empty() && pos[0].as_str() != "a" && pos[0].as_str() != "y" {
-        return OpResult::fail(EXIT_ERR, USAGE_ADD);
+        return usage_fail("add", USAGE_ADD);
     }
     let mut st = match load(ctx, true) {
         Ok(s) => s,
@@ -316,11 +364,15 @@ pub fn cmd_add(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResul
 
 pub fn cmd_set(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.len() < 2 {
-        return OpResult::fail(EXIT_ERR, "usage: grove set <ID> <key>=<value>");
+        return OpResult::fail(
+            EXIT_ERR,
+            Code::Interface,
+            "set requires an id and key=value",
+        );
     }
     let id = &pos[0];
     let Some(eq) = pos[1].find('=') else {
-        return OpResult::fail(EXIT_ERR, "usage: grove set <ID> <key>=<value>");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "expected key=value");
     };
     let (key, val) = (&pos[1][..eq], &pos[1][eq + 1..]);
     let mut st = match load(ctx, true) {
@@ -337,7 +389,8 @@ pub fn cmd_field(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpRes
     if pos.len() < 3 {
         return OpResult::fail(
             EXIT_ERR,
-            "usage: grove field <ID> <field> add|rm|clear [value]",
+            Code::Interface,
+            "field requires an id, field, and operation",
         );
     }
     let mut st = match load(ctx, true) {
@@ -353,7 +406,11 @@ pub fn cmd_field(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpRes
 
 pub fn cmd_link(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.len() < 3 {
-        return OpResult::fail(EXIT_ERR, "usage: grove link <from> <label> <to>");
+        return OpResult::fail(
+            EXIT_ERR,
+            Code::Interface,
+            "link requires a source, label, and target",
+        );
     }
     let mut st = match load(ctx, true) {
         Ok(s) => s,
@@ -367,7 +424,11 @@ pub fn cmd_link(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResu
 
 pub fn cmd_unlink(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.len() < 3 {
-        return OpResult::fail(EXIT_ERR, "usage: grove unlink <from> <label> <to>");
+        return OpResult::fail(
+            EXIT_ERR,
+            Code::Interface,
+            "unlink requires a source, label, and target",
+        );
     }
     let mut st = match load(ctx, true) {
         Ok(s) => s,
@@ -381,7 +442,11 @@ pub fn cmd_unlink(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpRe
 
 pub fn cmd_evidence(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.len() < 2 {
-        return OpResult::fail(EXIT_ERR, "usage: grove evidence <W-NN> \"…\"");
+        return OpResult::fail(
+            EXIT_ERR,
+            Code::Interface,
+            "evidence requires a work id and text",
+        );
     }
     let args = vec![
         pos[0].clone(),
@@ -394,11 +459,15 @@ pub fn cmd_evidence(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> Op
 
 pub fn cmd_fitness(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.len() < 3 {
-        return OpResult::fail(EXIT_ERR, "usage: grove fitness <W-NN> <G-NN> <±delta>");
+        return OpResult::fail(
+            EXIT_ERR,
+            Code::Interface,
+            "fitness requires a work id, goal id, and delta",
+        );
     }
     let delta: i64 = match pos[2].parse() {
         Ok(d) => d,
-        Err(_) => return OpResult::fail(EXIT_ERR, "bad delta (expected integer)"),
+        Err(_) => return OpResult::fail(EXIT_ERR, Code::Interface, "bad delta (expected integer)"),
     };
     let mut st = match load(ctx, true) {
         Ok(s) => s,
@@ -412,15 +481,19 @@ pub fn cmd_fitness(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
 
 pub fn cmd_renumber(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, "usage: grove renumber <ID> --to=<NEW-ID>");
+        return OpResult::fail(
+            EXIT_ERR,
+            Code::Interface,
+            "renumber requires an id and target id",
+        );
     }
     let Some(new_id) = kw_get(kw, "to") else {
-        return OpResult::fail(EXIT_ERR, "missing --to=<NEW-ID>");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "missing --to=<NEW-ID>");
     };
     let old_id = pos[0].trim();
     let new_id = new_id.trim();
     if new_id.is_empty() {
-        return OpResult::fail(EXIT_ERR, "bad --to");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "bad --to");
     }
     if old_id == new_id {
         return OpResult::ok();
@@ -437,7 +510,7 @@ pub fn cmd_renumber(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> Op
 
 pub fn cmd_resume(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, "usage: grove resume <W-NN>");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "resume requires a work id");
     }
     let mut st = match load(ctx, true) {
         Ok(s) => s,
@@ -451,7 +524,11 @@ pub fn cmd_resume(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpRe
 
 pub fn cmd_handoff(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, "usage: grove handoff <W-NN> --to=<token>");
+        return OpResult::fail(
+            EXIT_ERR,
+            Code::Interface,
+            "handoff requires a work id and target session",
+        );
     }
     let mut st = match load(ctx, true) {
         Ok(s) => s,
@@ -465,7 +542,7 @@ pub fn cmd_handoff(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
 
 pub fn cmd_revert(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, "usage: grove revert <W-NN>");
+        return OpResult::fail(EXIT_ERR, Code::Interface, "revert requires a work id");
     }
     let mut st = match load(ctx, true) {
         Ok(s) => s,
@@ -503,12 +580,20 @@ pub fn cmd_glossary(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> Op
     if !pos.is_empty() && pos[0] == "rename" {
         return cmd_glossary_rename(ctx, &pos[1..], kw);
     }
-    OpResult::fail(EXIT_ERR, "usage: grove glossary rename <old> <new>")
+    OpResult::fail(
+        EXIT_ERR,
+        Code::Interface,
+        "glossary requires the rename operation",
+    )
 }
 
 pub fn cmd_glossary_rename(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.len() < 2 {
-        return OpResult::fail(EXIT_ERR, "usage: grove glossary rename <old> <new>");
+        return OpResult::fail(
+            EXIT_ERR,
+            Code::Interface,
+            "glossary rename requires old and new terms",
+        );
     }
     let mut st = match load(ctx, true) {
         Ok(s) => s,
@@ -645,7 +730,7 @@ pub fn cmd_skill(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRe
                 }
                 r
             }
-            Err(e) => OpResult::fail(EXIT_ERR, &e),
+            Err(e) => OpResult::fail(EXIT_ERR, Code::System, &e),
         },
     }
 }
@@ -669,8 +754,11 @@ pub fn cmd_specification(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]
 }
 
 pub fn unknown_command_result(cmd: &str) -> OpResult {
-    let mut r = OpResult::fail(EXIT_ERR, &format!("unknown command: {cmd}"));
-    r.err.push_str(HELP);
+    let mut r = OpResult::fail_diag(
+        EXIT_ERR,
+        Diagnostic::error(Code::Interface, &format!("unknown command {cmd}")),
+    );
+    r.raw_err.push_str(HELP);
     r
 }
 
@@ -727,7 +815,7 @@ enum CliRequest {
         cmd: String,
         pos: Vec<String>,
         kw: Vec<(String, String)>,
-        note: Option<String>,
+        note: Option<Diagnostic>,
     },
 }
 
@@ -756,11 +844,12 @@ fn cli_prepare(args: &[String]) -> CliRequest {
             return CliRequest::Immediate(OpResult {
                 code: EXIT_NOTFOUND,
                 out: String::new(),
-                err: String::new(),
+                diags: Vec::new(),
+                raw_err: String::new(),
                 journal: Vec::new(),
             })
         }
-        Err(msg) => return CliRequest::Immediate(OpResult::fail(EXIT_NOTFOUND, &msg)),
+        Err(d) => return CliRequest::Immediate(OpResult::fail_diag(EXIT_NOTFOUND, d)),
     }
     let note = crate::projects::registry_note_open(&ctx.root, &cmd);
     CliRequest::Dispatch {
@@ -784,7 +873,7 @@ pub fn run_cli(args: &[String]) -> OpResult {
         } => {
             let mut r = dispatch(&ctx, &cmd, &pos, &kw);
             if let Some(w) = note {
-                r.err = format!("{w}\n{}", r.err);
+                r.diags.insert(0, w);
             }
             r
         }
@@ -810,31 +899,25 @@ pub fn run_cli_session_locked(args: &[String]) -> OpResult {
             } else {
                 Ok((dispatch(&ctx, &cmd, &pos, &kw), Vec::new()))
             };
-            let mut pre = String::new();
-            if let Some(w) = &note {
-                pre.push_str(w);
-                pre.push('\n');
+            let mut pre: Vec<Diagnostic> = Vec::new();
+            if let Some(w) = note {
+                pre.push(w);
             }
             match locked {
                 Ok((mut r, warnings)) => {
-                    for w in &warnings {
-                        pre.push_str(w);
-                        pre.push('\n');
-                    }
-                    r.err = format!("{pre}{}", r.err);
+                    pre.extend(warnings);
+                    pre.extend(r.diags.drain(..));
+                    r.diags = pre;
                     r
                 }
                 Err(t) => {
-                    for w in &t.warnings {
-                        pre.push_str(w);
-                        pre.push('\n');
-                    }
-                    pre.push_str(&t.msg);
-                    pre.push('\n');
+                    pre.extend(t.warnings);
+                    pre.push(t.diag);
                     OpResult {
                         code: EXIT_GUARD,
                         out: String::new(),
-                        err: pre,
+                        diags: pre,
+                        raw_err: String::new(),
                         journal: Vec::new(),
                     }
                 }

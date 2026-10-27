@@ -96,13 +96,16 @@ fn dispatch_report(ctx: &CliCtx, cmd: &str, pos: &[String], kw: &[(String, Strin
 
 fn check_step(r: OpResult, sc: &serde_json::Value, i: usize, subs: &[(&str, &str)]) {
     assert_eq!(r.code as i64, step_exit(sc, i), "exit code step {i}");
+    let quiet = step_args(sc, i).iter().any(|a| a == "--quiet");
+    common::assert_json_output_diag_codes(&r.out);
+    common::assert_rendered_diag_codes(&r.err_rendered(quiet));
     assert_eq!(
         normalize_out(&r.out, subs),
         step_field(sc, i, "stdout"),
         "stdout step {i}"
     );
     assert_eq!(
-        normalize_out(&r.err, subs),
+        normalize_out(&r.err_rendered(quiet), subs),
         step_field(sc, i, "stderr"),
         "stderr step {i}"
     );
@@ -310,7 +313,7 @@ fn status_json_match_and_stale_match_julia_ground_truth() {
     );
     assert_eq!(
         r.out,
-        "{\"invariants\":{\"messages\":[],\"ok\":true},\"progress\":[{\"stale_for_agent\":true,\"id\":\"W-01\",\"title\":\"Alpha\",\"options_hint\":\"grove resume W-01 | grove revert W-01 | grove handoff W-01 --to=<token>\",\"session_detail\":\"  session=tok-abc  [!= this session]\",\"session\":\"tok-abc\"}],\"command\":\"status\",\"alignment_triggers\":[]}\n"
+        "{\"invariants\":{\"messages\":[],\"ok\":true},\"progress\":[{\"stale_for_agent\":true,\"id\":\"W-01\",\"title\":\"Alpha\",\"options_hint\":\"resume, revert, or handoff the claim\",\"session_detail\":\"  session=tok-abc  [!= this session]\",\"session\":\"tok-abc\"}],\"command\":\"status\",\"alignment_triggers\":[]}\n"
     );
 }
 
@@ -340,29 +343,56 @@ fn empty_ctx(tag: &str) -> CliCtx {
 }
 
 #[test]
-fn silent_and_usage_error_paths() {
+fn diagnostic_and_usage_error_paths() {
     let ctx = empty_ctx("errors");
     let r = cmd_deps(&ctx, &[], &[]);
-    assert_eq!((r.code, r.out.as_str(), r.err.as_str()), (1, "", ""));
+    assert_eq!(
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (1, "", "error INTERFACE deps requires a node id\n")
+    );
     let r = cmd_impact(&ctx, &[], &[]);
-    assert_eq!((r.code, r.out.as_str(), r.err.as_str()), (1, "", ""));
+    assert_eq!(
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (1, "", "error INTERFACE impact requires a node id\n")
+    );
     let r = cmd_show(&ctx, &[], &[]);
-    assert_eq!((r.code, r.out.as_str(), r.err.as_str()), (1, "", ""));
+    assert_eq!(
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (1, "", "error INTERFACE show requires a node id\n")
+    );
     let r = cmd_show(&ctx, &["W-99".to_string()], &[]);
-    assert_eq!((r.code, r.out.as_str(), r.err.as_str()), (5, "", ""));
+    assert_eq!(
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (5, "", "error INTERFACE not found W-99\n")
+    );
     let r = cmd_dor(&ctx, &[], &[]);
-    assert_eq!((r.code, r.out.as_str(), r.err.as_str()), (1, "", ""));
+    assert_eq!(
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (1, "", "error INTERFACE dor requires a work id\n")
+    );
     let r = cmd_dor(&ctx, &["W-99".to_string()], &[]);
-    assert_eq!((r.code, r.out.as_str(), r.err.as_str()), (5, "", ""));
+    assert_eq!(
+        (r.code, r.out.as_str(), r.err_rendered(false).as_str()),
+        (5, "", "error INTERFACE not found W-99\n")
+    );
     let r = cmd_list(&ctx, &[], &[]);
-    assert_eq!((r.code, r.err.as_str()), (1, "usage: grove list <kind>\n"));
+    assert_eq!(
+        (r.code, r.err_rendered(false).as_str()),
+        (
+            1,
+            "error INTERFACE invalid arguments for list\nusage: grove list <kind>\n"
+        )
+    );
     let r = cmd_log(&ctx, &[], &[("limit".to_string(), "abc".to_string())]);
     assert_eq!(
-        (r.code, r.err.as_str()),
-        (1, "bad --limit (expected integer)\n")
+        (r.code, r.err_rendered(false).as_str()),
+        (1, "error INTERFACE bad --limit (expected integer)\n")
     );
     let r = cmd_log(&ctx, &["W-99".to_string()], &[]);
-    assert_eq!((r.code, r.err.as_str()), (5, "not found: W-99\n"));
+    assert_eq!(
+        (r.code, r.err_rendered(false).as_str()),
+        (5, "error INTERFACE not found W-99\n")
+    );
 }
 
 #[test]

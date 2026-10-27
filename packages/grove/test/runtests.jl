@@ -4,9 +4,13 @@ using grove
 
 const M = grove
 
+tdiag(x) = x
+tdiag(d::grove.Diagnostic) = d.text
+
 ENV["GROVE_HOME"] = mktempdir()
 delete!(ENV, "GROVE_PROJECT")
 
+include("test_message.jl")
 include("test_ids.jl")
 include("test_lock.jl")
 include("test_goal_fitness.jl")

@@ -63,7 +63,7 @@
       ],
       "exit": 4,
       "stdout": "",
-      "stderr": "decision D-01 is accepted; create a new D with --supersedes\n",
+      "stderr": "error INVARIANT decision D-01 is accepted, create a successor D with --supersedes\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=accepted t_created=<ts> t_updated=<ts> \"Original decision\"\n  decision:\n    | Original body.\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"field\":\"decision\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"D-01\",\"op\":\"set_status_plain\"}}\n"
     },
@@ -76,7 +76,7 @@
       ],
       "exit": 4,
       "stdout": "",
-      "stderr": "decision D-01 is accepted; create a new D with --supersedes\n",
+      "stderr": "error INVARIANT decision D-01 is accepted, create a successor D with --supersedes\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=accepted t_created=<ts> t_updated=<ts> \"Original decision\"\n  decision:\n    | Original body.\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"field\":\"decision\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"D-01\",\"op\":\"set_status_plain\"}}\n"
     },
@@ -90,7 +90,7 @@
       ],
       "exit": 4,
       "stdout": "",
-      "stderr": "decision D-01 is accepted; create a new D with --supersedes\n",
+      "stderr": "error INVARIANT decision D-01 is accepted, create a successor D with --supersedes\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=accepted t_created=<ts> t_updated=<ts> \"Original decision\"\n  decision:\n    | Original body.\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"field\":\"decision\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"D-01\",\"op\":\"set_status_plain\"}}\n"
     },
@@ -102,7 +102,7 @@
       ],
       "exit": 4,
       "stdout": "",
-      "stderr": "decision D-01 is accepted; create a new D with --supersedes\n",
+      "stderr": "error INVARIANT decision D-01 is accepted, create a successor D with --supersedes\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=accepted t_created=<ts> t_updated=<ts> \"Original decision\"\n  decision:\n    | Original body.\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"field\":\"decision\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"D-01\",\"op\":\"set_status_plain\"}}\n"
     },
@@ -114,7 +114,7 @@
       ],
       "exit": 4,
       "stdout": "",
-      "stderr": "decision D-01 is accepted; create a new D with --supersedes\n",
+      "stderr": "error INVARIANT decision D-01 is accepted, create a successor D with --supersedes\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=accepted t_created=<ts> t_updated=<ts> \"Original decision\"\n  decision:\n    | Original body.\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"field\":\"decision\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"D-01\",\"op\":\"set_status_plain\"}}\n"
     },
@@ -128,7 +128,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "unknown field nosuch on d\n",
+      "stderr": "error INTERFACE unknown field nosuch on d\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=accepted t_created=<ts> t_updated=<ts> \"Original decision\"\n  decision:\n    | Original body.\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"field\":\"decision\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"D-01\",\"op\":\"set_status_plain\"}}\n"
     },
@@ -140,7 +140,7 @@
       ],
       "exit": 1,
       "stdout": "",
-      "stderr": "unsupported key: nosuchkey\n",
+      "stderr": "error INTERFACE unsupported key nosuchkey\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=accepted t_created=<ts> t_updated=<ts> \"Original decision\"\n  decision:\n    | Original body.\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"field\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"field\":\"decision\",\"op\":\"field_pop_last\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"set\",\"ts\":\"<ts>\",\"inv\":{\"old_status\":\"proposed\",\"id\":\"D-01\",\"op\":\"set_status_plain\"}}\n"
     },

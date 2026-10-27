@@ -7,6 +7,19 @@
     @test M.goal_notes_distill_deferred(g)
 end
 
+function distill_prompt_capture(ctx, st, w, oldg)
+    err_path, err_io = mktemp()
+    close(err_io)
+    open(err_path, "w") do f
+        redirect_stderr(f) do
+            M.print_lazy_distill_prompt_on_newly_verified_goals!(ctx, st, w, oldg)
+        end
+    end
+    msg = read(err_path, String)
+    rm(err_path; force=true)
+    msg
+end
+
 @testset "cli: verified goal prompts distillation unless deferred in notes" begin
     tmp = mktempdir()
     try
@@ -30,12 +43,12 @@ end
         end
         w.status = :done
         M.rederive_goals!(st, w)
-        buf = IOBuffer()
-        M.print_lazy_distill_prompt_on_newly_verified_goals!(buf, st, w, oldg)
-        msg = String(take!(buf))
-        @test occursin("grove: goal G-01", msg)
-        @test occursin("grove distill G-01", msg)
-        @test occursin("--null", msg)
+        ctx = M.CliCtx(tmp, false, false, false)
+        msg = distill_prompt_capture(ctx, st, w, oldg)
+        @test occursin("info OPERATIONAL goal G-01 (Track) is verified", msg)
+        @test occursin("null distillation", msg)
+        @test occursin("--distill-deferred", msg)
+        @test !occursin("grove distill", msg)
         @test st.nodes["G-01"].status === :verified
     finally
         rm(tmp; recursive=true)
@@ -62,9 +75,8 @@ end
         oldg = Dict("G-01" => string(st.nodes["G-01"].status))
         w.status = :done
         M.rederive_goals!(st, w)
-        buf = IOBuffer()
-        M.print_lazy_distill_prompt_on_newly_verified_goals!(buf, st, w, oldg)
-        msg = String(take!(buf))
+        ctx = M.CliCtx(tmp, false, false, false)
+        msg = distill_prompt_capture(ctx, st, w, oldg)
         @test isempty(strip(msg))
     finally
         rm(tmp; recursive=true)

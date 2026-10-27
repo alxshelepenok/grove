@@ -35,11 +35,8 @@ pub fn run_read(root: &str, cmd: &str, args: &[String]) -> Result<String, String
     if r.code == EXIT_OK {
         Ok(r.out)
     } else {
-        let msg = if r.err.trim().is_empty() {
-            r.out
-        } else {
-            r.err
-        };
+        let err = r.err_rendered(false);
+        let msg = if err.trim().is_empty() { r.out } else { err };
         Err(format!("grove {cmd} exited {}: {}", r.code, msg.trim()))
     }
 }
@@ -70,7 +67,9 @@ pub fn run_write(root: &str, session: &str, cmd: &str, args: &[String]) -> Resul
     } else {
         Err(format!(
             "grove {cmd} exited {}\nstdout:\n{}\nstderr:\n{}",
-            r.code, r.out, r.err
+            r.code,
+            r.out,
+            r.err_rendered(false)
         ))
     }
 }

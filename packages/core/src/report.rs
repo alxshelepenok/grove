@@ -1,8 +1,9 @@
 use crate::cli::{eff_token, json_cli_out, load, CliCtx};
 use crate::dor::{dor, dor_breakdown};
 use crate::json::{julia_float_repr, parse_json, JVal, Json, JuliaDict};
+use crate::message::Code;
 use crate::model::{field_form, field_order, FieldValue, Form, Kind, Node, State};
-use crate::ops::{kw_get, OpResult, EXIT_ERR, EXIT_NOTFOUND};
+use crate::ops::{kw_get, usage_fail, OpResult, EXIT_ERR, EXIT_NOTFOUND};
 use crate::serialize::serialize_node_string;
 use crate::session::{
     progress_has_session_record, progress_session_display_stale, session_claim_age_stale,
@@ -10,15 +11,6 @@ use crate::session::{
 };
 use crate::status::{alignment_triggers, listnodes};
 use std::path::Path;
-
-fn silent(code: i32) -> OpResult {
-    OpResult {
-        code,
-        out: String::new(),
-        err: String::new(),
-        journal: Vec::new(),
-    }
-}
 
 fn julia_dict_copy(pairs: impl Iterator<Item = (String, JVal)>) -> JuliaDict {
     let mut stage1 = JuliaDict::new();
@@ -94,7 +86,7 @@ fn load_state(ctx: &CliCtx) -> Result<State, OpResult> {
 
 pub fn cmd_deps(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return silent(EXIT_ERR);
+        return OpResult::fail(EXIT_ERR, Code::Interface, "deps requires a node id");
     }
     let st = match load_state(ctx) {
         Ok(s) => s,
@@ -124,7 +116,7 @@ pub fn cmd_deps(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpRes
 
 pub fn cmd_impact(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return silent(EXIT_ERR);
+        return OpResult::fail(EXIT_ERR, Code::Interface, "impact requires a node id");
     }
     let st = match load_state(ctx) {
         Ok(s) => s,
@@ -228,14 +220,18 @@ pub fn cmd_triage(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> Op
 
 pub fn cmd_dor(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return silent(EXIT_ERR);
+        return OpResult::fail(EXIT_ERR, Code::Interface, "dor requires a work id");
     }
     let st = match load_state(ctx) {
         Ok(s) => s,
         Err(e) => return e,
     };
     let Some(n) = st.nodes.get(&pos[0]) else {
-        return silent(EXIT_NOTFOUND);
+        return OpResult::fail(
+            EXIT_NOTFOUND,
+            Code::Interface,
+            &format!("not found {}", pos[0]),
+        );
     };
     if ctx.json {
         let conj: Vec<JVal> = dor_breakdown(&st, n, false)
@@ -280,14 +276,18 @@ pub fn cmd_dor(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpResu
 
 pub fn cmd_show(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return silent(EXIT_ERR);
+        return OpResult::fail(EXIT_ERR, Code::Interface, "show requires a node id");
     }
     let st = match load_state(ctx) {
         Ok(s) => s,
         Err(e) => return e,
     };
     let Some(n) = st.nodes.get(&pos[0]) else {
-        return silent(EXIT_NOTFOUND);
+        return OpResult::fail(
+            EXIT_NOTFOUND,
+            Code::Interface,
+            &format!("not found {}", pos[0]),
+        );
     };
     if ctx.json {
         let mut r = OpResult::ok();
@@ -301,7 +301,7 @@ pub fn cmd_show(ctx: &CliCtx, pos: &[String], _kw: &[(String, String)]) -> OpRes
 
 pub fn cmd_list(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, "usage: grove list <kind>");
+        return usage_fail("list", "usage: grove list <kind>");
     }
     let kind: Option<Kind> = pos[0].parse().ok();
     let st = match load_state(ctx) {
@@ -382,10 +382,8 @@ pub fn cmd_graph(ctx: &CliCtx, _pos: &[String], _kw: &[(String, String)]) -> OpR
 
 fn status_line2(w: &Node, tok: &str, eff: &str) -> String {
     if tok.is_empty() {
-        return format!(
-            "  (no session= on record; I11 broken: use `grove resume {}` or re-claim progress)",
-            w.id
-        );
+        return "  (no session on record, I11 broken, adopt the claim or re-claim progress)"
+            .to_string();
     }
     let flag = if session_token_matches(w, eff) {
         ""
@@ -423,10 +421,7 @@ pub fn cmd_status(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpR
                 let stale = progress_session_display_stale(w, &eff);
                 let line2 = status_line2(w, &tok, &eff);
                 let opts = if stale {
-                    format!(
-                        "grove resume {0} | grove revert {0} | grove handoff {0} --to=<token>",
-                        w.id
-                    )
+                    "resume, revert, or handoff the claim".to_string()
                 } else {
                     String::new()
                 };
@@ -446,7 +441,7 @@ pub fn cmd_status(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpR
             ("ok".to_string(), JVal::Bool(inv.is_empty())),
             (
                 "messages".to_string(),
-                JVal::Arr(inv.into_iter().map(JVal::Str).collect()),
+                JVal::Arr(inv.iter().map(|e| e.to_jval()).collect()),
             ),
         ]);
         let d = JuliaDict::from_pairs(vec![
@@ -480,7 +475,7 @@ pub fn cmd_status(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpR
                     w.id, w.title, line2
                 ));
                 out.push_str(&format!(
-                    "  options: `grove resume {0}` | `grove revert {0}` | `grove handoff {0} --to=<token>`\n",
+                    "  options: resume, revert, or handoff the claim for {0}\n",
                     w.id
                 ));
             } else {
@@ -506,7 +501,7 @@ pub fn cmd_status(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpR
     } else {
         for e in inv {
             out.push_str("- ");
-            out.push_str(&e);
+            out.push_str(&e.render());
             out.push('\n');
         }
     }
@@ -764,14 +759,16 @@ pub fn cmd_log(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResul
             ok = true;
         }
         if !ok {
-            return OpResult::fail(EXIT_NOTFOUND, &format!("not found: {id0}"));
+            return OpResult::fail(EXIT_NOTFOUND, Code::Interface, &format!("not found {id0}"));
         }
         lfilt = Some(id0.clone());
     }
     let lim: i64 = if let Some(v) = kw_get(kw, "limit") {
         match v.parse::<i64>() {
             Ok(x) => x,
-            Err(_) => return OpResult::fail(EXIT_ERR, "bad --limit (expected integer)"),
+            Err(_) => {
+                return OpResult::fail(EXIT_ERR, Code::Interface, "bad --limit (expected integer)")
+            }
         }
     } else {
         200

@@ -1,4 +1,4 @@
-use grove_core::{abspath, handle_message, load_tool_config, McpServer};
+use grove_core::{abspath, handle_message, load_tool_config, Code, Diagnostic, McpServer};
 use sha2::{Digest, Sha256};
 use std::io::{BufRead, Write};
 use std::path::Path;
@@ -42,7 +42,16 @@ fn main() {
         } else if let Some(v) = arg.strip_prefix("--role=") {
             role = Some(v.to_string());
         } else {
-            eprintln!("grove-mcp: unknown argument {arg}\n{}", usage());
+            eprintln!(
+                "{}",
+                Diagnostic::error_details(
+                    Code::Interface,
+                    "unknown argument",
+                    vec![("argument".to_string(), arg)],
+                )
+                .render()
+            );
+            eprintln!("{}", usage());
             std::process::exit(1);
         }
     }
@@ -53,7 +62,11 @@ fn main() {
         .is_empty()
         && role.is_some()
     {
-        eprintln!("grove-mcp: --role expects a non-empty name\n{}", usage());
+        eprintln!(
+            "{}",
+            Diagnostic::error(Code::Interface, "role expects a nonempty name").render()
+        );
+        eprintln!("{}", usage());
         std::process::exit(1);
     }
     let root = match root {
@@ -66,7 +79,13 @@ fn main() {
                 Some(r) => r,
                 None => {
                     eprintln!(
-                        "grove-mcp: no .grove/state.lock found at {cwd} or any ancestor; pass --root=<dir>"
+                        "{}",
+                        Diagnostic::error_details(
+                            Code::System,
+                            "project lock is absent at the working directory and its ancestors, specify a project root",
+                            vec![("path".to_string(), cwd)],
+                        )
+                        .render()
                     );
                     std::process::exit(1);
                 }
@@ -82,7 +101,18 @@ fn main() {
             } else {
                 names.join(", ")
             };
-            eprintln!("grove-mcp: unknown role {r}; configured roles: {listing}");
+            eprintln!(
+                "{}",
+                Diagnostic::error_details(
+                    Code::Interface,
+                    "unknown role",
+                    vec![
+                        ("role".to_string(), r.clone()),
+                        ("configured".to_string(), listing),
+                    ],
+                )
+                .render()
+            );
             std::process::exit(1);
         }
     }

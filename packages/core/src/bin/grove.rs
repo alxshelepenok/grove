@@ -9,7 +9,7 @@ fn main() {
     let _ = out.flush();
     let stderr = std::io::stderr();
     let mut err = stderr.lock();
-    let _ = err.write_all(r.err.as_bytes());
+    let _ = err.write_all(r.err_rendered(false).as_bytes());
     let _ = err.flush();
     std::process::exit(r.code);
 }

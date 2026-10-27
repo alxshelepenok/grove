@@ -3,13 +3,21 @@ mod common;
 use common::*;
 use grove_core::*;
 
+fn ct(d: &Diagnostic) -> (&str, &str) {
+    (d.code.as_str(), &d.text)
+}
+
+fn cts(v: &[Diagnostic]) -> Vec<(&str, &str)> {
+    v.iter().map(ct).collect()
+}
+
 #[test]
 fn i1_dor_on_progress_flags_incomplete_dor() {
     let mut st = State::default();
     put(&mut st, work("W-01", "feature", "progress", "clear"));
     assert_eq!(
-        i1_dor_on_progress(&st),
-        vec!["I1: W-01 is `progress` but DoR ≢ ⊤".to_string()]
+        cts(&i1_dor_on_progress(&st)),
+        vec![("INVARIANT", "W-01 is progress but DoR is not satisfied")]
     );
 }
 
@@ -26,11 +34,11 @@ fn i2_spike_outputs_requires_produces_edge() {
     let mut st = State::default();
     put(&mut st, work("W-01", "spike", "done", "clear"));
     assert_eq!(
-        i2_spike_outputs(&st),
-        vec![
-            "I2: W-01 is a done spike but `produces` is empty (no outgoing `produces` edges)"
-                .to_string()
-        ]
+        cts(&i2_spike_outputs(&st)),
+        vec![(
+            "INVARIANT",
+            "W-01 is a done spike but produces is empty (no outgoing produces edges)"
+        )]
     );
     put(&mut st, plain(Kind::Q, "Q-01", "open"));
     edge(&mut st, "W-01", "produces", "Q-01");
@@ -56,8 +64,8 @@ fn i3_done_has_evidence_flags_empty_evidence() {
     fitness(&mut wd, &[("G-09", 1)]);
     put(&mut st, wd);
     assert_eq!(
-        i3_done_has_evidence(&st),
-        vec!["I3: W-D is `done` but `evidence` is empty".to_string()]
+        cts(&i3_done_has_evidence(&st)),
+        vec![("INVARIANT", "W-D is done but evidence is empty")]
     );
     let wd = st.nodes.get_mut("W-D").expect("W-D present");
     prose(wd, "evidence", &["x"]);
@@ -74,11 +82,17 @@ fn i4_wip_limit_counts_progress_work() {
             assert!(r.is_empty());
         } else {
             assert_eq!(r.len(), 1);
-            assert_eq!(r, vec!["I4: WIP 3 exceeds limit 2".to_string()]);
+            assert_eq!(r[0].code, Code::Invariant);
+            assert_eq!(r[0].text, "WIP count exceeds the limit");
             assert_eq!(
-                i4_wip_limit_with(&st, 2),
-                vec!["I4: WIP 3 exceeds limit 2".to_string()]
+                r[0].details,
+                vec![
+                    ("wip".to_string(), "3".to_string()),
+                    ("limit".to_string(), "2".to_string()),
+                ]
             );
+            let r2 = i4_wip_limit_with(&st, 2);
+            assert_eq!(r2[0].code, Code::Invariant);
         }
     }
     let empty_st = State::default();
@@ -91,8 +105,8 @@ fn i5_blocks_terminal_flags_missing_blocker() {
     put(&mut st, work("W-P", "feature", "progress", "clear"));
     edge(&mut st, "G-XX", "blocks", "W-P");
     assert_eq!(
-        i5_blocks_terminal(&st),
-        vec!["I5: W-P blocked by missing G-XX".to_string()]
+        cts(&i5_blocks_terminal(&st)),
+        vec![("INVARIANT", "W-P is blocked by missing predecessor G-XX")]
     );
 }
 
@@ -103,8 +117,11 @@ fn i5_blocks_terminal_flags_unverified_goal_blocker() {
     put(&mut st, work("W-P", "feature", "progress", "clear"));
     edge(&mut st, "G-V", "blocks", "W-P");
     assert_eq!(
-        i5_blocks_terminal(&st),
-        vec!["I5: W-P is `progress` but blocker G-V (unverified) does not satisfy blocks clearance (goals must be verified)".to_string()]
+        cts(&i5_blocks_terminal(&st)),
+        vec![(
+            "INVARIANT",
+            "W-P is progress but blocker G-V (unverified) does not satisfy blocks clearance (goals must be verified)"
+        )]
     );
     st.nodes.get_mut("G-V").expect("G-V present").status = "verified".to_string();
     assert!(i5_blocks_terminal(&st).is_empty());
@@ -121,8 +138,8 @@ fn i7_blocks_dag_detects_cycle() {
     assert!(i7_blocks_dag(&st).is_empty());
     edge(&mut st, "W-03", "blocks", "W-01");
     assert_eq!(
-        i7_blocks_dag(&st),
-        vec!["I7: blocks graph contains a cycle".to_string()]
+        cts(&i7_blocks_dag(&st)),
+        vec![("INVARIANT", "blocks graph contains a cycle")]
     );
 }
 
@@ -136,8 +153,8 @@ fn i9_feature_bchain_requires_validated_bet() {
     put(&mut st, plain(Kind::B, "B-77", "proposed"));
     edge(&mut st, "B-77", "targets", "W-I9");
     assert_eq!(
-        i9_feature_bchain(&st),
-        vec!["I9: W-I9 is `ready` but B-77 is `proposed`".to_string()]
+        cts(&i9_feature_bchain(&st)),
+        vec![("INVARIANT", "W-I9 is ready but B-77 is proposed")]
     );
     st.nodes.get_mut("B-77").expect("B-77 present").status = "validated".to_string();
     assert!(i9_feature_bchain(&st).is_empty());
@@ -152,8 +169,8 @@ fn i10_done_fitness_requires_delta_per_goal() {
     put(&mut st, plain(Kind::G, "G-Q", "verified"));
     put(&mut st, w10);
     assert_eq!(
-        i10_done_fitness(&st),
-        vec!["I10: W-10 is `done` but no fitness delta for G-Q".to_string()]
+        cts(&i10_done_fitness(&st)),
+        vec![("INVARIANT", "W-10 is done but no fitness delta for G-Q")]
     );
     let w10 = st.nodes.get_mut("W-10").expect("W-10 present");
     fitness(w10, &[("G-Q", 1)]);
@@ -165,8 +182,8 @@ fn i11_progress_flags_missing_session_claim() {
     let mut st = State::default();
     put(&mut st, work("W-I11", "feature", "progress", "clear"));
     assert_eq!(
-        i11_progress_has_session_claim(&st),
-        vec!["I11: W-I11 is `progress` but has no session token".to_string()]
+        cts(&i11_progress_has_session_claim(&st)),
+        vec![("INVARIANT", "W-I11 is progress but has no session token")]
     );
     let w = st.nodes.get_mut("W-I11").expect("W-I11 present");
     attr(w, "session", "tok");
@@ -180,12 +197,20 @@ fn i12_discovery_anchor_issues_reports_all_three() {
     put(&mut st, plain(Kind::Y, "Y-01", "proposed"));
     let y = st.nodes.get("Y-01").expect("Y-01 present");
     assert_eq!(
-        discovery_anchor_issues(&st, y),
+        cts(&discovery_anchor_issues(&st, y)),
         vec![
-            "I12: Y-01 has no provenance edge (needs `produces` from a W or `distills` to a D/Q/B)"
-                .to_string(),
-            "I12: Y-01 has empty `surface` and empty `why` (≥1 anchor required)".to_string(),
-            "I12: Y-01 has empty `tags` (≥1 glossary term required)".to_string(),
+            (
+                "INVARIANT",
+                "Y-01 has no provenance edge (needs produces from a W or distills to a D, Q or B)"
+            ),
+            (
+                "INVARIANT",
+                "Y-01 has empty surface and empty why (at least one anchor is required)"
+            ),
+            (
+                "INVARIANT",
+                "Y-01 has empty tags (at least one glossary term is required)"
+            ),
         ]
     );
 }
@@ -198,18 +223,27 @@ fn i12_produces_edge_from_w_clears_provenance() {
     edge(&mut st, "W-01", "produces", "Y-01");
     let y = st.nodes.get("Y-01").expect("Y-01 present");
     assert_eq!(
-        discovery_anchor_issues(&st, y),
+        cts(&discovery_anchor_issues(&st, y)),
         vec![
-            "I12: Y-01 has empty `surface` and empty `why` (≥1 anchor required)".to_string(),
-            "I12: Y-01 has empty `tags` (≥1 glossary term required)".to_string(),
+            (
+                "INVARIANT",
+                "Y-01 has empty surface and empty why (at least one anchor is required)"
+            ),
+            (
+                "INVARIANT",
+                "Y-01 has empty tags (at least one glossary term is required)"
+            ),
         ]
     );
     let y = st.nodes.get_mut("Y-01").expect("Y-01 present");
     reflist(y, "tags", &["term"]);
     let y = st.nodes.get("Y-01").expect("Y-01 present");
     assert_eq!(
-        discovery_anchor_issues(&st, y),
-        vec!["I12: Y-01 has empty `surface` and empty `why` (≥1 anchor required)".to_string()]
+        cts(&discovery_anchor_issues(&st, y)),
+        vec![(
+            "INVARIANT",
+            "Y-01 has empty surface and empty why (at least one anchor is required)"
+        )]
     );
     let y = st.nodes.get_mut("Y-01").expect("Y-01 present");
     reflist(y, "surface", &["src/x.jl"]);
@@ -227,8 +261,11 @@ fn i12_surface_only_clears_anchor_requirement() {
     edge(&mut st, "W-01", "produces", "Y-01");
     let y = st.nodes.get("Y-01").expect("Y-01 present");
     assert_eq!(
-        discovery_anchor_issues(&st, y),
-        vec!["I12: Y-01 has empty `surface` and empty `why` (≥1 anchor required)".to_string()]
+        cts(&discovery_anchor_issues(&st, y)),
+        vec![(
+            "INVARIANT",
+            "Y-01 has empty surface and empty why (at least one anchor is required)"
+        )]
     );
     let y = st.nodes.get_mut("Y-01").expect("Y-01 present");
     reflist(y, "surface", &["src/x.jl"]);
@@ -246,8 +283,11 @@ fn i12_why_only_clears_anchor_requirement() {
     edge(&mut st, "W-01", "produces", "Y-01");
     let y = st.nodes.get("Y-01").expect("Y-01 present");
     assert_eq!(
-        discovery_anchor_issues(&st, y),
-        vec!["I12: Y-01 has empty `surface` and empty `why` (≥1 anchor required)".to_string()]
+        cts(&discovery_anchor_issues(&st, y)),
+        vec![(
+            "INVARIANT",
+            "Y-01 has empty surface and empty why (at least one anchor is required)"
+        )]
     );
     let y = st.nodes.get_mut("Y-01").expect("Y-01 present");
     prose(y, "why", &["because"]);
@@ -263,10 +303,16 @@ fn i12_distills_to_d_satisfies_provenance() {
     edge(&mut st, "Y-01", "distills", "D-01");
     let y = st.nodes.get("Y-01").expect("Y-01 present");
     assert_eq!(
-        discovery_anchor_issues(&st, y),
+        cts(&discovery_anchor_issues(&st, y)),
         vec![
-            "I12: Y-01 has empty `surface` and empty `why` (≥1 anchor required)".to_string(),
-            "I12: Y-01 has empty `tags` (≥1 glossary term required)".to_string(),
+            (
+                "INVARIANT",
+                "Y-01 has empty surface and empty why (at least one anchor is required)"
+            ),
+            (
+                "INVARIANT",
+                "Y-01 has empty tags (at least one glossary term is required)"
+            ),
         ]
     );
 }
@@ -286,8 +332,11 @@ fn i13_goal_without_area_is_flagged() {
     let mut st = State::default();
     put(&mut st, plain(Kind::G, "G-01", "unverified"));
     assert_eq!(
-        check_area_membership(&st),
-        vec!["I13: G-01 has no `area` field (every goal belongs to an area: `grove set G-01 area=A-NN`)".to_string()]
+        cts(&check_area_membership(&st)),
+        vec![(
+            "INVARIANT",
+            "G-01 has no area field (every goal belongs to an area, assign one on the goal)"
+        )]
     );
 }
 
@@ -298,8 +347,11 @@ fn i13_area_referencing_missing_node_is_flagged() {
     single(&mut g, "area", "A-99");
     put(&mut st, g);
     assert_eq!(
-        check_area_membership(&st),
-        vec!["I13: G-01 area A-99 does not reference an existing area (a) node".to_string()]
+        cts(&check_area_membership(&st)),
+        vec![(
+            "INVARIANT",
+            "G-01 area A-99 does not reference an existing area (a) node"
+        )]
     );
 }
 
@@ -320,8 +372,11 @@ fn i13_archived_goal_without_area_is_still_flagged() {
     g.archived = true;
     put(&mut st, g);
     assert_eq!(
-        check_area_membership(&st),
-        vec!["I13: G-01 has no `area` field (every goal belongs to an area: `grove set G-01 area=A-NN`)".to_string()]
+        cts(&check_area_membership(&st)),
+        vec![(
+            "INVARIANT",
+            "G-01 has no area field (every goal belongs to an area, assign one on the goal)"
+        )]
     );
 }
 
@@ -331,8 +386,8 @@ fn check_orphan_edges_flags_missing_endpoint() {
     put(&mut st, work("W-01", "feature", "ready", "clear"));
     edge(&mut st, "X-99", "blocks", "W-01");
     assert_eq!(
-        check_orphan_edges(&st),
-        vec!["edge endpoint missing: X-99".to_string()]
+        cts(&check_orphan_edges(&st)),
+        vec![("INVARIANT", "edge endpoint missing X-99")]
     );
 }
 
@@ -357,8 +412,8 @@ fn check_edge_types_rejects_w_produces_w() {
     put(&mut st, work("W-01", "feature", "ready", "clear"));
     edge(&mut st, "W-01", "produces", "W-01");
     assert_eq!(
-        check_edge_types(&st),
-        vec!["edge type mismatch: W-01 -produces-> W-01".to_string()]
+        cts(&check_edge_types(&st)),
+        vec![("INVARIANT", "edge type mismatch W-01 -produces-> W-01")]
     );
 }
 
@@ -369,8 +424,8 @@ fn check_edge_types_rejects_causes_from_w() {
     put(&mut st, work("W-02", "feature", "ready", "clear"));
     edge(&mut st, "W-01", "causes", "W-02");
     assert_eq!(
-        check_edge_types(&st),
-        vec!["edge type mismatch: W-01 -causes-> W-02".to_string()]
+        cts(&check_edge_types(&st)),
+        vec![("INVARIANT", "edge type mismatch W-01 -causes-> W-02")]
     );
 }
 
@@ -398,10 +453,10 @@ fn validate_and_push_edge_rejects_unknown_label() {
     let mut st = State::default();
     put(&mut st, work("W-01", "feature", "ready", "clear"));
     put(&mut st, work("W-02", "feature", "ready", "clear"));
-    assert_eq!(
-        validate_and_push_edge(&mut st, "W-01", "frobnicate", "W-02", true),
-        Some("unknown edge label: frobnicate".to_string())
-    );
+    let r = validate_and_push_edge(&mut st, "W-01", "frobnicate", "W-02", true)
+        .expect("rejection expected");
+    assert_eq!(r.code, Code::Interface);
+    assert_eq!(r.text, "unknown edge label frobnicate");
     assert!(st.edges.is_empty());
 }
 
@@ -409,10 +464,10 @@ fn validate_and_push_edge_rejects_unknown_label() {
 fn validate_and_push_edge_rejects_missing_endpoint() {
     let mut st = State::default();
     put(&mut st, work("W-01", "feature", "ready", "clear"));
-    assert_eq!(
-        validate_and_push_edge(&mut st, "W-99", "blocks", "W-01", true),
-        Some("missing node W-99".to_string())
-    );
+    let r = validate_and_push_edge(&mut st, "W-99", "blocks", "W-01", true)
+        .expect("rejection expected");
+    assert_eq!(r.code, Code::Interface);
+    assert_eq!(r.text, "missing node W-99");
     assert!(st.edges.is_empty());
 }
 
@@ -431,10 +486,10 @@ fn validate_and_push_edge_rejects_blocks_cycle_and_rolls_back() {
         None
     );
     let before = st.edges.len();
-    assert_eq!(
-        validate_and_push_edge(&mut st, "W-03", "blocks", "W-01", true),
-        Some("I7: blocks introduces a cycle".to_string())
-    );
+    let r = validate_and_push_edge(&mut st, "W-03", "blocks", "W-01", true)
+        .expect("rejection expected");
+    assert_eq!(r.code, Code::Invariant);
+    assert_eq!(r.text, "blocks introduces a cycle");
     assert_eq!(st.edges.len(), before);
 }
 
@@ -443,10 +498,10 @@ fn validate_and_push_edge_rejects_type_violation_and_rolls_back() {
     let mut st = State::default();
     put(&mut st, work("W-01", "feature", "ready", "clear"));
     let before = st.edges.len();
-    assert_eq!(
-        validate_and_push_edge(&mut st, "W-01", "produces", "W-01", true),
-        Some("edge type mismatch: W-01 -produces-> W-01".to_string())
-    );
+    let r = validate_and_push_edge(&mut st, "W-01", "produces", "W-01", true)
+        .expect("rejection expected");
+    assert_eq!(r.code, Code::Invariant);
+    assert_eq!(r.text, "edge type mismatch W-01 -produces-> W-01");
     assert_eq!(st.edges.len(), before);
 }
 
@@ -457,13 +512,16 @@ fn check_all_concatenates_in_julia_order() {
     put(&mut st, plain(Kind::G, "G-01", "unverified"));
     let msgs = check_all(&st);
     assert_eq!(
-        msgs,
+        cts(&msgs),
         vec![
-            "I1: W-01 is `progress` but DoR ≢ ⊤".to_string(),
-            "I11: W-01 is `progress` but has no session token".to_string(),
-            "I13: G-01 has no `area` field (every goal belongs to an area: `grove set G-01 area=A-NN`)".to_string(),
+            ("INVARIANT", "W-01 is progress but DoR is not satisfied"),
+            ("INVARIANT", "W-01 is progress but has no session token"),
+            (
+                "INVARIANT",
+                "G-01 has no area field (every goal belongs to an area, assign one on the goal)"
+            ),
         ]
     );
-    assert!(msgs.first().expect("first").starts_with("I1:"));
-    assert!(msgs.last().expect("last").starts_with("I13:"));
+    assert!(msgs.first().expect("first").code == Code::Invariant);
+    assert!(msgs.last().expect("last").code == Code::Invariant);
 }

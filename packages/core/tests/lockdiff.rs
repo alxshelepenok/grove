@@ -58,7 +58,7 @@ fn git_init_commit(dir: &PathBuf, msg: &str) {
 fn fixture_states() -> (State, State) {
     let sc = corpus_json("diff-repair");
     let st_ref = parse_fixture(&step_field(&sc, 7, "lock")).unwrap();
-    let mut st_wt = parse_fixture(&step_field(&sc, 10, "lock")).unwrap();
+    let mut st_wt = parse_fixture(&step_field(&sc, 11, "lock")).unwrap();
     st_wt
         .nodes
         .get_mut("W-01")
@@ -99,7 +99,7 @@ fn fixture_diff_text_golden() {
     let (st_ref, st_wt) = fixture_states();
     assert_eq!(
         print_lock_structural_diff("HEAD", &st_ref, &st_wt),
-        step_field(&sc, 11, "stdout")
+        step_field(&sc, 12, "stdout")
     );
 }
 
@@ -110,7 +110,7 @@ fn fixture_diff_json_golden() {
     let mut pl = lock_structural_diff_payload(&st_ref, &st_wt);
     pl.insert("command".to_string(), JVal::Str("diff".to_string()));
     pl.insert("since".to_string(), JVal::Str("HEAD".to_string()));
-    assert_eq!(json_cli_out(pl), step_field(&sc, 12, "stdout"));
+    assert_eq!(json_cli_out(pl), step_field(&sc, 13, "stdout"));
 }
 
 #[test]
@@ -121,19 +121,19 @@ fn cmd_diff_live_git_repo_matches_goldens() {
     std::fs::create_dir_all(&grove_dir).unwrap();
     std::fs::write(grove_dir.join("state.lock"), strictable_lock(7, false)).unwrap();
     git_init_commit(&dir, "grove state");
-    std::fs::write(grove_dir.join("state.lock"), strictable_lock(10, true)).unwrap();
+    std::fs::write(grove_dir.join("state.lock"), strictable_lock(11, true)).unwrap();
     let root = dir.to_string_lossy().into_owned();
     let ctx = CliCtx::new(root.clone());
     let r = cmd_diff(&ctx, &[], &[]);
     assert_eq!(r.code, EXIT_OK);
-    assert_eq!(r.out, step_field(&sc, 11, "stdout"));
-    assert_eq!(r.err, "");
+    assert_eq!(r.out, step_field(&sc, 12, "stdout"));
+    assert_eq!(r.err_rendered(false), "");
     let mut ctxj = CliCtx::new(root);
     ctxj.json = true;
     let rj = cmd_diff(&ctxj, &[], &[]);
     assert_eq!(rj.code, EXIT_OK);
-    assert_eq!(rj.out, step_field(&sc, 12, "stdout"));
-    assert_eq!(rj.err, "");
+    assert_eq!(rj.out, step_field(&sc, 13, "stdout"));
+    assert_eq!(rj.err_rendered(false), "");
     let _ = std::fs::remove_dir_all(&dir);
 }
 
@@ -146,9 +146,9 @@ fn cmd_diff_not_a_repo() {
     assert_eq!(r.code, EXIT_ERR);
     let rp = abspath(&root);
     assert_eq!(
-        r.err,
+        r.err_rendered(false),
         format!(
-            "grove diff: not a git repository (--root=`{rp}`): cannot resolve `HEAD:.grove/state.lock` via git\n"
+            "error SYSTEM not a git repository, cannot resolve the lock through git\n  root={rp}\n  git_ref=HEAD\n"
         )
     );
     assert_eq!(r.out, "");
@@ -164,8 +164,11 @@ fn cmd_diff_missing_worktree_lock() {
     let r = cmd_diff(&ctx, &[], &[]);
     assert_eq!(r.code, EXIT_ERR);
     assert_eq!(
-        r.err,
-        format!("lock not found: {}\n", ctx.lockpath().display())
+        r.err_rendered(false),
+        format!(
+            "error SYSTEM lock file is absent, initialize the project first\n  path={}\n",
+            ctx.lockpath().display()
+        )
     );
     assert_eq!(r.out, "");
     let _ = std::fs::remove_dir_all(&dir);
@@ -183,8 +186,16 @@ fn cmd_diff_bad_ref_git_stderr_prefix() {
     let kw = vec![("since".to_string(), "HEAD~9".to_string())];
     let r = cmd_diff(&ctx, &[], &kw);
     assert_eq!(r.code, EXIT_ERR);
-    assert!(r.err.starts_with("grove diff: "), "err was: {}", r.err);
-    assert!(r.err.ends_with('\n'), "err was: {}", r.err);
+    assert!(
+        !r.err_rendered(false).is_empty(),
+        "err was: {}",
+        r.err_rendered(false)
+    );
+    assert!(
+        r.err_rendered(false).ends_with('\n'),
+        "err was: {}",
+        r.err_rendered(false)
+    );
     assert_eq!(r.out, "");
     let _ = std::fs::remove_dir_all(&dir);
 }
@@ -201,13 +212,16 @@ fn cmd_diff_worktree_parse_error() {
     let r = cmd_diff(&ctx, &[], &[]);
     assert_eq!(r.code, EXIT_ERR);
     let want = parse_strict("nonsense\n").unwrap_err().to_string();
-    assert_eq!(r.err, format!("{want}\n"));
+    assert_eq!(
+        r.err_rendered(false),
+        format!("error SYSTEM worktree lock could not be parsed\n  error={want}\n")
+    );
     assert_eq!(r.out, "");
     let _ = std::fs::remove_dir_all(&dir);
 }
 
 #[test]
-fn cmd_diff_blob_parse_error_suffix() {
+fn cmd_diff_blob_parse_error_details() {
     let dir = tmpdir("blobparse");
     let grove_dir = dir.join(".grove");
     std::fs::create_dir_all(&grove_dir).unwrap();
@@ -220,8 +234,10 @@ fn cmd_diff_blob_parse_error_suffix() {
     assert_eq!(r.code, EXIT_ERR);
     let want = parse_strict("nonsense\n").unwrap_err().to_string();
     assert_eq!(
-        r.err,
-        format!("{want}\n (while parsing `HEAD:.grove/state.lock`)\n")
+        r.err_rendered(false),
+        format!(
+            "error SYSTEM reference lock could not be parsed\n  error={want}\n  git_ref=HEAD\n"
+        )
     );
     assert_eq!(r.out, "");
     let _ = std::fs::remove_dir_all(&dir);

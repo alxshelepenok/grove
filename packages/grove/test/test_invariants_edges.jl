@@ -17,7 +17,8 @@ end
     st.nodes["W-01"] = M.Node(:w, "W-01"; title="s", type=:spike, status=:done, cynefin=:clear)
     errs = M.i2_spike_outputs(st)
     @test length(errs) == 1
-    @test startswith(errs[1], "I2:")
+    @test errs[1].code == M.CODE_INVARIANT
+    @test occursin("done spike", tdiag(errs[1]))
     st.nodes["Q-01"] = M.Node(:q, "Q-01"; title="q", status=:open, cynefin=:clear)
     push!(st.edges, M.Edge("W-01", :produces, "Q-01"))
     @test isempty(M.i2_spike_outputs(st))

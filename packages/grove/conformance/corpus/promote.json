@@ -111,7 +111,7 @@
       ],
       "exit": 4,
       "stdout": "",
-      "stderr": "promote: already promoted as Y-01\n",
+      "stderr": "error INVARIANT already promoted as Y-01\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nd D-01 status=proposed t_created=<ts> t_updated=<ts> \"Ctx\"\n\ny Y-01 status=proposed t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth, seams\n  surface: src/auth.jl\n\ne Y-01 distills D-01 t_created=<ts>\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"D-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
     },
@@ -135,7 +135,7 @@
       ],
       "exit": 3,
       "stdout": "",
-      "stderr": "I12: Y-01 has no provenance edge (needs `produces` from a W or `distills` to a D/Q/B)\n",
+      "stderr": "error INVARIANT Y-01 has no provenance edge (needs produces from a W or distills to a D, Q or B)\n",
       "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\ny Y-01 status=proposed origin_id=Y-01 origin_project=main origin_version=<ts> t_created=<ts> t_updated=<ts> \"AuthNote\"\n  tags: auth, seams\n  surface: src/auth.jl\n",
       "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"promote\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Y-01\",\"op\":\"rm_node\"}}\n"
     },

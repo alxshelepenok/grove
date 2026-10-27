@@ -54,6 +54,24 @@ end
     @test any(l -> occursin(r"~ W-01", l), ls)
 end
 
+@testset "lockdiff: attribute changes surface in text and JSON details" begin
+    st = M.State()
+    w = M.Node(:w, "W-01"; title="W", type=:feature, status=:proposed, cynefin=:clear)
+    w.attrs["t_created"] = "2026-01-01T00:00:00Z"
+    w.attrs["t_updated"] = "2026-01-01T00:00:00Z"
+    st.nodes["W-01"] = w
+    st2 = Base.deepcopy(st)
+    st2.nodes["W-01"].status = :ready
+    st2.nodes["W-01"].attrs["t_updated"] = "2026-01-01T00:00:01Z"
+
+    @test "  attrs: changed" in M.lock_structural_lines(st, st2)
+    payload = M.lock_structural_diff_payload(st, st2)
+    @test payload["nodes"]["w"]["changed"][1]["detail_lines"] == [
+        "  header: w W-01 proposed feature -> w W-01 ready feature",
+        "  attrs: changed",
+    ]
+end
+
 @testset "lockdiff: json payload marks no semantic change for identical deepcopy" begin
     st = M.State()
     g = M.Node(:g, "G-01"; title="G", status=:unverified)

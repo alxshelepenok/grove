@@ -5,6 +5,7 @@ use crate::journal::{
     JOURNAL_GATE_OP,
 };
 use crate::json::{JVal, Json, JuliaDict};
+use crate::message::Code;
 use crate::model::{Kind, Node, State};
 use crate::ops::{kw_get, OpResult, EXIT_ERR};
 use crate::status::listnodes;
@@ -335,16 +336,20 @@ pub fn cmd_gate(ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRes
     if let Some(v) = kw_get(kw, "theta") {
         match v.parse::<i64>() {
             Ok(x) if x >= 0 => theta = x,
-            Ok(_) => return OpResult::fail(EXIT_ERR, "--theta must be ≥ 0"),
-            Err(_) => return OpResult::fail(EXIT_ERR, "bad --theta (expected integer)"),
+            Ok(_) => return OpResult::fail(EXIT_ERR, Code::Interface, "--theta must be ≥ 0"),
+            Err(_) => {
+                return OpResult::fail(EXIT_ERR, Code::Interface, "bad --theta (expected integer)")
+            }
         }
     }
     let mut n: i64 = 5;
     if let Some(v) = kw_get(kw, "n") {
         match v.parse::<i64>() {
             Ok(x) if x >= 1 => n = x,
-            Ok(_) => return OpResult::fail(EXIT_ERR, "--n must be ≥ 1"),
-            Err(_) => return OpResult::fail(EXIT_ERR, "bad --n (expected integer)"),
+            Ok(_) => return OpResult::fail(EXIT_ERR, Code::Interface, "--n must be ≥ 1"),
+            Err(_) => {
+                return OpResult::fail(EXIT_ERR, Code::Interface, "bad --n (expected integer)")
+            }
         }
     }
     let st = match load(ctx, true) {

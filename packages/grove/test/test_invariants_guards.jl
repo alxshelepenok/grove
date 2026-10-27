@@ -16,7 +16,7 @@
         if i < 3
             @test isempty(r)
         else
-            @test length(r) == 1 && occursin("I4:", r[1])
+            @test length(r) == 1 && r[1].code == M.CODE_INVARIANT
         end
     end
     empty_st = M.State()
@@ -27,7 +27,7 @@
     wx = M.Node(:w, "W-P"; title="", type=:feature, status=:progress, cynefin=:clear)
     i5_bad.nodes["W-P"] = wx
     push!(i5_bad.edges, M.Edge("G-V", :blocks, "W-P"))
-    @test any(x -> occursin("I5:", x), M.i5_blocks_terminal(i5_bad))
+    @test all(x -> x.code == M.CODE_INVARIANT, M.i5_blocks_terminal(i5_bad)) && !isempty(M.i5_blocks_terminal(i5_bad))
     gv.status = :verified
     @test isempty(M.i5_blocks_terminal(i5_bad))
 
@@ -36,14 +36,14 @@
     w10.fields[:goals] = ["G-Q"]; w10.fields[:fitness] = Dict{String,Int}()
     i10_bad.nodes["G-Q"] = M.Node(:g, "G-Q"; title="", status=:verified)
     i10_bad.nodes["W-10"] = w10
-    @test occursin("I10:", M.i10_done_fitness(i10_bad)[1])
+    @test M.i10_done_fitness(i10_bad)[1].code == M.CODE_INVARIANT
     w10.fields[:fitness] = Dict("G-Q" => 1)
     @test isempty(M.i10_done_fitness(i10_bad))
 
     i11_bad = M.State()
     w11 = M.Node(:w, "W-I11"; title="", type=:feature, status=:progress, cynefin=:clear)
     i11_bad.nodes["W-I11"] = w11
-    @test any(x -> occursin("I11:", x), M.i11_progress_has_session_claim(i11_bad))
+    @test all(x -> x.code == M.CODE_INVARIANT, M.i11_progress_has_session_claim(i11_bad)) && !isempty(M.i11_progress_has_session_claim(i11_bad))
     w11.attrs["session"] = "tok"; w11.attrs["session_at"] = "2099-01-01T00:00:00Z"
     @test isempty(M.i11_progress_has_session_claim(i11_bad))
 
@@ -55,7 +55,7 @@
     i9_bad.nodes["B-77"] =
         M.Node(:b, "B-77"; title="", status = :proposed, cynefin = :clear)
     push!(i9_bad.edges, M.Edge("B-77", :targets, "W-I9"))
-    @test occursin("I9:", M.i9_feature_bchain(i9_bad)[1])
+    @test M.i9_feature_bchain(i9_bad)[1].code == M.CODE_INVARIANT
     i9_bad.nodes["B-77"].status = :validated
     @test isempty(M.i9_feature_bchain(i9_bad))
 end

@@ -62,17 +62,19 @@ fn decay_count_and_lines_feed_render() {
     atomic_write_same_dir(&ctx.lockpath(), &serialize(&st)).unwrap();
     let st = match load(&ctx, true) {
         Ok(s) => s,
-        Err(e) => panic!("load failed: code={} err={}", e.code, e.err),
+        Err(e) => panic!("load failed: code={} err={}", e.code, e.err_rendered(false)),
     };
     assert_eq!(dashboard_decay_count(&ctx, &st), 1);
     let errs = discovery_decay_errors(&st, &ctx.root, &ctx.glossarypath());
+    assert_eq!(errs.len(), 2, "decay errors: {errs:?}");
+    assert_eq!(errs[0].code, Code::Invariant);
+    assert_eq!(errs[0].text, "Y-01 has a dead surface path");
     assert_eq!(
-        errs,
-        vec![
-            "decay: Y-01 dead surface: src/dead.jl".to_string(),
-            "decay: Y-01 lost glossary term: lost".to_string(),
-        ]
+        errs[0].details,
+        vec![("path".to_string(), "src/dead.jl".to_string())]
     );
+    assert_eq!(errs[1].code, Code::Invariant);
+    assert_eq!(errs[1].text, "Y-01 lost a glossary term (lost)");
     let idx = render_index(&st, 1);
     assert!(idx.contains("| Decay | 1 | Discovery with decay signals |"));
 }
@@ -135,11 +137,16 @@ fn decay_rotted_origin_lines() {
     let d = tmpdir("rotted");
     let gpath = d.join("glossary.md");
     let errs = discovery_decay_errors(&st, &d.to_string_lossy(), &gpath);
+    assert_eq!(errs.len(), 2, "decay errors: {errs:?}");
+    assert_eq!(errs[0].code, Code::Invariant);
+    assert_eq!(errs[0].text, "Y-01 has a rotted origin (D-01)");
+    assert_eq!(errs[1].code, Code::Invariant);
+    assert_eq!(errs[1].text, "Y-01 has a rotted origin (B-01)");
     assert_eq!(
-        errs,
+        errs[1].details,
         vec![
-            "decay: Y-01 rotted origin: D-01 (superseded)".to_string(),
-            "decay: Y-01 rotted origin: B-01 (invalidated_blocking)".to_string(),
+            ("origin".to_string(), "B-01".to_string()),
+            ("status".to_string(), "invalidated_blocking".to_string()),
         ]
     );
 }

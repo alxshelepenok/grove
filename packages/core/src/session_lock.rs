@@ -1,4 +1,5 @@
 use crate::cli::{abspath, CliCtx};
+use crate::message::{Code, Diagnostic};
 use crate::ops::OpResult;
 use crate::times::utc_stamp_second;
 use std::path::{Path, PathBuf};
@@ -62,8 +63,8 @@ impl Drop for SessionSharedHold {
 
 #[derive(Debug)]
 pub struct SessionLockTimeout {
-    pub msg: String,
-    pub warnings: Vec<String>,
+    pub diag: Diagnostic,
+    pub warnings: Vec<Diagnostic>,
 }
 
 fn time_now() -> f64 {
@@ -161,13 +162,13 @@ fn rm_slot(dir: &Path) {
     let _ = std::fs::remove_dir_all(dir);
 }
 
-fn push_info(ctx: &CliCtx, warn: &mut Vec<String>, msg: String) {
+fn push_info(ctx: &CliCtx, warn: &mut Vec<Diagnostic>, d: Diagnostic) {
     if !ctx.quiet {
-        warn.push(msg);
+        warn.push(d);
     }
 }
 
-fn prune_stale_exclusive(ctx: &CliCtx, warn: &mut Vec<String>) {
+fn prune_stale_exclusive(ctx: &CliCtx, warn: &mut Vec<Diagnostic>) {
     let slot = session_exclusive_slot(ctx);
     if !slot.is_dir() {
         return;
@@ -190,15 +191,21 @@ fn prune_stale_exclusive(ctx: &CliCtx, warn: &mut Vec<String>) {
     push_info(
         ctx,
         warn,
-        format!(
-            "warning: broke stale grove exclusive session lock (> {} s or abandoned): {}",
-            SESSION_STALE_SEC as i64,
-            slot.display()
+        Diagnostic::warning_details(
+            Code::System,
+            "broke a stale exclusive session lock",
+            vec![
+                (
+                    "stale_after_s".to_string(),
+                    (SESSION_STALE_SEC as i64).to_string(),
+                ),
+                ("path".to_string(), slot.display().to_string()),
+            ],
         ),
     );
 }
 
-fn prune_stale_readers(ctx: &CliCtx, warn: &mut Vec<String>) {
+fn prune_stale_readers(ctx: &CliCtx, warn: &mut Vec<Diagnostic>) {
     let r = session_readers_parent(ctx);
     if !r.is_dir() {
         return;
@@ -234,9 +241,10 @@ fn prune_stale_readers(ctx: &CliCtx, warn: &mut Vec<String>) {
         push_info(
             ctx,
             warn,
-            format!(
-                "warning: cleaned stale grove shared session lock: {}",
-                d.display()
+            Diagnostic::warning_details(
+                Code::Operational,
+                "cleaned a stale shared session lock",
+                vec![("path".to_string(), d.display().to_string())],
             ),
         );
     }
@@ -276,7 +284,7 @@ fn timeout_seconds(max_spin: u32) -> i64 {
 
 pub fn acquire_exclusive_with_limit(
     ctx: &CliCtx,
-    warn: &mut Vec<String>,
+    warn: &mut Vec<Diagnostic>,
     max_spin: u32,
 ) -> Result<SessionExclusiveHold, SessionLockTimeout> {
     maybe_migrate_legacy_session_locks(ctx);
@@ -291,9 +299,13 @@ pub fn acquire_exclusive_with_limit(
         spins += 1;
         if spins > max_spin {
             return Err(SessionLockTimeout {
-                msg: format!(
-                    "timeout waiting for grove exclusive session lock (held ~>{}s); try later",
-                    timeout_seconds(max_spin)
+                diag: Diagnostic::error_details(
+                    Code::System,
+                    "timed out waiting for the exclusive session lock, try again later",
+                    vec![(
+                        "waited_s".to_string(),
+                        timeout_seconds(max_spin).to_string(),
+                    )],
                 ),
                 warnings: std::mem::take(warn),
             });
@@ -341,14 +353,14 @@ pub fn acquire_exclusive_with_limit(
 
 pub fn acquire_exclusive(
     ctx: &CliCtx,
-    warn: &mut Vec<String>,
+    warn: &mut Vec<Diagnostic>,
 ) -> Result<SessionExclusiveHold, SessionLockTimeout> {
     acquire_exclusive_with_limit(ctx, warn, SESSION_LOCK_MAX_SPIN)
 }
 
 pub fn acquire_shared_with_limit(
     ctx: &CliCtx,
-    warn: &mut Vec<String>,
+    warn: &mut Vec<Diagnostic>,
     max_spin: u32,
 ) -> Result<SessionSharedHold, SessionLockTimeout> {
     maybe_migrate_legacy_session_locks(ctx);
@@ -362,9 +374,13 @@ pub fn acquire_shared_with_limit(
         spins += 1;
         if spins > max_spin {
             return Err(SessionLockTimeout {
-                msg: format!(
-                    "timeout waiting for grove shared session lock (~>{}s); try later",
-                    timeout_seconds(max_spin)
+                diag: Diagnostic::error_details(
+                    Code::System,
+                    "timed out waiting for the shared session lock, try again later",
+                    vec![(
+                        "waited_s".to_string(),
+                        timeout_seconds(max_spin).to_string(),
+                    )],
                 ),
                 warnings: std::mem::take(warn),
             });
@@ -405,7 +421,7 @@ pub fn acquire_shared_with_limit(
 
 pub fn acquire_shared(
     ctx: &CliCtx,
-    warn: &mut Vec<String>,
+    warn: &mut Vec<Diagnostic>,
 ) -> Result<SessionSharedHold, SessionLockTimeout> {
     acquire_shared_with_limit(ctx, warn, SESSION_LOCK_MAX_SPIN)
 }
@@ -421,7 +437,7 @@ pub fn release_shared(h: SessionSharedHold) {
 pub fn with_session_exclusive<F: FnOnce() -> OpResult>(
     ctx: &CliCtx,
     f: F,
-) -> Result<(OpResult, Vec<String>), SessionLockTimeout> {
+) -> Result<(OpResult, Vec<Diagnostic>), SessionLockTimeout> {
     let mut warn = Vec::new();
     let h = acquire_exclusive(ctx, &mut warn)?;
     let r = f();
@@ -432,7 +448,7 @@ pub fn with_session_exclusive<F: FnOnce() -> OpResult>(
 pub fn with_session_shared<F: FnOnce() -> OpResult>(
     ctx: &CliCtx,
     f: F,
-) -> Result<(OpResult, Vec<String>), SessionLockTimeout> {
+) -> Result<(OpResult, Vec<Diagnostic>), SessionLockTimeout> {
     let mut warn = Vec::new();
     let h = acquire_shared(ctx, &mut warn)?;
     let r = f();

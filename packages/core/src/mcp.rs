@@ -1,6 +1,7 @@
 use crate::cli::{run_cli, HELP, SESSION_MUTATE_COMMANDS};
 use crate::json::{emit_jval, julia_num_repr, parse_json, JVal, Json};
-use crate::ops::{OpResult, EXIT_OK};
+use crate::message::{Code, Diagnostic};
+use crate::ops::{OpResult, EXIT_ERR, EXIT_OK};
 use crate::toml::{
     bare_key, line_bracket_delta, line_without_comment, parse_line, Line, TomlVal,
     CONFIG_LINE_POLICY,
@@ -560,13 +561,18 @@ fn result_response(id: &Json, result: &str) -> String {
     )
 }
 
-fn error_response(id: &Json, code: i64, message: &str) -> String {
+fn protocol_error_response(id: &Json, code: i64, diag: Diagnostic) -> String {
     format!(
-        "{{\"jsonrpc\":\"2.0\",\"id\":{},\"error\":{{\"code\":{},\"message\":{}}}}}",
+        "{{\"jsonrpc\":\"2.0\",\"id\":{},\"error\":{{\"code\":{},\"message\":{},\"data\":{{\"diagnostics\":[{}]}}}}}}",
         emit_id(id),
         code,
-        jstr(message)
+        jstr(&diag.render()),
+        diag.to_json()
     )
+}
+
+fn error_response(id: &Json, code: i64, message: &str) -> String {
+    protocol_error_response(id, code, Diagnostic::error(Code::Interface, message))
 }
 
 fn help_description(cmd: &str) -> String {
@@ -829,23 +835,38 @@ pub fn load_tool_config() -> Option<ToolConfig> {
     }
     let Ok(text) = std::fs::read_to_string(&path) else {
         eprintln!(
-            "grove-mcp: warning: could not read mcp.toml at {}; serving all tools",
-            path.display()
+            "{}",
+            Diagnostic::warning_details(
+                Code::System,
+                "could not read mcp.toml, serving all tools",
+                vec![("path".to_string(), path.display().to_string())],
+            )
+            .render()
         );
         return None;
     };
     let Some(cfg) = parse_tool_config(&text) else {
         eprintln!(
-            "grove-mcp: warning: malformed mcp.toml at {}; serving all tools",
-            path.display()
+            "{}",
+            Diagnostic::warning_details(
+                Code::System,
+                "malformed mcp.toml, serving all tools",
+                vec![("path".to_string(), path.display().to_string())],
+            )
+            .render()
         );
         return None;
     };
     let unknown = unknown_tool_names(&cfg);
     if !unknown.is_empty() {
         eprintln!(
-            "grove-mcp: warning: mcp.toml names unknown grove command(s): {}; ignoring them",
-            unknown.join(", ")
+            "{}",
+            Diagnostic::warning_details(
+                Code::System,
+                "mcp.toml names unknown commands, ignoring them",
+                vec![("commands".to_string(), unknown.join(", "))],
+            )
+            .render()
         );
     }
     Some(cfg)
@@ -869,7 +890,7 @@ fn coerce_value(v: &Json, typ: PropType) -> Result<String, String> {
     }
 }
 
-fn validate_args(spec: &ToolSpec, args: &[(String, Json)]) -> Result<(), String> {
+fn validate_args(spec: &ToolSpec, args: &[(String, Json)]) -> Result<(), Diagnostic> {
     let mut unknown: Vec<&str> = Vec::new();
     for (k, _) in args {
         if !spec.props.iter().any(|p| p.key == k) {
@@ -878,10 +899,13 @@ fn validate_args(spec: &ToolSpec, args: &[(String, Json)]) -> Result<(), String>
     }
     if !unknown.is_empty() {
         let allowed: Vec<&str> = spec.props.iter().map(|p| p.key).collect();
-        return Err(format!(
-            "unknown argument(s): {}; allowed: {}",
-            unknown.join(", "),
-            allowed.join(", ")
+        return Err(Diagnostic::error_details(
+            Code::Interface,
+            "unknown arguments",
+            vec![
+                ("unknown".to_string(), unknown.join(", ")),
+                ("allowed".to_string(), allowed.join(", ")),
+            ],
         ));
     }
     let missing: Vec<&str> = spec
@@ -891,9 +915,10 @@ fn validate_args(spec: &ToolSpec, args: &[(String, Json)]) -> Result<(), String>
         .copied()
         .collect();
     if !missing.is_empty() {
-        return Err(format!(
-            "missing required argument(s): {}",
-            missing.join(", ")
+        return Err(Diagnostic::error_details(
+            Code::Interface,
+            "missing required arguments",
+            vec![("missing".to_string(), missing.join(", "))],
         ));
     }
     Ok(())
@@ -903,14 +928,23 @@ fn build_argv(
     server: &McpServer,
     spec: &ToolSpec,
     args: &[(String, Json)],
-) -> Result<Vec<String>, String> {
+) -> Result<Vec<String>, Diagnostic> {
     let mut positional: Vec<String> = Vec::new();
     let mut flags: Vec<String> = Vec::new();
     for prop in spec.props {
         let Some((_, v)) = args.iter().rev().find(|(k, _)| k == prop.key) else {
             continue;
         };
-        let s = coerce_value(v, prop.typ).map_err(|m| format!("argument `{}`: {m}", prop.key))?;
+        let s = coerce_value(v, prop.typ).map_err(|m| {
+            Diagnostic::error_details(
+                Code::Interface,
+                "argument could not be converted",
+                vec![
+                    ("argument".to_string(), prop.key.to_string()),
+                    ("error".to_string(), m),
+                ],
+            )
+        })?;
         if prop.cli.is_empty() {
             positional.push(s);
         } else if prop.typ == PropType::Bool {
@@ -941,31 +975,31 @@ fn build_argv(
 
 fn tool_result_json(r: &OpResult) -> String {
     let mut text = r.out.trim_end().to_string();
-    let errt = r.err.trim_end();
-    if !errt.is_empty() {
+    let diagnostics = r.err_rendered(false);
+    let diagnostics = diagnostics.trim_end();
+    if !diagnostics.is_empty() {
         if !text.is_empty() {
-            text.push_str("\n\n--- stderr ---\n");
+            text.push('\n');
         }
-        text.push_str(errt);
+        text.push_str(diagnostics);
     }
-    if r.code != EXIT_OK {
-        if !text.is_empty() {
-            text.push_str("\n\n");
-        }
-        text.push_str(&format!("(grove exit code: {})", r.code));
-    }
+    let diagnostic_json = r
+        .diags
+        .iter()
+        .map(Diagnostic::to_json)
+        .collect::<Vec<_>>()
+        .join(",");
     format!(
-        "{{\"content\":[{{\"type\":\"text\",\"text\":{}}}],\"isError\":{}}}",
+        "{{\"content\":[{{\"type\":\"text\",\"text\":{}}}],\"structuredContent\":{{\"exitCode\":{},\"diagnostics\":[{}]}},\"isError\":{}}}",
         jstr(&text),
+        r.code,
+        diagnostic_json,
         r.code != EXIT_OK
     )
 }
 
-fn tool_error_json(message: &str) -> String {
-    format!(
-        "{{\"content\":[{{\"type\":\"text\",\"text\":{}}}],\"isError\":true}}",
-        jstr(message)
-    )
+fn tool_error_json(diag: Diagnostic) -> String {
+    tool_result_json(&OpResult::fail_diag(EXIT_ERR, diag))
 }
 
 fn negotiate_version(params: Option<&Json>) -> String {
@@ -1019,10 +1053,14 @@ pub fn handle_message(server: &mut McpServer, line: &str) -> Option<String> {
     let msg = match parse_json(trimmed) {
         Ok(v) => v,
         Err(e) => {
-            return Some(error_response(
+            return Some(protocol_error_response(
                 &Json::Null,
                 ERR_PARSE,
-                &format!("parse error: {e}"),
+                Diagnostic::error_details(
+                    Code::Interface,
+                    "request could not be parsed",
+                    vec![("error".to_string(), e)],
+                ),
             ))
         }
     };
@@ -1030,14 +1068,14 @@ pub fn handle_message(server: &mut McpServer, line: &str) -> Option<String> {
         return Some(error_response(
             &Json::Null,
             ERR_INVALID_REQUEST,
-            "invalid request: JSON-RPC batches are not used by MCP",
+            "JSON-RPC batches are not used by MCP",
         ));
     }
     if !matches!(msg, Json::Obj(_)) {
         return Some(error_response(
             &Json::Null,
             ERR_INVALID_REQUEST,
-            "invalid request: expected a JSON-RPC object",
+            "expected a JSON-RPC object",
         ));
     }
     let id = msg.get("id").cloned();
@@ -1047,7 +1085,7 @@ pub fn handle_message(server: &mut McpServer, line: &str) -> Option<String> {
             return Some(error_response(
                 id.as_ref().unwrap_or(&Json::Null),
                 ERR_INVALID_REQUEST,
-                "invalid request: missing `method`",
+                "request is missing method",
             ))
         }
     };
@@ -1077,7 +1115,7 @@ pub fn handle_message(server: &mut McpServer, line: &str) -> Option<String> {
                 return Some(error_response(
                     &id,
                     ERR_SERVER_NOT_INITIALIZED,
-                    "server not initialized: send `initialize` then `notifications/initialized`",
+                    "server is not initialized, complete initialization first",
                 ));
             }
             Some(result_response(&id, &tools_list_json(server)))
@@ -1087,7 +1125,7 @@ pub fn handle_message(server: &mut McpServer, line: &str) -> Option<String> {
                 return Some(error_response(
                     &id,
                     ERR_SERVER_NOT_INITIALIZED,
-                    "server not initialized: send `initialize` then `notifications/initialized`",
+                    "server is not initialized, complete initialization first",
                 ));
             }
             Some(handle_tools_call(server, &id, params.as_ref()))
@@ -1095,7 +1133,7 @@ pub fn handle_message(server: &mut McpServer, line: &str) -> Option<String> {
         _ => Some(error_response(
             &id,
             ERR_METHOD_NOT_FOUND,
-            &format!("method not found: {method}"),
+            &format!("method not found {method}"),
         )),
     }
 }
@@ -1106,16 +1144,23 @@ fn handle_tools_call(server: &McpServer, id: &Json, params: Option<&Json>) -> St
         .and_then(|n| n.as_str())
         .unwrap_or("");
     if name.is_empty() {
-        return error_response(id, ERR_INVALID_PARAMS, "tools/call: missing params.name");
+        return error_response(id, ERR_INVALID_PARAMS, "tools call is missing params.name");
     }
     let served = served_tools(server).join(", ");
     let spec = match spec_for(name) {
         Some(s) if tool_allowed(server, name) => s,
         _ => {
-            return error_response(
+            return protocol_error_response(
                 id,
                 ERR_INVALID_PARAMS,
-                &format!("unknown tool: {name}; known tools: {served}"),
+                Diagnostic::error_details(
+                    Code::Interface,
+                    "unknown tool",
+                    vec![
+                        ("tool".to_string(), name.to_string()),
+                        ("known".to_string(), served),
+                    ],
+                ),
             )
         }
     };
@@ -1127,16 +1172,16 @@ fn handle_tools_call(server: &McpServer, id: &Json, params: Option<&Json>) -> St
             return error_response(
                 id,
                 ERR_INVALID_PARAMS,
-                "tools/call: arguments must be an object",
+                "tools call arguments must be an object",
             )
         }
     };
-    if let Err(m) = validate_args(spec, args) {
-        return result_response(id, &tool_error_json(&m));
+    if let Err(d) = validate_args(spec, args) {
+        return result_response(id, &tool_error_json(d));
     }
     let argv = match build_argv(server, spec, args) {
         Ok(a) => a,
-        Err(m) => return result_response(id, &tool_error_json(&m)),
+        Err(d) => return result_response(id, &tool_error_json(d)),
     };
     let r = run_cli(&argv);
     result_response(id, &tool_result_json(&r))

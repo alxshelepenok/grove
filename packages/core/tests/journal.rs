@@ -365,7 +365,7 @@ fn undo_restores_state_and_truncates_journal() {
     macro_rules! step {
         ($e:expr) => {{
             let r = $e;
-            assert_eq!(r.code, 0, "setup op failed: {}", r.err);
+            assert_eq!(r.code, 0, "setup op failed: {}", r.err_rendered(false));
             for l in &r.journal {
                 append_journal_record(&jp, l).unwrap();
             }
@@ -423,7 +423,7 @@ fn undo_restores_state_and_truncates_journal() {
     assert_eq!(journal_read_nonempty_pairs(&jp).0.len(), 9);
 
     let r = op_undo(&mut st, &jp, None, None, "none");
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     assert_eq!(serialize(&st), snaps[8]);
     assert_eq!(
         r.journal,
@@ -431,14 +431,14 @@ fn undo_restores_state_and_truncates_journal() {
     );
 
     let r = op_undo(&mut st, &jp, None, Some("2"), "none");
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
 
     assert_eq!(st.nodes["W-01"].status, "proposed");
     assert_eq!(st.nodes["G-01"].status, "unverified");
     assert_eq!(st.nodes["G-01"].single("fitness_current"), "0");
 
     let r = op_undo(&mut st, &jp, None, Some("3"), "none");
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
 
     assert_eq!(st.nodes["W-01"].status, "proposed");
     assert!(st.nodes["W-01"].lines("evidence").is_empty());
@@ -465,12 +465,12 @@ fn undo_restores_state_and_truncates_journal() {
     let r = op_undo(&mut st, &jp, None, Some("4"), "none");
     assert_eq!(r.code, 1);
     assert_eq!(
-        r.err,
-        "grove undo: journal has fewer than 4 mutation entries\n"
+        r.err_rendered(false),
+        "error INTERFACE journal has fewer than 4 mutation entries\n  steps=4\n"
     );
 
     let r = op_undo(&mut st, &jp, None, Some("3"), "none");
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     assert_eq!(serialize(&st), snaps[0]);
 
     let _ = std::fs::remove_dir_all(&dir);
@@ -495,7 +495,7 @@ fn undo_skips_gate_and_distill_records() {
     }
 
     let r = op_undo(&mut st, &jp, None, Some("1"), "none");
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     assert!(!st.nodes.contains_key("T-01"));
     assert!(st.nodes.contains_key("A-01"));
     assert_eq!(serialize(&st), snap_before_t);
@@ -510,8 +510,8 @@ fn undo_skips_gate_and_distill_records() {
     let r = op_undo(&mut st, &jp, None, Some("3"), "none");
     assert_eq!(r.code, 1);
     assert_eq!(
-        r.err,
-        "grove undo: journal has fewer than 3 mutation entries\n"
+        r.err_rendered(false),
+        "error INTERFACE journal has fewer than 3 mutation entries\n  steps=3\n"
     );
     let _ = std::fs::remove_dir_all(&dir);
 }
@@ -524,7 +524,7 @@ fn undo_glossary_rename_restores_tags_and_text() {
     let mut st = State::default();
     let mut g = Some(INIT_GLOSSARY.to_string());
     let r = op_add(&mut st, "d", &kw(&[("title", "Decision one")]));
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_add(
         &mut st,
         "y",
@@ -535,7 +535,7 @@ fn undo_glossary_rename_restores_tags_and_text() {
             ("from", "D-01"),
         ]),
     );
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_add(
         &mut st,
         "y",
@@ -546,11 +546,11 @@ fn undo_glossary_rename_restores_tags_and_text() {
             ("from", "D-01"),
         ]),
     );
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let snap_before = serialize(&st);
 
     let r1 = op_glossary_rename(&mut st, &mut g, "term-one", "term-two");
-    assert_eq!(r1.code, 0, "{}", r1.err);
+    assert_eq!(r1.code, 0, "{}", r1.err_rendered(false));
     assert_eq!(
         r1.journal,
         vec![r#"{"v":1,"cmd":"glossary","ts":"2031-01-01T00:00:00Z","inv":{"new":"term-two","glossary_changed":false,"old":"term-one","tags":{"Y-01":["term-one"]},"op":"glossary_rename_restore"}}"#.to_string()]
@@ -561,7 +561,7 @@ fn undo_glossary_rename_restores_tags_and_text() {
     let with_row = format!("{INIT_GLOSSARY}| term-three | a term | W-01 |\n");
     g = Some(with_row.clone());
     let r2 = op_glossary_rename(&mut st, &mut g, "term-three", "term-five");
-    assert_eq!(r2.code, 0, "{}", r2.err);
+    assert_eq!(r2.code, 0, "{}", r2.err_rendered(false));
     assert_eq!(
         r2.journal,
         vec![r#"{"v":1,"cmd":"glossary","ts":"2031-01-01T00:00:00Z","inv":{"new":"term-five","glossary_changed":true,"old":"term-three","tags":{"Y-02":["term-three","term-four"]},"op":"glossary_rename_restore"}}"#.to_string()]
@@ -579,7 +579,7 @@ fn undo_glossary_rename_restores_tags_and_text() {
         append_journal_record(&jp, l).unwrap();
     }
     let r = op_undo(&mut st, &jp, g.as_mut(), Some("2"), "none");
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     assert_eq!(g.as_deref(), Some(with_row.as_str()));
     assert_eq!(st.nodes["Y-01"].lines("tags"), vec!["term-one".to_string()]);
     assert_eq!(
@@ -600,16 +600,16 @@ fn undo_error_paths() {
     let r = op_undo(&mut st, &jp, None, None, "none");
     assert_eq!(r.code, 1);
     assert_eq!(
-        r.err,
-        format!("grove undo: no journal at {}\n", jp.display())
+        r.err_rendered(false),
+        format!("error SYSTEM no journal to undo\n  path={}\n", jp.display())
     );
 
     std::fs::write(&jp, "").unwrap();
     let r = op_undo(&mut st, &jp, None, None, "none");
     assert_eq!(r.code, 1);
     assert_eq!(
-        r.err,
-        format!("grove undo: no journal at {}\n", jp.display())
+        r.err_rendered(false),
+        format!("error SYSTEM no journal to undo\n  path={}\n", jp.display())
     );
 
     append_journal_record(
@@ -620,13 +620,16 @@ fn undo_error_paths() {
     let r = op_undo(&mut st, &jp, None, None, "none");
     assert_eq!(r.code, 1);
     assert_eq!(
-        r.err,
-        "grove undo: journal has fewer than 1 mutation entry\n"
+        r.err_rendered(false),
+        "error INTERFACE journal has fewer than 1 mutation entry\n  steps=1\n"
     );
 
     let r = op_undo(&mut st, &jp, None, Some("abc"), "none");
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "grove undo: bad --steps\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE bad --steps, expected an integer\n"
+    );
 
     let r = op_undo(&mut st, &jp, None, Some("0"), "none");
     assert_eq!(r.code, 0);
@@ -640,21 +643,21 @@ fn apply_inverse_reports_malformed_records() {
     pin();
     let mut st = State::default();
     let inv = parse_json(r#"{"id":"A-01"}"#).unwrap();
-    assert_eq!(
-        journal_apply_inverse(&mut st, &inv).as_deref(),
-        Some("journal undo: unknown inverse op ``")
-    );
+    let e = journal_apply_inverse(&mut st, &inv).expect("error expected");
+    assert_eq!(e.code, Code::System);
+    assert_eq!(e.text, "journal undo failed");
+    assert_eq!(e.details[0].1, "unknown inverse op ``");
     let inv = parse_json(r#"{"op":"rm_node"}"#).unwrap();
-    assert_eq!(
-        journal_apply_inverse(&mut st, &inv).as_deref(),
-        Some("journal undo: malformed record: missing `id`")
-    );
+    let e = journal_apply_inverse(&mut st, &inv).expect("error expected");
+    assert_eq!(e.code, Code::System);
+    assert_eq!(e.text, "journal undo failed");
+    assert_eq!(e.details[0].1, "malformed record: missing `id`");
     let inv = parse_json(r#"{"op":"rm_node","id":"A-99"}"#).unwrap();
     assert_eq!(journal_apply_inverse(&mut st, &inv), None);
     let inv =
         parse_json(r#"{"op":"unlink_edge","from":"A-01","label":"blocks","to":"A-02"}"#).unwrap();
-    assert_eq!(
-        journal_apply_inverse(&mut st, &inv).as_deref(),
-        Some("journal undo: unlink_edge: missing edge A-01 blocks A-02")
-    );
+    let e = journal_apply_inverse(&mut st, &inv).expect("error expected");
+    assert_eq!(e.code, Code::System);
+    assert_eq!(e.text, "journal undo failed");
+    assert_eq!(e.details[0].1, "unlink_edge: missing edge A-01 blocks A-02");
 }

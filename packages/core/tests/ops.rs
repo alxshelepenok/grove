@@ -54,7 +54,7 @@ impl Ctx {
     fn step(&mut self, label: &str, r: OpResult, code: i32, out: &str, err: &str, jl: &[&str]) {
         assert_eq!(r.code, code, "{label} rc");
         assert_eq!(r.out, out, "{label} out");
-        assert_eq!(r.err, err, "{label} err");
+        assert_eq!(r.err_rendered(false), err, "{label} err");
         let got: Vec<&str> = r.journal.iter().map(|s| s.as_str()).collect();
         assert_eq!(got, jl, "{label} journal");
         for l in &r.journal {
@@ -261,7 +261,7 @@ fn replay_truth_scenario() {
         op_add(&mut ctx.st, "g", &kw(&[("title", "Goal bad")])),
         1,
         "",
-        "add g: --area=A-NN is required (create one with grove add a --title=...)\n",
+        "error INTERFACE add g, --area=A-NN is required, create an area node first\n",
         &[]
     );
     step!(
@@ -274,11 +274,11 @@ fn replay_truth_scenario() {
         ),
         1,
         "",
-        "add g: unknown --area id: A-99\n",
+        "error INTERFACE add g, unknown --area id A-99\n",
         &[]
     );
     step!(ctx, "add_g_nofitness", op_add(&mut ctx.st, "g", &kw(&[("title", "Goal bad"), ("area", "A-01")])), 1, "",
-        "add g: fitness is required (pass --fitness-kind + --fitness-target, or --fitness-kind=manual for n/a)\n", &[]);
+        "error INTERFACE add g, fitness is required, pass --fitness-kind and --fitness-target or --fitness-kind=manual\n", &[]);
     step!(
         ctx,
         "add_g_notarget",
@@ -293,7 +293,7 @@ fn replay_truth_scenario() {
         ),
         1,
         "",
-        "add g: --fitness-target is required for --fitness-kind=count\n",
+        "error INTERFACE add g, --fitness-target is required for --fitness-kind=count\n",
         &[]
     );
     step!(
@@ -306,7 +306,7 @@ fn replay_truth_scenario() {
         ),
         1,
         "",
-        "add y: --title is required\n",
+        "error INTERFACE add y, --title is required\n",
         &[]
     );
     step!(
@@ -315,7 +315,7 @@ fn replay_truth_scenario() {
         op_add(&mut ctx.st, "y", &kw(&[("title", "X"), ("from", "W-01")])),
         1,
         "",
-        "add y: --tags=<t1,t2> is required (≥1 glossary term)\n",
+        "error INTERFACE add y, --tags requires at least one glossary term\n",
         &[]
     );
     step!(
@@ -328,7 +328,7 @@ fn replay_truth_scenario() {
         ),
         1,
         "",
-        "add y: --surface absent requires --why prose\n",
+        "error INTERFACE add y, --surface absent requires --why prose\n",
         &[]
     );
     step!(
@@ -345,7 +345,7 @@ fn replay_truth_scenario() {
         ),
         1,
         "",
-        "add y: --from=<W-NN|D-NN|Q-NN|B-NN> is required (≥1 provenance record)\n",
+        "error INTERFACE add y, --from requires at least one provenance record\n",
         &[]
     );
     step!(
@@ -363,7 +363,7 @@ fn replay_truth_scenario() {
         ),
         4,
         "",
-        "add y: unknown --from id: Z-99\n",
+        "error INTERFACE add y, unknown --from id Z-99\n",
         &[]
     );
 
@@ -500,7 +500,7 @@ fn replay_truth_scenario() {
         op_field(&mut ctx.st, "W-01", "bogus", "add", Some("x"), EFF),
         1,
         "",
-        "unknown field bogus on w\n",
+        "error INTERFACE unknown field bogus on w\n",
         &[]
     );
     step!(
@@ -509,7 +509,7 @@ fn replay_truth_scenario() {
         op_field(&mut ctx.st, "W-01", "fitness", "add", Some("G-01=+1"), EFF),
         1,
         "",
-        "field fitness not addable\n",
+        "error INTERFACE field fitness not addable\n",
         &[]
     );
     step!(
@@ -601,7 +601,7 @@ fn replay_truth_scenario() {
         ]
     );
     step!(ctx, "set_g_fitness_legacy_rejected", op_set(&mut ctx.st, "G-02", "fitness", "1/2", EFF), 1, "",
-        "set: key fitness is retired (legacy label); use fitness_kind + set <G> fitness_target=N (empty value removes a legacy label)\n", &[]);
+        "error INTERFACE set fitness is retired, use fitness_kind and fitness_target or an empty value to remove a legacy label\n", &[]);
     step!(
         ctx,
         "set_g_fitness_target",
@@ -669,7 +669,7 @@ fn replay_truth_scenario() {
         op_set(&mut ctx.st, "G-02", "fitness_kind", "bogus", EFF),
         1,
         "",
-        "bad fitness_kind (expected one of: count, ratio, boolean, metric, manual)\n",
+        "error INTERFACE bad fitness_kind, expected one of count, ratio, boolean, metric, manual\n",
         &[]
     );
     step!(
@@ -689,7 +689,7 @@ fn replay_truth_scenario() {
         op_set(&mut ctx.st, "G-02", "area", "A-99", EFF),
         1,
         "",
-        "set: unknown area: A-99 (expected an existing A-NN node)\n",
+        "error INTERFACE set unknown area A-99, expected an existing A-NN node\n",
         &[]
     );
     step!(
@@ -709,7 +709,7 @@ fn replay_truth_scenario() {
         op_set(&mut ctx.st, "G-02", "requires_coverage", "bogus", EFF),
         1,
         "",
-        "bad requires_coverage (expected `true` or a float in (0,1])\n",
+        "error INTERFACE bad requires_coverage (expected `true` or a float in (0,1])\n",
         &[]
     );
     step!(
@@ -718,7 +718,7 @@ fn replay_truth_scenario() {
         op_set(&mut ctx.st, "W-01", "bogus", "1", EFF),
         1,
         "",
-        "unsupported key: bogus\n",
+        "error INTERFACE unsupported key bogus\n",
         &[]
     );
     step!(
@@ -772,7 +772,7 @@ fn replay_truth_scenario() {
         op_link(&mut ctx.st, "W-01", "blocks", "W-01", EFF),
         4,
         "",
-        "I7: blocks introduces a cycle\n",
+        "error INVARIANT blocks introduces a cycle\n",
         &[]
     );
     assert_eq!(
@@ -786,7 +786,7 @@ fn replay_truth_scenario() {
         op_link(&mut ctx.st, "W-01", "blocks", "W-99", EFF),
         4,
         "",
-        "missing node W-99\n",
+        "error INTERFACE missing node W-99\n",
         &[]
     );
     step!(
@@ -795,7 +795,7 @@ fn replay_truth_scenario() {
         op_unlink(&mut ctx.st, "W-01", "blocks", "W-02", EFF),
         5,
         "",
-        "no such edge\n",
+        "error INTERFACE no such edge\n",
         &[]
     );
     step!(
@@ -843,7 +843,7 @@ fn replay_truth_scenario() {
         ]
     );
     step!(ctx, "set_w_done", op_set(&mut ctx.st, "W-01", "status", "done", EFF), 0, "",
-        "grove: goal G-01 (Goal one) verified, distill content: `grove distill G-01` (or `grove distill G-01 --null` when nothing is worth keeping; lazy distill, see the Delivery loop section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.\n",
+        "info OPERATIONAL goal G-01 (Goal one) is verified, distill its content or attest a null distillation, or add a notes line containing --distill-deferred to skip\n",
         &[r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"had_session_at_before":true,"old_w_status":"progress","had_session_before":true,"id":"W-01","op":"set_w_status_with_goals","goal_statuses":{"G-01":"unverified","G-02":"unverified"},"old_session_at":"2031-01-01T00:00:00Z","old_session":"testsession"}}"#]);
 
     assert_eq!(serialize(&ctx.st), LOCK_DONE, "lock after done");
@@ -854,7 +854,7 @@ fn replay_truth_scenario() {
         op_set(&mut ctx.st, "W-02", "status", "progress", EFF),
         4,
         "",
-        "DoR ≢ ⊤ for W-02; see `grove dor W-02`\n",
+        "error INVARIANT DoR is not satisfied for W-02, inspect readiness for the failing conjuncts\n",
         &[
             r#"{"v":1,"cmd":"set","ts":"2031-01-01T00:00:00Z","inv":{"missing":["goals(w) ≠ ∅","AC(w) ≠ ∅","fitness deltas set ∀ g","evidence_strategy ≠ ∅","hypothesis ≠ ⊥"],"id":"W-02","op":"dor_reject"}}"#
         ]
@@ -876,7 +876,7 @@ fn replay_truth_scenario() {
         op_evidence(&mut ctx.st, "W-01", "late add", EFF),
         4,
         "",
-        "W-01 is terminal (done); create a successor node or use grove undo
+        "error INVARIANT W-01 is terminal (done), create a successor node or undo the last mutation
 ",
         &[]
     );
@@ -886,7 +886,7 @@ fn replay_truth_scenario() {
         op_renumber(&mut ctx.st, "W-01", "W-09", EFF),
         4,
         "",
-        "grove renumber: refusing; id occurs in evidence on a done W\n",
+        "error INVARIANT renumber refuses, the id occurs in evidence on a done work item\n",
         &[]
     );
 
@@ -913,7 +913,7 @@ fn replay_truth_scenario() {
             r,
             5,
             "",
-            "glossary rename: `nosuchterm` is neither in glossary.md nor used by any discovery\n",
+            "error INTERFACE glossary term nosuchterm is absent and unused by discoveries\n",
             &[],
         );
         let r = op_glossary_rename(&mut ctx.st, &mut g, "term-two", "term-five");
@@ -922,7 +922,7 @@ fn replay_truth_scenario() {
             r,
             4,
             "",
-            "glossary rename: `term-five` already present in glossary.md\n",
+            "error INVARIANT glossary term term-five already exists\n",
             &[],
         );
         let r = op_glossary_rename(&mut ctx.st, &mut g, "term-two", "term-two");
@@ -931,7 +931,7 @@ fn replay_truth_scenario() {
             r,
             1,
             "",
-            "glossary rename: old and new are identical\n",
+            "error INTERFACE glossary rename terms are identical\n",
             &[],
         );
     }
@@ -1038,7 +1038,7 @@ fn replay_truth_scenario() {
         op_handoff(&mut ctx.st, "W-06", Some("newtok"), "intruder"),
         4,
         "",
-        "only the holding session can hand off; use `grove resume` first\n",
+        "error INVARIANT only the holding session can hand off, adopt the claim first\n",
         &[]
     );
     step!(
@@ -1064,7 +1064,7 @@ fn replay_truth_scenario() {
         ]
     );
     step!(ctx, "revert_nonholder", op_revert(&mut ctx.st, "W-06", "intruder"), 4, "",
-        "I11/session: cannot release W-06: token differs and claim is fresh (<24h); pass the owning GROVE_SESSION/--session, use `grove resume`, or wait\n", &[]);
+        "error INVARIANT cannot release W-06, the token differs and the claim is fresh (under 24h)\n  recover=pass the owning GROVE_SESSION or --session, adopt the claim, or wait\n", &[]);
     step!(
         ctx,
         "revert_ok",
@@ -1086,7 +1086,7 @@ fn replay_truth_scenario() {
     ctx.assert_file_mirror();
 
     let r = op_undo(&mut ctx.st, &ctx.jp, None, Some("3"), "none");
-    assert_eq!(r.code, 0, "undo3 rc: {}", r.err);
+    assert_eq!(r.code, 0, "undo3 rc: {}", r.err_rendered(false));
     assert_eq!(
         r.journal,
         vec![r#"{"v":1,"session":"none","cmd":"undo","ts":"2031-01-01T00:00:00Z","inv":{"steps":3,"op":"undo"}}"#.to_string()]
@@ -1104,7 +1104,7 @@ fn replay_truth_scenario() {
     ctx.assert_file_mirror();
 
     let r = op_undo(&mut ctx.st, &ctx.jp, None, None, "none");
-    assert_eq!(r.code, 0, "undo1 rc: {}", r.err);
+    assert_eq!(r.code, 0, "undo1 rc: {}", r.err_rendered(false));
     assert_eq!(
         r.journal,
         vec![r#"{"v":1,"session":"none","cmd":"undo","ts":"2031-01-01T00:00:00Z","inv":{"steps":1,"op":"undo"}}"#.to_string()]
@@ -1131,11 +1131,11 @@ fn replay_truth_scenario() {
         ]
     );
     step!(ctx, "field_w3_denied", op_field(&mut ctx.st, "W-06", "ac", "add", Some("sneaky"), "intruder"), 4, "",
-        "I11/session: W-06 is `progress` and owned by another session; try `grove resume W-06` after adopting, or coordinate a `grove handoff`\n", &[]);
+        "error INVARIANT W-06 is progress and owned by another session, adopt the claim or coordinate a handoff\n", &[]);
     step!(ctx, "set_w3_denied", op_set(&mut ctx.st, "W-06", "title", "Sneaky", "intruder"), 4, "",
-        "I11/session: W-06 is `progress` and owned by another session; try `grove resume W-06` after adopting, or coordinate a `grove handoff`\n", &[]);
+        "error INVARIANT W-06 is progress and owned by another session, adopt the claim or coordinate a handoff\n", &[]);
     step!(ctx, "revert_w3_intruder", op_revert(&mut ctx.st, "W-06", "intruder"), 4, "",
-        "I11/session: cannot release W-06: token differs and claim is fresh (<24h); pass the owning GROVE_SESSION/--session, use `grove resume`, or wait\n", &[]);
+        "error INVARIANT cannot release W-06, the token differs and the claim is fresh (under 24h)\n  recover=pass the owning GROVE_SESSION or --session, adopt the claim, or wait\n", &[]);
     pin(TS_OLD);
     step!(
         ctx,
@@ -1177,7 +1177,7 @@ fn replay_truth_scenario() {
         op_resume(&mut ctx.st, "W-02", EFF),
         5,
         "",
-        "",
+        "error INTERFACE not found W-02\n",
         &[]
     );
     pin(TS_OLD);
@@ -1199,7 +1199,7 @@ fn replay_truth_scenario() {
         op_set(&mut ctx.st, "W-06", "status", "done", "crashgrabber"),
         4,
         "",
-        "I3: W-06 has no evidence; use `grove evidence W-06 \"…\"`\n",
+        "error INVARIANT W-06 has no evidence, record evidence for the item\n",
         &[]
     );
 
@@ -1212,7 +1212,7 @@ fn replay_truth_scenario() {
 fn small_state() -> State {
     let mut st = State::default();
     let r = op_add(&mut st, "a", &kw(&[("title", "Area One")]));
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_add(
         &mut st,
         "g",
@@ -1222,9 +1222,9 @@ fn small_state() -> State {
             ("fitness-kind", "manual"),
         ]),
     );
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_add(&mut st, "t", &kw(&[("title", "Theme one")]));
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_add(
         &mut st,
         "w",
@@ -1236,7 +1236,7 @@ fn small_state() -> State {
             ("cynefin", "clear"),
         ]),
     );
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     st
 }
 
@@ -1245,10 +1245,10 @@ fn renumber_rewires_goal_fitness_theme_refs() {
     pin(TS);
     let mut st = small_state();
     let r = op_fitness(&mut st, "W-01", "G-01", 2, EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
 
     let r = op_renumber(&mut st, "G-01", "G-09", EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     assert_eq!(
         r.journal,
         vec![r#"{"v":1,"cmd":"renumber","ts":"2031-01-01T00:00:00Z","inv":{"to":"G-01","op":"renumber_swap","from":"G-09"}}"#.to_string()]
@@ -1264,11 +1264,11 @@ fn renumber_rewires_goal_fitness_theme_refs() {
     }
 
     let r = op_renumber(&mut st, "T-01", "T-09", EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     assert_eq!(st.nodes["W-01"].single("theme"), "T-09");
 
     let r = op_renumber(&mut st, "G-09", "G-01", EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     assert_eq!(st.nodes["W-01"].lines("goals"), vec!["G-01".to_string()]);
 
     let r = op_renumber(&mut st, "W-01", "W-01", EFF);
@@ -1277,19 +1277,28 @@ fn renumber_rewires_goal_fitness_theme_refs() {
 
     let r = op_renumber(&mut st, "W-01", "", EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "bad --to\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE bad --to\n");
 
     let r = op_renumber(&mut st, "G-77", "G-78", EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "rename: missing record G-77\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE renumber could not be applied\n  error=rename: missing record G-77\n"
+    );
 
     let r = op_renumber(&mut st, "G-01", "T-09", EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "rename: target already exists T-09\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE renumber could not be applied\n  error=rename: target already exists T-09\n"
+    );
 
     let r = op_renumber(&mut st, "G-01", "W-77", EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "rename: family mismatch G-01 vs W-77\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE renumber could not be applied\n  error=rename: family mismatch G-01 vs W-77\n"
+    );
 }
 
 #[test]
@@ -1299,31 +1308,31 @@ fn missing_node_and_bad_arg_messages() {
 
     let r = op_set(&mut st, "W-99", "title", "x", EFF);
     assert_eq!(r.code, 5);
-    assert_eq!(r.err, "not found: W-99\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not found W-99\n");
 
     let r = op_field(&mut st, "W-99", "ac", "add", Some("x"), EFF);
     assert_eq!(r.code, 5);
-    assert_eq!(r.err, "not found: W-99\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not found W-99\n");
 
     let r = op_fitness(&mut st, "W-99", "G-01", 1, EFF);
     assert_eq!(r.code, 5);
-    assert_eq!(r.err, "missing: W-99\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE missing W-99\n");
 
     let r = op_fitness(&mut st, "W-01", "G-99", 1, EFF);
     assert_eq!(r.code, 5);
-    assert_eq!(r.err, "missing: G-99\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE missing G-99\n");
 
     let r = op_handoff(&mut st, "W-99", Some("tok"), EFF);
     assert_eq!(r.code, 5);
-    assert_eq!(r.err, "");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not found W-99\n");
 
     let r = op_revert(&mut st, "W-99", EFF);
     assert_eq!(r.code, 5);
-    assert_eq!(r.err, "");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not found W-99\n");
 
     let r = op_add(&mut st, "z", &kw(&[("title", "x")]));
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "unknown kind: z\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE unknown kind z\n");
 
     let r = op_add(
         &mut st,
@@ -1331,37 +1340,49 @@ fn missing_node_and_bad_arg_messages() {
         &kw(&[("title", "x"), ("area", "A-01"), ("fitness-kind", "bogus")]),
     );
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "bad --fitness-kind\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE bad --fitness-kind\n"
+    );
 
     let r = op_link(&mut st, "T-01", "bogus", "W-01", EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "unknown label: bogus\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE unknown label bogus\n"
+    );
 
     let r = op_field(&mut st, "W-01", "ac", "bogus", Some("x"), EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "unknown op: bogus\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE unknown op bogus\n");
 
     let r = op_field(&mut st, "W-01", "ac", "add", None, EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "missing value\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE missing value\n");
 
     let r = op_field(&mut st, "W-01", "ac", "rm", None, EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "missing index\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE missing index\n");
 
     let r = op_field(&mut st, "W-01", "theme", "rm", Some("1"), EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "index out of range\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE index out of range\n"
+    );
 
     let r = op_field(&mut st, "W-01", "ac", "rm", Some("7"), EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "index out of range\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE index out of range\n"
+    );
 
     let r = op_field(&mut st, "W-01", "ac", "rm", Some("notanumber"), EFF);
     assert_eq!(r.code, 1);
     assert_eq!(
-        r.err, "",
-        "non-numeric rm index: empty stderr (Julia crashes)"
+        r.err_rendered(false),
+        "error INTERFACE index must be an integer\n"
     );
 }
 
@@ -1370,7 +1391,7 @@ fn fitness_current_derived_guard() {
     pin(TS);
     let mut st = State::default();
     let r = op_add(&mut st, "a", &kw(&[("title", "Area One")]));
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_add(
         &mut st,
         "g",
@@ -1381,12 +1402,12 @@ fn fitness_current_derived_guard() {
             ("fitness-target", "1"),
         ]),
     );
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_field(&mut st, "G-01", "fitness_current", "add", Some("5"), EFF);
     assert_eq!(r.code, 4);
     assert_eq!(
-        r.err,
-        "grove field: `fitness_current` is derived for structured goals; use kind=manual to author it\n"
+        r.err_rendered(false),
+        "error INVARIANT fitness_current is derived for structured goals, set fitness_kind to manual to author it\n"
     );
 }
 
@@ -1395,7 +1416,7 @@ fn add_g_legacy_label_rejected() {
     pin(TS);
     let mut st = State::default();
     let r = op_add(&mut st, "a", &kw(&[("title", "Area One")]));
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let before = serialize(&st);
     let r = op_add(
         &mut st,
@@ -1404,8 +1425,8 @@ fn add_g_legacy_label_rejected() {
     );
     assert_eq!(r.code, 1);
     assert_eq!(
-        r.err,
-        "add g: --fitness is retired (legacy label); use --fitness-kind + --fitness-target\n"
+        r.err_rendered(false),
+        "error INTERFACE add g, --fitness is retired, use --fitness-kind and --fitness-target\n"
     );
     assert!(r.journal.is_empty(), "rejected add must not journal");
     assert_eq!(serialize(&st), before, "rejected add must not mutate");
@@ -1416,79 +1437,91 @@ fn session_guards_on_mutations() {
     pin(TS);
     let mut st = small_state();
     let r = op_field(&mut st, "W-01", "ac", "add", Some("a1"), EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_field(&mut st, "W-01", "evidence_strategy", "add", Some("es"), EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_field(&mut st, "W-01", "hypothesis", "add", Some("h"), EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_fitness(&mut st, "W-01", "G-01", 1, EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_set(&mut st, "W-01", "status", "ready", EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_set(&mut st, "W-01", "status", "progress", EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
 
-    let denial = "I11/session: W-01 is `progress` and owned by another session; try `grove resume W-01` after adopting, or coordinate a `grove handoff`\n";
+    let denial = "error INVARIANT W-01 is progress and owned by another session, adopt the claim or coordinate a handoff\n";
     let before = serialize(&st);
 
     let r = op_fitness(&mut st, "W-01", "G-01", 9, "intruder");
     assert_eq!(r.code, 4);
-    assert_eq!(r.err, denial);
+    assert_eq!(r.err_rendered(false), denial);
 
     let r = op_link(&mut st, "T-01", "causes", "W-01", "intruder");
     assert_eq!(r.code, 4);
-    assert_eq!(r.err, denial);
+    assert_eq!(r.err_rendered(false), denial);
 
     let r = op_unlink(&mut st, "W-01", "blocks", "T-01", "intruder");
     assert_eq!(r.code, 5, "missing edge check precedes session guard");
 
     let r = op_evidence(&mut st, "W-01", "sneaky", "intruder");
     assert_eq!(r.code, 4);
-    assert_eq!(r.err, denial);
+    assert_eq!(r.err_rendered(false), denial);
 
     let r = op_set(&mut st, "W-01", "status", "done", "intruder");
     assert_eq!(r.code, 4);
     assert_eq!(
-        r.err,
-        "I11/session: cannot release W-01: token differs and claim is fresh (<24h); pass the owning GROVE_SESSION/--session, use `grove resume`, or wait\n"
+        r.err_rendered(false),
+        "error INVARIANT cannot release W-01, the token differs and the claim is fresh (under 24h)\n  recover=pass the owning GROVE_SESSION or --session, adopt the claim, or wait\n"
     );
 
     assert_eq!(serialize(&st), before, "denied ops must not mutate");
 
     let r = op_resume(&mut st, "G-01", "intruder");
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "not a work item\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not a work item\n");
 
     let r = op_handoff(&mut st, "G-01", Some("tok"), EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "not a work item\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not a work item\n");
 
     let r = op_revert(&mut st, "G-01", EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "not a work item\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE not a work item\n");
 
     let r = op_add(&mut st, "w", &kw(&[("title", "Work two")]));
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
 
     let r = op_resume(&mut st, "W-02", EFF);
     assert_eq!(r.code, 4);
-    assert_eq!(r.err, "W-02 is not in progress\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INVARIANT W-02 is not in progress\n"
+    );
 
     let r = op_handoff(&mut st, "W-02", Some("tok"), EFF);
     assert_eq!(r.code, 4);
-    assert_eq!(r.err, "W-02 is not in progress\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INVARIANT W-02 is not in progress\n"
+    );
 
     let r = op_revert(&mut st, "W-02", EFF);
     assert_eq!(r.code, 4);
-    assert_eq!(r.err, "W-02 is not in progress\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INVARIANT W-02 is not in progress\n"
+    );
 
     let r = op_handoff(&mut st, "W-01", None, EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "missing --to=<session-token>\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INTERFACE missing --to=<session-token>\n"
+    );
 
     let r = op_handoff(&mut st, "W-01", Some("  "), EFF);
     assert_eq!(r.code, 1);
-    assert_eq!(r.err, "empty --to\n");
+    assert_eq!(r.err_rendered(false), "error INTERFACE empty --to\n");
 }
 
 #[test]
@@ -1496,17 +1529,17 @@ fn handoff_requires_existing_claim() {
     pin(TS);
     let mut st = small_state();
     let r = op_field(&mut st, "W-01", "ac", "add", Some("a1"), EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_field(&mut st, "W-01", "evidence_strategy", "add", Some("es"), EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_field(&mut st, "W-01", "hypothesis", "add", Some("h"), EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_fitness(&mut st, "W-01", "G-01", 1, EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_set(&mut st, "W-01", "status", "ready", EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let r = op_set(&mut st, "W-01", "status", "progress", EFF);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
 
     {
         let w = st.nodes.get_mut("W-01").unwrap();
@@ -1515,7 +1548,10 @@ fn handoff_requires_existing_claim() {
     }
     let r = op_handoff(&mut st, "W-01", Some("tok"), EFF);
     assert_eq!(r.code, 4);
-    assert_eq!(r.err, "W-01 has no session claim; use `grove resume`\n");
+    assert_eq!(
+        r.err_rendered(false),
+        "error INVARIANT no session claim on W-01, adopt the claim before handing off\n"
+    );
 }
 
 #[test]
@@ -1526,15 +1562,15 @@ fn op_level_mutations_freeze_terminal_nodes() {
     let r = op_set(&mut st, "W-01", "title", "X", EFF);
     assert_eq!(r.code, EXIT_GUARD);
     assert!(r
-        .err
-        .contains("W-01 is terminal (done); create a successor node or use grove undo"));
+        .err_rendered(false)
+        .contains("W-01 is terminal (done), create a successor node or undo the last mutation"));
     let r = op_field(&mut st, "W-01", "ac", "add", Some("y"), EFF);
     assert_eq!(r.code, EXIT_GUARD);
-    assert!(r.err.contains("W-01 is terminal (done)"));
+    assert!(r.err_rendered(false).contains("W-01 is terminal (done)"));
     let r = op_evidence(&mut st, "W-01", "more", EFF);
     assert_eq!(r.code, EXIT_GUARD);
-    assert!(r.err.contains("W-01 is terminal (done)"));
+    assert!(r.err_rendered(false).contains("W-01 is terminal (done)"));
     let r = op_fitness(&mut st, "W-01", "G-01", 1, EFF);
     assert_eq!(r.code, EXIT_GUARD);
-    assert!(r.err.contains("W-01 is terminal (done)"));
+    assert!(r.err_rendered(false).contains("W-01 is terminal (done)"));
 }

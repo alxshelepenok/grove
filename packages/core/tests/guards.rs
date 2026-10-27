@@ -3,18 +3,26 @@ mod common;
 use common::*;
 use grove_core::*;
 
-fn expect_invalid(v: &GuardVerdict) -> &Vec<String> {
+fn expect_invalid(v: &GuardVerdict) -> &Vec<Diagnostic> {
     match v {
         GuardVerdict::Invalid(m) => m,
         _ => panic!("expected Invalid, got exit code {}", v.exit_code()),
     }
 }
 
-fn expect_reject(v: &GuardVerdict) -> &Vec<String> {
+fn expect_reject(v: &GuardVerdict) -> &Vec<Diagnostic> {
     match v {
         GuardVerdict::Reject(m) => m,
         _ => panic!("expected Reject, got exit code {}", v.exit_code()),
     }
+}
+
+fn codes(v: &[Diagnostic]) -> Vec<&str> {
+    v.iter().map(|d| d.code.as_str()).collect()
+}
+
+fn texts(v: &[Diagnostic]) -> Vec<&str> {
+    v.iter().map(|d| d.text.as_str()).collect()
 }
 
 fn expect_ok(v: &GuardVerdict) {
@@ -31,8 +39,8 @@ fn guard_rejects_invalid_status_for_kind() {
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "bogus");
     assert_eq!(
-        expect_invalid(&v),
-        &vec!["invalid status `bogus` for w".to_string()]
+        texts(expect_invalid(&v)),
+        vec!["invalid status `bogus` for w"]
     );
     assert_eq!(v.exit_code(), 1);
 }
@@ -44,9 +52,10 @@ fn guard_theme_status_is_derived() {
     let n = st.nodes.get("T-01").expect("T-01 present");
     let v = guard_status_transition(&st, n, "done");
     assert_eq!(
-        expect_reject(&v),
-        &vec!["theme status is derived; cannot set manually".to_string()]
+        texts(expect_reject(&v)),
+        vec!["theme status is derived and cannot be set manually"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
     assert_eq!(v.exit_code(), 4);
 }
 
@@ -57,9 +66,10 @@ fn guard_area_status_is_structural() {
     let n = st.nodes.get("A-01").expect("A-01 present");
     let v = guard_status_transition(&st, n, "present");
     assert_eq!(
-        expect_reject(&v),
-        &vec!["area status is structural; cannot set".to_string()]
+        texts(expect_reject(&v)),
+        vec!["area status is structural and cannot be set"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
     assert_eq!(v.exit_code(), 4);
 }
 
@@ -70,9 +80,10 @@ fn guard_w_progress_requires_dor() {
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "progress");
     assert_eq!(
-        expect_reject(&v),
-        &vec!["DoR ≢ ⊤ for W-01; see `grove dor W-01`".to_string()]
+        texts(expect_reject(&v)),
+        vec!["DoR is not satisfied for W-01, inspect readiness for the failing conjuncts"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
     assert_eq!(v.exit_code(), 4);
 }
 
@@ -85,9 +96,10 @@ fn guard_w_progress_requires_verified_goal_blockers() {
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "progress");
     assert_eq!(
-        expect_reject(&v),
-        &vec!["I5: predecessors not cleared (goal blockers must be verified, not merely declined/partial/unverified)".to_string()]
+        texts(expect_reject(&v)),
+        vec!["predecessors not cleared (goal blockers must be verified, not merely declined, partial, or unverified)"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
     assert_eq!(v.exit_code(), 4);
 }
 
@@ -104,10 +116,8 @@ fn guard_w_progress_enforces_wip_limit() {
     put(&mut st, dor_ready_feature("W-01", "ready"));
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "progress");
-    assert_eq!(
-        expect_reject(&v),
-        &vec!["I4: WIP limit (2) reached".to_string()]
-    );
+    assert_eq!(texts(expect_reject(&v)), vec!["WIP limit reached"]);
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
     assert_eq!(v.exit_code(), 4);
 }
 
@@ -130,9 +140,10 @@ fn guard_w_done_requires_evidence() {
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "done");
     assert_eq!(
-        expect_reject(&v),
-        &vec!["I3: W-01 has no evidence; use `grove evidence W-01 \"…\"`".to_string()]
+        texts(expect_reject(&v)),
+        vec!["W-01 has no evidence, record evidence for the item"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
     assert_eq!(v.exit_code(), 4);
 }
 
@@ -146,12 +157,10 @@ fn guard_w_done_requires_fitness_delta_per_goal() {
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "done");
     assert_eq!(
-        expect_reject(&v),
-        &vec![
-            "I10: missing fitness delta for G-01; use `grove fitness W-01 G-01 <delta>`"
-                .to_string()
-        ]
+        texts(expect_reject(&v)),
+        vec!["missing fitness delta for G-01, stage a delta for every linked goal"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
     assert_eq!(v.exit_code(), 4);
 }
 
@@ -162,9 +171,10 @@ fn guard_decision_accepted_only_supersedes() {
     let n = st.nodes.get("D-01").expect("D-01 present");
     let v = guard_status_transition(&st, n, "rejected");
     assert_eq!(
-        expect_reject(&v),
-        &vec!["decision D-01 is accepted; create a new D with --supersedes".to_string()]
+        texts(expect_reject(&v)),
+        vec!["decision D-01 is accepted, create a successor D with --supersedes"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
     assert_eq!(v.exit_code(), 4);
     let v = guard_status_transition(&st, n, "superseded");
     expect_ok(&v);
@@ -185,7 +195,8 @@ fn accepted_decision_with_catalog() -> Node {
     }
     d
 }
-const DECISION_IMMUTABLE_MSG: &str = "decision D-01 is accepted; create a new D with --supersedes";
+const DECISION_IMMUTABLE_MSG: &str =
+    "error INVARIANT decision D-01 is accepted, create a successor D with --supersedes";
 
 fn field_mutation_ops(fname: &str) -> Vec<(String, String, Option<String>)> {
     vec![
@@ -216,7 +227,7 @@ fn guard_field_ops_reject_accepted_decision() {
                 "testsession",
             );
             assert_eq!(r.code, 4, "field {field} {op} must be rejected");
-            assert_eq!(r.err.trim(), DECISION_IMMUTABLE_MSG);
+            assert_eq!(r.err_rendered(false).trim(), DECISION_IMMUTABLE_MSG);
             assert!(
                 r.journal.is_empty(),
                 "guard must fire before journaling {field} {op}"
@@ -240,7 +251,7 @@ fn guard_set_non_status_keys_reject_accepted_decision() {
         let old_cynefin = st.nodes["D-01"].cynefin.clone();
         let r = op_set(&mut st, "D-01", key, "Replacement", "testsession");
         assert_eq!(r.code, 4, "set {key} on accepted D must be rejected");
-        assert_eq!(r.err.trim(), DECISION_IMMUTABLE_MSG);
+        assert_eq!(r.err_rendered(false).trim(), DECISION_IMMUTABLE_MSG);
         assert!(
             r.journal.is_empty(),
             "guard must fire before journaling set {key}"
@@ -256,7 +267,7 @@ fn guard_set_status_on_accepted_decision_still_paid_through_status_guard() {
     put(&mut st, plain(Kind::D, "D-01", "accepted"));
     let r = op_set(&mut st, "D-01", "status", "proposed", "testsession");
     assert_eq!(r.code, 4);
-    assert_eq!(r.err.trim(), DECISION_IMMUTABLE_MSG);
+    assert_eq!(r.err_rendered(false).trim(), DECISION_IMMUTABLE_MSG);
     assert_eq!(st.nodes["D-01"].status, "accepted");
     let r = op_set(&mut st, "D-01", "status", "superseded", "testsession");
     assert_eq!(r.code, 0);
@@ -270,23 +281,32 @@ fn precise_diagnostics_precede_accepted_decision_guard() {
     put(&mut st, d);
     let r = op_field(&mut st, "D-01", "nosuch", "add", Some("x"), "testsession");
     assert_eq!(r.code, 1, "unknown field must be EXIT_ERR, not the guard");
-    assert_eq!(r.err.trim(), "unknown field nosuch on d");
+    assert_eq!(
+        r.err_rendered(false).trim(),
+        "error INTERFACE unknown field nosuch on d"
+    );
     assert!(r.journal.is_empty());
     let r = op_set(&mut st, "D-01", "nosuchkey", "V", "testsession");
     assert_eq!(r.code, 1, "unsupported key must be EXIT_ERR, not the guard");
-    assert_eq!(r.err.trim(), "unsupported key: nosuchkey");
+    assert_eq!(
+        r.err_rendered(false).trim(),
+        "error INTERFACE unsupported key nosuchkey"
+    );
     assert!(r.journal.is_empty());
     let r = op_field(&mut st, "D-01", "decision", "add", Some("x"), "testsession");
     assert_eq!(r.code, 4);
-    assert_eq!(r.err.trim(), DECISION_IMMUTABLE_MSG);
+    assert_eq!(r.err_rendered(false).trim(), DECISION_IMMUTABLE_MSG);
     let r = op_set(&mut st, "D-01", "title", "Replacement", "testsession");
     assert_eq!(r.code, 4);
-    assert_eq!(r.err.trim(), DECISION_IMMUTABLE_MSG);
+    assert_eq!(r.err_rendered(false).trim(), DECISION_IMMUTABLE_MSG);
     let mut st = State::default();
     put(&mut st, plain(Kind::D, "D-01", "proposed"));
     let r = op_field(&mut st, "D-01", "nosuch", "add", Some("x"), "testsession");
     assert_eq!(r.code, 1);
-    assert_eq!(r.err.trim(), "unknown field nosuch on d");
+    assert_eq!(
+        r.err_rendered(false).trim(),
+        "error INTERFACE unknown field nosuch on d"
+    );
 }
 
 #[test]
@@ -314,12 +334,18 @@ fn guard_y_proposed_to_active_rejects_unmet_anchors() {
     edge(&mut st, "W-01", "produces", "Y-01");
     let n = st.nodes.get("Y-01").expect("Y-01 present");
     let v = guard_status_transition(&st, n, "active");
+    let rej = expect_reject(&v);
+    assert_eq!(codes(rej), vec!["INVARIANT"]);
     assert_eq!(
-        expect_reject(&v),
-        &vec![
-            "y Y-01 anchors not satisfied (proposed → active refused):".to_string(),
-            "  I12: Y-01 has empty `tags` (≥1 glossary term required)".to_string(),
-        ]
+        texts(rej),
+        vec!["anchors not satisfied for Y-01, activation from proposed is refused"]
+    );
+    assert_eq!(
+        rej[0].details,
+        vec![(
+            "issue_1".to_string(),
+            "Y-01 has empty tags (at least one glossary term is required)".to_string()
+        )]
     );
     assert_eq!(v.exit_code(), 4);
 }
@@ -344,9 +370,18 @@ fn guard_y_active_to_proposed_is_illegal() {
     put(&mut st, plain(Kind::Y, "Y-01", "active"));
     let n = st.nodes.get("Y-01").expect("Y-01 present");
     let v = guard_status_transition(&st, n, "proposed");
+    let rej = expect_reject(&v);
+    assert_eq!(codes(rej), vec!["INVARIANT"]);
     assert_eq!(
-        expect_reject(&v),
-        &vec!["illegal y transition active → proposed (allowed: proposed→active, active→stale, non-terminal→superseded; stale→active only via `grove revalidate`)".to_string()]
+        texts(rej),
+        vec!["illegal discovery transition active to proposed"]
+    );
+    assert_eq!(
+        rej[0].details,
+        vec![(
+            "allowed".to_string(),
+            "proposed→active, active→stale, non-terminal→superseded; stale→active only through revalidate".to_string()
+        )]
     );
     assert_eq!(v.exit_code(), 4);
 }
@@ -367,11 +402,10 @@ fn guard_y_superseded_is_frozen_by_terminal_immutability() {
     let n = st.nodes.get("Y-01").expect("Y-01 present");
     let v = guard_status_transition(&st, n, "superseded");
     assert_eq!(
-        expect_reject(&v),
-        &vec![
-            "Y-01 is terminal (superseded); create a successor node or use grove undo".to_string()
-        ]
+        texts(expect_reject(&v)),
+        vec!["Y-01 is terminal (superseded), create a successor node or undo the last mutation"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
 }
 
 #[test]
@@ -410,9 +444,11 @@ fn session_denial_progress_mutate_blocks_other_sessions() {
     let mut w = work("W-01", "feature", "progress", "clear");
     attr(&mut w, "session", "owner");
     attr(&mut w, "session_at", "2099-01-01T00:00:00Z");
+    let d = session_denial_progress_mutate(&w, "other").expect("denial expected");
+    assert_eq!(d.code, Code::Invariant);
     assert_eq!(
-        session_denial_progress_mutate(&w, "other"),
-        Some("I11/session: W-01 is `progress` and owned by another session; try `grove resume W-01` after adopting, or coordinate a `grove handoff`".to_string())
+        d.text,
+        "W-01 is progress and owned by another session, adopt the claim or coordinate a handoff"
     );
     assert_eq!(session_denial_progress_mutate(&w, "owner"), None);
 }
@@ -422,9 +458,11 @@ fn session_denial_progress_release_blocks_fresh_foreign_claim() {
     let mut w = work("W-01", "feature", "progress", "clear");
     attr(&mut w, "session", "owner");
     attr(&mut w, "session_at", "2099-01-01T00:00:00Z");
+    let d = session_denial_progress_release(&w, "other").expect("denial expected");
+    assert_eq!(d.code, Code::Invariant);
     assert_eq!(
-        session_denial_progress_release(&w, "other"),
-        Some("I11/session: cannot release W-01: token differs and claim is fresh (<24h); pass the owning GROVE_SESSION/--session, use `grove resume`, or wait".to_string())
+        d.text,
+        "cannot release W-01, the token differs and the claim is fresh (under 24h)"
     );
     assert_eq!(session_denial_progress_release(&w, "owner"), None);
 }
@@ -481,9 +519,10 @@ fn guard_done_rejects_open_blocks_predecessor_then_allows_after_clearance() {
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "done");
     assert_eq!(
-        expect_reject(&v),
-        &vec!["I5: predecessors not cleared (goal blockers must be verified, not merely declined/partial/unverified)".to_string()]
+        texts(expect_reject(&v)),
+        vec!["predecessors not cleared (goal blockers must be verified, not merely declined, partial, or unverified)"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
     st.nodes.get_mut("Q-01").expect("Q-01").status = "answered".to_string();
     let n = st.nodes.get("W-01").expect("W-01 present");
     expect_ok(&guard_status_transition(&st, n, "done"));
@@ -499,12 +538,10 @@ fn guard_done_spike_requires_produces_before_evidence() {
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "done");
     assert_eq!(
-        expect_reject(&v),
-        &vec![
-            "I2: W-01 is a done spike but `produces` is empty (no outgoing `produces` edges)"
-                .to_string()
-        ]
+        texts(expect_reject(&v)),
+        vec!["W-01 is a done spike but produces is empty (no outgoing produces edges)"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
     put(&mut st, plain(Kind::D, "D-01", "proposed"));
     st.edges.push(Edge::new("W-01", "produces", "D-01"));
     prose(st.nodes.get_mut("W-01").expect("W-01"), "evidence", &["e"]);
@@ -519,9 +556,10 @@ fn guard_manual_goal_verification_restricted_to_manual_kind() {
     let n = st.nodes.get("G-01").expect("G-01 present");
     let v = guard_status_transition(&st, n, "verified");
     assert_eq!(
-        expect_reject(&v),
-        &vec!["goal G-01 status is derived from fitness deltas".to_string()]
+        texts(expect_reject(&v)),
+        vec!["goal G-01 status is derived from fitness deltas"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
     let mut manual = plain(Kind::G, "G-02", "unverified");
     manual
         .attrs
@@ -540,25 +578,28 @@ fn guard_freezes_terminal_nodes_except_supersede_lane() {
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "archived");
     assert_eq!(
-        expect_reject(&v),
-        &vec!["W-01 is terminal (done); create a successor node or use grove undo".to_string()]
+        texts(expect_reject(&v)),
+        vec!["W-01 is terminal (done), create a successor node or undo the last mutation"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
 
     put(&mut st, plain(Kind::D, "D-01", "rejected"));
     let n = st.nodes.get("D-01").expect("D-01 present");
     let v = guard_status_transition(&st, n, "proposed");
     assert_eq!(
-        expect_reject(&v),
-        &vec!["D-01 is terminal (rejected); create a successor node or use grove undo".to_string()]
+        texts(expect_reject(&v)),
+        vec!["D-01 is terminal (rejected), create a successor node or undo the last mutation"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
 
     put(&mut st, plain(Kind::D, "D-02", "accepted"));
     let n = st.nodes.get("D-02").expect("D-02 present");
     let v = guard_status_transition(&st, n, "rejected");
     assert_eq!(
-        expect_reject(&v),
-        &vec!["decision D-02 is accepted; create a new D with --supersedes".to_string()]
+        texts(expect_reject(&v)),
+        vec!["decision D-02 is accepted, create a successor D with --supersedes"]
     );
+    assert_eq!(codes(expect_reject(&v)), vec!["INVARIANT"]);
 
     expect_ok(&guard_status_transition(&st, n, "superseded"));
 }
@@ -574,9 +615,15 @@ fn guard_ready_gates_feature_assumption_chain() {
     st.edges.push(Edge::new("B-01", "targets", "W-01"));
     let n = st.nodes.get("W-01").expect("W-01 present");
     let v = guard_status_transition(&st, n, "ready");
+    let rej = expect_reject(&v);
+    assert_eq!(codes(rej), vec!["INVARIANT"]);
     assert_eq!(
-        expect_reject(&v),
-        &vec!["I9: W-01 cannot enter `ready`; assumption chain must be validated or invalidated_acceptable: B-01 (proposed)".to_string()]
+        texts(rej),
+        vec!["W-01 cannot enter ready, the assumption chain must be validated or invalidated_acceptable"]
+    );
+    assert_eq!(
+        rej[0].details,
+        vec![("chain".to_string(), "B-01 (proposed)".to_string())]
     );
     st.nodes.get_mut("B-01").expect("B-01").status = "validated".to_string();
     let n = st.nodes.get("W-01").expect("W-01 present");

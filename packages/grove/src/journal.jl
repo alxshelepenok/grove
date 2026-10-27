@@ -148,11 +148,11 @@ function journal_restore_w_session_attrs_if_present!(w::Node, inv)::Nothing
     nothing
 end
 
-function journal_apply_inverse!(st::State, inv)::Union{Nothing,String}
+function journal_apply_inverse!(st::State, inv)::Union{Nothing,Diagnostic}
     op = get(inv, "op", "")::String
 
-    function fail(msg::AbstractString)::String
-        string("journal undo: ", msg)
+    function fail(msg::AbstractString)::Diagnostic
+        system_error("journal undo failed", Pair{String,String}["error" => String(msg)])
     end
 
     if op == "rm_node"
@@ -176,7 +176,7 @@ function journal_apply_inverse!(st::State, inv)::Union{Nothing,String}
             return nothing
         end
         r = validate_and_push_edge!(st, from, lb, to)
-        r !== nothing && return fail(r)
+        r !== nothing && return fail(r.text)
         ee = nothing
         for ed in reverse(st.edges)
             if ed.from == from && ed.label === lb && ed.to == to

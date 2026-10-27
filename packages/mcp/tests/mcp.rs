@@ -128,6 +128,12 @@ fn malformed_json_returns_parse_error() {
     assert_eq!(v["jsonrpc"], "2.0");
     assert!(v["id"].is_null());
     assert_eq!(v["error"]["code"], -32700);
+    assert!(v["error"]["message"]
+        .as_str()
+        .unwrap()
+        .starts_with("error INTERFACE request could not be parsed\n  error="));
+    assert_eq!(v["error"]["data"]["diagnostics"][0]["code"], "INTERFACE");
+    assert!(v["error"]["data"]["diagnostics"][0]["details"]["error"].is_string());
 }
 
 #[test]
@@ -351,12 +357,19 @@ fn tools_call_unknown_tool_and_argument_validation() {
     assert!(v["error"].is_null());
     assert!(is_error(&v));
     let t = text_of(&v);
-    assert!(t.contains("unknown argument(s): bogus"), "{t}");
+    assert!(t.contains("error INTERFACE unknown arguments"), "{t}");
+    assert!(t.contains("unknown=bogus"), "{t}");
     assert!(t.contains("kind"), "{t}");
     assert!(t.contains("title"), "{t}");
+    assert_eq!(v["result"]["structuredContent"]["exitCode"], 1);
+    assert_eq!(
+        v["result"]["structuredContent"]["diagnostics"][0]["code"],
+        "INTERFACE"
+    );
     let v = call(&mut s, 3, "add", serde_json::json!({"title": "x"}));
     assert!(is_error(&v));
-    assert!(text_of(&v).contains("missing required argument(s): kind"));
+    assert!(text_of(&v).contains("error INTERFACE missing required arguments"));
+    assert!(text_of(&v).contains("missing=kind"));
     let v = rpc(
         &mut s,
         "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"add\",\"arguments\":[1]}}",
@@ -495,8 +508,93 @@ fn guard_refusal_is_tool_error_not_protocol_error() {
     assert!(v["error"].is_null(), "{v}");
     assert!(is_error(&v));
     let t = text_of(&v);
+    assert!(t.contains("error INVARIANT"), "{t}");
     assert!(t.contains("DoR"), "{t}");
-    assert!(t.contains("exit code: 4"), "{t}");
+    assert!(!t.contains("exit code"), "{t}");
+    assert!(!t.contains("--- stderr ---"), "{t}");
+    assert_eq!(v["result"]["structuredContent"]["exitCode"], 4);
+    assert_eq!(
+        v["result"]["structuredContent"]["diagnostics"][0]["code"],
+        "INVARIANT"
+    );
+}
+
+#[test]
+fn four_diagnostic_categories_flow_through_real_tool_calls() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("four-codes");
+    let mut s = server(&f.root);
+    handshake(&mut s);
+
+    let v = call(&mut s, 10, "init", serde_json::json!({}));
+    assert!(!is_error(&v), "{}", text_of(&v));
+    assert!(text_of(&v).starts_with("info OPERATIONAL initialised"));
+
+    let v = call(&mut s, 11, "init", serde_json::json!({}));
+    assert!(is_error(&v));
+    let system = text_of(&v);
+    assert!(
+        system.starts_with("error SYSTEM lock already exists"),
+        "{system}"
+    );
+    assert!(!system.contains("exit code"), "{system}");
+    assert!(!system.contains("--- stderr ---"), "{system}");
+    assert_eq!(v["result"]["structuredContent"]["exitCode"], 1);
+    assert_eq!(
+        v["result"]["structuredContent"]["diagnostics"][0]["code"],
+        "SYSTEM"
+    );
+
+    let v = call(
+        &mut s,
+        12,
+        "set",
+        serde_json::json!({"id": "W-99", "key": "status", "value": "ready"}),
+    );
+    assert!(is_error(&v));
+    let interface = text_of(&v);
+    assert!(
+        interface.starts_with("error INTERFACE not found W-99"),
+        "{interface}"
+    );
+    assert!(!interface.contains("exit code"), "{interface}");
+    assert_eq!(v["result"]["structuredContent"]["exitCode"], 5);
+    assert_eq!(
+        v["result"]["structuredContent"]["diagnostics"][0]["code"],
+        "INTERFACE"
+    );
+
+    let v = call(
+        &mut s,
+        13,
+        "add",
+        serde_json::json!({"kind": "d", "title": "Decision"}),
+    );
+    assert_eq!(text_of(&v), "D-01");
+    let v = call(
+        &mut s,
+        14,
+        "set",
+        serde_json::json!({"id": "D-01", "key": "status", "value": "accepted"}),
+    );
+    assert!(!is_error(&v), "{}", text_of(&v));
+    let v = call(
+        &mut s,
+        15,
+        "set",
+        serde_json::json!({"id": "D-01", "key": "title", "value": "Changed"}),
+    );
+    assert!(is_error(&v));
+    let invariant = text_of(&v);
+    assert!(
+        invariant.starts_with("error INVARIANT decision D-01 is accepted"),
+        "{invariant}"
+    );
+    assert!(!invariant.contains("grove undo"), "{invariant}");
+
+    let v = call(&mut s, 16, "check", serde_json::json!({}));
+    assert!(!is_error(&v), "{}", text_of(&v));
+    assert_eq!(text_of(&v), "info OPERATIONAL ok");
 }
 
 #[test]
@@ -567,6 +665,12 @@ fn scripted_session_drives_full_work_loop() {
         lock.contains(token),
         "lock must hold the server session token:\n{lock}"
     );
+    s.session = "mcp-other-session".to_string();
+    let v = step(&mut s, "status", serde_json::json!({}));
+    let status = text_of(&v);
+    assert!(status.contains("options: resume, revert, or handoff the claim for W-01"));
+    assert!(!status.contains("grove resume"), "{status}");
+    s.session = token.to_string();
     let v = step(
         &mut s,
         "evidence",
@@ -597,7 +701,7 @@ fn binary_smoke_ndjson_session() {
     let home = temp_dir("binsmoke-childhome");
     let root = f.root.to_string_lossy().into_owned();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let script = [
         "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"smoke\",\"version\":\"0\"}}}",
         "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",
@@ -649,7 +753,7 @@ fn binary_smoke_ndjson_session() {
     let check = &parsed[4];
     assert_eq!(check["result"]["isError"], false);
     let check_text = check["result"]["content"][0]["text"].as_str().unwrap();
-    assert_eq!(check_text, "ok");
+    assert_eq!(check_text, "info OPERATIONAL ok");
 }
 
 #[test]
@@ -692,7 +796,7 @@ fn role_allowlist_serves_allowlist_minus_disabled() {
     let v = call(&mut s, 10, "packet", serde_json::json!({}));
     assert_eq!(
         v["error"]["message"].as_str().unwrap(),
-        "unknown tool: packet; known tools: check, status"
+        "error INTERFACE unknown tool\n  tool=packet\n  known=check, status"
     );
     s.role = Some("stranger".to_string());
     let v = rpc(
@@ -715,11 +819,15 @@ fn interdicted_call_mirrors_unknown_tool_error() {
     assert_eq!(bogus["error"]["code"], -32602);
     assert_eq!(
         hidden["error"]["message"].as_str().unwrap(),
-        "unknown tool: packet; known tools: status"
+        "error INTERFACE unknown tool\n  tool=packet\n  known=status"
     );
     assert_eq!(
         bogus["error"]["message"].as_str().unwrap(),
-        "unknown tool: zzbogus; known tools: status"
+        "error INTERFACE unknown tool\n  tool=zzbogus\n  known=status"
+    );
+    assert_eq!(
+        hidden["error"]["data"]["diagnostics"][0]["code"],
+        "INTERFACE"
     );
 }
 
@@ -777,7 +885,7 @@ fn binary_serves_role_instructions_from_config() {
     )
     .unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let script = [
         "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"smoke\",\"version\":\"0\"}}}",
         "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",
@@ -826,12 +934,36 @@ fn binary_serves_role_instructions_from_config() {
 }
 
 #[test]
+fn binary_rejects_unknown_argument_with_diagnostic() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("binaryarg");
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
+        .arg("--bogus")
+        .env("GROVE_HOME", &f._home)
+        .env_remove("GROVE_PROJECT")
+        .env_remove("GROVE_SESSION")
+        .stdin(std::process::Stdio::null())
+        .output()
+        .expect("spawn grove-mcp");
+    assert!(
+        !out.status.success(),
+        "unknown argument must refuse startup"
+    );
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.starts_with("error INTERFACE unknown argument\n  argument=--bogus\n"),
+        "{stderr}"
+    );
+    assert!(stderr.contains("usage: grove-mcp"), "{stderr}");
+}
+
+#[test]
 fn binary_rejects_unknown_role() {
     let _g = ENV_LOCK.lock().unwrap();
     let f = fixture("binaryrole");
     let root = f.root.to_string_lossy().into_owned();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let out = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
         .arg(format!("--root={root}"))
         .arg("--role=stranger")
@@ -843,8 +975,9 @@ fn binary_rejects_unknown_role() {
         .expect("spawn grove-mcp");
     assert!(!out.status.success(), "unknown role must refuse startup");
     let stderr = String::from_utf8_lossy(&out.stderr);
-    assert!(stderr.contains("unknown role stranger"), "{stderr}");
-    assert!(stderr.contains("configured roles: none"), "{stderr}");
+    assert!(stderr.contains("error INTERFACE unknown role"), "{stderr}");
+    assert!(stderr.contains("role=stranger"), "{stderr}");
+    assert!(stderr.contains("configured=none"), "{stderr}");
 }
 
 #[test]
@@ -855,7 +988,7 @@ fn binary_rejects_unknown_role_against_configured_set() {
     let cfg = f._home.join("mcp.toml");
     std::fs::write(&cfg, "[roles.keeper]\ntools = [\"check\"]\n").unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let out = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
         .arg(format!("--root={root}"))
         .arg("--role=stranger")
@@ -866,7 +999,7 @@ fn binary_rejects_unknown_role_against_configured_set() {
         .output()
         .expect("spawn grove-mcp");
     let stderr = String::from_utf8_lossy(&out.stderr);
-    assert!(stderr.contains("configured roles: keeper"), "{stderr}");
+    assert!(stderr.contains("configured=keeper"), "{stderr}");
 }
 
 #[test]
@@ -876,7 +1009,7 @@ fn binary_warns_once_on_malformed_config_and_serves_all_tools() {
     let root = f.root.to_string_lossy().into_owned();
     std::fs::write(f._home.join("mcp.toml"), "not toml at all\n").unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let script = [
         "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"smoke\",\"version\":\"0\"}}}",
         "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",
@@ -904,7 +1037,7 @@ fn binary_warns_once_on_malformed_config_and_serves_all_tools() {
     assert!(out.status.success(), "stderr: {stderr}");
     let warnings = stderr
         .lines()
-        .filter(|l| l.contains("warning: malformed") && l.contains("mcp.toml"))
+        .filter(|l| l.contains("warning SYSTEM malformed") && l.contains("mcp.toml"))
         .count();
     assert_eq!(
         warnings, 1,
@@ -931,7 +1064,7 @@ fn binary_malformed_config_warning_precedes_role_refusal() {
     let root = f.root.to_string_lossy().into_owned();
     std::fs::write(f._home.join("mcp.toml"), "not toml at all\n").unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let out = std::process::Command::new(env!("CARGO_BIN_EXE_grove-mcp"))
         .arg(format!("--root={root}"))
         .arg("--role=worker")
@@ -944,10 +1077,10 @@ fn binary_malformed_config_warning_precedes_role_refusal() {
     assert!(!out.status.success(), "unknown role must refuse startup");
     let stderr = String::from_utf8_lossy(&out.stderr).into_owned();
     let warn = stderr
-        .find("warning: malformed")
+        .find("warning SYSTEM malformed")
         .unwrap_or_else(|| panic!("malformed warning must print\n{stderr}"));
     let role = stderr
-        .find("unknown role worker")
+        .find("role=worker")
         .unwrap_or_else(|| panic!("role refusal must name the role\n{stderr}"));
     assert!(
         warn < role,
@@ -967,7 +1100,7 @@ fn config_backed_role_flow_via_binary() {
     )
     .unwrap();
     let r = run_cli(&["init".to_string(), format!("--root={root}")]);
-    assert_eq!(r.code, 0, "{}", r.err);
+    assert_eq!(r.code, 0, "{}", r.err_rendered(false));
     let script = [
         "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"smoke\",\"version\":\"0\"}}}",
         "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",

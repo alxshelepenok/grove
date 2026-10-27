@@ -7,6 +7,7 @@ using JSON
 using TOML
 
 include("model.jl")
+include("message.jl")
 include("times.jl")
 include("session_token.jl")
 include("ids.jl")

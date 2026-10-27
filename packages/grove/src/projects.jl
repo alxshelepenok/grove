@@ -78,7 +78,8 @@ function registry_note_open(root::AbstractString, cmd::AbstractString)::Nothing
     (cmd == "init" || isfile(joinpath(root, ".grove", "state.lock"))) || return nothing
     reg = registry_load()
     if reg === nothing
-        println(stderr, "warning: malformed registry $(registry_path()); registry features disabled")
+        println(stderr, render_diag(system_warning("malformed registry, registry features are disabled",
+            Pair{String,String}["path" => registry_path()])))
         return nothing
     end
     p = abspath(root)
@@ -92,7 +93,8 @@ function registry_note_open(root::AbstractString, cmd::AbstractString)::Nothing
     try
         registry_save(reg)
     catch
-        println(stderr, "warning: could not write registry $(registry_path())")
+        println(stderr, render_diag(system_warning("could not write registry",
+            Pair{String,String}["path" => registry_path()])))
     end
     nothing
 end
@@ -113,7 +115,7 @@ function resolve_project_target(v::AbstractString)::Union{Nothing,String}
     reg === nothing && (reg = ProjectEntry[])
     r = registry_path_for_name(reg, v)
     r !== nothing && return r
-    println(stderr, "unknown project: $v")
+    println(stderr, render_diag(interface_error("unknown project $v")))
     nothing
 end
 

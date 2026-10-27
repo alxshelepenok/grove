@@ -4,8 +4,9 @@ use crate::journal::{
     JOURNAL_DISTILL_OP,
 };
 use crate::json::{JVal, Json, JuliaDict};
+use crate::message::{Code, Diagnostic};
 use crate::model::{Kind, State};
-use crate::ops::{OpResult, EXIT_ERR, EXIT_GUARD, EXIT_NOTFOUND};
+use crate::ops::{usage_fail, OpResult, EXIT_GUARD, EXIT_NOTFOUND};
 use crate::session::session_denial_progress_mutate;
 use crate::status::listnodes;
 use crate::times::stamp_touch_node;
@@ -249,7 +250,7 @@ pub fn distill_null_attested(journal_path: &Path, gid: &str) -> bool {
 
 pub fn cmd_archive(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpResult {
     if pos.is_empty() {
-        return OpResult::fail(EXIT_ERR, "usage: grove archive <G-NN>");
+        return usage_fail("archive", "usage: grove archive <G-NN>");
     }
     let gid = &pos[0];
     let mut st = match load(ctx, true) {
@@ -257,24 +258,28 @@ pub fn cmd_archive(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
         Err(e) => return e,
     };
     let Some(g) = st.nodes.get(gid) else {
-        return OpResult {
-            code: EXIT_NOTFOUND,
-            out: String::new(),
-            err: String::new(),
-            journal: Vec::new(),
-        };
+        return OpResult::fail_diag(
+            EXIT_NOTFOUND,
+            Diagnostic::error(Code::Interface, &format!("not found {gid}")),
+        );
     };
     if g.status != "verified" {
-        return OpResult::fail(EXIT_GUARD, "goal must be verified");
+        return OpResult::fail_diag(
+            EXIT_GUARD,
+            Diagnostic::error(Code::Invariant, "goal must be verified before archiving"),
+        );
     }
     let ids = exclusive_archive_ids(&st, gid);
     let distilled = !distill_linked_da_ids(&st, &ids).is_empty()
         || distill_null_attested(&ctx.journalpath(), gid);
     if !distilled {
-        return OpResult::fail(
+        return OpResult::fail_diag(
             EXIT_GUARD,
-            &format!(
-                "archive: distill {gid} first (grove distill {gid}, or grove distill {gid} --null)"
+            Diagnostic::error(
+                Code::Invariant,
+                &format!(
+                    "archive {gid} requires distillation first, distill the goal or attest a null distillation"
+                ),
             ),
         );
     }
@@ -289,7 +294,7 @@ pub fn cmd_archive(ctx: &CliCtx, pos: &[String], kw: &[(String, String)]) -> OpR
             continue;
         }
         if let Some(msg) = session_denial_progress_mutate(w, &eff) {
-            return OpResult::fail(EXIT_GUARD, &msg);
+            return OpResult::fail_diag(EXIT_GUARD, msg);
         }
     }
     for id in &ids {

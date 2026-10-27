@@ -109,19 +109,46 @@ function parse_args(args::Vector{String})::Tuple{CliCtx,Vector{String},Dict{Stri
     ctx, pos, kw
 end
 
-function info(ctx::CliCtx, msg::AbstractString)
-    ctx.quiet || println(stderr, msg)
+function emit_diag(ctx::CliCtx, d::Diagnostic)
+    (ctx.quiet && d.severity == "info") && return
+    println(stderr, render_diag(d))
+end
+
+function fail_diag(ctx::CliCtx, exitcode::Int, d::Diagnostic)::Int
+    emit_diag(ctx, d)
+    exitcode
+end
+
+ferr(ctx::CliCtx, exitcode::Int, text::AbstractString)::Int =
+    fail_diag(ctx, exitcode, interface_error(text))
+finv(ctx::CliCtx, exitcode::Int, text::AbstractString)::Int =
+    fail_diag(ctx, exitcode, invariant_error(text))
+fsys(ctx::CliCtx, exitcode::Int, text::AbstractString)::Int =
+    fail_diag(ctx, exitcode, system_error(text))
+
+function fusage(ctx::CliCtx, cmd::AbstractString, usage::AbstractString)::Int
+    println(stderr, render_diag(interface_error("invalid arguments for $(cmd)")))
+    println(stderr, usage)
+    EXIT_ERR
+end
+
+struct CliFailure <: Exception
+    code::Int
+    diag::Diagnostic
 end
 
 function load(ctx::CliCtx; verify::Bool=true)::State
     p = lockpath(ctx)
-    isfile(p) || (println(stderr, "lock not found: $p (run `grove init`)"); exit(EXIT_ERR))
+    isfile(p) || throw(CliFailure(EXIT_ERR, system_error(
+        "lock file is absent, initialize the project first",
+        Pair{String,String}["path" => p])))
     try
         return read_lock(p; verify=verify)
     catch e
         if e isa ChecksumMismatch
-            println(stderr, sprint(showerror, e))
-            exit(EXIT_CHECKSUM)
+            throw(CliFailure(EXIT_CHECKSUM, system_error(
+                "lock checksum mismatch, the file may have been edited by hand, accept the current contents with a repair",
+                Pair{String,String}["expected" => e.expected, "actual" => e.actual])))
         end
         rethrow()
     end
@@ -130,7 +157,12 @@ end
 function dashboard_decay_count(ctx::CliCtx, st::State)::Int
     any(x -> x.status in (:proposed, :active), listnodes(st, :y)) || return 0
     errs = discovery_decay_errors(st, ctx.root, glossarypath(ctx))
-    length(unique(String(split(e, ' ', keepempty=false)[2]) for e in errs))
+    ids = Set{String}()
+    for e in errs
+        toks = filter(s -> !isempty(s), split(e.text, ' '))
+        isempty(toks) || push!(ids, String(toks[1]))
+    end
+    length(ids)
 end
 
 function journal_session_token(ctx::CliCtx, kw::AbstractDict)::String
@@ -153,25 +185,26 @@ function persist(ctx::CliCtx, st::State; journal::Union{Nothing,AbstractDict}=no
 end
 
 function cmd_init(ctx::CliCtx, pos, kw)
-    isfile(lockpath(ctx)) && (println(stderr, "lock already exists at $(lockpath(ctx))"); return EXIT_ERR)
+    isfile(lockpath(ctx)) && (return fail_diag(ctx, EXIT_ERR,
+        system_error("lock already exists", Pair{String,String}["path" => lockpath(ctx)])))
     isdir(devdir(ctx)) || mkpath(devdir(ctx))
     st = State()
     if haskey(kw, "id-stride")
         v = tryparse(Int, kw["id-stride"])
-        v === nothing && (println(stderr, "bad --id-stride (expected integer)"); return EXIT_ERR)
-        v < 1 && (println(stderr, "--id-stride must be ≥ 1"); return EXIT_ERR)
+        v === nothing && (return ferr(ctx, EXIT_ERR, "bad --id-stride (expected integer)"))
+        v < 1 && (return ferr(ctx, EXIT_ERR, "--id-stride must be ≥ 1"))
         st.id_stride = Int(v)
     end
     if haskey(kw, "id-offset")
         v = tryparse(Int, kw["id-offset"])
-        v === nothing && (println(stderr, "bad --id-offset (expected integer)"); return EXIT_ERR)
-        v < 1 && (println(stderr, "--id-offset must be ≥ 1"); return EXIT_ERR)
+        v === nothing && (return ferr(ctx, EXIT_ERR, "bad --id-offset (expected integer)"))
+        v < 1 && (return ferr(ctx, EXIT_ERR, "--id-offset must be ≥ 1"))
         st.id_offset = Int(v)
     end
     if haskey(kw, "id-width")
         w = tryparse(Int, kw["id-width"])
-        w === nothing && (println(stderr, "bad --id-width (expected integer)"); return EXIT_ERR)
-        w < 2 && (println(stderr, "--id-width must be ≥ 2"); return EXIT_ERR)
+        w === nothing && (return ferr(ctx, EXIT_ERR, "bad --id-width (expected integer)"))
+        w < 2 && (return ferr(ctx, EXIT_ERR, "--id-width must be ≥ 2"))
         st.id_pad_width = Int(w)
     elseif st.id_stride != 1 || st.id_offset != 1
         st.id_pad_width = max(st.id_pad_width, 3)
@@ -183,16 +216,16 @@ function cmd_init(ctx::CliCtx, pos, kw)
         println(io, "| Term | Definition | Source |")
         println(io, "| --- | --- | --- |")
     end
-    info(ctx, "initialised: $(devdir(ctx))")
+    emit_diag(ctx, operational_info("initialised", Pair{String,String}["path" => devdir(ctx)]))
     EXIT_OK
 end
 
-function csv_dup_guard(kind::Symbol, opt::AbstractString, entries::Vector{String})::Union{Nothing,Int}
+function csv_dup_guard(ctx::CliCtx, kind::Symbol, opt::AbstractString, entries::Vector{String})::Union{Nothing,Int}
     seen = Set{String}()
     for e in entries
         s = strip(e)
         if s in seen
-            println(stderr, "add $kind: --$opt has duplicate entry \"$s\"")
+            fail_diag(ctx, EXIT_ERR, interface_error("add $(kind), --$(opt) has duplicate entry \"$s\""))
             return EXIT_ERR
         end
         push!(seen, s)
@@ -204,11 +237,11 @@ const USAGE_ADD = "usage: grove add <kind> --title=\"…\" [...]"
 
 function cmd_add(ctx::CliCtx, pos, kw)
     haskey(kw, "help") && (println(USAGE_ADD); return EXIT_OK)
-    length(pos) >= 1 || (println(stderr, USAGE_ADD); return EXIT_ERR)
-    length(pos) > 1 && (println(stderr, "$USAGE_ADD (unexpected positional argument: $(pos[2]))"); return EXIT_ERR)
-    isempty(kw) && !(pos[1] in ("a", "y")) && (println(stderr, USAGE_ADD); return EXIT_ERR)
+    length(pos) >= 1 || (return fusage(ctx, "add", USAGE_ADD))
+    length(pos) > 1 && (return ferr(ctx, EXIT_ERR, "add received unexpected positional argument $(pos[2])"))
+    isempty(kw) && !(pos[1] in ("a", "y")) && (return fusage(ctx, "add", USAGE_ADD))
     kind = Symbol(pos[1])
-    kind in NODE_KINDS || (println(stderr, "unknown kind: $kind"); return EXIT_ERR)
+    kind in NODE_KINDS || (return ferr(ctx, EXIT_ERR, "unknown kind $kind"))
     st = load(ctx)
     id = next_id!(st, kind)
     n = Node(kind, id)
@@ -219,41 +252,41 @@ function cmd_add(ctx::CliCtx, pos, kw)
         n.status = Symbol(get(kw, "status", "proposed"))
         if haskey(kw, "goals")
             goals = String.(split(kw["goals"], ","))
-            rc = csv_dup_guard(kind, "goals", goals)
+            rc = csv_dup_guard(ctx, kind, "goals", goals)
             rc !== nothing && return rc
             n.fields[:goals] = goals
         end
         haskey(kw, "theme") && (n.fields[:theme] = kw["theme"])
         surface = String[String(s) for s in split(get(kw, "surface", ""), ',') if !isempty(strip(s))]
-        rc = csv_dup_guard(kind, "surface", surface)
+        rc = csv_dup_guard(ctx, kind, "surface", surface)
         rc !== nothing && return rc
         isempty(surface) || (n.fields[:surface] = surface)
     elseif kind === :g
         n.status = Symbol(get(kw, "status", "unverified"))
         haskey(kw, "fitness") &&
-            (println(stderr, "add g: --fitness is retired (legacy label); use --fitness-kind + --fitness-target"); return EXIT_ERR)
+            (return ferr(ctx, EXIT_ERR, "add g, --fitness is retired, use --fitness-kind and --fitness-target"))
         if haskey(kw, "fitness-kind")
             fk = Symbol(lowercase(strip(kw["fitness-kind"])))
-            fk in GOAL_FITNESS_KINDS || (println(stderr, "bad --fitness-kind"); return EXIT_ERR)
+            fk in GOAL_FITNESS_KINDS || (return ferr(ctx, EXIT_ERR, "bad --fitness-kind"))
             n.attrs["fitness_kind"] = String(fk)
         end
         haskey(kw, "fitness-target") && (n.fields[:fitness_target] = kw["fitness-target"])
         aref = strip(get(kw, "area", ""))
-        isempty(aref) && (println(stderr, "add g: --area=A-NN is required (create one with grove add a --title=...)"); return EXIT_ERR)
+        isempty(aref) && (return ferr(ctx, EXIT_ERR, "add g, --area=A-NN is required, create an area node first"))
         an = get(st.nodes, aref, nothing)
-        (an === nothing || an.kind !== :a) && (println(stderr, "add g: unknown --area id: $aref"); return EXIT_ERR)
+        (an === nothing || an.kind !== :a) && (return ferr(ctx, EXIT_ERR, "add g, unknown --area id $aref"))
         n.fields[:area] = aref
         has_fitness = haskey(kw, "fitness-kind")
-        has_fitness || (println(stderr, "add g: fitness is required (pass --fitness-kind + --fitness-target, or --fitness-kind=manual for n/a)"); return EXIT_ERR)
+        has_fitness || (return ferr(ctx, EXIT_ERR, "add g, fitness is required, pass --fitness-kind and --fitness-target or --fitness-kind=manual"))
         if haskey(kw, "fitness-kind")
             fk2 = lowercase(strip(kw["fitness-kind"]))
             if fk2 in ("count", "metric", "ratio")
                 isempty(strip(get(kw, "fitness-target", ""))) &&
-                    (println(stderr, "add g: --fitness-target is required for --fitness-kind=$fk2"); return EXIT_ERR)
+                    (return ferr(ctx, EXIT_ERR, "add g, --fitness-target is required for --fitness-kind=$fk2"))
             end
         end
         if n.status === :verified && goal_structured_kind(n) !== :manual
-            println(stderr, "add g: --status=verified is derived from fitness deltas")
+            fail_diag(ctx, EXIT_GUARD, invariant_error("add g, --status=verified is derived from fitness deltas"))
             return EXIT_GUARD
         end
     elseif kind === :d
@@ -268,35 +301,35 @@ function cmd_add(ctx::CliCtx, pos, kw)
         n.status = Symbol(get(kw, "status", "open"))
     elseif kind === :y
         n.status = :proposed
-        isempty(strip(n.title)) && (println(stderr, "add y: --title is required"); return EXIT_ERR)
+        isempty(strip(n.title)) && (return ferr(ctx, EXIT_ERR, "add y, --title is required"))
         tags = String[String(t) for t in split(get(kw, "tags", ""), ',') if !isempty(strip(t))]
-        isempty(tags) && (println(stderr, "add y: --tags=<t1,t2> is required (≥1 glossary term)"); return EXIT_ERR)
-        rc = csv_dup_guard(kind, "tags", tags)
+        isempty(tags) && (return ferr(ctx, EXIT_ERR, "add y, --tags requires at least one glossary term"))
+        rc = csv_dup_guard(ctx, kind, "tags", tags)
         rc !== nothing && return rc
         n.fields[:tags] = tags
         surface = String[String(s) for s in split(get(kw, "surface", ""), ',') if !isempty(strip(s))]
-        rc = csv_dup_guard(kind, "surface", surface)
+        rc = csv_dup_guard(ctx, kind, "surface", surface)
         rc !== nothing && return rc
         isempty(surface) || (n.fields[:surface] = surface)
         haskey(kw, "why") && (n.fields[:why] = String[kw["why"]])
         if !haskey(n.fields, :surface)
             ok_why = haskey(n.fields, :why) && prose_field_nonempty(n.fields[:why])
-            ok_why || (println(stderr, "add y: --surface absent requires --why prose"); return EXIT_ERR)
+            ok_why || (return ferr(ctx, EXIT_ERR, "add y, --surface absent requires --why prose"))
         end
         from = String[String(t) for t in split(get(kw, "from", ""), ',') if !isempty(strip(t))]
-        isempty(from) && (println(stderr, "add y: --from=<W-NN|D-NN|Q-NN|B-NN> is required (≥1 provenance record)"); return EXIT_ERR)
+        isempty(from) && (return ferr(ctx, EXIT_ERR, "add y, --from requires at least one provenance record"))
     elseif kind === :a
         n.status = :present
-        isempty(strip(n.title)) && (println(stderr, "add a: --title is required"); return EXIT_ERR)
+        isempty(strip(n.title)) && (return ferr(ctx, EXIT_ERR, "add a, --title is required"))
         surface = String[String(s) for s in split(get(kw, "surface", ""), ',') if !isempty(strip(s))]
-        rc = csv_dup_guard(kind, "surface", surface)
+        rc = csv_dup_guard(ctx, kind, "surface", surface)
         rc !== nothing && return rc
         isempty(surface) || (n.fields[:surface] = surface)
     end
     st.nodes[id] = n
     stamp_new_node!(n)
 
-    rc = flush_add_edges!(kind, id, kw, st)
+    rc = flush_add_edges!(ctx, kind, id, kw, st)
     rc !== nothing && return rc
 
     persist(ctx, st; journal=wrap_journal_record("add", journal_inverse_rm_node(id)),
@@ -309,14 +342,14 @@ function cmd_add(ctx::CliCtx, pos, kw)
     EXIT_OK
 end
 
-function flush_add_edges!(kind::Symbol, id::AbstractString, kw::Dict{String,String},
+function flush_add_edges!(ctx::CliCtx, kind::Symbol, id::AbstractString, kw::Dict{String,String},
                           st::State)::Union{Nothing,Int}
     if kind === :d && haskey(kw, "supersedes")
         for oid in split(kw["supersedes"], ',')
             oid = strip(oid); isempty(oid) && continue
             r = validate_and_push_edge!(st, id, :supersedes, oid)
             if r !== nothing
-                println(stderr, r); return EXIT_GUARD
+                fail_diag(ctx, EXIT_GUARD, r); return EXIT_GUARD
             end
         end
     elseif kind === :q && haskey(kw, "targets")
@@ -324,7 +357,7 @@ function flush_add_edges!(kind::Symbol, id::AbstractString, kw::Dict{String,Stri
             tid = strip(tid); isempty(tid) && continue
             r = validate_and_push_edge!(st, id, :asks, tid)
             if r !== nothing
-                println(stderr, r); return EXIT_GUARD
+                fail_diag(ctx, EXIT_GUARD, r); return EXIT_GUARD
             end
         end
     elseif kind === :b
@@ -333,7 +366,7 @@ function flush_add_edges!(kind::Symbol, id::AbstractString, kw::Dict{String,Stri
                 qid = strip(qid); isempty(qid) && continue
                 r = validate_and_push_edge!(st, id, :tests, qid)
                 if r !== nothing
-                    println(stderr, r); return EXIT_GUARD
+                    fail_diag(ctx, EXIT_GUARD, r); return EXIT_GUARD
                 end
             end
         end
@@ -342,7 +375,7 @@ function flush_add_edges!(kind::Symbol, id::AbstractString, kw::Dict{String,Stri
                 wid = strip(wid); isempty(wid) && continue
                 r = validate_and_push_edge!(st, id, :targets, wid)
                 if r !== nothing
-                    println(stderr, r); return EXIT_GUARD
+                    fail_diag(ctx, EXIT_GUARD, r); return EXIT_GUARD
                 end
             end
         end
@@ -350,16 +383,16 @@ function flush_add_edges!(kind::Symbol, id::AbstractString, kw::Dict{String,Stri
         for oid in split(kw["from"], ',')
             oid = strip(oid); isempty(oid) && continue
             src = get(st.nodes, oid, nothing)
-            src === nothing && (println(stderr, "add y: unknown --from id: $oid"); return EXIT_GUARD)
+            src === nothing && return ferr(ctx, EXIT_GUARD, "add y, unknown --from id $oid")
             r = if src.kind === :w
                 validate_and_push_edge!(st, oid, :produces, id)
             elseif src.kind in (:d, :q, :b)
                 validate_and_push_edge!(st, id, :distills, oid)
             else
-                "add y: --from $oid must reference W or D/Q/B"
+                interface_error("add y, --from $oid must reference W or D, Q or B")
             end
             if r !== nothing
-                println(stderr, r); return EXIT_GUARD
+                fail_diag(ctx, EXIT_GUARD, r); return EXIT_GUARD
             end
         end
     end
@@ -372,7 +405,7 @@ function goal_notes_distill_deferred(g::Node)::Bool
 end
 
 function print_lazy_distill_prompt_on_newly_verified_goals!(
-    io::IO, st::State, w::Node, old_goal_status::Dict{String,String},
+    ctx::CliCtx, st::State, w::Node, old_goal_status::Dict{String,String},
 )::Nothing
     w.kind === :w || return nothing
     for gid_raw in get(w.fields, :goals, String[])
@@ -385,17 +418,8 @@ function print_lazy_distill_prompt_on_newly_verified_goals!(
         (g === nothing || g.kind !== :g) && continue
         g.status !== :verified && continue
         goal_notes_distill_deferred(g) && continue
-        println(io,
-                "grove: goal ",
-                gid,
-                " (",
-                g.title,
-                ") verified, distill content: `grove distill ",
-                gid,
-                "` (or `grove distill ",
-                gid,
-                " --null` when nothing is worth keeping; lazy distill, see the Delivery loop section of the grove skill). To skip: add a `notes` prose line containing `--distill-deferred`.",
-        )
+        emit_diag(ctx, operational_info(
+            "goal $(gid) ($(g.title)) is verified, distill its content or attest a null distillation, or add a notes line containing --distill-deferred to skip"))
     end
     nothing
 end
@@ -448,15 +472,15 @@ function json_node_snapshot(n::Node)::Dict{String,Any}
 end
 
 function cmd_set(ctx::CliCtx, pos, kw)
-    length(pos) >= 2 || (println(stderr, "usage: grove set <ID> <key>=<value>"); return EXIT_ERR)
+    length(pos) >= 2 || (return ferr(ctx, EXIT_ERR, "set requires an id and key=value"))
     id = pos[1]
     eq = findfirst('=', pos[2])
-    eq === nothing && (println(stderr, "expected key=value"); return EXIT_ERR)
+    eq === nothing && (return ferr(ctx, EXIT_ERR, "expected key=value"))
     key = pos[2][1:eq-1]
     val = pos[2][eq+1:end]
     st = load(ctx)
     n = get(st.nodes, id, nothing)
-    n === nothing && (println(stderr, "not found: $id"); return EXIT_NOTFOUND)
+    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
     eff = effective_session_token(ctx.root, kw)
     jr = nothing
 
@@ -464,7 +488,7 @@ function cmd_set(ctx::CliCtx, pos, kw)
         new_status = Symbol(val)
         if n.kind === :w && n.status === :progress && new_status !== :progress
             msg = session_denial_progress_release(n, eff)
-            msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+            msg !== nothing && (return fail_diag(ctx, EXIT_GUARD, msg))
         end
         rc = guard_status_transition(ctx, st, n, new_status, kw)
         rc != EXIT_OK && return rc
@@ -499,7 +523,7 @@ function cmd_set(ctx::CliCtx, pos, kw)
                 clear_w_session_attrs!(n)
             end
             rederive_goals!(st, n)
-            new_status === :done && print_lazy_distill_prompt_on_newly_verified_goals!(stderr, st, n, gs)
+            new_status === :done && print_lazy_distill_prompt_on_newly_verified_goals!(ctx, st, n, gs)
         end
         stamp_touch_node!(n)
         persist(ctx, st; journal=jr, session=eff)
@@ -508,12 +532,12 @@ function cmd_set(ctx::CliCtx, pos, kw)
 
     if n.kind === :w && n.status === :progress
         msg = session_denial_progress_mutate(n, eff)
-        msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+        msg !== nothing && (return fail_diag(ctx, EXIT_GUARD, msg))
     end
     set_key_supported(n.kind, key) ||
-        (println(stderr, "unsupported key: $key"); return EXIT_ERR)
+        (return ferr(ctx, EXIT_ERR, "unsupported key $key"))
     msg = terminal_freeze_msg(n)
-    msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+    msg !== nothing && (return fail_diag(ctx, EXIT_GUARD, msg))
 
     if key == "cynefin"
         jr = wrap_journal_record("set", Dict{String,Any}(
@@ -538,7 +562,7 @@ function cmd_set(ctx::CliCtx, pos, kw)
         n.title = val
     elseif key == "fitness" && n.kind === :g
         isempty(strip(val)) ||
-            (println(stderr, "set: key fitness is retired (legacy label); use fitness_kind + set <G> fitness_target=N (empty value removes a legacy label)"); return EXIT_ERR)
+            (return ferr(ctx, EXIT_ERR, "set fitness is retired, use fitness_kind and fitness_target or an empty value to remove a legacy label"))
         hb = haskey(n.attrs, "fitness")
         jr = wrap_journal_record("set", Dict{String,Any}(
             "op" => "set_g_attr_fitness",
@@ -565,9 +589,8 @@ function cmd_set(ctx::CliCtx, pos, kw)
     elseif key == "fitness_kind" && n.kind === :g
         ks = Symbol(lowercase(strip(val)))
         ks in GOAL_FITNESS_KINDS || begin
-                println(stderr,
-                        "bad fitness_kind (expected one of: $(join(string.(GOAL_FITNESS_KINDS), ", ")))")
-                return EXIT_ERR
+                return ferr(ctx, EXIT_ERR,
+                    "bad fitness_kind, expected one of $(join(string.(GOAL_FITNESS_KINDS), ", "))")
             end
         hb = haskey(n.attrs, "fitness_kind")
         oldk = hb ? String(n.attrs["fitness_kind"]) : ""
@@ -584,7 +607,7 @@ function cmd_set(ctx::CliCtx, pos, kw)
         aref = strip(val)
         an = get(st.nodes, aref, nothing)
         (an === nothing || an.kind !== :a) &&
-            (println(stderr, "set: unknown area: $aref (expected an existing A-NN node)"); return EXIT_ERR)
+            (return ferr(ctx, EXIT_ERR, "set unknown area $aref, expected an existing A-NN node"))
         hb = haskey(n.fields, :area)
         jr = wrap_journal_record("set", Dict{String,Any}(
             "op" => "set_g_area",
@@ -596,7 +619,7 @@ function cmd_set(ctx::CliCtx, pos, kw)
     elseif key == "requires_coverage" && n.kind in (:g, :t)
         θ = parse_requires_coverage(val)
         θ === nothing &&
-            (println(stderr, "bad requires_coverage (expected `true` or a float in (0,1])"); return EXIT_ERR)
+            (return ferr(ctx, EXIT_ERR, "bad requires_coverage (expected `true` or a float in (0,1])"))
         hb = haskey(n.attrs, "requires_coverage")
         jr = wrap_journal_record("set", Dict{String,Any}(
             "op" => "set_requires_coverage",
@@ -606,7 +629,7 @@ function cmd_set(ctx::CliCtx, pos, kw)
         ))
         n.attrs["requires_coverage"] = val
     else
-        println(stderr, "unsupported key: $key"); return EXIT_ERR
+        fail_diag(ctx, EXIT_ERR, interface_error("unsupported key $key")); return EXIT_ERR
     end
     stamp_touch_node!(n)
     persist(ctx, st; journal=jr, session=eff)
@@ -618,33 +641,30 @@ set_key_supported(kind::Symbol, key::AbstractString)::Bool =
     (kind === :g && key in ("fitness", "fitness_target", "fitness_kind", "area")) ||
     (kind in (:g, :t) && key == "requires_coverage")
 
-accepted_decision_msg(id::AbstractString)::String =
-    "decision $(id) is accepted; create a new D with --supersedes"
+accepted_decision_msg(id::AbstractString)::Diagnostic =
+    invariant_error("decision $(id) is accepted, create a successor D with --supersedes")
 
-function terminal_freeze_msg(n::Node)::Union{Nothing,String}
+function terminal_freeze_msg(n::Node)::Union{Nothing,Diagnostic}
     isterminal(n.kind, n.status) || return nothing
     n.kind === :d && n.status === :accepted && return accepted_decision_msg(String(n.id))
-    return "$(n.id) is terminal ($(n.status)); create a successor node or use grove undo"
+    invariant_error("$(n.id) is terminal ($(n.status)), create a successor node or undo the last mutation")
 end
 
 function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, kw)::Int
     valid = STATUS[n.kind]
-    new in valid || (println(stderr, "invalid status `$new` for $(n.kind)"); return EXIT_ERR)
+    new in valid || return finv(ctx, EXIT_ERR, "invalid status `$(new)` for $(n.kind)")
     if n.kind !== :d || n.status !== :accepted || new !== :superseded
         msg = terminal_freeze_msg(n)
-        msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+        msg !== nothing && return fail_diag(ctx, EXIT_GUARD, msg)
     end
     if n.kind === :t
-        println(stderr, "theme status is derived; cannot set manually")
-        return EXIT_GUARD
+        return finv(ctx, EXIT_GUARD, "theme status is derived and cannot be set manually")
     end
     if n.kind === :a
-        println(stderr, "area status is structural; cannot set")
-        return EXIT_GUARD
+        return finv(ctx, EXIT_GUARD, "area status is structural and cannot be set")
     end
     if n.kind === :g && new === :verified && goal_structured_kind(n) !== :manual
-        println(stderr, "goal $(n.id) status is derived from fitness deltas")
-        return EXIT_GUARD
+        return finv(ctx, EXIT_GUARD, "goal $(n.id) status is derived from fitness deltas")
     end
     if n.kind === :w && new === :ready && n.type === :feature
         bad = filter(b -> begin
@@ -656,36 +676,43 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
                 bn = get(st.nodes, b, nothing)
                 "$b ($(bn === nothing ? "missing" : bn.status))"
             end, bad), ", ")
-            println(stderr, "I9: $(n.id) cannot enter `ready`; assumption chain must be validated or invalidated_acceptable: $detail")
-            return EXIT_GUARD
+            return fail_diag(ctx, EXIT_GUARD, invariant_error(
+                "$(n.id) cannot enter ready, the assumption chain must be validated or invalidated_acceptable",
+                Pair{String,String}["chain" => detail]))
         end
     end
     if n.kind === :w && new === :progress
         if !dor(st, n)
-            println(stderr, "DoR ≢ ⊤ for $(n.id); see `grove dor $(n.id)`")
             append_journal_record!(journalpath(ctx), wrap_journal_record("set", Dict{String,Any}(
                 "op" => "dor_reject",
                 "id" => String(n.id),
                 "missing" => [String(label) for (label, ok, _) in dor_breakdown(st, n) if !ok],
             ); session=journal_session_token(ctx, kw)))
-            return EXIT_GUARD
+            return fail_diag(ctx, EXIT_GUARD,
+                invariant_error("DoR is not satisfied for $(n.id), inspect readiness for the failing conjuncts"))
         end
-        preds_clear(st, n.id) || (println(stderr, "I5: predecessors not cleared (goal blockers must be verified, not merely declined/partial/unverified)"); return EXIT_GUARD)
+        preds_clear(st, n.id) || return fail_diag(ctx, EXIT_GUARD, invariant_error(
+            "predecessors not cleared (goal blockers must be verified, not merely declined, partial, or unverified)"))
         wip = count(w -> w.status === :progress, listnodes(st, :w))
-        wip >= WIP_LIMIT_DEFAULT && (println(stderr, "I4: WIP limit ($(WIP_LIMIT_DEFAULT)) reached"); return EXIT_GUARD)
+        wip >= WIP_LIMIT_DEFAULT && return fail_diag(ctx, EXIT_GUARD, invariant_error(
+            "WIP limit reached", Pair{String,String}["limit" => string(WIP_LIMIT_DEFAULT)]))
     end
     if n.kind === :w && new === :done
-        preds_clear(st, n.id) || (println(stderr, "I5: predecessors not cleared (goal blockers must be verified, not merely declined/partial/unverified)"); return EXIT_GUARD)
+        preds_clear(st, n.id) || return fail_diag(ctx, EXIT_GUARD, invariant_error(
+            "predecessors not cleared (goal blockers must be verified, not merely declined, partial, or unverified)"))
         if n.type === :spike
             has_produces = any(e -> e.label === :produces && e.from == n.id, st.edges)
-            has_produces || (println(stderr, "I2: $(n.id) is a done spike but `produces` is empty (no outgoing `produces` edges)"); return EXIT_GUARD)
+            has_produces || return finv(ctx, EXIT_GUARD,
+                "$(n.id) is a done spike but produces is empty (no outgoing produces edges)")
         end
         ev = get(n.fields, :evidence, String[])
-        isempty(ev) && (println(stderr, "I3: $(n.id) has no evidence; use `grove evidence $(n.id) \"…\"`"); return EXIT_GUARD)
+        isempty(ev) && return finv(ctx, EXIT_GUARD, "$(n.id) has no evidence, record evidence for the item")
         gs = get(n.fields, :goals, String[])
         f = get(n.fields, :fitness, Dict{String,Int}())
         for g in gs
-            haskey(f, g) || (println(stderr, "I10: missing fitness delta for $g; use `grove fitness $(n.id) $g <delta>`"); return EXIT_GUARD)
+            haskey(f, g) || return fail_diag(ctx, EXIT_GUARD, invariant_error(
+                "missing fitness delta for $(g), stage a delta for every linked goal",
+                Pair{String,String}["goal" => String(g), "work" => String(n.id)]))
         end
     end
     if n.kind === :y
@@ -695,11 +722,12 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
         elseif cur === :proposed && new === :active
             issues = discovery_anchor_issues(st, n)
             if !isempty(issues)
-                println(stderr, "y $(n.id) anchors not satisfied (proposed → active refused):")
-                for i in issues
-                    println(stderr, "  ", i)
+                details = Pair{String,String}[]
+                for (i, issue) in enumerate(issues)
+                    push!(details, "issue_$(i)" => issue.text)
                 end
-                return EXIT_GUARD
+                return fail_diag(ctx, EXIT_GUARD, invariant_error(
+                    "anchors not satisfied for $(n.id), activation from proposed is refused", details))
             end
             true
         elseif cur === :active && new === :stale
@@ -707,31 +735,33 @@ function guard_status_transition(ctx::CliCtx, st::State, n::Node, new::Symbol, k
         else
             false
         end
-        ok || (println(stderr, "illegal y transition $(cur) → $(new) (allowed: proposed→active, active→stale, non-terminal→superseded; stale→active only via `grove revalidate`)"); return EXIT_GUARD)
+        ok || return fail_diag(ctx, EXIT_GUARD, invariant_error(
+            "illegal discovery transition $(cur) to $(new)",
+            Pair{String,String}["allowed" => "proposed→active, active→stale, non-terminal→superseded; stale→active only through revalidate"]))
     end
     EXIT_OK
 end
 
 function cmd_field(ctx::CliCtx, pos, kw)
-    length(pos) >= 3 || (println(stderr, "usage: grove field <ID> <field> add|rm|clear [value]"); return EXIT_ERR)
+    length(pos) >= 3 || (return ferr(ctx, EXIT_ERR, "field requires an id, field, and operation"))
     id, fname, op = pos[1], Symbol(pos[2]), pos[3]
     st = load(ctx)
     n = get(st.nodes, id, nothing)
-    n === nothing && (println(stderr, "not found: $id"); return EXIT_NOTFOUND)
+    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
     eff = effective_session_token(ctx.root, kw)
     if n.kind === :w && n.status === :progress
         msg = session_denial_progress_mutate(n, eff)
-        msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+        msg !== nothing && (return fail_diag(ctx, EXIT_GUARD, msg))
     end
     form = get(FIELD_CATALOG, (n.kind, fname), nothing)
-    form === nothing && (println(stderr, "unknown field $fname on $(n.kind)"); return EXIT_ERR)
+    form === nothing && (return ferr(ctx, EXIT_ERR, "unknown field $fname on $(n.kind)"))
     msg = terminal_freeze_msg(n)
-    msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+    msg !== nothing && (return fail_diag(ctx, EXIT_GUARD, msg))
     if n.kind === :g && fname === :fitness_current
         kg = goal_structured_kind(n)
         if kg !== nothing && kg !== :manual
-            println(stderr,
-                    "grove field: `fitness_current` is derived for structured goals; use kind=manual to author it")
+            fail_diag(ctx, EXIT_GUARD,
+                invariant_error("fitness_current is derived for structured goals, set fitness_kind to manual to author it"))
             return EXIT_GUARD
         end
     end
@@ -766,7 +796,7 @@ function cmd_field(ctx::CliCtx, pos, kw)
             n.fields[fname] = ""
         end
     elseif op == "add"
-        length(pos) >= 4 || (println(stderr, "missing value"); return EXIT_ERR)
+        length(pos) >= 4 || (return ferr(ctx, EXIT_ERR, "missing value"))
         val = pos[4]
         if form === :prose
             jr = wrap_journal_record("field", Dict{String,Any}(
@@ -777,7 +807,7 @@ function cmd_field(ctx::CliCtx, pos, kw)
             push!(get!(n.fields, fname, String[]), val)
         elseif form === :reflist
             if val in get(n.fields, fname, String[])
-                println(stderr, "grove field: $id $fname already contains \"$val\"")
+                fail_diag(ctx, EXIT_GUARD, invariant_error("$(id) $(fname) already contains \"$(val)\""))
                 return EXIT_GUARD
             end
             jr = wrap_journal_record("field", Dict{String,Any}(
@@ -796,13 +826,14 @@ function cmd_field(ctx::CliCtx, pos, kw)
             ))
             n.fields[fname] = val
         else
-            println(stderr, "field $fname not addable"); return EXIT_ERR
+            (return ferr(ctx, EXIT_ERR, "field $fname not addable"))
         end
     elseif op == "rm"
-        length(pos) >= 4 || (println(stderr, "missing index"); return EXIT_ERR)
-        idx = parse(Int, pos[4])
+        length(pos) >= 4 || (return ferr(ctx, EXIT_ERR, "missing index"))
+        idx = tryparse(Int, pos[4])
+        idx === nothing && (return ferr(ctx, EXIT_ERR, "index must be an integer"))
         v = String.(copy(get_vector_field!(n, fname)))
-        (idx < 1 || idx > length(v)) && (println(stderr, "index out of range"); return EXIT_ERR)
+        (idx < 1 || idx > length(v)) && (return ferr(ctx, EXIT_ERR, "index out of range"))
         removed = v[idx]
         jr = wrap_journal_record("field", Dict{String,Any}(
             "op" => "field_insert_line",
@@ -813,7 +844,7 @@ function cmd_field(ctx::CliCtx, pos, kw)
         ))
         deleteat!(n.fields[fname], idx)
     else
-        println(stderr, "unknown op: $op"); return EXIT_ERR
+        (return ferr(ctx, EXIT_ERR, "unknown op $op"))
     end
     if n.kind === :g && fname === :fitness_target && op in ("add", "clear")
         refresh_goal_structured_fitness!(st, n)
@@ -823,30 +854,30 @@ function cmd_field(ctx::CliCtx, pos, kw)
     EXIT_OK
 end
 
-function guard_sessions_for_progress_endpoints!(io::IO, root::AbstractString, st::State, kw,
-                                              from::AbstractString, to::AbstractString)::Int
-    eff = effective_session_token(root, kw)
+function guard_sessions_for_progress_endpoints!(ctx::CliCtx, st::State, kw,
+                                                from::AbstractString, to::AbstractString)::Int
+    eff = effective_session_token(ctx.root, kw)
     for id in (from, to)
         n = get(st.nodes, id, nothing)
         n === nothing && continue
         n.kind !== :w && continue
         n.status !== :progress && continue
         msg = session_denial_progress_mutate(n, eff)
-        msg !== nothing && (println(io, msg); return EXIT_GUARD)
+        msg !== nothing && return fail_diag(ctx, EXIT_GUARD, msg)
     end
     EXIT_OK
 end
 
 function cmd_link(ctx::CliCtx, pos, kw)
-    length(pos) >= 3 || (println(stderr, "usage: grove link <from> <label> <to>"); return EXIT_ERR)
+    length(pos) >= 3 || (return ferr(ctx, EXIT_ERR, "link requires a source, label, and target"))
     from, label, to = pos[1], Symbol(pos[2]), pos[3]
-    label in EDGE_LABELS || (println(stderr, "unknown label: $label"); return EXIT_ERR)
+    label in EDGE_LABELS || (return ferr(ctx, EXIT_ERR, "unknown label $label"))
     st = load(ctx)
-    rc = guard_sessions_for_progress_endpoints!(stderr, ctx.root, st, kw, from, to)
+    rc = guard_sessions_for_progress_endpoints!(ctx, st, kw, from, to)
     rc != EXIT_OK && return rc
     r = validate_and_push_edge!(st, from, label, to)
     if r !== nothing
-        println(stderr, r)
+        fail_diag(ctx, EXIT_GUARD, r)
         return EXIT_GUARD
     end
     jr = wrap_journal_record("link", journal_inverse_of_link_forward(label, from, to))
@@ -855,7 +886,7 @@ function cmd_link(ctx::CliCtx, pos, kw)
 end
 
 function cmd_unlink(ctx::CliCtx, pos, kw)
-    length(pos) >= 3 || (println(stderr, "usage: grove unlink <from> <label> <to>"); return EXIT_ERR)
+    length(pos) >= 3 || (return ferr(ctx, EXIT_ERR, "unlink requires a source, label, and target"))
     from, label, to = pos[1], Symbol(pos[2]), pos[3]
     st = load(ctx)
     ee = nothing
@@ -865,8 +896,8 @@ function cmd_unlink(ctx::CliCtx, pos, kw)
             break
         end
     end
-    ee === nothing && (println(stderr, "no such edge"); return EXIT_NOTFOUND)
-    rc = guard_sessions_for_progress_endpoints!(stderr, ctx.root, st, kw, from, to)
+    ee === nothing && (return ferr(ctx, EXIT_NOTFOUND, "no such edge"))
+    rc = guard_sessions_for_progress_endpoints!(ctx, st, kw, from, to)
     rc != EXIT_OK && return rc
     jr = wrap_journal_record("unlink", journal_inverse_restore_edge(from, label, to, ee.t_created))
     filter!(e -> !(e.from == from && e.label === label && e.to == to), st.edges)
@@ -877,21 +908,23 @@ function cmd_unlink(ctx::CliCtx, pos, kw)
 end
 
 function cmd_evidence(ctx::CliCtx, pos, kw)
-    length(pos) >= 2 || (println(stderr, "usage: grove evidence <W-NN> \"…\""); return EXIT_ERR)
+    length(pos) >= 2 || (return ferr(ctx, EXIT_ERR, "evidence requires a work id and text"))
     cmd_field(ctx, [pos[1], "evidence", "add", pos[2]], kw)
 end
 
 function cmd_fitness(ctx::CliCtx, pos, kw)
-    length(pos) >= 3 || (println(stderr, "usage: grove fitness <W-NN> <G-NN> <±delta>"); return EXIT_ERR)
-    wid, gid, delta = pos[1], pos[2], parse(Int, pos[3])
+    length(pos) >= 3 || (return ferr(ctx, EXIT_ERR, "fitness requires a work id, goal id, and delta"))
+    wid, gid = pos[1], pos[2]
+    delta = tryparse(Int, pos[3])
+    delta === nothing && (return ferr(ctx, EXIT_ERR, "bad delta (expected integer)"))
     st = load(ctx)
-    w = get(st.nodes, wid, nothing); w === nothing && (println(stderr, "missing: $wid"); return EXIT_NOTFOUND)
-    haskey(st.nodes, gid) || (println(stderr, "missing: $gid"); return EXIT_NOTFOUND)
+    w = get(st.nodes, wid, nothing); w === nothing && (return ferr(ctx, EXIT_NOTFOUND, "missing $wid"))
+    haskey(st.nodes, gid) || (return ferr(ctx, EXIT_NOTFOUND, "missing $gid"))
     msg = terminal_freeze_msg(w)
-    msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+    msg !== nothing && (return fail_diag(ctx, EXIT_GUARD, msg))
     eff = effective_session_token(ctx.root, kw)
     msg = session_denial_progress_mutate(w, eff)
-    msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+    msg !== nothing && (return fail_diag(ctx, EXIT_GUARD, msg))
     f = get!(w.fields, :fitness, Dict{String,Int}())
     had_key = haskey(f, gid)
     previous = had_key ? f[gid] : nothing
@@ -903,15 +936,16 @@ function cmd_fitness(ctx::CliCtx, pos, kw)
 end
 
 function cmd_archive(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (println(stderr, "usage: grove archive <G-NN>"); return EXIT_ERR)
+    length(pos) >= 1 || (return fusage(ctx, "archive", "usage: grove archive <G-NN>"))
     gid = pos[1]
     st = load(ctx)
-    g = get(st.nodes, gid, nothing); g === nothing && return EXIT_NOTFOUND
-    g.status === :verified || (println(stderr, "goal must be verified"); return EXIT_GUARD)
+    g = get(st.nodes, gid, nothing)
+    g === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $gid"))
+    g.status === :verified || (return finv(ctx, EXIT_GUARD, "goal must be verified before archiving"))
     ids = exclusive_archive_ids(st, gid)
     distilled = !isempty(distill_linked_da_ids(st, ids)) || distill_null_attested(journalpath(ctx), gid)
     distilled ||
-        (println(stderr, "archive: distill $gid first (grove distill $gid, or grove distill $gid --null)"); return EXIT_GUARD)
+        (return finv(ctx, EXIT_GUARD, "archive $gid requires distillation first, distill the goal or attest a null distillation"))
     eff = effective_session_token(ctx.root, kw)
     orphans = archive_orphan_ids(st, gid)
     for w in listnodes(st, :w)
@@ -919,7 +953,7 @@ function cmd_archive(ctx::CliCtx, pos, kw)
         (citing || w.id in orphans) || continue
         w.status !== :progress && continue
         msg = session_denial_progress_mutate(w, eff)
-        msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+        msg !== nothing && (return fail_diag(ctx, EXIT_GUARD, msg))
     end
     for id in ids
         n = st.nodes[id]
@@ -943,7 +977,7 @@ function cmd_archive(ctx::CliCtx, pos, kw)
 end
 
 function distill_skeleton(id::AbstractString)::String
-    "grove add y --from=$id --title=\"…\" --tags=<glossary-term> --surface=<path>  # xor --why=\"…\""
+    "create a discovery from $id with a title, at least one glossary tag, and a surface path or why prose"
 end
 
 function distill_candidates(st::State, pool::Set{String})::Vector{Tuple{String,String,String}}
@@ -962,14 +996,14 @@ function distill_candidates(st::State, pool::Set{String})::Vector{Tuple{String,S
 end
 
 function cmd_distill(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (println(stderr, "usage: grove distill <G-NN> [--null]"); return EXIT_ERR)
+    length(pos) >= 1 || (return fusage(ctx, "distill", "usage: grove distill <G-NN> [--null]"))
     gid = pos[1]
     st = load(ctx)
     g = get(st.nodes, gid, nothing)
-    g === nothing && (println(stderr, "not found: $gid"); return EXIT_NOTFOUND)
-    g.kind === :g || (println(stderr, "distill: $gid is not a goal"); return EXIT_ERR)
+    g === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $gid"))
+    g.kind === :g || (return ferr(ctx, EXIT_ERR, "$gid is not a goal"))
     g.status === :verified ||
-        (println(stderr, "distill: $gid is `$(g.status)`; distillation happens at `verified`"); return EXIT_GUARD)
+        (return finv(ctx, EXIT_GUARD, "$gid is $(g.status), distillation happens at verified"))
     mass = exclusive_archive_ids(st, gid)
     linked = distill_linked_da_ids(st, mass)
     attested = distill_null_attested(journalpath(ctx), gid)
@@ -980,7 +1014,7 @@ function cmd_distill(ctx::CliCtx, pos, kw)
             "empty" => true,
         ); session=journal_session_token(ctx, kw))
         append_journal_record!(journalpath(ctx), jr)
-        info(ctx, "null-distill attested for $gid")
+        emit_diag(ctx, operational_info("null-distill attested for $gid"))
         ctx.json && json_cli_out(Dict{String,Any}(
             "command" => "distill", "goal" => String(gid), "null" => true, "empty" => true,
         ))
@@ -1012,8 +1046,8 @@ function cmd_distill(ctx::CliCtx, pos, kw)
         how = !isempty(linked) ? "linked Discovery: " * join(linked, ", ") : "null-distill attested"
         println("archive precondition: met (", how, ")")
     else
-        println("archive precondition: not met; `grove archive ", gid,
-                "` refuses until a Discovery is linked or a null-distill attestation exists")
+        println("archive precondition not met, archiving ", gid,
+                " refuses until a discovery is linked or a null-distillation attestation exists")
     end
     if isempty(cands)
         println("no validated B / answered Q / accepted D in the goal's mass")
@@ -1025,16 +1059,16 @@ function cmd_distill(ctx::CliCtx, pos, kw)
             println("    ", distill_skeleton(id))
         end
     end
-    println("nothing worth distilling? `grove distill ", gid, " --null`")
+    println("nothing worth distilling, attest a null distillation for ", gid)
     EXIT_OK
 end
 
 function cmd_renumber(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (println(stderr, "usage: grove renumber <ID> --to=<NEW-ID>"); return EXIT_ERR)
-    haskey(kw, "to") || (println(stderr, "missing --to=<NEW-ID>"); return EXIT_ERR)
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "renumber requires an id and target id"))
+    haskey(kw, "to") || (return ferr(ctx, EXIT_ERR, "missing --to=<NEW-ID>"))
     old_id = strip(pos[1])
     new_id = strip(kw["to"])
-    isempty(new_id) && (println(stderr, "bad --to"); return EXIT_ERR)
+    isempty(new_id) && (return ferr(ctx, EXIT_ERR, "bad --to"))
     old_id == new_id && return EXIT_OK
     st = load(ctx)
     ow = get(st.nodes, old_id, nothing)
@@ -1043,16 +1077,17 @@ function cmd_renumber(ctx::CliCtx, pos, kw)
         ow.kind === :w &&
         ow.status === :progress && begin
                 msg = session_denial_progress_mutate(ow, eff)
-                msg !== nothing && begin println(stderr, msg); return EXIT_GUARD end
+                msg !== nothing && begin return fail_diag(ctx, EXIT_GUARD, msg) end
             end
     renumber_blocked_by_done_evidence(st, old_id) && begin
-            println(stderr, "grove renumber: refusing; id occurs in evidence on a done W")
+            fail_diag(ctx, EXIT_GUARD, invariant_error("renumber refuses, the id occurs in evidence on a done work item"))
             return EXIT_GUARD
         end
     try
         apply_renumber!(st, old_id, new_id)
     catch e
-        println(stderr, sprint(showerror, e))
+        fail_diag(ctx, EXIT_ERR, interface_error("renumber could not be applied",
+            Pair{String,String}["error" => sprint(showerror, e)]))
         return EXIT_ERR
     end
     jr = wrap_journal_record("renumber",
@@ -1063,13 +1098,13 @@ function cmd_renumber(ctx::CliCtx, pos, kw)
 end
 
 function cmd_resume(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (println(stderr, "usage: grove resume <W-NN>"); return EXIT_ERR)
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "resume requires a work id"))
     id = pos[1]
     st = load(ctx)
     w = get(st.nodes, id, nothing)
-    w === nothing && return EXIT_NOTFOUND
-    w.kind === :w || (println(stderr, "not a work item"); return EXIT_ERR)
-    w.status === :progress || (println(stderr, "$(id) is not in progress"); return EXIT_GUARD)
+    w === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
+    w.kind === :w || (return ferr(ctx, EXIT_ERR, "not a work item"))
+    w.status === :progress || (return finv(ctx, EXIT_GUARD, "$(id) is not in progress"))
     eff = effective_session_token(ctx.root, kw)
     inv = merge(
         Dict{String,Any}("op" => "session_restore_claim", "id" => String(id)),
@@ -1083,19 +1118,19 @@ function cmd_resume(ctx::CliCtx, pos, kw)
 end
 
 function cmd_handoff(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (println(stderr, "usage: grove handoff <W-NN> --to=<token>"); return EXIT_ERR)
-    haskey(kw, "to") || (println(stderr, "missing --to=<session-token>"); return EXIT_ERR)
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "handoff requires a work id and target session"))
+    haskey(kw, "to") || (return ferr(ctx, EXIT_ERR, "missing --to=<session-token>"))
     to_tok = strip(String(kw["to"]))
-    isempty(to_tok) && (println(stderr, "empty --to"); return EXIT_ERR)
+    isempty(to_tok) && (return ferr(ctx, EXIT_ERR, "empty --to"))
     id = pos[1]
     st = load(ctx)
     w = get(st.nodes, id, nothing)
-    w === nothing && return EXIT_NOTFOUND
-    w.kind === :w || (println(stderr, "not a work item"); return EXIT_ERR)
-    w.status === :progress || (println(stderr, "$(id) is not in progress"); return EXIT_GUARD)
+    w === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
+    w.kind === :w || (return ferr(ctx, EXIT_ERR, "not a work item"))
+    w.status === :progress || (return finv(ctx, EXIT_GUARD, "$(id) is not in progress"))
     eff = effective_session_token(ctx.root, kw)
-    !progress_has_session_record(w) && (println(stderr, "$(id) has no session claim; use `grove resume`"); return EXIT_GUARD)
-    !session_token_matches(w, eff) && (println(stderr, "only the holding session can hand off; use `grove resume` first"); return EXIT_GUARD)
+    !progress_has_session_record(w) && (return finv(ctx, EXIT_GUARD, "no session claim on $(id), adopt the claim before handing off"))
+    !session_token_matches(w, eff) && (return finv(ctx, EXIT_GUARD, "only the holding session can hand off, adopt the claim first"))
     inv = merge(
         Dict{String,Any}("op" => "session_restore_claim", "id" => String(id)),
         session_journal_snap(w),
@@ -1108,16 +1143,16 @@ function cmd_handoff(ctx::CliCtx, pos, kw)
 end
 
 function cmd_revert(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (println(stderr, "usage: grove revert <W-NN>"); return EXIT_ERR)
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "revert requires a work id"))
     id = pos[1]
     st = load(ctx)
     w = get(st.nodes, id, nothing)
-    w === nothing && return EXIT_NOTFOUND
-    w.kind === :w || (println(stderr, "not a work item"); return EXIT_ERR)
-    w.status === :progress || (println(stderr, "$(id) is not in progress"); return EXIT_GUARD)
+    w === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
+    w.kind === :w || (return ferr(ctx, EXIT_ERR, "not a work item"))
+    w.status === :progress || (return finv(ctx, EXIT_GUARD, "$(id) is not in progress"))
     eff = effective_session_token(ctx.root, kw)
     msg = session_denial_progress_release(w, eff)
-    msg !== nothing && (println(stderr, msg); return EXIT_GUARD)
+    msg !== nothing && (return fail_diag(ctx, EXIT_GUARD, msg))
     gs = Dict{String,String}()
     for gid in get(w.fields, :goals, String[])
         g = get(st.nodes, gid, nothing)
@@ -1149,11 +1184,11 @@ end
 function cmd_undo(ctx::CliCtx, pos, kw)
     jp = journalpath(ctx)
     (!isfile(jp) || filesize(jp) == 0) && begin
-            println(stderr, "grove undo: no journal at $jp"); return EXIT_ERR
+            fail_diag(ctx, EXIT_ERR, system_error("no journal to undo", Pair{String,String}["path" => jp])); return EXIT_ERR
         end
     steps = if haskey(kw, "steps")
             v = tryparse(Int, kw["steps"])
-            v === nothing && begin println(stderr, "grove undo: bad --steps"); return EXIT_ERR end
+            v === nothing && begin fail_diag(ctx, EXIT_ERR, interface_error("bad --steps, expected an integer")); return EXIT_ERR end
             max(Int(v), 0)
         else
             1
@@ -1161,15 +1196,19 @@ function cmd_undo(ctx::CliCtx, pos, kw)
     steps == 0 && return EXIT_OK
     view = journal_tail_mutation_view(jp, steps)
     view === nothing && begin
-            println(stderr, "grove undo: journal has fewer than $steps mutation entr$(steps == 1 ? "y" : "ies")"); return EXIT_ERR
+            fail_diag(ctx, EXIT_ERR, interface_error("journal has fewer than $(steps) mutation $(steps == 1 ? "entry" : "entries")", Pair{String,String}["steps" => string(steps)])); return EXIT_ERR
         end
     idxs, tail_recs = view
     st = load(ctx)
     for rec in reverse(tail_recs)
         inv = get(rec, "inv", nothing)
-        inv isa AbstractDict || begin println(stderr, "grove undo: record missing inverse"); return EXIT_ERR end
+        inv isa AbstractDict || begin
+            fail_diag(ctx, EXIT_INVARIANT, system_error("journal undo failed",
+                Pair{String,String}["error" => "malformed record missing inv"]))
+            return EXIT_INVARIANT
+        end
         msg = journal_apply_inverse!(st, inv)
-        msg !== nothing && begin println(stderr, msg); return EXIT_INVARIANT end
+        msg !== nothing && begin return fail_diag(ctx, EXIT_INVARIANT, msg) end
         if get(inv, "op", "") == "glossary_rename_restore" && get(inv, "glossary_changed", false) === true &&
            haskey(inv, "old") && haskey(inv, "new")
             gpath = glossarypath(ctx)
@@ -1191,12 +1230,12 @@ function cmd_undo(ctx::CliCtx, pos, kw)
 end
 
 function cmd_repair(ctx::CliCtx, pos, kw)
-    haskey(kw, "confirm") || (println(stderr, "refusing without --confirm"); return EXIT_ERR)
+    haskey(kw, "confirm") || (return ferr(ctx, EXIT_ERR, "refusing without --confirm"))
     p = lockpath(ctx)
     text = replace(read(p, String), "\r\n" => "\n")
     st, _, _ = parse_lock(text)
     persist(ctx, st)
-    info(ctx, "repaired: $(p)")
+    emit_diag(ctx, operational_info("recanonicalized the lock", Pair{String,String}["path" => p]))
     EXIT_OK
 end
 
@@ -1222,7 +1261,7 @@ end
 function cmd_next(ctx::CliCtx, pos, kw)
     st = load(ctx)
     rs = ready(st)
-    isempty(rs) && (println(stderr, "no ready work items"); return EXIT_OK)
+    isempty(rs) && return fail_diag(ctx, EXIT_OK, operational_info("no ready work items"))
     cp = Set(critical_path(st))
     crit = filter(w -> w.id in cp, rs)
     pick = isempty(crit) ? first(rs) : first(crit)
@@ -1236,25 +1275,25 @@ function cmd_next(ctx::CliCtx, pos, kw)
 end
 
 function cmd_packet(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (println(stderr, "usage: grove packet <W-NN>"); return EXIT_ERR)
+    length(pos) >= 1 || (return fusage(ctx, "packet", "usage: grove packet <W-NN>"))
     depth = 4
     maxcount = 50
     if haskey(kw, "cone-depth")
         v = tryparse(Int, kw["cone-depth"])
-        v === nothing && (println(stderr, "bad --cone-depth (expected integer)"); return EXIT_ERR)
-        v < 1 && (println(stderr, "--cone-depth must be ≥ 1"); return EXIT_ERR)
+        v === nothing && (return ferr(ctx, EXIT_ERR, "bad --cone-depth (expected integer)"))
+        v < 1 && (return ferr(ctx, EXIT_ERR, "--cone-depth must be ≥ 1"))
         depth = v
     end
     if haskey(kw, "cone-max")
         v = tryparse(Int, kw["cone-max"])
-        v === nothing && (println(stderr, "bad --cone-max (expected integer)"); return EXIT_ERR)
-        v < 1 && (println(stderr, "--cone-max must be ≥ 1"); return EXIT_ERR)
+        v === nothing && (return ferr(ctx, EXIT_ERR, "bad --cone-max (expected integer)"))
+        v < 1 && (return ferr(ctx, EXIT_ERR, "--cone-max must be ≥ 1"))
         maxcount = v
     end
     st = load(ctx)
     n = get(st.nodes, pos[1], nothing)
-    n === nothing && (println(stderr, "not found"); return EXIT_NOTFOUND)
-    n.kind === :w || (println(stderr, "not a work item"); return EXIT_ERR)
+    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found"))
+    n.kind === :w || (return ferr(ctx, EXIT_ERR, "not a work item"))
     cone = haskey(kw, "cone")
     pkt = packet(st, n)
     cone && (pkt = pkt * packet_cone(st, n; depth=depth, maxcount=maxcount))
@@ -1282,7 +1321,7 @@ function cmd_packet(ctx::CliCtx, pos, kw)
 end
 
 function cmd_deps(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || return EXIT_ERR
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "deps requires a node id"))
     st = load(ctx)
     pred = deps(st, pos[1])
     if ctx.json
@@ -1300,7 +1339,7 @@ function cmd_deps(ctx::CliCtx, pos, kw)
 end
 
 function cmd_impact(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || return EXIT_ERR
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "impact requires a node id"))
     st = load(ctx)
     succ = impact(st, pos[1])
     if ctx.json
@@ -1360,10 +1399,10 @@ function cmd_triage(ctx::CliCtx, pos, kw)
 end
 
 function cmd_dor(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || return EXIT_ERR
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "dor requires a work id"))
     st = load(ctx)
     n = get(st.nodes, pos[1], nothing)
-    n === nothing && return EXIT_NOTFOUND
+    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $(pos[1])"))
     if ctx.json
         conj = [
             Dict{String,Any}("label" => label, "ok" => ok, "detail" => detail)
@@ -1392,10 +1431,10 @@ function cmd_dor(ctx::CliCtx, pos, kw)
 end
 
 function cmd_show(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || return EXIT_ERR
+    length(pos) >= 1 || (return ferr(ctx, EXIT_ERR, "show requires a node id"))
     st = load(ctx)
     n = get(st.nodes, pos[1], nothing)
-    n === nothing && return EXIT_NOTFOUND
+    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $(pos[1])"))
     if ctx.json
         json_cli_out(json_node_snapshot(n))
         return EXIT_OK
@@ -1407,7 +1446,7 @@ function cmd_show(ctx::CliCtx, pos, kw)
 end
 
 function cmd_list(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (println(stderr, "usage: grove list <kind>"); return EXIT_ERR)
+    length(pos) >= 1 || (return fusage(ctx, "list", "usage: grove list <kind>"))
     kind = Symbol(pos[1])
     st = load(ctx)
     rows = listnodes(st, kind)
@@ -1467,14 +1506,13 @@ function cmd_log(ctx::CliCtx, pos, kw)
         jp0 = journalpath(ctx)
         ok = haskey(st.nodes, id0) || any(e -> e.from == id0 || e.to == id0, st.edges)
         !ok && journal_file_mentions_id(jp0, id0) && (ok = true)
-        !ok && (println(stderr, "not found: $id0"); return EXIT_NOTFOUND)
+        !ok && (return ferr(ctx, EXIT_NOTFOUND, "not found $id0"))
         lfilt = id0
     end
     lim = if haskey(kw, "limit")
         v = tryparse(Int, kw["limit"])
         v === nothing && begin
-                println(stderr, "bad --limit (expected integer)")
-                return EXIT_ERR
+                (return ferr(ctx, EXIT_ERR, "bad --limit (expected integer)"))
             end
         v::Int
     else
@@ -1502,12 +1540,16 @@ function cmd_diff(ctx::CliCtx, pos, kw)
     ref = get(kw, "since", "HEAD")
     rp = abspath(ctx.root)
     git_repository_root(rp) || begin
-            println(stderr, "grove diff: not a git repository (--root=`$rp`): cannot resolve `$ref:.grove/state.lock` via git")
+            fail_diag(ctx, EXIT_ERR, system_error(
+                "not a git repository, cannot resolve the lock through git",
+                Pair{String,String}["root" => rp]))
             return EXIT_ERR
         end
     wt_path = lockpath(ctx)
     isfile(wt_path) || begin
-            println(stderr, "lock not found: $wt_path")
+            fail_diag(ctx, EXIT_ERR, system_error(
+                "lock file is absent, initialize the project first",
+                Pair{String,String}["path" => wt_path]))
             return EXIT_ERR
         end
     wt_text = read_worktree_lock_text(wt_path)
@@ -1515,20 +1557,22 @@ function cmd_diff(ctx::CliCtx, pos, kw)
         parse_lock(wt_text)[1]
     catch e
         e isa LockParseError || rethrow()
-        println(stderr, sprint(showerror, e))
+        fail_diag(ctx, EXIT_ERR, system_error("worktree lock could not be parsed",
+            Pair{String,String}["error" => sprint(showerror, e)]))
         return EXIT_ERR
     end
     blob, gerr = git_show_path(rp, ref, ".grove/state.lock")
     blob === nothing && begin
-            println(stderr, "grove diff: ", gerr)
+            fail_diag(ctx, EXIT_ERR, system_error("lock could not be resolved from git",
+                Pair{String,String}["error" => String(gerr)]))
             return EXIT_ERR
         end
     st_ref = try
         parse_lock(blob)[1]
     catch e
         e isa LockParseError || rethrow()
-        println(stderr, sprint(showerror, e))
-        println(stderr, " (while parsing `$ref:.grove/state.lock`)")
+        fail_diag(ctx, EXIT_ERR, system_error("reference lock could not be parsed",
+            Pair{String,String}["error" => sprint(showerror, e), "git_ref" => ref]))
         return EXIT_ERR
     end
     if ctx.json
@@ -1553,13 +1597,13 @@ function cmd_status(ctx::CliCtx, pos, kw)
             tok = progress_has_session_record(w) ? String(w.attrs["session"]) : ""
             stale = progress_session_display_stale(w, eff)
             line2 = if isempty(tok)
-                        "  (no session= on record; I11 broken: use `grove resume $(w.id)` or re-claim progress)"
+                        "  (no session on record, I11 broken, adopt the claim or re-claim progress)"
                     else
                         flag = session_token_matches(w, eff) ? "" : "  [!= this session]"
                         age = session_claim_age_stale(w) ? "  (claimed >$(SESSION_DISPLAY_STALE_AFTER_HOURS)h ago)" : ""
                         string("  session=", tok, flag, age)
                     end
-            opts = stale ? "grove resume $(w.id) | grove revert $(w.id) | grove handoff $(w.id) --to=<token>" : ""
+            opts = stale ? "resume, revert, or handoff the claim" : ""
             push!(items, Dict{String,Any}(
                 "id" => w.id,
                 "title" => w.title,
@@ -1577,7 +1621,7 @@ function cmd_status(ctx::CliCtx, pos, kw)
             "alignment_triggers" => al,
             "invariants" => Dict(
                 "ok" => isempty(inv),
-                "messages" => inv,
+                "messages" => Any[diag_json_obj(e) for e in inv],
             ),
         ))
         return EXIT_OK
@@ -1593,7 +1637,7 @@ function cmd_status(ctx::CliCtx, pos, kw)
             tok = progress_has_session_record(w) ? String(w.attrs["session"]) : ""
             stale = progress_session_display_stale(w, eff)
             line2 = if isempty(tok)
-                        "  (no session= on record; I11 broken: use `grove resume $(w.id)` or re-claim progress)"
+                        "  (no session on record, I11 broken, adopt the claim or re-claim progress)"
                     else
                         flag = session_token_matches(w, eff) ? "" : "  [!= this session]"
                         age = session_claim_age_stale(w) ? "  (claimed >$(SESSION_DISPLAY_STALE_AFTER_HOURS)h ago)" : ""
@@ -1601,7 +1645,7 @@ function cmd_status(ctx::CliCtx, pos, kw)
                     end
             if stale
                 println(w.id, "\t", w.title, "  (stale for this agent)\n", line2)
-                println("  options: `grove resume $(w.id)` | `grove revert $(w.id)` | `grove handoff $(w.id) --to=<token>`")
+                println("  options: resume, revert, or handoff the claim for $(w.id)")
             else
                 println(w.id, "\t", w.title, "\n", line2)
             end
@@ -1636,15 +1680,15 @@ function cmd_gate(ctx::CliCtx, pos, kw)
     theta = 0
     if haskey(kw, "theta")
         v = tryparse(Int, kw["theta"])
-        v === nothing && (println(stderr, "bad --theta (expected integer)"); return EXIT_ERR)
-        v < 0 && (println(stderr, "--theta must be ≥ 0"); return EXIT_ERR)
+        v === nothing && (return ferr(ctx, EXIT_ERR, "bad --theta (expected integer)"))
+        v < 0 && (return ferr(ctx, EXIT_ERR, "--theta must be ≥ 0"))
         theta = Int(v)
     end
     n = 5
     if haskey(kw, "n")
         v = tryparse(Int, kw["n"])
-        v === nothing && (println(stderr, "bad --n (expected integer)"); return EXIT_ERR)
-        v < 1 && (println(stderr, "--n must be ≥ 1"); return EXIT_ERR)
+        v === nothing && (return ferr(ctx, EXIT_ERR, "bad --n (expected integer)"))
+        v < 1 && (return ferr(ctx, EXIT_ERR, "--n must be ≥ 1"))
         n = Int(v)
     end
     st = load(ctx)
@@ -1699,34 +1743,34 @@ function cmd_stats(ctx::CliCtx, pos, kw)
 end
 
 function cmd_revalidate(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (println(stderr, "usage: grove revalidate <Y-NN> [--surface=p1,p2] [--from=ID,...]"); return EXIT_ERR)
+    length(pos) >= 1 || (return fusage(ctx, "revalidate", "usage: grove revalidate <Y-NN> [--surface=p1,p2] [--from=ID,...]"))
     id = pos[1]
     st = load(ctx)
     n = get(st.nodes, id, nothing)
-    n === nothing && (println(stderr, "not found: $id"); return EXIT_NOTFOUND)
-    n.kind === :y || (println(stderr, "revalidate: $id is not a discovery"); return EXIT_ERR)
-    n.status === :stale || (println(stderr, "revalidate: $id is `$(n.status)`, not `stale`"); return EXIT_GUARD)
+    n === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
+    n.kind === :y || (return ferr(ctx, EXIT_ERR, "$id is not a discovery"))
+    n.status === :stale || (return finv(ctx, EXIT_GUARD, "$id is $(n.status), not stale"))
     has_surface = haskey(kw, "surface")
     has_from = haskey(kw, "from")
     (has_surface || has_from) ||
-        (println(stderr, "revalidate: refusing without payment; pass --surface=<paths> and/or --from=<ID>"); return EXIT_GUARD)
+        (return finv(ctx, EXIT_GUARD, "refusing without payment, pass --surface=<paths> and/or --from=<ID>"))
     surface = String[String(s) for s in split(get(kw, "surface", ""), ',') if !isempty(strip(s))]
     froms = String[String(t) for t in split(get(kw, "from", ""), ',') if !isempty(strip(t))]
-    has_surface && isempty(surface) && (println(stderr, "revalidate: --surface given but empty"); return EXIT_ERR)
-    has_from && isempty(froms) && (println(stderr, "revalidate: --from given but empty"); return EXIT_ERR)
+    has_surface && isempty(surface) && (return ferr(ctx, EXIT_ERR, "--surface given but empty"))
+    has_from && isempty(froms) && (return ferr(ctx, EXIT_ERR, "--from given but empty"))
     for p in surface
         pth = isabspath(p) ? p : joinpath(ctx.root, p)
-        ispath(pth) || (println(stderr, "revalidate: surface path does not exist under root: $p"); return EXIT_GUARD)
+        ispath(pth) || (return fail_diag(ctx, EXIT_GUARD, system_error("surface path does not exist under root", Pair{String,String}["path" => p])))
     end
     for oid in froms
         src = get(st.nodes, oid, nothing)
-        src === nothing && (println(stderr, "revalidate: unknown --from id: $oid"); return EXIT_GUARD)
+        src === nothing && (return ferr(ctx, EXIT_GUARD, "unknown --from id $oid"))
         src.kind in (:w, :d, :q, :b) ||
-            (println(stderr, "revalidate: --from $oid must reference W or D/Q/B"); return EXIT_GUARD)
+            (return ferr(ctx, EXIT_GUARD, "--from $oid must reference W or D, Q or B"))
         (src.kind === :d && src.status === :superseded) &&
-            (println(stderr, "revalidate: --from $oid is superseded"); return EXIT_GUARD)
+            (return finv(ctx, EXIT_GUARD, "--from $oid is superseded"))
         (src.kind === :b && src.status in (:invalidated_acceptable, :invalidated_blocking)) &&
-            (println(stderr, "revalidate: --from $oid is invalidated"); return EXIT_GUARD)
+            (return finv(ctx, EXIT_GUARD, "--from $oid is invalidated"))
     end
     paid = String[]
     has_surface && push!(paid, "surface=" * join(surface, ","))
@@ -1738,7 +1782,7 @@ function cmd_revalidate(ctx::CliCtx, pos, kw)
         f0, l0, t0 = src.kind === :w ? (oid, :produces, id) : (id, :distills, oid)
         already = any(e -> e.from == f0 && e.label === l0 && e.to == t0, st.edges)
         r = validate_and_push_edge!(st, f0, l0, t0)
-        r !== nothing && (println(stderr, r); return EXIT_GUARD)
+        r !== nothing && return fail_diag(ctx, EXIT_GUARD, r)
         already || push!(added, Dict{String,Any}("from" => f0, "label" => String(l0), "to" => t0))
     end
     jr = wrap_journal_record("revalidate", Dict{String,Any}(
@@ -1762,31 +1806,30 @@ end
 
 function cmd_glossary(ctx::CliCtx, pos, kw)
     (length(pos) >= 1 && pos[1] == "rename") ||
-        (println(stderr, "usage: grove glossary rename <old> <new>"); return EXIT_ERR)
+        (return ferr(ctx, EXIT_ERR, "glossary requires the rename operation"))
     cmd_glossary_rename(ctx, pos[2:end], kw)
 end
 
 function cmd_glossary_rename(ctx::CliCtx, pos, kw)
-    length(pos) >= 2 || (println(stderr, "usage: grove glossary rename <old> <new>"); return EXIT_ERR)
+    length(pos) >= 2 || (return ferr(ctx, EXIT_ERR, "glossary rename requires old and new terms"))
     old = String(strip(pos[1]))
     new = String(strip(pos[2]))
-    (isempty(old) || isempty(new)) && (println(stderr, "glossary rename: empty term"); return EXIT_ERR)
-    old == new && (println(stderr, "glossary rename: old and new are identical"); return EXIT_ERR)
+    (isempty(old) || isempty(new)) && (return ferr(ctx, EXIT_ERR, "glossary rename requires nonempty terms"))
+    old == new && (return ferr(ctx, EXIT_ERR, "glossary rename terms are identical"))
     st = load(ctx)
     gpath = glossarypath(ctx)
     terms = glossary_terms(gpath)
     users = Node[x for x in listnodes(st, :y) if any(t -> String(t) == old, get(x.fields, :tags, String[]))]
     in_glossary = old in terms
     if !in_glossary && isempty(users)
-        println(stderr, "glossary rename: `$old` is neither in glossary.md nor used by any discovery")
-        return EXIT_NOTFOUND
+        (return ferr(ctx, EXIT_NOTFOUND, "glossary term $old is absent and unused by discoveries"))
     end
     new in terms &&
-        (println(stderr, "glossary rename: `$new` already present in glossary.md"); return EXIT_GUARD)
+        (return finv(ctx, EXIT_GUARD, "glossary term $new already exists"))
     changed_in_glossary = false
     if in_glossary
         renamed, changed = glossary_rename_in_text(read(gpath, String), old, new)
-        changed || (println(stderr, "glossary rename: `$old` not found in glossary.md"); return EXIT_NOTFOUND)
+        changed || (return ferr(ctx, EXIT_NOTFOUND, "glossary term $old is absent"))
         write(gpath, renamed)
         changed_in_glossary = true
     end
@@ -1848,8 +1891,8 @@ function glossary_rename_in_text(text::AbstractString, old::String, new::String)
     (join(lines, "\n"), changed)
 end
 
-function discovery_decay_errors(st::State, root::AbstractString, gpath::AbstractString)::Vector{String}
-    out = String[]
+function discovery_decay_errors(st::State, root::AbstractString, gpath::AbstractString)::Vector{Diagnostic}
+    out = Diagnostic[]
     xs = Node[x for x in listnodes(st, :y) if x.status in (:proposed, :active)]
     isempty(xs) && return out
     terms = glossary_terms(gpath)
@@ -1857,7 +1900,8 @@ function discovery_decay_errors(st::State, root::AbstractString, gpath::Abstract
         if haskey(x.fields, :surface)
             for p in get(x.fields, :surface, String[])
                 pth = isabspath(String(p)) ? String(p) : joinpath(root, String(p))
-                ispath(pth) || push!(out, "decay: $(x.id) dead surface: $p")
+                ispath(pth) || push!(out, invariant_error("$(x.id) has a dead surface path",
+                    Pair{String,String}["path" => String(p)]))
             end
         end
         for e in st.edges
@@ -1866,13 +1910,16 @@ function discovery_decay_errors(st::State, root::AbstractString, gpath::Abstract
             dst === nothing && continue
             dst.archived && continue
             if dst.kind === :d && dst.status === :superseded
-                push!(out, "decay: $(x.id) rotted origin: $(dst.id) (superseded)")
+                push!(out, invariant_error("$(x.id) has a rotted origin ($(dst.id))",
+                    Pair{String,String}["origin" => String(dst.id), "status" => String(dst.status)]))
             elseif dst.kind === :b && dst.status in (:invalidated_acceptable, :invalidated_blocking)
-                push!(out, "decay: $(x.id) rotted origin: $(dst.id) ($(dst.status))")
+                push!(out, invariant_error("$(x.id) has a rotted origin ($(dst.id))",
+                    Pair{String,String}["origin" => String(dst.id), "status" => String(dst.status)]))
             end
         end
         for t in get(x.fields, :tags, String[])
-            String(t) in terms || push!(out, "decay: $(x.id) lost glossary term: $t")
+            String(t) in terms || push!(out, invariant_error("$(x.id) lost a glossary term ($(String(t)))",
+                Pair{String,String}["term" => String(t)]))
         end
     end
     out
@@ -1890,22 +1937,23 @@ function cmd_check(ctx::CliCtx, pos, kw)
         json_cli_out(Dict(
             "command" => "check",
             "ok" => isempty(errs),
-            "errors" => errs,
+            "errors" => Any[diag_json_obj(e) for e in errs],
         ))
         return isempty(errs) ? EXIT_OK : EXIT_INVARIANT
     end
     if isempty(errs)
-        info(ctx, "ok")
+        emit_diag(ctx, operational_info("ok"))
         return EXIT_OK
     end
-    for e in errs; println(stderr, e); end
+    for e in errs; println(stderr, render_diag(e)); end
     EXIT_INVARIANT
 end
 
 function cmd_projects(ctx::CliCtx, pos, kw)
     reg = registry_load()
     if reg === nothing
-        println(stderr, "warning: malformed registry $(registry_path()); registry features disabled")
+        emit_diag(ctx, system_warning("malformed registry, registry features are disabled",
+            Pair{String,String}["path" => registry_path()]))
         reg = ProjectEntry[]
     end
     if ctx.json
@@ -1924,23 +1972,24 @@ function cmd_projects(ctx::CliCtx, pos, kw)
 end
 
 function cmd_promote(ctx::CliCtx, pos, kw)
-    length(pos) >= 1 || (println(stderr, "usage: grove promote Y-NN --to=<project>"); return EXIT_ERR)
+    length(pos) >= 1 || (return fusage(ctx, "promote", "usage: grove promote Y-NN --to=<project>"))
     id = String(pos[1])
     to = get(kw, "to", nothing)
     (to === nothing || isempty(strip(to))) &&
-        (println(stderr, "promote: --to=<project> is required"); return EXIT_ERR)
+        (return ferr(ctx, EXIT_ERR, "missing --to=<project>"))
     st = load(ctx)
     src = get(st.nodes, id, nothing)
-    src === nothing && (println(stderr, "not found: $id"); return EXIT_NOTFOUND)
+    src === nothing && (return ferr(ctx, EXIT_NOTFOUND, "not found $id"))
     src.kind === :y ||
-        (println(stderr, "promote: $id is kind $(src.kind), not y"); return EXIT_ERR)
+        (return ferr(ctx, EXIT_ERR, "$id is kind $(src.kind), not y"))
     target_root = resolve_project_target(to)
     target_root === nothing && return EXIT_NOTFOUND
     abspath(target_root) == abspath(ctx.root) &&
-        (println(stderr, "promote: target is the source project"); return EXIT_ERR)
+        (return ferr(ctx, EXIT_ERR, "target is the source project"))
     tctx = CliCtx(target_root, ctx.quiet, ctx.json, ctx.no_render)
     isfile(lockpath(tctx)) ||
-        (println(stderr, "promote: target lock not found: $(lockpath(tctx)) (run `grove init --root=$target_root`)"); return EXIT_ERR)
+        (return fail_diag(ctx, EXIT_ERR, system_error("target lock is absent, initialize the target project first",
+            Pair{String,String}["path" => lockpath(tctx), "root" => target_root])))
     with_session_exclusive(tctx, () -> promote_into_target(ctx, src, tctx))
 end
 
@@ -1954,7 +2003,7 @@ function promote_into_target(sctx::CliCtx, src::Node, tctx::CliCtx)::Int
     for x in listnodes(tst, :y)
         if get(x.attrs, "origin_project", "") == origin_project &&
            get(x.attrs, "origin_id", "") == origin_id
-            println(stderr, "promote: already promoted as $(x.id)")
+            println(stderr, render_diag(invariant_error("already promoted as $(x.id)")))
             return EXIT_GUARD
         end
     end
@@ -2119,7 +2168,7 @@ function main(args::Vector{String})::Int
     rest = args[2:end]
     ctx, pos, kw = parse_args(rest)
     fn = get(COMMANDS, cmd, nothing)
-    fn === nothing && (println(stderr, "unknown command: $cmd"); print(stderr, HELP); return EXIT_ERR)
+    fn === nothing && (ferr(ctx, EXIT_ERR, "unknown command $cmd"); print(stderr, HELP); return EXIT_ERR)
     root_given = any(a -> a == "--root" || startswith(a, "--root="), rest)
     resolved = resolve_root(ctx.root, kw, root_given)
     resolved === nothing && return EXIT_NOTFOUND
@@ -2136,12 +2185,16 @@ function main(args::Vector{String})::Int
         end
         return rc
     catch e
+        if e isa CliFailure
+            return fail_diag(ctx, e.code, e.diag)
+        end
         if e isa SessionLockTimeoutError
-            println(stderr, sprint(showerror, e))
+            emit_diag(ctx, e.diag)
             return EXIT_GUARD
         end
         if e isa LockParseError
-            println(stderr, sprint(showerror, e))
+            fail_diag(ctx, EXIT_ERR, system_error("lock file could not be parsed",
+                Pair{String,String}["error" => sprint(showerror, e)]))
             return EXIT_ERR
         end
         rethrow()

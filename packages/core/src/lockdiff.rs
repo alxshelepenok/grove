@@ -1,6 +1,7 @@
 use crate::cli::{abspath, json_cli_out, CliCtx};
 use crate::gitutil::{git_repository_root, git_show_path, read_worktree_lock_text};
 use crate::json::{JVal, JuliaDict};
+use crate::message::{Code, Diagnostic};
 use crate::model::{field_form, field_order, FieldValue, Form, Kind, Node, State};
 use crate::ops::{kw_get, OpResult, EXIT_ERR};
 use crate::parse::parse_strict;
@@ -426,40 +427,81 @@ pub fn cmd_diff(_ctx: &CliCtx, _pos: &[String], kw: &[(String, String)]) -> OpRe
     let git_ref = kw_get(kw, "since").unwrap_or("HEAD");
     let rp = abspath(&_ctx.root);
     if !git_repository_root(&rp) {
-        return OpResult::fail(
+        return OpResult::fail_diag(
             EXIT_ERR,
-            &format!(
-                "grove diff: not a git repository (--root=`{rp}`): cannot resolve `{git_ref}:.grove/state.lock` via git"
+            Diagnostic::error_details(
+                Code::System,
+                "not a git repository, cannot resolve the lock through git",
+                vec![
+                    ("root".to_string(), rp.clone()),
+                    ("git_ref".to_string(), git_ref.to_string()),
+                ],
             ),
         );
     }
     let wt_path = _ctx.lockpath();
     if !wt_path.is_file() {
-        return OpResult::fail(EXIT_ERR, &format!("lock not found: {}", wt_path.display()));
+        return OpResult::fail_diag(
+            EXIT_ERR,
+            Diagnostic::error_details(
+                Code::System,
+                "lock file is absent, initialize the project first",
+                vec![("path".to_string(), wt_path.display().to_string())],
+            ),
+        );
     }
     let wt_text = match read_worktree_lock_text(&wt_path) {
         Ok(t) => t,
         Err(_) => {
-            return OpResult::fail(EXIT_ERR, &format!("lock not found: {}", wt_path.display()))
+            return OpResult::fail_diag(
+                EXIT_ERR,
+                Diagnostic::error_details(
+                    Code::System,
+                    "lock file is absent, initialize the project first",
+                    vec![("path".to_string(), wt_path.display().to_string())],
+                ),
+            )
         }
     };
     let st_wt = match parse_strict(&wt_text) {
         Ok(st) => st,
-        Err(e) => return OpResult::fail(EXIT_ERR, &e.to_string()),
+        Err(e) => {
+            return OpResult::fail_diag(
+                EXIT_ERR,
+                Diagnostic::error_details(
+                    Code::System,
+                    "worktree lock could not be parsed",
+                    vec![("error".to_string(), e.to_string())],
+                ),
+            )
+        }
     };
     let blob = match git_show_path(&rp, git_ref, ".grove/state.lock") {
         Ok(b) => b,
-        Err(e) => return OpResult::fail(EXIT_ERR, &format!("grove diff: {e}")),
+        Err(e) => {
+            return OpResult::fail_diag(
+                EXIT_ERR,
+                Diagnostic::error_details(
+                    Code::System,
+                    "lock could not be resolved from git",
+                    vec![("error".to_string(), e)],
+                ),
+            )
+        }
     };
     let st_ref = match parse_strict(&blob) {
         Ok(st) => st,
         Err(e) => {
-            return OpResult::fail_lines(
+            return OpResult::fail_diag(
                 EXIT_ERR,
-                &[
-                    e.to_string(),
-                    format!(" (while parsing `{git_ref}:.grove/state.lock`)"),
-                ],
+                Diagnostic::error_details(
+                    Code::System,
+                    "reference lock could not be parsed",
+                    vec![
+                        ("error".to_string(), e.to_string()),
+                        ("git_ref".to_string(), git_ref.to_string()),
+                    ],
+                ),
             )
         }
     };
