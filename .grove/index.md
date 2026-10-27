@@ -68,6 +68,7 @@
 | W-229 | feature | Pin diagnostic contract in specification and conformance | G-52 | complicated | ⊤ | done |  |
 | W-230 | feature | Verify unified diagnostics end to end | G-52 | complicated | ⊤ | done |  |
 | W-231 | feature | Collapse diagnostic codes into four semantic categories | G-52 | complicated | ⊤ | done |  |
+| W-232 | bug | Julia diff attribute details drift in Linux CI | G-52 | clear | ⊤ | done |  |
 
 ## Decisions
 
@@ -240,6 +241,7 @@ graph TD
   W_229["W-229: Pin diagnostic contract in specification and conformance"]:::done
   W_230["W-230: Verify unified diagnostics end to end"]:::done
   W_231["W-231: Collapse diagnostic codes into four semantic categories"]:::done
+  W_232["W-232: Julia diff attribute details drift in Linux CI"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision

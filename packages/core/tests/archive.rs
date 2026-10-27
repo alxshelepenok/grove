@@ -209,14 +209,14 @@ fn corpus_diff_repair() {
     let dir = tmpdir("dr");
     let dev = dir.join(".grove");
     std::fs::create_dir_all(&dev).unwrap();
-    let corrupt = step_field(&sc, 13, "lock")
+    let corrupt = step_field(&sc, 14, "lock")
         .replace("<sha>", REAL_SHA)
         .replace("<ts>", TS);
     std::fs::write(dev.join("state.lock"), &corrupt).unwrap();
-    std::fs::write(dev.join("journal.log"), step_field(&sc, 13, "journal")).unwrap();
-    assert_step(&sc, 14, &dir);
+    std::fs::write(dev.join("journal.log"), step_field(&sc, 14, "journal")).unwrap();
     assert_step(&sc, 15, &dir);
     assert_step(&sc, 16, &dir);
+    assert_step(&sc, 17, &dir);
 }
 
 #[test]

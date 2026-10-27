@@ -693,6 +693,7 @@ const SCENARIOS = Scenario[
         ["!git", "add", ".grove"],
         ["!git", "-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-q", "-m", "grove state"],
         ["add", "q", "--cynefin=clear", "--targets=W-01", "--title=Quest", "--quiet"],
+        ["!sleep", "1.1"],
         ["set", "W-01", "status=ready", "--quiet"],
         ["diff"],
         ["diff", "--json"],

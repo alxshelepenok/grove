@@ -111,8 +111,8 @@ fn corpus_snapshots_roundtrip_byte_identically() {
         mismatches,
         vec![
             ("check-y-archive.json".to_string(), 1usize),
-            ("diff-repair.json".to_string(), 13usize),
             ("diff-repair.json".to_string(), 14usize),
+            ("diff-repair.json".to_string(), 15usize),
         ],
         "unexpected non-canonical set"
     );

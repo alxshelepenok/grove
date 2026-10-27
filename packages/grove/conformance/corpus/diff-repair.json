@@ -141,6 +141,17 @@
     },
     {
       "args": [
+        "!sleep",
+        "1.1"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "lock": "@grove 1\n# AUTO-GENERATED. Do not edit. Use `grove` CLI.\n# checksum: sha256:<sha>\nw W-01 type=feature status=proposed cynefin=clear t_created=<ts> t_updated=<ts> \"Work\"\n\nq Q-01 status=open cynefin=clear t_created=<ts> t_updated=<ts> \"Quest\"\n\na A-01 status=present t_created=<ts> t_updated=<ts> \"Area\"\n\ne Q-01 asks W-01 t_created=<ts>\n",
+      "journal": "{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"A-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"W-01\",\"op\":\"rm_node\"}}\n{\"v\":1,\"session\":\"<session>\",\"cmd\":\"add\",\"ts\":\"<ts>\",\"inv\":{\"id\":\"Q-01\",\"op\":\"rm_node\"}}\n"
+    },
+    {
+      "args": [
         "set",
         "W-01",
         "status=ready",

@@ -58,7 +58,7 @@ fn git_init_commit(dir: &PathBuf, msg: &str) {
 fn fixture_states() -> (State, State) {
     let sc = corpus_json("diff-repair");
     let st_ref = parse_fixture(&step_field(&sc, 7, "lock")).unwrap();
-    let mut st_wt = parse_fixture(&step_field(&sc, 10, "lock")).unwrap();
+    let mut st_wt = parse_fixture(&step_field(&sc, 11, "lock")).unwrap();
     st_wt
         .nodes
         .get_mut("W-01")
@@ -99,7 +99,7 @@ fn fixture_diff_text_golden() {
     let (st_ref, st_wt) = fixture_states();
     assert_eq!(
         print_lock_structural_diff("HEAD", &st_ref, &st_wt),
-        step_field(&sc, 11, "stdout")
+        step_field(&sc, 12, "stdout")
     );
 }
 
@@ -110,7 +110,7 @@ fn fixture_diff_json_golden() {
     let mut pl = lock_structural_diff_payload(&st_ref, &st_wt);
     pl.insert("command".to_string(), JVal::Str("diff".to_string()));
     pl.insert("since".to_string(), JVal::Str("HEAD".to_string()));
-    assert_eq!(json_cli_out(pl), step_field(&sc, 12, "stdout"));
+    assert_eq!(json_cli_out(pl), step_field(&sc, 13, "stdout"));
 }
 
 #[test]
@@ -121,18 +121,18 @@ fn cmd_diff_live_git_repo_matches_goldens() {
     std::fs::create_dir_all(&grove_dir).unwrap();
     std::fs::write(grove_dir.join("state.lock"), strictable_lock(7, false)).unwrap();
     git_init_commit(&dir, "grove state");
-    std::fs::write(grove_dir.join("state.lock"), strictable_lock(10, true)).unwrap();
+    std::fs::write(grove_dir.join("state.lock"), strictable_lock(11, true)).unwrap();
     let root = dir.to_string_lossy().into_owned();
     let ctx = CliCtx::new(root.clone());
     let r = cmd_diff(&ctx, &[], &[]);
     assert_eq!(r.code, EXIT_OK);
-    assert_eq!(r.out, step_field(&sc, 11, "stdout"));
+    assert_eq!(r.out, step_field(&sc, 12, "stdout"));
     assert_eq!(r.err_rendered(false), "");
     let mut ctxj = CliCtx::new(root);
     ctxj.json = true;
     let rj = cmd_diff(&ctxj, &[], &[]);
     assert_eq!(rj.code, EXIT_OK);
-    assert_eq!(rj.out, step_field(&sc, 12, "stdout"));
+    assert_eq!(rj.out, step_field(&sc, 13, "stdout"));
     assert_eq!(rj.err_rendered(false), "");
     let _ = std::fs::remove_dir_all(&dir);
 }

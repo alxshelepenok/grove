@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:39afd0ff2466e46f14a1f8225254282e6e1dbde616e07e01d4ef73fd976ee5cb
+# checksum: sha256:f296c148d5023f978d680288b2d1625ee2f257d92e028764f3cb32d625ee2cc1
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -530,6 +530,29 @@ w W-231 type=feature status=done cynefin=complicated t_created=2026-10-26T15:38:
     | Updated docs/specification.md section 8.5 with the closed category set, caller-action classification, independent severity and exits, uppercase serialization, text rules, details, and document exclusions. Added exact-code validators to Julia recording and Rust replay, added decay-render, diff-repair, and projects to recorded scenarios, and regenerated affected fixtures from Julia. Executed julia --project=packages/grove packages/grove/conformance/run.jl verify with the result conformance: 39 scenarios green.
     | Executed cargo fmt --all -- --check, bash bin/md-format.sh --check docs/specification.md, and git diff --check successfully on the deliverable. Focused Rust diagnostic tests cover all variants, legacy rejection, constructors, independent exits, rendering, JSON, and validator rejection. Julia diagnostic tests cover the same closed set, severity combinations, punctuation, CLI-invocation rejection, rendering, and JSON conversion.
     | Executed julia --project=packages/grove -e "using Pkg; Pkg.test()" on the final deliverable. The suite passed, including diagnostic validators, all CLI regression tests, and conformance: 39 scenarios green. The final output ends with Testing grove tests passed.
+
+w W-232 type=bug status=done cynefin=clear t_created=2026-10-27T09:57:54Z t_updated=2026-10-27T10:42:43Z "Julia diff attribute details drift in Linux CI"
+  goals: G-52
+  fitness: G-52=+0
+  surface: packages/grove/src/lockdiff.jl, packages/grove/conformance/corpus/diff-repair.json, packages/core/src/lockdiff.rs, packages/grove/test/test_lockdiff.jl, packages/grove/conformance/scenarios.jl, packages/core/tests/lockdiff.rs, packages/core/tests/corpus_roundtrip.rs, packages/core/tests/archive.rs, packages/core/tests/fixtures/wave2b/diff-repair.json
+  ac:
+    | The root cause of the missing attrs detail is identified and recorded, including any platform-dependent parsing or normalization behavior.
+    | Julia and Rust emit identical diff and diff --json output for the diff-repair status transition on Linux CI and the local development platform.
+    | The canonical expected behavior is established before changing the fixture. Regenerating diff-repair.json alone is not accepted as a fix for implementation drift.
+    | Focused regression coverage pins the attrs detail in both human detail lines and JSON detail_lines, while unrelated diff output and diagnostic behavior remain unchanged.
+  hypothesis:
+    | The Julia lock loading or structural diff path normalizes node attrs differently across the fixture recording environment and Linux CI. Identifying and aligning that normalization should restore parity without weakening the diagnostic or diff contracts.
+  repro:
+    | GitHub Actions Linux conformance verification reports DRIFT for scenario diff-repair at step 12 with args `diff` and step 13 with args `diff --json`. After `set W-01 status=ready`, the canonical fixture contains `  attrs: changed` for W-01, while Julia output omits that line from both human stdout and the JSON detail_lines array. The remaining output matches and conformance fails with drift detected.
+  exit:
+    | The diff-repair scenario passes without stdout drift on Linux CI and the local development platform. Rust and Julia produce byte-identical human and JSON diff output for the W-01 status transition, and the focused lockdiff tests, full Julia suite, conformance verification, and Rust workspace tests pass.
+  evidence_strategy:
+    | Preserve the GitHub Actions failure as the pre-fix reproduction. Isolate the differing attrs in the baseline and worktree states, add a focused regression test, then run the same diff-repair scenario on Linux and the local platform. Compare Rust and Julia stdout, stderr, JSON, and exits, and run the full Julia, conformance, and Rust workspace suites.
+  evidence:
+    | Root cause established as a second-resolution timing race rather than platform-specific lock parsing. The fixture expected t_updated to change between add W-01 and set status=ready, but fast Linux runs could perform both within one timestamp second and legitimately omit attrs changed. packages/grove/conformance/scenarios.jl now inserts !sleep 1.1 before the status mutation, and the canonical fixture was regenerated from Julia.
+    | Focused Julia lockdiff tests pass with new coverage asserting attrs changed in both human detail lines and JSON detail_lines. The diff-repair scenario is byte-identical on Windows with 19 steps. Rust positional consumers and the fallback fixture were synchronized, and cargo fmt --all -- --check plus cargo test --workspace pass on the final fixture state.
+    | Executed Linux Julia 1.12.6 through WSL using the release workflow download URL and SHA-256. The targeted diff-repair run is byte-identical with 19 steps, and the complete Linux conformance run finishes with conformance: 39 scenarios green including diff-repair.
+    | Executed julia --project=packages/grove -e "using Pkg; Pkg.test()" to completion on Windows. Final output is Testing grove tests passed, with the new lockdiff regression test passing and conformance: 39 scenarios green including diff-repair with 19 steps. git diff --check also passes.
 
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
