@@ -969,14 +969,19 @@ Methods are `initialize`, `notifications/initialized`, `ping`, `tools/list`, and
 are configured through `$GROVE_HOME/mcp.toml`.
 
 Every `tools/call` result contains `content`, `structuredContent`, and
-`isError`. `structuredContent` contains numeric `exitCode` and a
-`diagnostics` array of diagnostic objects. The numeric value is the same exit
-the equivalent CLI command returns, including zero for informational success.
-`isError` is true exactly when `exitCode` is nonzero. Text content
-preserves document or data output and appends canonically rendered diagnostics
-with a newline when both are present. It MUST NOT add stderr separators, an
-error header to info-only success, or a textual exit-code suffix. Operational
-messages MUST NOT redirect the caller to CLI invocations.
+`isError`. `structuredContent` contains `output`, numeric `exitCode`, and a
+`diagnostics` array of diagnostic objects. `output` is the primary CLI stdout
+trimmed at the end and encoded as a JSON string, or null when stdout is empty.
+It excludes stderr diagnostics and remains available on nonzero exits when the
+command produced stdout. Each tool declares an `outputSchema` for this closed
+envelope, requiring all three fields and allowing `output` to be a string or
+null. The numeric exit value is the same exit the equivalent CLI command
+returns, including zero for informational success. `isError` is true exactly
+when `exitCode` is nonzero. Text content preserves document or data output and
+appends canonically rendered diagnostics with a newline when both are present.
+It MUST NOT add stderr separators, an error header to info-only success, or a
+textual exit-code suffix. Operational messages MUST NOT redirect the caller to
+CLI invocations.
 
 Tool argument failures use `INTERFACE` diagnostics and Grove exit 1 in the tool
 result. JSON-RPC errors retain their protocol numeric codes. Their `message` is

@@ -1,6 +1,6 @@
 @grove 1
 # AUTO-GENERATED. Do not edit. Use `grove` CLI.
-# checksum: sha256:f296c148d5023f978d680288b2d1625ee2f257d92e028764f3cb32d625ee2cc1
+# checksum: sha256:adcc86ee00f955cbbe845f58d8d23d2d3a360aa76480d7eccf4aee2a28d694f9
 g G-17 status=unverified fitness_kind=count t_created=2026-08-08T23:04:47Z t_updated=2026-08-08T23:04:47Z "Scaling and performance budget"
   area: A-02
   fitness_target: 2
@@ -554,6 +554,30 @@ w W-232 type=bug status=done cynefin=clear t_created=2026-10-27T09:57:54Z t_upda
     | Executed Linux Julia 1.12.6 through WSL using the release workflow download URL and SHA-256. The targeted diff-repair run is byte-identical with 19 steps, and the complete Linux conformance run finishes with conformance: 39 scenarios green including diff-repair.
     | Executed julia --project=packages/grove -e "using Pkg; Pkg.test()" to completion on Windows. Final output is Testing grove tests passed, with the new lockdiff regression test passing and conformance: 39 scenarios green including diff-repair with 19 steps. git diff --check also passes.
 
+w W-233 type=bug status=done cynefin=complicated t_created=2026-10-29T02:00:20Z t_updated=2026-10-29T02:29:49Z "MCP structured results omit primary tool output"
+  goals: G-52
+  fitness: G-52=+0
+  surface: packages/core/src/mcp.rs, packages/mcp/tests/mcp.rs, docs/specification.md, packages/grove/conformance/corpus/specification.json
+  ac:
+    | Every tools/call structuredContent value carries the primary result in a typed output field, using null only when no primary result exists, so consumers need not read content text.
+    | tools/list declares an outputSchema for each served tool covering output, exitCode, and diagnostics, and actual structuredContent validates against that schema for success and failure responses.
+    | Existing content text remains compatible for clients that use it, while exitCode, isError, diagnostic objects, JSON-RPC protocol errors, and role filtering retain their current behavior.
+    | Tests exercise structuredContent-only consumption for representative document, data, informational, empty-output, and failure results, including a real NDJSON session and the original show case.
+    | The MCP transport specification defines the primary output field and its outputSchema contract without weakening the unified diagnostic grammar or document and data exclusions.
+  hypothesis:
+    | The primary result is dropped at the MCP boundary because tool_result_json maps OpResult.out only to content text and tool_json declares no outputSchema. A typed output field in structuredContent, backed by per-tool output schemas and the established exitCode and diagnostics envelope, can close the gap while retaining text compatibility.
+  repro:
+    | A real NDJSON tools/call for show with id G-52 returns the complete record in result.content[0].text, while result.structuredContent is exactly {"exitCode":0,"diagnostics":[]}. A client that exposes only structuredContent, including the reported Code Mode behavior, receives no primary tool result. The same gap exists structurally for every tool because tool_result_json serializes r.out only into text.
+  exit:
+    | A structuredContent-only consumer receives the primary output for successful and partially successful tool calls without reading content text. Every advertised structured result validates against its outputSchema, existing text compatibility and diagnostic behavior remain intact, and real MCP tests plus the Rust workspace suite pass.
+  evidence_strategy:
+    | Preserve the real show G-52 response as the pre-fix reproduction. Implement D-59 with output as a JSON string or null and a closed outputSchema containing output, exitCode, and diagnostics. Add structuredContent-only assertions for document, data, informational, empty, partial-output, and failure results through handle_message and the real NDJSON binary. Validate advertised schemas and run cargo test -p grove-mcp, cargo test --workspace, and formatting checks.
+  evidence:
+    | Implemented accepted D-59. Every tools/call structuredContent envelope now contains output, exitCode, and diagnostics. Output is trimmed primary stdout as a JSON string or null and excludes diagnostics, while the existing content text remains unchanged. Every tools/list entry advertises the closed outputSchema with output string or null.
+    | Regression coverage passes for schema shape and closed envelope keys, structured-only document and data output, informational output null, failure output null, real NDJSON, and partial stdout on a nonzero exit. cargo test -p grove-mcp passes 27 tests, the focused core renderer test passes, and cargo fmt --all -- --check plus cargo test --workspace pass on the final implementation.
+    | Repeated the original real NDJSON scenario against the rebuilt binary. A consumer reading only structuredContent receives the G-52 record through output with exitCode 0, check returns output null with OPERATIONAL diagnostics, and a missing node returns output null with exitCode 5 and INTERFACE diagnostics. The advertised schema requires output, exitCode, and diagnostics.
+    | Updated docs/specification.md section 8.6 with the output and outputSchema contract and regenerated the canonical specification fixture from Julia. Full Julia conformance verification finishes with conformance: 39 scenarios green. Markdown formatting, git diff --check, and grove check pass.
+
 d D-05 status=accepted t_created=2026-08-07T00:53:41Z t_updated=2026-08-07T00:55:30Z "Release signing runs in approval-gated GitHub Actions, not on an offline host"
   context:
     | the reference system's strongest invariant was 'CI never sees the signing key' (offline hardware host, PIV slots); Grove is a single-maintainer OSS project with no paid certificate story
@@ -861,6 +885,16 @@ d D-58 status=accepted t_created=2026-10-26T15:33:09Z t_updated=2026-10-26T15:41
     | Rendered diagnostics and JSON code values intentionally change from fine-grained legacy strings to the four serialized categories. Exit codes, severity, text rules, details, streams, MCP isError behavior, and unrelated command payloads remain stable.
     | Rust and Julia producers must be reclassified at their call sites. MCP must forward the same semantic categories without transport-specific reinterpretation. Tests, the normative specification, and conformance fixtures must be updated together to prevent parity drift.
     | The four-category model is closed. Adding a category requires a new accepted decision. A new condition within an existing category changes only diagnostic text or structured details and does not expand the enum.
+
+d D-59 status=accepted t_created=2026-10-29T02:10:06Z t_updated=2026-10-29T02:11:56Z "MCP structured results carry primary output"
+  context:
+    | MCP serializes the primary OpResult.out value only into content text, while structuredContent contains exitCode and diagnostics. Clients that expose only structuredContent therefore lose every primary tool result.
+  options:
+    | Keep output text-only and require clients to read content, duplicate rendered diagnostics into structuredContent, or add a distinct primary output field with a declared schema while preserving the existing text compatibility channel.
+  decision:
+    | Every tools/call structuredContent object contains output, exitCode, and diagnostics. Output is the trimmed primary CLI stdout as a JSON string, or null when stdout is empty. It excludes stderr diagnostics. Each tool advertises an outputSchema for this closed envelope. Existing content text remains the primary output followed by rendered diagnostics for compatibility, and isError remains exitCode != 0.
+  consequences:
+    | Structured-only clients receive document and data output without parsing the compatibility channel. Empty informational and failure results use output null with diagnostics carrying the notice or error. Partial stdout remains available even on nonzero exits. The MCP specification and tests pin output string or null, required envelope keys, and schema validation.
 
 q Q-03 status=open cynefin=complicated t_created=2026-08-07T00:57:07Z t_updated=2026-08-07T00:57:08Z "Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"
   why:
@@ -1489,6 +1523,7 @@ e W-231 blocks W-228 t_created=2026-10-26T15:41:25Z
 e W-231 blocks W-229 t_created=2026-10-26T15:41:25Z
 e W-231 blocks W-230 t_created=2026-10-26T15:41:25Z
 e W-231 implements D-58 t_created=2026-10-26T15:41:25Z
+e W-233 implements D-59 t_created=2026-10-29T02:11:07Z
 e W-71 blocks W-74 t_created=2026-08-04T19:50:21Z
 e W-71 blocks W-78 t_created=2026-08-04T19:50:21Z
 e W-72 blocks W-78 t_created=2026-08-04T19:50:21Z
