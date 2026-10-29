@@ -119,6 +119,29 @@ fn is_error(v: &serde_json::Value) -> bool {
     v["result"]["isError"].as_bool().unwrap()
 }
 
+fn structured_of(v: &serde_json::Value) -> &serde_json::Value {
+    &v["result"]["structuredContent"]
+}
+
+fn assert_structured_envelope(v: &serde_json::Value) {
+    let structured = structured_of(v);
+    assert_eq!(structured.as_object().unwrap().len(), 3);
+    assert!(structured["output"].is_string() || structured["output"].is_null());
+    assert!(structured["exitCode"].is_i64());
+    let diagnostics = structured["diagnostics"].as_array().unwrap();
+    for diagnostic in diagnostics {
+        let object = diagnostic.as_object().unwrap();
+        assert!(object.len() == 3 || object.len() == 4);
+        assert!(["error", "warning", "info"].contains(&diagnostic["severity"].as_str().unwrap()));
+        assert!(["SYSTEM", "INTERFACE", "INVARIANT", "OPERATIONAL"]
+            .contains(&diagnostic["code"].as_str().unwrap()));
+        assert!(diagnostic["text"].is_string());
+        if !diagnostic["details"].is_null() {
+            assert!(diagnostic["details"].is_object());
+        }
+    }
+}
+
 #[test]
 fn malformed_json_returns_parse_error() {
     let _g = ENV_LOCK.lock().unwrap();
@@ -271,6 +294,30 @@ fn tools_list_covers_all_commands_with_valid_schemas() {
         assert_eq!(t["inputSchema"]["type"], "object");
         assert!(t["inputSchema"]["properties"].is_object(), "{}", t["name"]);
         assert!(t["inputSchema"]["required"].is_array(), "{}", t["name"]);
+        let schema = &t["outputSchema"];
+        assert_eq!(schema["type"], "object", "{}", t["name"]);
+        assert_eq!(schema["additionalProperties"], false, "{}", t["name"]);
+        assert_eq!(
+            schema["required"],
+            serde_json::json!(["output", "exitCode", "diagnostics"]),
+            "{}",
+            t["name"]
+        );
+        assert_eq!(schema["properties"].as_object().unwrap().len(), 3);
+        assert_eq!(
+            schema["properties"]["output"]["anyOf"],
+            serde_json::json!([{"type": "string"}, {"type": "null"}]),
+            "{}",
+            t["name"]
+        );
+        assert_eq!(schema["properties"]["exitCode"]["type"], "integer");
+        let diagnostic = &schema["properties"]["diagnostics"]["items"];
+        assert_eq!(diagnostic["type"], "object");
+        assert_eq!(diagnostic["additionalProperties"], false);
+        assert_eq!(
+            diagnostic["required"],
+            serde_json::json!(["severity", "code", "text"])
+        );
     }
     let find = |n: &str| tools.iter().find(|t| t["name"] == n).unwrap().clone();
     let show = find("show");
@@ -338,6 +385,55 @@ fn specification_tool_returns_normative_markdown() {
     let text = text_of(&v);
     assert!(text.starts_with("# Grove\n"), "{text}");
     assert!(text.contains("## 8. Command interface"));
+}
+
+#[test]
+fn structured_results_carry_primary_output_without_content() {
+    let _g = ENV_LOCK.lock().unwrap();
+    let f = fixture("structured-output");
+    let mut s = server(&f.root);
+    handshake(&mut s);
+    init_project(&mut s, 10);
+
+    let created = call(
+        &mut s,
+        11,
+        "add",
+        serde_json::json!({"kind": "a", "title": "Structured area"}),
+    );
+    assert_eq!(structured_of(&created)["output"], "A-01");
+    assert_eq!(text_of(&created), "A-01");
+
+    let shown = call(&mut s, 12, "show", serde_json::json!({"id": "A-01"}));
+    let shown_output = structured_of(&shown)["output"].as_str().unwrap();
+    assert!(shown_output.contains("Structured area"), "{shown_output}");
+    assert_eq!(shown_output, text_of(&shown));
+
+    let document = call(&mut s, 13, "specification", serde_json::json!({}));
+    let document_output = structured_of(&document)["output"].as_str().unwrap();
+    assert!(document_output.starts_with("# Grove\n"));
+    assert_eq!(document_output, text_of(&document));
+
+    let check = call(&mut s, 14, "check", serde_json::json!({}));
+    assert!(structured_of(&check)["output"].is_null());
+    assert_eq!(
+        structured_of(&check)["diagnostics"][0]["code"],
+        "OPERATIONAL"
+    );
+    assert_eq!(text_of(&check), "info OPERATIONAL ok");
+
+    let missing = call(&mut s, 15, "show", serde_json::json!({"id": "A-99"}));
+    assert!(is_error(&missing));
+    assert!(structured_of(&missing)["output"].is_null());
+    assert_eq!(structured_of(&missing)["exitCode"], 5);
+    assert_eq!(
+        structured_of(&missing)["diagnostics"][0]["code"],
+        "INTERFACE"
+    );
+
+    for response in [&created, &shown, &document, &check, &missing] {
+        assert_structured_envelope(response);
+    }
 }
 
 #[test]
@@ -750,10 +846,14 @@ fn binary_smoke_ndjson_session() {
     let add_text = parsed[3]["result"]["content"][0]["text"].as_str().unwrap();
     assert!(add_text.contains("A-01"), "{add_text}");
     assert!(!add_text.contains("--- stderr ---"), "{add_text}");
+    assert_eq!(structured_of(&parsed[3])["output"], "A-01");
     let check = &parsed[4];
     assert_eq!(check["result"]["isError"], false);
     let check_text = check["result"]["content"][0]["text"].as_str().unwrap();
     assert_eq!(check_text, "info OPERATIONAL ok");
+    assert!(structured_of(check)["output"].is_null());
+    assert_structured_envelope(&parsed[3]);
+    assert_structured_envelope(check);
 }
 
 #[test]

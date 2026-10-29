@@ -6,7 +6,7 @@
 
 | Measure | Count | Composition |
 | --- | --- | --- |
-| C (content) | 52 | validated B 1 · answered Q 6 · accepted D 25 · active Discovery 20 |
+| C (content) | 53 | validated B 1 · answered Q 6 · accepted D 26 · active Discovery 20 |
 | V (uncertainty) | 10 | open Q 3 · pending B 4 · W below DoR 2 · uncovered surface 1 |
 
 ## Areas
@@ -14,7 +14,7 @@
 | Area | Title | C (content) | V (uncertainty) | Composition |
 | --- | --- | --- | --- | --- |
 | A-01 | Evals | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
-| A-02 | API | 10 | 3 | C: validated B 0 · answered Q 0 · accepted D 5 · active Discovery 5; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
+| A-02 | API | 11 | 3 | C: validated B 0 · answered Q 0 · accepted D 6 · active Discovery 5; V: open Q 0 · pending B 0 · W below DoR 2 · uncovered surface 1 |
 | A-03 | Rust core | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-04 | MCP server | 11 | 0 | C: validated B 0 · answered Q 0 · accepted D 7 · active Discovery 4; V: open Q 0 · pending B 0 · W below DoR 0 |
 | A-05 | Desktop | 0 | 0 | C: validated B 0 · answered Q 0 · accepted D 0; V: open Q 0 · pending B 0 · W below DoR 0 |
@@ -69,6 +69,7 @@
 | W-230 | feature | Verify unified diagnostics end to end | G-52 | complicated | ⊤ | done |  |
 | W-231 | feature | Collapse diagnostic codes into four semantic categories | G-52 | complicated | ⊤ | done |  |
 | W-232 | bug | Julia diff attribute details drift in Linux CI | G-52 | clear | ⊤ | done |  |
+| W-233 | bug | MCP structured results omit primary tool output | G-52 | complicated | ⊤ | done |  |
 
 ## Decisions
 
@@ -100,6 +101,7 @@
 | D-56 | Archive completion sweep takes the shared resource with the last goal | accepted | D-55 |
 | D-57 | Use structured interface-neutral diagnostics | accepted |  |
 | D-58 | Classify diagnostics by four semantic categories | accepted |  |
+| D-59 | MCP structured results carry primary output | accepted |  |
 
 ## Open questions
 
@@ -242,6 +244,7 @@ graph TD
   W_230["W-230: Verify unified diagnostics end to end"]:::done
   W_231["W-231: Collapse diagnostic codes into four semantic categories"]:::done
   W_232["W-232: Julia diff attribute details drift in Linux CI"]:::done
+  W_233["W-233: MCP structured results omit primary tool output"]:::done
   D_05["D-05: Release signing runs in approval-gated GitHub Actions, not on an offline host"]:::decision
   D_06["D-06: trivy is the supply-chain scanner behind an in-repo policy wrapper"]:::decision
   D_07["D-07: Rust binaries (grove, grove-mcp) are the primary release artifacts; Julia is a developer source install"]:::decision
@@ -268,6 +271,7 @@ graph TD
   D_56["D-56: Archive completion sweep takes the shared resource with the last goal"]:::decision
   D_57["D-57: Use structured interface-neutral diagnostics"]:::decision
   D_58["D-58: Classify diagnostics by four semantic categories"]:::decision
+  D_59["D-59: MCP structured results carry primary output"]:::decision
   Q_03["Q-03: Add cosign keyless as an additional, no-stored-key verification path alongside attestations?"]:::question
   Q_04["Q-04: What replaces macos-15-intel for macos_x64 builds when GitHub retires Intel runners (~August 2027)?"]:::question
   Q_07["Q-07: How Neo4j integrates into Grove: role, pattern, and boundaries"]:::question
@@ -537,6 +541,7 @@ graph TD
   W_231 ==>|blocks| W_229
   W_231 ==>|blocks| W_230
   W_231 -->|implements| D_58
+  W_233 -->|implements| D_59
   W_71 ==>|blocks| W_74
   W_71 ==>|blocks| W_78
   W_72 ==>|blocks| W_78

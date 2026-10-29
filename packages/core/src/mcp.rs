@@ -640,6 +640,14 @@ fn prop_schema_json(prop: &Prop) -> String {
     s
 }
 
+const TOOL_OUTPUT_SCHEMA_JSON: &str = concat!(
+    r#"{"type":"object","properties":{"output":{"anyOf":[{"type":"string"},{"type":"null"}]},"#,
+    r#""exitCode":{"type":"integer"},"diagnostics":{"type":"array","items":{"type":"object","#,
+    r#""properties":{"severity":{"type":"string","enum":["error","warning","info"]},"code":{"type":"string","enum":["SYSTEM","INTERFACE","INVARIANT","OPERATIONAL"]},"text":{"type":"string"},"details":{"type":"object","additionalProperties":{"type":"string"}}},"#,
+    r#""required":["severity","code","text"],"additionalProperties":false}}},"#,
+    r#""required":["output","exitCode","diagnostics"],"additionalProperties":false}"#,
+);
+
 fn tool_json(spec: &ToolSpec) -> String {
     let mut props = String::new();
     for (i, p) in spec.props.iter().enumerate() {
@@ -650,12 +658,13 @@ fn tool_json(spec: &ToolSpec) -> String {
     }
     let required: Vec<String> = spec.required.iter().map(|r| jstr(r)).collect();
     format!(
-        "{{\"name\":{},\"title\":{},\"description\":{},\"inputSchema\":{{\"type\":\"object\",\"properties\":{{{}}},\"required\":[{}],\"additionalProperties\":false}},\"annotations\":{{\"readOnlyHint\":{},\"destructiveHint\":{},\"idempotentHint\":{},\"openWorldHint\":false}}}}",
+        "{{\"name\":{},\"title\":{},\"description\":{},\"inputSchema\":{{\"type\":\"object\",\"properties\":{{{}}},\"required\":[{}],\"additionalProperties\":false}},\"outputSchema\":{},\"annotations\":{{\"readOnlyHint\":{},\"destructiveHint\":{},\"idempotentHint\":{},\"openWorldHint\":false}}}}",
         jstr(spec.cmd),
         jstr(spec.title),
         jstr(&tool_description(spec)),
         props,
         required.join(","),
+        TOOL_OUTPUT_SCHEMA_JSON,
         spec.ann.read_only,
         spec.ann.destructive,
         spec.ann.idempotent
@@ -974,7 +983,8 @@ fn build_argv(
 }
 
 fn tool_result_json(r: &OpResult) -> String {
-    let mut text = r.out.trim_end().to_string();
+    let output = r.out.trim_end();
+    let mut text = output.to_string();
     let diagnostics = r.err_rendered(false);
     let diagnostics = diagnostics.trim_end();
     if !diagnostics.is_empty() {
@@ -983,6 +993,11 @@ fn tool_result_json(r: &OpResult) -> String {
         }
         text.push_str(diagnostics);
     }
+    let output_json = if output.is_empty() {
+        "null".to_string()
+    } else {
+        jstr(output)
+    };
     let diagnostic_json = r
         .diags
         .iter()
@@ -990,8 +1005,9 @@ fn tool_result_json(r: &OpResult) -> String {
         .collect::<Vec<_>>()
         .join(",");
     format!(
-        "{{\"content\":[{{\"type\":\"text\",\"text\":{}}}],\"structuredContent\":{{\"exitCode\":{},\"diagnostics\":[{}]}},\"isError\":{}}}",
+        "{{\"content\":[{{\"type\":\"text\",\"text\":{}}}],\"structuredContent\":{{\"output\":{},\"exitCode\":{},\"diagnostics\":[{}]}},\"isError\":{}}}",
         jstr(&text),
+        output_json,
         r.code,
         diagnostic_json,
         r.code != EXIT_OK
@@ -1185,4 +1201,27 @@ fn handle_tools_call(server: &McpServer, id: &Json, params: Option<&Json>) -> St
     };
     let r = run_cli(&argv);
     result_response(id, &tool_result_json(&r))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn structured_output_preserves_partial_stdout_on_failure() {
+        let mut result = OpResult::fail_diag(4, Diagnostic::error(Code::Invariant, "guard failed"));
+        result.out = "partial output\n".to_string();
+        let value = parse_json(&tool_result_json(&result)).unwrap();
+        let structured = value.get("structuredContent").unwrap();
+        assert_eq!(
+            structured.get("output").and_then(Json::as_str),
+            Some("partial output")
+        );
+        assert_eq!(structured.get("exitCode").and_then(Json::as_i64), Some(4));
+        let text = match value.get("content") {
+            Some(Json::Arr(items)) => items[0].get("text").and_then(Json::as_str).unwrap(),
+            _ => panic!("content must be an array"),
+        };
+        assert_eq!(text, "partial output\nerror INVARIANT guard failed");
+    }
 }
