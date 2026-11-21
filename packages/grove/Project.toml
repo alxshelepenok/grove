@@ -11,7 +11,7 @@ TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
 [compat]
 Dates = "< 0.0.1, 1.6"
-JSON = "0.21"
+JSON = "0.21, 1.9"
 Printf = "< 0.0.1, 1.6"
 SHA = "0.7.0"
 TOML = "1.0.3, < 0.0.1, 1"
